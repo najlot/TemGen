@@ -78,117 +78,48 @@ public static class TemplatesReader
 		return sections;
 	}
 
-	private static IEnumerable<TemplateSection> GetSections_old(string content)
-	{
-		while (true)
-		{
-			var index = content.IndexOf("<#");
-
-			if (index == -1)
-			{
-				yield return new TemplateSection()
-				{
-					Handler = TemplateHandler.Text,
-					Content = content,
-				};
-
-				break;
-			}
-			else
-			{
-				yield return new TemplateSection()
-				{
-					Handler = TemplateHandler.Text,
-					Content = content.Substring(0, index),
-				};
-
-				var language = "";
-				var endIndex = content.IndexOf("#>", index);
-
-				if (endIndex == -1)
-				{
-					break;
-				}
-
-				for (index += 2; index < endIndex; index++)
-				{
-					char c = content[index];
-
-					if (c == '\r')
-					{
-						continue;
-					}
-
-					if (c == ' ' || c == '\n')
-					{
-						index++;
-						break;
-					}
-
-					language += c;
-				}
-
-				TemplateHandler handler = GetHandlerFromLanguage(language);
-
-				yield return new TemplateSection()
-				{
-					Handler = handler,
-					Content = content[index..endIndex],
-				};
-
-				content = content.Substring(endIndex + 2);
-			}
-		}
-	}
-
 	private static TemplateHandler GetHandlerFromLanguage(string language)
 	{
-		var handler = TemplateHandler.Text;
-
-		switch (language.Trim().ToLower())
+		if (string.IsNullOrWhiteSpace(language))
 		{
-			case "cs":
-				handler = TemplateHandler.CSharp;
-				break;
-
-			case "ref":
-				handler = TemplateHandler.Reflection;
-				break;
-
-			case "js":
-				handler = TemplateHandler.JavaScript;
-				break;
-
-			case "lua":
-				handler = TemplateHandler.Lua;
-				break;
-
-			case "py":
-				handler = TemplateHandler.Python;
-				break;
+			// Default value when the input is invalid
+			return TemplateHandler.Text;
 		}
 
-		return handler;
+		language = language.Trim().ToLowerInvariant();
+
+		return language switch
+		{
+			"cs" => TemplateHandler.CSharp, // C# template handler
+			"ref" => TemplateHandler.Reflection, // Reflection template handler
+			"js" => TemplateHandler.JavaScript, // JavaScript template handler
+			"lua" => TemplateHandler.Lua, // Lua template handler
+			"py" => TemplateHandler.Python, // Python template handler
+			_ => TemplateHandler.Text, // Default value when the language is not recognized
+		};
 	}
 
-	public static Template ReadResourceScript(string resourcesScriptPath)
+	public static Template ReadResourceScript(string path, string resourcesScriptPath)
 	{
+		path = Path.GetFullPath(path);
+		resourcesScriptPath = Path.Combine(path, resourcesScriptPath);
+
 		var extension = Path.GetExtension(resourcesScriptPath).TrimStart('.');
 		var handler = GetHandlerFromLanguage(extension);
 
 		var content = File.ReadAllText(resourcesScriptPath);
 		var sections = new List<TemplateSection>()
-	{
-		new TemplateSection()
 		{
-			Content = content,
-			Handler = handler
-		}
-	};
+			new TemplateSection()
+			{
+				Content = content,
+				Handler = handler
+			}
+		};
 
 		return new Template()
 		{
-			RelativePath = Path.GetRelativePath(resourcesScriptPath, resourcesScriptPath),
+			RelativePath = Path.GetRelativePath(path, resourcesScriptPath),
 			Sections = sections
 		};
 	}

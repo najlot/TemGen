@@ -1,11 +1,9 @@
 ﻿using Najlot.Log;
-using Najlot.Log.Configuration.FileSource;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime;
 using System.Threading.Tasks;
 
@@ -26,7 +24,7 @@ internal class Program
 
 		if (!string.IsNullOrWhiteSpace(project.ResourcesScriptPath))
 		{
-			var resourcesScript = TemplatesReader.ReadResourceScript(project.ResourcesScriptPath);
+			var resourcesScript = TemplatesReader.ReadResourceScript(path, project.ResourcesScriptPath);
 
 			try
 			{
@@ -43,41 +41,15 @@ internal class Program
 		{
 			try
 			{
-				foreach (var definition in definitions)
+				var results = await processor.Handle(template, definitions).ConfigureAwait(false);
+
+				foreach (var result in results)
 				{
-					var result = await processor.Handle(template, definition, null).ConfigureAwait(false);
+					var destPath = Path.Combine(project.OutputPath, result.Key);
+					var dirPath = Path.GetDirectoryName(destPath);
+					Directory.CreateDirectory(dirPath);
 
-					if (!string.IsNullOrWhiteSpace(result.RelativePath))
-					{
-						log.Debug("Writing {RelativePath}", result.RelativePath);
-						var destPath = Path.Combine(project.OutputPath, result.RelativePath);
-						var dirPath = Path.GetDirectoryName(destPath);
-						Directory.CreateDirectory(dirPath);
-						await File.WriteAllTextAsync(destPath, result.Content, template.Encoding, tkn).ConfigureAwait(false);
-					}
-
-					if (result.SkipOtherDefinitions)
-					{
-						log.Debug("Skipping other definitions...");
-						break;
-					}
-
-					if (result.RepeatForEachDefinitionEntry)
-					{
-						foreach (var entry in definition.Entries)
-						{
-							result = await processor.Handle(template, definition, entry).ConfigureAwait(false);
-
-							if (!string.IsNullOrWhiteSpace(result.RelativePath))
-							{
-								log.Debug("Writing {RelativePath}", result.RelativePath);
-								var destPath = Path.Combine(project.OutputPath, result.RelativePath);
-								var dirPath = Path.GetDirectoryName(destPath);
-								Directory.CreateDirectory(dirPath);
-								await File.WriteAllTextAsync(destPath, result.Content, template.Encoding, tkn).ConfigureAwait(false);
-							}
-						}
-					}
+					await File.WriteAllTextAsync(destPath, result.Value, template.Encoding, tkn).ConfigureAwait(false);
 				}
 			}
 			catch (Exception ex)

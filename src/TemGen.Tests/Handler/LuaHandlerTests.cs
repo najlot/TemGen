@@ -30,26 +30,42 @@ public class LuaHandlerTests
 		}
 		};
 
-		var handler = new LuaSectionHandler(project, new List<Definition>() { definition });
-		var result = await handler.Handle(new TemplateSection()
+		var globals = new Globals()
 		{
-			Handler = TemplateHandler.Lua,
-			Content = "write(definition.name .. \":\"); \n" +
-						"for key, value in ipairs(entries) do write(value.field .. ',') end \n" +
-						"result = string.sub(result, 1, -2); \n" +
-						"relativePath = \"Is\" .. relativePath;"
-		}, definition, "Test.cs", null);
+			RelativePath = "Test.cs",
+			Definition = definition,
+			Definitions = new List<Definition>() { definition },
+			DefinitionEntry = null,
+			Entries = definition.Entries,
+			SkipOtherDefinitions = false,
+			Project = project,
+			RepeatForEachDefinitionEntry = false
+		};
 
-		Assert.Equal("IsTest.cs", result.RelativePath);
-		Assert.False(result.SkipOtherDefinitions);
-		Assert.Equal("Test:Entry_1,Entry_2", result.Content);
+		var handler = new LuaSectionHandler();
+		await handler.Handle(
+			globals,
+			new TemplateSection()
+			{
+				Handler = TemplateHandler.Lua,
+				Content = "write(definition.name .. \":\"); \n" +
+							"for key, value in ipairs(entries) do write(value.field .. ',') end \n" +
+							"set_result(string.sub(get_result(), 1, -2)); \n" +
+							"relative_path = \"Is\" .. relative_path;"
+			});
 
-		result = await handler.Handle(new TemplateSection()
-		{
-			Handler = TemplateHandler.Lua,
-			Content = "skipOtherDefinitions = true"
-		}, definition, "IsTest.cs", null);
+		Assert.Equal("IsTest.cs", globals.RelativePath);
+		Assert.False(globals.SkipOtherDefinitions);
+		Assert.Equal("Test:Entry_1,Entry_2", globals.Result);
 
-		Assert.True(result.SkipOtherDefinitions);
+		await handler.Handle(
+			globals,
+			new TemplateSection()
+			{
+				Handler = TemplateHandler.Lua,
+				Content = "skip_other_definitions = true"
+			});
+
+		Assert.True(globals.SkipOtherDefinitions);
 	}
 }

@@ -4,17 +4,14 @@ namespace TemGen.Handler;
 
 public sealed class TextSectionHandler : AbstractSectionHandler
 {
-	public override async Task<HandlingResult> Handle(TemplateSection section, Definition definition, string relativePath, DefinitionEntry definitionEntry)
+	public override async Task Handle(Globals globals, TemplateSection section)
 	{
 		if (section.Handler != TemplateHandler.Text)
 		{
-			return await Next.Handle(section, definition, relativePath, definitionEntry).ConfigureAwait(false);
+			await Next.Handle(globals, section).ConfigureAwait(false);
+			return;
 		}
 
-		return new HandlingResult()
-		{
-			RelativePath = relativePath,
-			Content = section.Content,
-		};
+		globals.Write(section.Content);
 	}
 }

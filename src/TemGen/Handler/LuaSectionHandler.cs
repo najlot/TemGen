@@ -1,6 +1,5 @@
 ﻿using MoonSharp.Interpreter;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -8,104 +7,84 @@ namespace TemGen.Handler;
 
 public sealed class LuaSectionHandler : AbstractSectionHandler
 {
-	private readonly Project _project;
-	private readonly List<Definition> _definitions;
-
-	public LuaSectionHandler(Project project, List<Definition> definitions)
-	{
-		_project = project;
-		_definitions = definitions;
-	}
-
-	public override async Task<HandlingResult> Handle(TemplateSection section, Definition definition, string relativePath, DefinitionEntry definitionEntry)
+	public override async Task Handle(Globals globals, TemplateSection section)
 	{
 		if (section.Handler != TemplateHandler.Lua)
 		{
-			return await Next.Handle(section, definition, relativePath, definitionEntry).ConfigureAwait(false);
+			await Next.Handle(globals, section).ConfigureAwait(false);
+			return;
 		}
 
 		var script = new Script();
 
-		script.Globals["relativePath"] = relativePath;
+		script.Globals["relative_path"] = globals.RelativePath;
 
 		var definitionTable = new Table(script);
-		definitionTable["name"] = definition.Name;
-		definitionTable["nameLow"] = definition.NameLow;
-		definitionTable["isOwnedType"] = definition.IsOwnedType;
-		definitionTable["isEnumeration"] = definition.IsEnumeration;
-		definitionTable["isArray"] = definition.IsArray;
+		definitionTable["name"] = globals.Definition.Name;
+		definitionTable["name_low"] = globals.Definition.NameLow;
+		definitionTable["is_owned_type"] = globals.Definition.IsOwnedType;
+		definitionTable["is_enumeration"] = globals.Definition.IsEnumeration;
+		definitionTable["is_array"] = globals.Definition.IsArray;
 		script.Globals["definition"] = definitionTable;
-		script.Globals["definitionEntry"] = definitionEntry;
+		script.Globals["definition_entry"] = globals.DefinitionEntry;
 
-		script.Globals["entries"] = definition.Entries.Select(entry =>
+		script.Globals["entries"] = globals.Definition.Entries.Select(entry =>
 		{
 			var entryTable = new Table(script);
 
-			entryTable["entryType"] = entry.EntryType;
+			entryTable["entry_type"] = entry.EntryType;
 			entryTable["field"] = entry.Field;
-			entryTable["fieldLow"] = entry.FieldLow;
-			entryTable["isOwnedType"] = entry.IsOwnedType;
-			entryTable["isKey"] = entry.IsKey;
-			entryTable["isArray"] = entry.IsArray;
-			entryTable["isReference"] = entry.IsReference;
-			entryTable["isEnumeration"] = entry.IsEnumeration;
-			entryTable["isNullable"] = entry.IsNullable;
-			entryTable["referenceType"] = entry.ReferenceType;
-			entryTable["referenceTypeLow"] = entry.ReferenceTypeLow;
+			entryTable["field_low"] = entry.FieldLow;
+			entryTable["is_owned_type"] = entry.IsOwnedType;
+			entryTable["is_key"] = entry.IsKey;
+			entryTable["is_array"] = entry.IsArray;
+			entryTable["is_reference"] = entry.IsReference;
+			entryTable["is_enumeration"] = entry.IsEnumeration;
+			entryTable["is_nullable"] = entry.IsNullable;
+			entryTable["reference_type"] = entry.ReferenceType;
+			entryTable["reference_type_low"] = entry.ReferenceTypeLow;
 
 			return entryTable;
 		}).ToArray();
 
-		script.Globals["definitions"] = _definitions.Select(definition =>
+		script.Globals["definitions"] = globals.Definitions.Select(definition =>
 		{
 			var definitionTable = new Table(script);
 
 			definitionTable["name"] = definition.Name;
-			definitionTable["nameLow"] = definition.NameLow;
-			definitionTable["isOwnedType"] = definition.IsOwnedType;
-			definitionTable["isEnumeration"] = definition.IsEnumeration;
-			definitionTable["isArray"] = definition.IsArray;
+			definitionTable["name_low"] = definition.NameLow;
+			definitionTable["is_owned_type"] = definition.IsOwnedType;
+			definitionTable["is_enumeration"] = definition.IsEnumeration;
+			definitionTable["is_array"] = definition.IsArray;
 
 			return definitionTable;
 		}).ToArray();
 
-		script.Globals["skipOtherDefinitions"] = false;
-		script.Globals["repeatForEachDefinitionEntry"] = false;
+		script.Globals["skip_other_definitions"] = globals.SkipOtherDefinitions;
+		script.Globals["repeat_for_each_definition_entry"] = globals.RepeatForEachDefinitionEntry;
 
 		var projectTable = new Table(script);
-		projectTable["namespace"] = _project.Namespace;
-		projectTable["ProjectDirectory"] = _project.ProjectDirectory;
-		projectTable["DefinitionsPath"] = _project.DefinitionsPath;
-		projectTable["TemplatesPath"] = _project.TemplatesPath;
-		projectTable["OutputPath"] = _project.OutputPath;
-		projectTable["PrimaryColor"] = _project.PrimaryColor;
-		projectTable["PrimaryDarkColor"] = _project.PrimaryDarkColor;
-		projectTable["AccentColor"] = _project.AccentColor;
-		projectTable["ForegroundColor"] = _project.ForegroundColor;
+		projectTable["namespace"] = globals.Project.Namespace;
+		projectTable["project_directory"] = globals.Project.ProjectDirectory;
+		projectTable["definitions_path"] = globals.Project.DefinitionsPath;
+		projectTable["templates_path"] = globals.Project.TemplatesPath;
+		projectTable["output_path"] = globals.Project.OutputPath;
+		projectTable["primary_color"] = globals.Project.PrimaryColor;
+		projectTable["primary_dark_color"] = globals.Project.PrimaryDarkColor;
+		projectTable["accent_color"] = globals.Project.AccentColor;
+		projectTable["foreground_color"] = globals.Project.ForegroundColor;
 		script.Globals["project"] = projectTable;
 
-		script.Globals["result"] = "";
+		script.Globals["get_result"] = () => globals.Result;
+		script.Globals["set_result"] = (Action<object>)(o => globals.Result = o.ToString());
 
-		script.Globals["write"] = (Action<object>)(o =>
-		{
-			var val = script.Globals["result"];
-			script.Globals["result"] = $"{val}{o}";
-		});
-
-		script.Globals["writeLine"] = (Action<object>)(o =>
-		{
-			var val = script.Globals["result"];
-			script.Globals["result"] = $"{val}{o}{Environment.NewLine}";
-		});
+		script.Globals["write"] = (Action<object>)(o => globals.Write(o));
+		script.Globals["write_line"] = (Action<object>)(o => globals.WriteLine(o));
 
 		script.DoString(section.Content);
 
-		return new HandlingResult()
-		{
-			RelativePath = script.Globals["relativePath"].ToString(),
-			Content = script.Globals["result"].ToString(),
-			SkipOtherDefinitions = (bool)script.Globals["skipOtherDefinitions"],
-			RepeatForEachDefinitionEntry = (bool)script.Globals["repeatForEachDefinitionEntry"],
-		};
+		globals.RelativePath = script.Globals["relative_path"].ToString();
+		globals.SkipOtherDefinitions = (bool)script.Globals["skip_other_definitions"];
+		globals.RepeatForEachDefinitionEntry = (bool)script.Globals["repeat_for_each_definition_entry"];
 	}
 }

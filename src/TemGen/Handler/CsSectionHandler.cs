@@ -2,27 +2,19 @@
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.Scripting.Hosting;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace TemGen.Handler;
 
 public sealed class CsSectionHandler : AbstractSectionHandler
 {
-	private readonly Project _project;
-	private readonly List<Definition> _definitions;
-
-	public CsSectionHandler(Project project, List<Definition> definitions)
+	static CsSectionHandler()
 	{
-		_project = project;
-		_definitions = definitions;
-
 		_initialScript = CSharpScript.Create("", _options, typeof(Globals), _loader);
 		_initialScript.Compile();
 	}
 
-	private readonly Script<object> _initialScript = null;
+	private static readonly Script<object> _initialScript = null;
 
 	private static readonly ConcurrentDictionary<string, ScriptRunner<object>> _cache = new();
 	private static readonly InteractiveAssemblyLoader _loader = GetLoader();
@@ -64,28 +56,13 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 					);
 	}
 
-	public override async Task<HandlingResult> Handle(
-		TemplateSection section,
-		Definition definition,
-		string relativePath,
-		DefinitionEntry definitionEntry)
+	public override async Task Handle(Globals globals, TemplateSection section)
 	{
 		if (section.Handler != TemplateHandler.CSharp)
 		{
-			return await Next.Handle(section, definition, relativePath, definitionEntry).ConfigureAwait(false);
+			await Next.Handle(globals, section).ConfigureAwait(false);
+			return;
 		}
-
-		var globals = new Globals()
-		{
-			RelativePath = relativePath,
-			Definition = definition,
-			Definitions = _definitions,
-			DefinitionEntry = definitionEntry,
-			Entries = definition.Entries,
-			SkipOtherDefinitions = false,
-			Project = _project,
-			RepeatForEachDefinitionEntry = false
-		};
 
 		if (!_cache.TryGetValue(section.Content, out var script))
 		{
@@ -97,13 +74,5 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 		}
 
 		await script(globals).ConfigureAwait(false);
-
-		return new HandlingResult()
-		{
-			RelativePath = globals.RelativePath,
-			Content = globals.Result,
-			SkipOtherDefinitions = globals.SkipOtherDefinitions,
-			RepeatForEachDefinitionEntry = globals.RepeatForEachDefinitionEntry
-		};
 	}
 }

@@ -1,53 +1,36 @@
 ﻿using Jint;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace TemGen.Handler;
 
 public sealed class JintSectionHandler : AbstractSectionHandler
 {
-	private readonly Project _project;
-	private readonly List<Definition> _definitions;
-
-	public JintSectionHandler(Project project, List<Definition> definitions)
-	{
-		_project = project;
-		_definitions = definitions;
-	}
-
 	private readonly Jint.Parser.JavaScriptParser _parser = new();
 	private static readonly ConcurrentDictionary<string, Jint.Parser.Ast.Program> _cache = new();
 
-	public override async Task<HandlingResult> Handle(TemplateSection section, Definition definition, string relativePath, DefinitionEntry definitionEntry)
+	public override async Task Handle(Globals globals, TemplateSection section)
 	{
 		if (section.Handler != TemplateHandler.JavaScript)
 		{
-			return await Next.Handle(section, definition, relativePath, definitionEntry).ConfigureAwait(false);
+			await Next.Handle(globals, section).ConfigureAwait(false);
+			return;
 		}
 
 		var engine = new Engine(cfg => cfg.LimitRecursion(1_000_000))
-			.SetValue("relativePath", relativePath)
-			.SetValue("definition", definition)
-			.SetValue("definitionEntry", definitionEntry)
-			.SetValue("entries", definition.Entries.ToArray())
-			.SetValue("definitions", _definitions.ToArray())
-			.SetValue("skipOtherDefinitions", false)
-			.SetValue("repeatForEachDefinitionEntry", false)
-			.SetValue("project", _project)
-			.SetValue("result", "");
-
-		engine.SetValue("write", (Action<object>)(o =>
-			{
-				var val = engine.GetValue("result");
-				engine.SetValue("result", $"{val}{o}");
-			}))
-			.SetValue("writeLine", (Action<object>)(o =>
-			{
-				var val = engine.GetValue("result");
-				engine.SetValue("result", $"{val}{o}{Environment.NewLine}");
-			}));
+			.SetValue("relativePath", globals.RelativePath)
+			.SetValue("definition", globals.Definition)
+			.SetValue("definitionEntry", globals.DefinitionEntry)
+			.SetValue("entries", globals.Definition.Entries.ToArray())
+			.SetValue("definitions", globals.Definitions.ToArray())
+			.SetValue("skipOtherDefinitions", globals.SkipOtherDefinitions)
+			.SetValue("repeatForEachDefinitionEntry", globals.RepeatForEachDefinitionEntry)
+			.SetValue("project", globals.Project)
+			.SetValue("getResult", () => globals.Result)
+			.SetValue("setResult", (Action<object>)(o => globals.Result = o.ToString()))
+			.SetValue("write", (Action<object>)(o => globals.Write(o)))
+			.SetValue("writeLine", (Action<object>)(o => globals.WriteLine(o)));
 
 		if (!_cache.TryGetValue(section.Content, out var programm))
 		{
@@ -57,12 +40,8 @@ public sealed class JintSectionHandler : AbstractSectionHandler
 
 		engine.Execute(programm);
 
-		return new HandlingResult()
-		{
-			RelativePath = engine.GetValue("relativePath").ToString(),
-			Content = engine.GetValue("result").ToString(),
-			SkipOtherDefinitions = (bool)engine.GetValue("skipOtherDefinitions").ToObject(),
-			RepeatForEachDefinitionEntry = (bool)engine.GetValue("repeatForEachDefinitionEntry").ToObject(),
-		};
+		globals.RelativePath = engine.GetValue("relativePath").ToString();
+		globals.SkipOtherDefinitions = (bool)engine.GetValue("skipOtherDefinitions").ToObject();
+		globals.RepeatForEachDefinitionEntry = (bool)engine.GetValue("repeatForEachDefinitionEntry").ToObject();
 	}
 }

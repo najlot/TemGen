@@ -31,26 +31,42 @@ public class PyHandlerTests
 		}
 		};
 
-		var handler = new PySectionHandler(project, new List<Definition>() { definition });
-		var result = await handler.Handle(new TemplateSection()
+		var globals = new Globals()
 		{
-			Handler = TemplateHandler.Python,
-			Content = "write(definition.Name + ':') \n" +
-						"for val in entries: write(val.Field + ',') \n" +
-						"result=result.rstrip(',') \n" +
-						"relativePath = \"Is\" + relativePath"
-		}, definition, "Test.cs", null);
+			RelativePath = "Test.cs",
+			Definition = definition,
+			Definitions = new List<Definition>() { definition },
+			DefinitionEntry = null,
+			Entries = definition.Entries,
+			SkipOtherDefinitions = false,
+			Project = project,
+			RepeatForEachDefinitionEntry = false
+		};
 
-		Assert.Equal("IsTest.cs", result.RelativePath);
-		Assert.False(result.SkipOtherDefinitions);
-		Assert.Equal("Test:Entry_1,Entry_2", result.Content);
+		var handler = new PySectionHandler();
+		await handler.Handle(
+			globals,
+			new TemplateSection()
+			{
+				Handler = TemplateHandler.Python,
+				Content = "write(definition.Name + ':') \n" +
+							"for val in entries: write(val.Field + ',') \n" +
+							"set_result(get_result().rstrip(',')) \n" +
+							"relative_path = \"Is\" + relative_path"
+			});
 
-		result = await handler.Handle(new TemplateSection()
-		{
-			Handler = TemplateHandler.Python,
-			Content = "skipOtherDefinitions = True"
-		}, definition, "IsTest.cs", null);
+		Assert.Equal("IsTest.cs", globals.RelativePath);
+		Assert.False(globals.SkipOtherDefinitions);
+		Assert.Equal("Test:Entry_1,Entry_2", globals.Result);
 
-		Assert.True(result.SkipOtherDefinitions);
+		await handler.Handle(
+			globals,
+			new TemplateSection()
+			{
+				Handler = TemplateHandler.Python,
+				Content = "skip_other_definitions = True"
+			});
+
+		Assert.True(globals.SkipOtherDefinitions);
 	}
 }

@@ -42,4 +42,9 @@ public class Globals
 		Write(obj);
 		Write(Environment.NewLine);
 	}
+
+	internal void ReplaceInResult(string from, string to)
+	{
+		_resultSb.Replace(from, to);
+	}
 }

@@ -20,5 +20,5 @@ public abstract class AbstractSectionHandler
 		return this;
 	}
 
-	public abstract Task<HandlingResult> Handle(TemplateSection section, Definition definition, string relativePath, DefinitionEntry definitionEntry);
+	public abstract Task Handle(Globals globals, TemplateSection section);
 }

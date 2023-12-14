@@ -1,4 +1,4 @@
-namespace TemGen.Handler;
+﻿namespace TemGen;
 
 public class HandlingResult
 {

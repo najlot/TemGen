@@ -1,6 +1,5 @@
 ﻿using Python.Runtime;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
@@ -11,15 +10,7 @@ namespace TemGen.Handler;
 
 public sealed class PySectionHandler : AbstractSectionHandler
 {
-	private readonly Project _project;
-	private readonly List<Definition> _definitions;
 	private static bool _pyReady = false;
-
-	public PySectionHandler(Project project, List<Definition> definitions)
-	{
-		_project = project;
-		_definitions = definitions;
-	}
 
 	private static void PythonDownload()
 	{
@@ -52,19 +43,14 @@ public sealed class PySectionHandler : AbstractSectionHandler
 				}
 			}
 		}
-
-
 	}
 
-	public override async Task<HandlingResult> Handle(
-		TemplateSection section,
-		Definition definition,
-		string relativePath,
-		DefinitionEntry definitionEntry)
+	public override async Task Handle(Globals globals, TemplateSection section)
 	{
 		if (section.Handler != TemplateHandler.Python)
 		{
-			return await Next.Handle(section, definition, relativePath, definitionEntry).ConfigureAwait(false);
+			await Next.Handle(globals, section).ConfigureAwait(false);
+			return;
 		}
 
 		if (!_pyReady)
@@ -83,37 +69,26 @@ public sealed class PySectionHandler : AbstractSectionHandler
 		using (Py.GIL())
 		{
 			using var scope = Py.CreateScope();
-			scope.Set("relativePath", relativePath);
-			scope.Set("definition", definition);
-			scope.Set("definitionEntry", definitionEntry);
-			scope.Set("entries", definition.Entries.ToArray());
-			scope.Set("definitions", _definitions.ToArray());
-			scope.Set("skipOtherDefinitions", false);
-			scope.Set("repeatForEachDefinitionEntry", false);
-			scope.Set("project", _project);
-			scope.Set("result", "");
+			scope.Set("relative_path", globals.RelativePath);
+			scope.Set("definition", globals.Definition);
+			scope.Set("definition_entry", globals.DefinitionEntry);
+			scope.Set("entries", globals.Definition.Entries.ToArray());
+			scope.Set("definitions", globals.Definitions.ToArray());
+			scope.Set("skip_other_definitions", globals.SkipOtherDefinitions);
+			scope.Set("repeat_for_each_definition_entry", globals.RepeatForEachDefinitionEntry);
+			scope.Set("project", globals.Project);
 
-			scope.Set("write", (Action<object>)(o =>
-			{
-				var val = scope.Get("result");
-				scope.Set("result", $"{val}{o}");
-			}));
+			scope.Set("get_result", () => globals.Result);
+			scope.Set("set_result", (Action<object>)(o => globals.Result = o.ToString()));
 
-			scope.Set("writeLine", (Action<object>)(o =>
-			{
-				var val = scope.Get("result");
-				scope.Set("result", $"{val}{o}{Environment.NewLine}");
-			}));
+			scope.Set("write", (Action<object>)(o => globals.Write(o)));
+			scope.Set("write_line", (Action<object>)(o => globals.WriteLine(o)));
 
 			scope.Exec(section.Content);
 
-			return new HandlingResult()
-			{
-				RelativePath = scope.Get("relativePath").ToString(),
-				Content = scope.Get("result").ToString(),
-				SkipOtherDefinitions = scope.Get("skipOtherDefinitions").As<bool>(),
-				RepeatForEachDefinitionEntry = scope.Get("repeatForEachDefinitionEntry").As<bool>(),
-			};
+			globals.RelativePath = scope.Get("relative_path").ToString();
+			globals.SkipOtherDefinitions = scope.Get("skip_other_definitions").As<bool>();
+			globals.RepeatForEachDefinitionEntry = scope.Get("repeat_for_each_definition_entry").As<bool>();
 		}
 	}
 }
