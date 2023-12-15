@@ -4,15 +4,16 @@ using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TemGen.Handler;
 
 public sealed class PySectionHandler : AbstractSectionHandler
 {
-	private static bool _pyReady = false;
+	private static readonly SemaphoreSlim _semaphore = new(1, 1);
 
-	private static void PythonDownload()
+	private static async Task PythonDownload()
 	{
 		if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 		{
@@ -25,9 +26,9 @@ public sealed class PySectionHandler : AbstractSectionHandler
 				{
 					BaseAddress = new Uri("https://www.nuget.org")
 				};
-				var response = client.GetStreamAsync("/api/v2/package/python/3.7.6").Result;
+				var response = await client.GetStreamAsync("/api/v2/package/python/3.7.6").ConfigureAwait(false);
 				using var memStr = new MemoryStream();
-				response.CopyTo(memStr);
+				await response.CopyToAsync(memStr).ConfigureAwait(false);
 				using var archive = new System.IO.Compression.ZipArchive(memStr);
 				foreach (var entry in archive.Entries)
 				{
@@ -38,7 +39,7 @@ public sealed class PySectionHandler : AbstractSectionHandler
 
 						using var str = entry.Open();
 						using var f = File.OpenWrite(path);
-						str.CopyTo(f);
+						await str.CopyToAsync(f).ConfigureAwait(false);
 					}
 				}
 			}
@@ -53,16 +54,23 @@ public sealed class PySectionHandler : AbstractSectionHandler
 			return;
 		}
 
-		if (!_pyReady)
+		if (!PythonEngine.IsInitialized)
 		{
-			lock (typeof(PySectionHandler))
+			await _semaphore.WaitAsync();
+
+			try
 			{
-				PythonDownload();
+				if (!PythonEngine.IsInitialized)
+				{
+					await PythonDownload();
 
-				PythonEngine.Initialize();
-				PythonEngine.BeginAllowThreads();
-
-				_pyReady = true;
+					PythonEngine.Initialize();
+					PythonEngine.BeginAllowThreads();
+				}
+			}
+			finally
+			{
+				_semaphore.Release();
 			}
 		}
 
