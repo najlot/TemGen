@@ -12,7 +12,7 @@
 		<PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="4.8.0" />
 		<PackageReference Include="MoonSharp" Version="2.0.0" />
 		<PackageReference Include="Najlot.Log.Configuration.FileSource" Version="3.1.4" />
-		<PackageReference Include="Python.Runtime.AllPlatforms" Version="3.7.2.4" />
+		<PackageReference Include="pythonnet" Version="3.0.3" />
 		<PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
 	</ItemGroup>
 </Project>

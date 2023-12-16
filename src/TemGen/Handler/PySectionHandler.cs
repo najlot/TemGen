@@ -1,4 +1,5 @@
-﻿using Python.Runtime;
+﻿using Jint;
+using Python.Runtime;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -20,13 +21,15 @@ public sealed class PySectionHandler : AbstractSectionHandler
 			// On Windows, to simplify setup: download the python nuget-package and extract in to the local directory
 			var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-			if (!File.Exists(Path.Combine(assemblyPath, "python37.dll")))
+			Runtime.PythonDLL = "python312.dll";
+			string pythonPath = Path.Combine(assemblyPath, Runtime.PythonDLL);
+			if (!File.Exists(pythonPath))
 			{
 				using var client = new HttpClient()
 				{
 					BaseAddress = new Uri("https://www.nuget.org")
 				};
-				var response = await client.GetStreamAsync("/api/v2/package/python/3.7.6").ConfigureAwait(false);
+				var response = await client.GetStreamAsync("/api/v2/package/python/3.12.1").ConfigureAwait(false);
 				using var memStr = new MemoryStream();
 				await response.CopyToAsync(memStr).ConfigureAwait(false);
 				using var archive = new System.IO.Compression.ZipArchive(memStr);
