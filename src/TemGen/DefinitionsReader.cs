@@ -82,7 +82,9 @@ public static class DefinitionsReader
 		foreach (var path in Directory.GetFiles(definitionPath, "*", SearchOption.TopDirectoryOnly))
 		{
 			var lines = File.ReadAllLines(path)
-				.Where(line => !string.IsNullOrWhiteSpace(line) && !line.StartsWith('#')).ToList();
+				.Select(line => line.Trim())
+				.Where(line => !string.IsNullOrWhiteSpace(line) && !line.StartsWith('#'))
+				.ToList();
 
 			if (lines.Count == 0)
 			{
@@ -130,7 +132,7 @@ public static class DefinitionsReader
 						FieldLow = GetLowName(field)
 					};
 
-					if (entry.EntryType.EndsWith("?"))
+					if (entry.EntryType.EndsWith('?'))
 					{
 						entry.IsNullable = true;
 						entry.EntryType = entry.EntryType[0..^1];

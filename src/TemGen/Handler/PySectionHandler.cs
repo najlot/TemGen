@@ -92,8 +92,8 @@ public sealed class PySectionHandler : AbstractSectionHandler
 			scope.Set("get_result", () => globals.Result);
 			scope.Set("set_result", (Action<object>)(o => globals.Result = o.ToString()));
 
-			scope.Set("write", (Action<object>)(o => globals.Write(o)));
-			scope.Set("write_line", (Action<object>)(o => globals.WriteLine(o)));
+			scope.Set("write", (Action<object>)globals.Write);
+			scope.Set("write_line", (Action<object>)globals.WriteLine);
 
 			scope.Exec(section.Content);
 

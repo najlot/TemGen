@@ -41,7 +41,7 @@ public sealed class JintSectionHandler : AbstractSectionHandler
 		engine.Execute(programm);
 
 		globals.RelativePath = engine.GetValue("relativePath").ToString();
-		globals.SkipOtherDefinitions = (bool)engine.GetValue("skipOtherDefinitions").ToObject();
-		globals.RepeatForEachDefinitionEntry = (bool)engine.GetValue("repeatForEachDefinitionEntry").ToObject();
+		globals.SkipOtherDefinitions = engine.GetValue("skipOtherDefinitions").AsBoolean();
+		globals.RepeatForEachDefinitionEntry = engine.GetValue("repeatForEachDefinitionEntry").AsBoolean();
 	}
 }

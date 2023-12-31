@@ -7,7 +7,7 @@ namespace TemGen.Handler;
 
 public sealed class ReflectionSectionHandler : AbstractSectionHandler
 {
-	private string GetValue(IEnumerable<string> parts, object obj)
+	private static string GetValue(IEnumerable<string> parts, object obj)
 	{
 		if (obj is null)
 		{
