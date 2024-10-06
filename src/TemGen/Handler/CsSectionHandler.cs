@@ -44,16 +44,16 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 	private static ScriptOptions GetOptions()
 	{
 		return ScriptOptions.Default
-				.WithReferences(GetReferences())
-				.AddImports(
-					"System",
-					"System.IO",
-					"System.Linq",
-					"System.Text",
-					"System.Dynamic",
-					"System.Collections.Generic",
-					"System.Text.RegularExpressions"
-					);
+			.WithReferences(GetReferences())
+			.AddImports(
+				"System",
+				"System.IO",
+				"System.Linq",
+				"System.Text",
+				"System.Dynamic",
+				"System.Collections.Generic",
+				"System.Text.RegularExpressions"
+				);
 	}
 
 	public override async Task Handle(Globals globals, TemplateSection section)
@@ -64,14 +64,7 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 			return;
 		}
 
-		if (!_cache.TryGetValue(section.Content, out var script))
-		{
-			script = _initialScript
-				.ContinueWith(section.Content, _options)
-				.CreateDelegate();
-
-			_cache.TryAdd(section.Content, script);
-		}
+		var script = _cache.GetOrAdd(section.Content, c => _initialScript.ContinueWith(c, _options).CreateDelegate());
 
 		await script(globals).ConfigureAwait(false);
 	}

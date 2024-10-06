@@ -29,7 +29,7 @@ internal class Program
 			try
 			{
 				log.Debug("Processing resources script {ScriptPath}...", project.ResourcesScriptPath);
-				await processor.Handle(resourcesScript, new Definition() { Entries = new List<DefinitionEntry>() }, null).ConfigureAwait(false);
+				await processor.Handle(resourcesScript, new Definition() { Entries = [] }, null).ConfigureAwait(false);
 			}
 			catch (Exception ex)
 			{
@@ -66,9 +66,6 @@ internal class Program
 		var appdataDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 		appdataDir = Path.Combine(appdataDir, typeof(Program).Namespace);
 		Directory.CreateDirectory(appdataDir);
-
-		ProfileOptimization.SetProfileRoot(appdataDir);
-		ProfileOptimization.StartProfile("Main");
 
 		using var admin = LogAdministrator.Instance
 			.AddConsoleLogDestination(true)

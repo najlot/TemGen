@@ -1,4 +1,6 @@
-﻿using Jint;
+﻿using Acornima;
+using Acornima.Ast;
+using Jint;
 using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
@@ -7,8 +9,8 @@ namespace TemGen.Handler;
 
 public sealed class JintSectionHandler : AbstractSectionHandler
 {
-	private readonly Jint.Parser.JavaScriptParser _parser = new();
-	private static readonly ConcurrentDictionary<string, Jint.Parser.Ast.Program> _cache = new();
+	private readonly Parser _parser = new();
+	private static readonly ConcurrentDictionary<string, Prepared<Script>> _cache = new();
 
 	public override async Task Handle(Globals globals, TemplateSection section)
 	{
@@ -32,12 +34,7 @@ public sealed class JintSectionHandler : AbstractSectionHandler
 			.SetValue("write", (Action<object>)(o => globals.Write(o)))
 			.SetValue("writeLine", (Action<object>)(o => globals.WriteLine(o)));
 
-		if (!_cache.TryGetValue(section.Content, out var programm))
-		{
-			programm = _parser.Parse(section.Content);
-			_cache.TryAdd(section.Content, programm);
-		}
-
+		var programm = _cache.GetOrAdd(section.Content, c => Engine.PrepareScript(c));
 		engine.Execute(programm);
 
 		globals.RelativePath = engine.GetValue("relativePath").ToString();
