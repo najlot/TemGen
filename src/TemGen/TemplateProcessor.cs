@@ -28,7 +28,7 @@ public class TemplateProcessor
 
 	public async Task<Dictionary<string, string>> Handle(Template template, List<Definition> definitions)
 	{
-		Dictionary<string, string> results = new();
+		Dictionary<string, string> results = [];
 
 		foreach (var definition in definitions)
 		{

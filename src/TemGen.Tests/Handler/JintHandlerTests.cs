@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using TemGen.Handler;
 using Xunit;
 
@@ -19,8 +17,8 @@ public class JintHandlerTests
 		var definition = new Definition()
 		{
 			Name = "Test",
-			Entries = new List<DefinitionEntry>()
-		{
+			Entries =
+		[
 			new DefinitionEntry()
 			{
 				Field = "Entry_1"
@@ -29,14 +27,14 @@ public class JintHandlerTests
 			{
 				Field = "Entry_2"
 			},
-		}
+		]
 		};
 
 		var globals = new Globals()
 		{
 			RelativePath = "Test.cs",
 			Definition = definition,
-			Definitions = new List<Definition>() { definition },
+			Definitions = [definition],
 			DefinitionEntry = null,
 			Entries = definition.Entries,
 			SkipOtherDefinitions = false,

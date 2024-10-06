@@ -1,10 +1,8 @@
 ﻿using Najlot.Log;
 using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime;
 using System.Threading.Tasks;
 
 namespace TemGen;
