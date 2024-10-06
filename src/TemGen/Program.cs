@@ -47,6 +47,16 @@ internal class Program
 					var dirPath = Path.GetDirectoryName(destPath);
 					Directory.CreateDirectory(dirPath);
 
+					if (File.Exists(destPath))
+					{
+						var currentContent = await File.ReadAllTextAsync(destPath, tkn).ConfigureAwait(false);
+
+						if (currentContent == result.Value)
+						{
+							continue;
+						}
+					}
+
 					await File.WriteAllTextAsync(destPath, result.Value, template.Encoding, tkn).ConfigureAwait(false);
 				}
 			}
