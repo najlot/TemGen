@@ -76,8 +76,8 @@ internal class Program
 		Directory.CreateDirectory(appdataDir);
 
 		using var admin = LogAdministrator.Instance
-			.AddConsoleLogDestination(true)
-			.SetExecutionMiddleware<Najlot.Log.Middleware.QueueExecutionMiddleware>();
+			.AddConsoleDestination(true)
+			.SetCollectMiddleware<Najlot.Log.Middleware.ConcurrentCollectMiddleware, Najlot.Log.Destinations.ConsoleDestination>();
 
 		var log = admin.GetLogger("Main");
 

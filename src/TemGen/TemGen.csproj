@@ -1,18 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<AssemblyName>TemGen</AssemblyName>
 		<LangVersion>latest</LangVersion>
 		<PublishReadyToRun>true</PublishReadyToRun>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Jint" Version="4.0.3" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="4.11.0" />
+		<PackageReference Include="Jint" Version="4.2.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="4.13.0" />
 		<PackageReference Include="MoonSharp" Version="2.0.0" />
-		<PackageReference Include="Najlot.Log.Configuration.FileSource" Version="3.1.4" />
-		<PackageReference Include="pythonnet" Version="3.0.4" />
+		<PackageReference Include="Najlot.Log.Configuration.FileSource" Version="4.0.1" />
+		<PackageReference Include="pythonnet" Version="3.0.5" />
 		<PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
 	</ItemGroup>
 </Project>
