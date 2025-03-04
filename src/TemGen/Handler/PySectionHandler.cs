@@ -1,52 +1,14 @@
-﻿using Python.Runtime;
+﻿using Microsoft.Scripting.Hosting;
 using System;
-using System.IO;
-using System.Net.Http;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Threading;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
 namespace TemGen.Handler;
 
 public sealed class PySectionHandler : AbstractSectionHandler
 {
-	private static readonly SemaphoreSlim _semaphore = new(1, 1);
-
-	private static async Task PythonDownload()
-	{
-		if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-		{
-			// On Windows, to simplify setup: download the python nuget-package and extract in to the local directory
-			var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
-			Runtime.PythonDLL = "python312.dll";
-			string pythonPath = Path.Combine(assemblyPath, Runtime.PythonDLL);
-			if (!File.Exists(pythonPath))
-			{
-				using var client = new HttpClient()
-				{
-					BaseAddress = new Uri("https://www.nuget.org")
-				};
-				var response = await client.GetStreamAsync("/api/v2/package/python/3.12.1").ConfigureAwait(false);
-				using var memStr = new MemoryStream();
-				await response.CopyToAsync(memStr).ConfigureAwait(false);
-				using var archive = new System.IO.Compression.ZipArchive(memStr);
-				foreach (var entry in archive.Entries)
-				{
-					if (entry.FullName.StartsWith("tools"))
-					{
-						var path = Path.Combine(assemblyPath, entry.FullName[6..]);
-						Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-						using var str = entry.Open();
-						using var f = File.OpenWrite(path);
-						await str.CopyToAsync(f).ConfigureAwait(false);
-					}
-				}
-			}
-		}
-	}
+	private static readonly ScriptEngine _engine = IronPython.Hosting.Python.CreateEngine();
+	private static readonly ConcurrentDictionary<string, ScriptSource> _cache = new();
 
 	public override async Task Handle(Globals globals, TemplateSection section)
 	{
@@ -55,50 +17,45 @@ public sealed class PySectionHandler : AbstractSectionHandler
 			await Next.Handle(globals, section).ConfigureAwait(false);
 			return;
 		}
-
-		if (!PythonEngine.IsInitialized)
+		/*
+		var dc = new System.Collections.Generic.Dictionary<string, object>
 		{
-			await _semaphore.WaitAsync();
+			["relative_path"] = globals.RelativePath,
+			["definition"] = globals.Definition,
+			["definition_entry"] = globals.DefinitionEntry,
+			["entries"] = globals.Definition.Entries.ToArray(),
+			["definitions"] = globals.Definitions.ToArray(),
+			["skip_other_definitions"] = globals.SkipOtherDefinitions,
+			["repeat_for_each_definition_entry"] = globals.RepeatForEachDefinitionEntry,
+			["project"] = globals.Project,
+			["get_result"] = () => globals.Result,
+			["set_result"] = (Action<object>)(o => globals.Result = o.ToString()),
+			["write"] = (Action<object>)globals.Write,
+			["write_line"] = (Action<object>)globals.WriteLine,
+		};
+		*/
+		var scope = _engine.CreateScope();
+		
+		scope.SetVariable("relative_path", globals.RelativePath);
+		scope.SetVariable("definition", globals.Definition);
+		scope.SetVariable("definition_entry", globals.DefinitionEntry);
+		scope.SetVariable("entries", globals.Definition.Entries.ToArray());
+		scope.SetVariable("definitions", globals.Definitions.ToArray());
+		scope.SetVariable("skip_other_definitions", globals.SkipOtherDefinitions);
+		scope.SetVariable("repeat_for_each_definition_entry", globals.RepeatForEachDefinitionEntry);
+		scope.SetVariable("project", globals.Project);
 
-			try
-			{
-				if (!PythonEngine.IsInitialized)
-				{
-					await PythonDownload();
+		scope.SetVariable("get_result", () => globals.Result);
+		scope.SetVariable("set_result", (Action<object>)(o => globals.Result = o.ToString()));
 
-					PythonEngine.Initialize();
-					PythonEngine.BeginAllowThreads();
-				}
-			}
-			finally
-			{
-				_semaphore.Release();
-			}
-		}
+		scope.SetVariable("write", (Action<object>)globals.Write);
+		scope.SetVariable("write_line", (Action<object>)globals.WriteLine);
+		
+		var source = _cache.GetOrAdd(section.Content, _engine.CreateScriptSourceFromString);
+		source.Execute(scope);
 
-		using (Py.GIL())
-		{
-			using var scope = Py.CreateScope();
-			scope.Set("relative_path", globals.RelativePath);
-			scope.Set("definition", globals.Definition);
-			scope.Set("definition_entry", globals.DefinitionEntry);
-			scope.Set("entries", globals.Definition.Entries.ToArray());
-			scope.Set("definitions", globals.Definitions.ToArray());
-			scope.Set("skip_other_definitions", globals.SkipOtherDefinitions);
-			scope.Set("repeat_for_each_definition_entry", globals.RepeatForEachDefinitionEntry);
-			scope.Set("project", globals.Project);
-
-			scope.Set("get_result", () => globals.Result);
-			scope.Set("set_result", (Action<object>)(o => globals.Result = o.ToString()));
-
-			scope.Set("write", (Action<object>)globals.Write);
-			scope.Set("write_line", (Action<object>)globals.WriteLine);
-
-			scope.Exec(section.Content);
-
-			globals.RelativePath = scope.Get("relative_path").ToString();
-			globals.SkipOtherDefinitions = scope.Get("skip_other_definitions").As<bool>();
-			globals.RepeatForEachDefinitionEntry = scope.Get("repeat_for_each_definition_entry").As<bool>();
-		}
+		globals.RelativePath = scope.GetVariable<string>("relative_path");
+		globals.SkipOtherDefinitions = scope.GetVariable<bool>("skip_other_definitions");
+		globals.RepeatForEachDefinitionEntry = scope.GetVariable<bool>("repeat_for_each_definition_entry");
 	}
 }

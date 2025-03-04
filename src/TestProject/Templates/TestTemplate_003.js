@@ -10,7 +10,8 @@ for (i in entries)
 	writeLine("		" + entries[i].entryType + " " + entries[i].field + " { get; set; }");
 }
 
-result = result.substring(0, result.length - 2);
+var result = getResult();
+setResult(result.substring(0, result.length - 2));
 #>
 	}
 }

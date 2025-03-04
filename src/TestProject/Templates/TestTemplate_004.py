@@ -6,10 +6,10 @@ namespace <#py write(project.Namespace)#>
 	{
 <#py
 for entry in entries:
-	writeLine("		" + entry.EntryType + " " + entry.Field + " { get; set; }");
+	write_line("		" + entry.EntryType + " " + entry.Field + " { get; set; }");
 
-result = result.rstrip();
+set_result(get_result().rstrip());
 #>
 	}
 }
-<#py relativePath = relativePath.replace("TestTemplate", definition.Name)#>
+<#py relative_path = relative_path.replace("TestTemplate", definition.Name)#>
