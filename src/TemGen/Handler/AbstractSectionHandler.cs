@@ -2,23 +2,18 @@
 
 namespace TemGen.Handler;
 
-public abstract class AbstractSectionHandler
+public abstract class AbstractSectionHandler(TemplateHandler handler)
 {
-	protected AbstractSectionHandler Next = null;
-
-	public AbstractSectionHandler SetNext(AbstractSectionHandler next)
+	public async Task<bool> TryHandle(Globals globals, TemplateSection section)
 	{
-		if (Next is null)
+		if (section.Handler == handler)
 		{
-			Next = next;
-		}
-		else
-		{
-			Next.SetNext(next);
+			await Handle(globals, section.Content).ConfigureAwait(false);
+			return true;
 		}
 
-		return this;
+		return false;
 	}
 
-	public abstract Task Handle(Globals globals, TemplateSection section);
+	protected abstract Task Handle(Globals globals, string content);
 }

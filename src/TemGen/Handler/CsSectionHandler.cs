@@ -14,20 +14,22 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 		_initialScript.Compile();
 	}
 
+	public CsSectionHandler() : base(TemplateHandler.CSharp) { }
+
 	private static readonly Script<object> _initialScript = null;
 
 	private static readonly ConcurrentDictionary<string, ScriptRunner<object>> _cache = new();
 	private static readonly InteractiveAssemblyLoader _loader = GetLoader();
 	private static readonly ScriptOptions _options = GetOptions();
 
-	private static System.Reflection.Assembly[] GetReferences() => new[]
-	{
+	private static System.Reflection.Assembly[] GetReferences() =>
+	[
 		typeof(object).Assembly,
 		typeof(System.IO.FileInfo).Assembly,
 		typeof(System.Linq.IQueryable).Assembly,
 		typeof(System.Dynamic.DynamicObject).Assembly,
 		typeof(System.Text.RegularExpressions.Regex).Assembly
-	};
+	];
 
 	private static InteractiveAssemblyLoader GetLoader()
 	{
@@ -41,9 +43,8 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 		return loader;
 	}
 
-	private static ScriptOptions GetOptions()
-	{
-		return ScriptOptions.Default
+	private static ScriptOptions GetOptions() =>
+		ScriptOptions.Default
 			.WithReferences(GetReferences())
 			.AddImports(
 				"System",
@@ -54,18 +55,10 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 				"System.Collections.Generic",
 				"System.Text.RegularExpressions"
 				);
-	}
 
-	public override async Task Handle(Globals globals, TemplateSection section)
+	protected override async Task Handle(Globals globals, string content)
 	{
-		if (section.Handler != TemplateHandler.CSharp)
-		{
-			await Next.Handle(globals, section).ConfigureAwait(false);
-			return;
-		}
-
-		var script = _cache.GetOrAdd(section.Content, c => _initialScript.ContinueWith(c, _options).CreateDelegate());
-
+		var script = _cache.GetOrAdd(content, c => _initialScript.ContinueWith(c, _options).CreateDelegate());
 		await script(globals).ConfigureAwait(false);
 	}
 }

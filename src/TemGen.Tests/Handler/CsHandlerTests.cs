@@ -43,7 +43,7 @@ public class CsHandlerTests
 		};
 
 		var handler = new CsSectionHandler();
-		await handler.Handle(
+		await handler.TryHandle(
 			globals,
 			new TemplateSection()
 			{
@@ -58,7 +58,7 @@ public class CsHandlerTests
 		Assert.False(globals.SkipOtherDefinitions);
 		Assert.Equal("Test:Entry_1,Entry_2", globals.Result);
 
-		await handler.Handle(
+		await handler.TryHandle(
 			globals,
 			new TemplateSection()
 			{

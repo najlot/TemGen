@@ -1,5 +1,4 @@
-﻿using Acornima;
-using Acornima.Ast;
+﻿using Acornima.Ast;
 using Jint;
 using System;
 using System.Collections.Concurrent;
@@ -9,17 +8,12 @@ namespace TemGen.Handler;
 
 public sealed class JintSectionHandler : AbstractSectionHandler
 {
-	private readonly Parser _parser = new();
+	public JintSectionHandler() : base(TemplateHandler.JavaScript) { }
+
 	private static readonly ConcurrentDictionary<string, Prepared<Script>> _cache = new();
 
-	public override async Task Handle(Globals globals, TemplateSection section)
+	protected override Task Handle(Globals globals, string content)
 	{
-		if (section.Handler != TemplateHandler.JavaScript)
-		{
-			await Next.Handle(globals, section).ConfigureAwait(false);
-			return;
-		}
-
 		var engine = new Engine(cfg => cfg.LimitRecursion(1_000_000))
 			.SetValue("relativePath", globals.RelativePath)
 			.SetValue("definition", globals.Definition)
@@ -34,11 +28,13 @@ public sealed class JintSectionHandler : AbstractSectionHandler
 			.SetValue("write", (Action<object>)(o => globals.Write(o)))
 			.SetValue("writeLine", (Action<object>)(o => globals.WriteLine(o)));
 
-		var programm = _cache.GetOrAdd(section.Content, c => Engine.PrepareScript(c));
+		var programm = _cache.GetOrAdd(content, c => Engine.PrepareScript(c));
 		engine.Execute(programm);
 
 		globals.RelativePath = engine.GetValue("relativePath").ToString();
 		globals.SkipOtherDefinitions = engine.GetValue("skipOtherDefinitions").AsBoolean();
 		globals.RepeatForEachDefinitionEntry = engine.GetValue("repeatForEachDefinitionEntry").AsBoolean();
+
+		return Task.CompletedTask;
 	}
 }

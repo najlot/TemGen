@@ -5,27 +5,8 @@ using TemGen.Handler;
 
 namespace TemGen;
 
-public class TemplateProcessor
+public class TemplateProcessor(AbstractSectionHandler[] handler, Project project, List<Definition> definitions)
 {
-	private readonly Project _project;
-	private readonly List<Definition> _definitions;
-
-	private readonly AbstractSectionHandler _handler;
-
-	public TemplateProcessor(Project project, List<Definition> definitions)
-	{
-		_project = project;
-		_definitions = definitions;
-
-		_handler = new TextSectionHandler()
-			.SetNext(new CsSectionHandler())
-			.SetNext(new ReflectionSectionHandler())
-			.SetNext(new PySectionHandler())
-			.SetNext(new JintSectionHandler())
-			.SetNext(new LuaSectionHandler())
-			;
-	}
-
 	public async Task<Dictionary<string, string>> Handle(Template template, List<Definition> definitions)
 	{
 		Dictionary<string, string> results = [];
@@ -67,11 +48,11 @@ public class TemplateProcessor
 		{
 			RelativePath = template.RelativePath,
 			Definition = definition,
-			Definitions = _definitions,
+			Definitions = definitions,
 			DefinitionEntry = definitionEntry,
 			Entries = definition.Entries,
 			SkipOtherDefinitions = false,
-			Project = _project,
+			Project = project,
 			RepeatForEachDefinitionEntry = false
 		};
 
@@ -79,7 +60,13 @@ public class TemplateProcessor
 		{
 			try
 			{
-				await _handler.Handle(globals, section).ConfigureAwait(false);
+				foreach (var handler in handler)
+				{
+					if (await handler.TryHandle(globals, section).ConfigureAwait(false))
+					{
+						break;
+					}
+				}
 			}
 			catch (Exception ex)
 			{

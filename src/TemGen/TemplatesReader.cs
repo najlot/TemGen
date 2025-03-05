@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using static Community.CsharpSqlite.Sqlite3;
 
 namespace TemGen;
 
@@ -106,43 +107,13 @@ public static class TemplatesReader
 
 		var extension = Path.GetExtension(resourcesScriptPath).TrimStart('.');
 		var handler = GetHandlerFromLanguage(extension);
-
 		var content = File.ReadAllText(resourcesScriptPath);
-		var sections = new List<TemplateSection>()
-		{
-			new TemplateSection()
-			{
-				Content = content,
-				Handler = handler
-			}
-		};
-
+		
 		return new Template()
 		{
 			RelativePath = Path.GetRelativePath(path, resourcesScriptPath),
-			Sections = sections
+			Sections = [new() { Content = content, Handler = handler }]
 		};
-	}
-
-	/// <summary>
-	/// Get File's Encoding
-	/// </summary>
-	/// <param name="filename">The path to the file</param>
-	/// <returns></returns>
-	private static Encoding GetEncoding(string filename)
-	{
-		// This is a direct quote from MSDN:
-		// The CurrentEncoding value can be different after the first
-		// call to any Read method of StreamReader, since encoding
-		// autodetection is not done until the first call to a Read method.
-
-		using (var reader = new StreamReader(filename, Encoding.Default, true))
-		{
-			if (reader.Peek() >= 0) // you need this!
-				reader.Read();
-
-			return reader.CurrentEncoding;
-		}
 	}
 
 	public static List<Template> ReadTemplates(string templatesPath)
@@ -152,12 +123,13 @@ public static class TemplatesReader
 
 		foreach (var file in files)
 		{
-			var content = File.ReadAllText(file);
-			var sections = GetSections(content).ToList();
+			using var reader = new StreamReader(file, Encoding.UTF8, true);
+			var content = reader.ReadToEnd();
+			var sections = GetSections(content);
 
 			templates.Add(new Template()
 			{
-				Encoding = GetEncoding(file),
+				Encoding = reader.CurrentEncoding,
 				RelativePath = Path.GetRelativePath(templatesPath, file),
 				Sections = sections
 			});

@@ -7,6 +7,8 @@ namespace TemGen.Handler;
 
 public sealed class ReflectionSectionHandler : AbstractSectionHandler
 {
+	public ReflectionSectionHandler() : base(TemplateHandler.Reflection) { }
+
 	private static string GetValue(IEnumerable<string> parts, object obj)
 	{
 		if (obj is null)
@@ -16,7 +18,7 @@ public sealed class ReflectionSectionHandler : AbstractSectionHandler
 
 		if (!parts.Any())
 		{
-			return obj?.ToString() ?? "";
+			return obj.ToString() ?? "";
 		}
 
 		var type = obj.GetType();
@@ -39,17 +41,12 @@ public sealed class ReflectionSectionHandler : AbstractSectionHandler
 		return GetValue(parts.Skip(1), obj);
 	}
 
-	public override async Task Handle(Globals globals, TemplateSection section)
+	protected override Task Handle(Globals globals, string content)
 	{
-		if (section.Handler != TemplateHandler.Reflection)
-		{
-			await Next.Handle(globals, section).ConfigureAwait(false);
-			return;
-		}
-
-		var parts = section.Content.Trim().Split('.');
+		var parts = content.Trim().Split('.');
 		var value = GetValue(parts, globals);
 
 		globals.Write(value);
+		return Task.CompletedTask;
 	}
 }

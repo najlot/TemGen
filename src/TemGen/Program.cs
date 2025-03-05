@@ -4,21 +4,31 @@ using System.CommandLine;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using TemGen.Handler;
 
 namespace TemGen;
 
 internal class Program
 {
-	private static async Task Generate(Logger log, string path)
+	private static async Task Generate(LogAdministrator admin, string path)
 	{
 		var sw = Stopwatch.StartNew();
 
+		var log = admin.GetLogger("Main");
 		log.Info("Starting execution...");
 
 		var project = ProjectReader.ReadProject(path);
 		var definitions = DefinitionsReader.ReadDefinitions(project.DefinitionsPath);
 		var templates = TemplatesReader.ReadTemplates(project.TemplatesPath);
-		var processor = new TemplateProcessor(project, definitions);
+		var processor = new TemplateProcessor(
+			[
+				new TextSectionHandler(),
+				new CsSectionHandler(),
+				new ReflectionSectionHandler(),
+				new PySectionHandler(),
+				new JintSectionHandler(),
+				new LuaSectionHandler()
+			], project, definitions);
 
 		if (!string.IsNullOrWhiteSpace(project.ResourcesScriptPath))
 		{
@@ -79,18 +89,16 @@ internal class Program
 			.AddConsoleDestination(true)
 			.SetCollectMiddleware<Najlot.Log.Middleware.ConcurrentCollectMiddleware, Najlot.Log.Destinations.ConsoleDestination>();
 
-		var log = admin.GetLogger("Main");
-
 		var rootCommand = new RootCommand("TemGen - Template based code generator");
 
 		var pathOption = new Option<string>(
-			aliases: new[] { "--path", "-p" },
+			aliases: ["--path", "-p"],
 			description: "Path to a project definition file or a folder containing a ProjectDefinition file.",
 			getDefaultValue: () => ".");
 		rootCommand.AddOption(pathOption);
 
 		var loopOption = new Option<bool>(
-			aliases: new[] { "--loop", "-l" },
+			aliases: ["--loop", "-l"],
 			description: "Run execution in a loop.");
 		rootCommand.AddOption(loopOption);
 
@@ -106,7 +114,7 @@ internal class Program
 
 			do
 			{
-				await Generate(log, path).ConfigureAwait(false);
+				await Generate(admin, path).ConfigureAwait(false);
 				admin.Flush();
 
 				if (repeat)

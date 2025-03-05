@@ -43,7 +43,7 @@ public class PyHandlerTests
 		};
 
 		var handler = new PySectionHandler();
-		await handler.Handle(
+		await handler.TryHandle(
 			globals,
 			new TemplateSection()
 			{
@@ -58,7 +58,7 @@ public class PyHandlerTests
 		Assert.False(globals.SkipOtherDefinitions);
 		Assert.Equal("Test:Entry_1,Entry_2", globals.Result);
 
-		await handler.Handle(
+		await handler.TryHandle(
 			globals,
 			new TemplateSection()
 			{

@@ -1,4 +1,5 @@
-﻿using TemGen.Handler;
+﻿using System.Threading.Tasks;
+using TemGen.Handler;
 using Xunit;
 
 namespace TemGen.Tests.Handler;
@@ -6,7 +7,7 @@ namespace TemGen.Tests.Handler;
 public class LuaHandlerTests
 {
 	[Fact]
-	public async void LuaMustBeRunCorrect()
+	public async Task LuaMustBeRunCorrect()
 	{
 		var project = new Project()
 		{
@@ -42,7 +43,7 @@ public class LuaHandlerTests
 		};
 
 		var handler = new LuaSectionHandler();
-		await handler.Handle(
+		await handler.TryHandle(
 			globals,
 			new TemplateSection()
 			{
@@ -57,7 +58,7 @@ public class LuaHandlerTests
 		Assert.False(globals.SkipOtherDefinitions);
 		Assert.Equal("Test:Entry_1,Entry_2", globals.Result);
 
-		await handler.Handle(
+		await handler.TryHandle(
 			globals,
 			new TemplateSection()
 			{

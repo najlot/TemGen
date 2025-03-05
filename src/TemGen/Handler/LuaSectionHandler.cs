@@ -7,14 +7,10 @@ namespace TemGen.Handler;
 
 public sealed class LuaSectionHandler : AbstractSectionHandler
 {
-	public override async Task Handle(Globals globals, TemplateSection section)
-	{
-		if (section.Handler != TemplateHandler.Lua)
-		{
-			await Next.Handle(globals, section).ConfigureAwait(false);
-			return;
-		}
+	public LuaSectionHandler() : base(TemplateHandler.Lua) { }
 
+	protected override Task Handle(Globals globals, string content)
+	{
 		var script = new Script();
 
 		script.Globals["relative_path"] = globals.RelativePath;
@@ -81,10 +77,12 @@ public sealed class LuaSectionHandler : AbstractSectionHandler
 		script.Globals["write"] = (Action<object>)(o => globals.Write(o));
 		script.Globals["write_line"] = (Action<object>)(o => globals.WriteLine(o));
 
-		script.DoString(section.Content);
+		script.DoString(content);
 
 		globals.RelativePath = script.Globals["relative_path"].ToString();
 		globals.SkipOtherDefinitions = (bool)script.Globals["skip_other_definitions"];
 		globals.RepeatForEachDefinitionEntry = (bool)script.Globals["repeat_for_each_definition_entry"];
+
+		return Task.CompletedTask;
 	}
 }

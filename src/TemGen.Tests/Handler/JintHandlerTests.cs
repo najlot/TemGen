@@ -43,7 +43,7 @@ public class JintHandlerTests
 		};
 
 		var handler = new JintSectionHandler();
-		await handler.Handle(globals,
+		await handler.TryHandle(globals,
 			new TemplateSection()
 			{
 				Handler = TemplateHandler.JavaScript,
@@ -59,7 +59,7 @@ public class JintHandlerTests
 		Assert.False(globals.SkipOtherDefinitions);
 		Assert.Equal("Test:Entry_1,Entry_2", globals.Result);
 
-		await handler.Handle(
+		await handler.TryHandle(
 			globals,
 			new TemplateSection()
 			{
