@@ -5,10 +5,8 @@ using System.Threading.Tasks;
 
 namespace TemGen.Handler;
 
-public sealed class ReflectionSectionHandler : AbstractSectionHandler
+public sealed class ReflectionSectionHandler() : AbstractSectionHandler(TemplateHandler.Reflection)
 {
-	public ReflectionSectionHandler() : base(TemplateHandler.Reflection) { }
-
 	private static string GetValue(IEnumerable<string> parts, object obj)
 	{
 		if (obj is null)

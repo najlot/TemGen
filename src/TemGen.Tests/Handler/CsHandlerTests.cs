@@ -42,13 +42,15 @@ public class CsHandlerTests
 			RepeatForEachDefinitionEntry = false
 		};
 
-		var handler = new CsSectionHandler();
+		var subScript = "void w(object obj)\r\n{\r\nWrite(obj);\r\n}";
+
+		var handler = new CsSectionHandler([subScript]);
 		await handler.TryHandle(
 			globals,
 			new TemplateSection()
 			{
 				Handler = TemplateHandler.CSharp,
-				Content = "Write(Definition.Name + ':'); \n" +
+				Content = "w(Definition.Name + ':'); \n" +
 							"foreach(var e in Entries) Write(e.Field + ','); \n" +
 							"Result=Result.Trim(','); \n" +
 							"RelativePath = \"Is\" + RelativePath;"

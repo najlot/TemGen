@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace TemGen.Handler;
 
-public sealed class JintSectionHandler : AbstractSectionHandler
+public sealed class JintSectionHandler(string[] initialScripts) : AbstractSectionHandler(TemplateHandler.JavaScript)
 {
-	public JintSectionHandler() : base(TemplateHandler.JavaScript) { }
-
 	private static readonly ConcurrentDictionary<string, Prepared<Script>> _cache = new();
 
 	protected override Task Handle(Globals globals, string content)
@@ -27,6 +25,12 @@ public sealed class JintSectionHandler : AbstractSectionHandler
 			.SetValue("setResult", (Action<object>)(o => globals.Result = o.ToString()))
 			.SetValue("write", (Action<object>)(o => globals.Write(o)))
 			.SetValue("writeLine", (Action<object>)(o => globals.WriteLine(o)));
+
+		foreach (var script in initialScripts)
+		{
+			var subScript = _cache.GetOrAdd(script, c => Engine.PrepareScript(c));
+			engine.Execute(subScript);
+		}
 
 		var programm = _cache.GetOrAdd(content, c => Engine.PrepareScript(c));
 		engine.Execute(programm);

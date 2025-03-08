@@ -42,13 +42,15 @@ public class PyHandlerTests
 			RepeatForEachDefinitionEntry = false
 		};
 
-		var handler = new PySectionHandler();
+		var subScript = "def w(param):\r\n    write(param)";
+
+		var handler = new PySectionHandler([subScript]);
 		await handler.TryHandle(
 			globals,
 			new TemplateSection()
 			{
 				Handler = TemplateHandler.Python,
-				Content = "write(definition.Name + ':') \n" +
+				Content = "w(definition.Name + ':') \n" +
 							"for val in entries: write(val.Field + ',') \n" +
 							"set_result(get_result().rstrip(',')) \n" +
 							"relative_path = \"Is\" + relative_path"

@@ -83,6 +83,15 @@ public static class ProjectReader
 					project.ResourcesScriptPath = value;
 					break;
 
+				case "ScriptsPath":
+					if (!Path.IsPathFullyQualified(value))
+					{
+						value = Path.GetFullPath(Path.Combine(project.ProjectDirectory, value));
+					}
+
+					project.ScriptsPath = value;
+					break;
+
 				case "PrimaryColor":
 					project.PrimaryColor = value;
 					break;

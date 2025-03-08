@@ -8,17 +8,16 @@ namespace TemGen.Handler;
 
 public sealed class CsSectionHandler : AbstractSectionHandler
 {
+	#region Static Initialization
+
+	private static readonly Script<object> _emptyScript = null;
+
 	static CsSectionHandler()
 	{
-		_initialScript = CSharpScript.Create("", _options, typeof(Globals), _loader);
-		_initialScript.Compile();
+		_emptyScript = CSharpScript.Create("", _options, typeof(Globals), _loader);
+		_emptyScript.Compile();
 	}
 
-	public CsSectionHandler() : base(TemplateHandler.CSharp) { }
-
-	private static readonly Script<object> _initialScript = null;
-
-	private static readonly ConcurrentDictionary<string, ScriptRunner<object>> _cache = new();
 	private static readonly InteractiveAssemblyLoader _loader = GetLoader();
 	private static readonly ScriptOptions _options = GetOptions();
 
@@ -56,9 +55,28 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 				"System.Text.RegularExpressions"
 				);
 
+	#endregion Static Initialization
+
+	private static readonly ConcurrentDictionary<(int ScriptsKey, string Content), ScriptRunner<object>> _cache = new();
+
+	private readonly Script<object> _initialScript = null;
+	private readonly int _initialScriptsKey;
+
+	public CsSectionHandler(string[] initialScripts) : base(TemplateHandler.CSharp)
+	{
+		_initialScript = _emptyScript;
+
+		foreach (var script in initialScripts)
+		{
+			_initialScript = _initialScript.ContinueWith(script, _options);
+		}
+
+		_initialScriptsKey = string.Join('\n', initialScripts).GetHashCode();
+	}
+
 	protected override async Task Handle(Globals globals, string content)
 	{
-		var script = _cache.GetOrAdd(content, c => _initialScript.ContinueWith(c, _options).CreateDelegate());
+		var script = _cache.GetOrAdd((_initialScriptsKey, content), c => _initialScript.ContinueWith(c.Content, _options).CreateDelegate());
 		await script(globals).ConfigureAwait(false);
 	}
 }

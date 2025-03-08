@@ -42,12 +42,14 @@ public class JintHandlerTests
 			RepeatForEachDefinitionEntry = false
 		};
 
-		var handler = new JintSectionHandler();
+		var subScript = "function w(param)\r\n{\r\nwrite(param);\r\n}";
+
+		var handler = new JintSectionHandler([subScript]);
 		await handler.TryHandle(globals,
 			new TemplateSection()
 			{
 				Handler = TemplateHandler.JavaScript,
-				Content = "write(definition.name + ':'); \n" +
+				Content = "w(definition.name + ':'); \n" +
 							"for(i in entries) write(entries[i].field + ','); \n" +
 							"result = getResult(); \n" +
 							"result = result.substring(0, result.length - 1); \n" +

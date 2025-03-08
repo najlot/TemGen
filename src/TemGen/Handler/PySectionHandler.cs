@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace TemGen.Handler;
 
-public sealed class PySectionHandler : AbstractSectionHandler
+public sealed class PySectionHandler(string[] initialScripts) : AbstractSectionHandler(TemplateHandler.Python)
 {
-	public PySectionHandler() : base(TemplateHandler.Python) { }
-
 	private static readonly ScriptEngine _engine = IronPython.Hosting.Python.CreateEngine();
 	private static readonly ConcurrentDictionary<string, ScriptSource> _cache = new();
 
@@ -32,6 +30,13 @@ public sealed class PySectionHandler : AbstractSectionHandler
 		};
 
 		var scope = _engine.CreateScope(scriptGlobals);
+
+		foreach (var script in initialScripts)
+		{
+			var subSource = _cache.GetOrAdd(script, _engine.CreateScriptSourceFromString);
+			subSource.Execute(scope);
+		}
+
 		var source = _cache.GetOrAdd(content, _engine.CreateScriptSourceFromString);
 		source.Execute(scope);
 

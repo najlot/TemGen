@@ -42,13 +42,15 @@ public class LuaHandlerTests
 			RepeatForEachDefinitionEntry = false
 		};
 
-		var handler = new LuaSectionHandler();
+		var subScript = "function w(param)\r\nwrite(param)\r\nend";
+
+		var handler = new LuaSectionHandler([subScript]);
 		await handler.TryHandle(
 			globals,
 			new TemplateSection()
 			{
 				Handler = TemplateHandler.Lua,
-				Content = "write(definition.name .. \":\"); \n" +
+				Content = "w(definition.name .. \":\"); \n" +
 							"for key, value in ipairs(entries) do write(value.field .. ',') end \n" +
 							"set_result(string.sub(get_result(), 1, -2)); \n" +
 							"relative_path = \"Is\" .. relative_path;"

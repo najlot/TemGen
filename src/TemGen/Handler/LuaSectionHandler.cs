@@ -5,10 +5,8 @@ using System.Threading.Tasks;
 
 namespace TemGen.Handler;
 
-public sealed class LuaSectionHandler : AbstractSectionHandler
+public sealed class LuaSectionHandler(string[] initialScripts) : AbstractSectionHandler(TemplateHandler.Lua)
 {
-	public LuaSectionHandler() : base(TemplateHandler.Lua) { }
-
 	protected override Task Handle(Globals globals, string content)
 	{
 		var script = new Script();
@@ -76,6 +74,11 @@ public sealed class LuaSectionHandler : AbstractSectionHandler
 
 		script.Globals["write"] = (Action<object>)(o => globals.Write(o));
 		script.Globals["write_line"] = (Action<object>)(o => globals.WriteLine(o));
+
+		foreach (var subScript in initialScripts)
+		{
+			script.DoString(subScript);
+		}
 
 		script.DoString(content);
 

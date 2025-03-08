@@ -3,6 +3,7 @@ using System;
 using System.CommandLine;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using TemGen.Handler;
 
@@ -20,19 +21,34 @@ internal class Program
 		var project = ProjectReader.ReadProject(path);
 		var definitions = DefinitionsReader.ReadDefinitions(project.DefinitionsPath);
 		var templates = TemplatesReader.ReadTemplates(project.TemplatesPath);
+
+		var csScripts = Array.Empty<string>();
+		var jsScripts = Array.Empty<string>();
+		var pyScripts = Array.Empty<string>();
+		var luaScripts = Array.Empty<string>();
+
+		if (!string.IsNullOrWhiteSpace(project.ScriptsPath))
+		{
+			var scripts = TemplatesReader.ReadScripts(project.ScriptsPath);
+			csScripts = scripts.Where(script => script.Sections[0].Handler == TemplateHandler.CSharp).Select(s => s.Sections[0].Content).ToArray();
+			jsScripts = scripts.Where(script => script.Sections[0].Handler == TemplateHandler.JavaScript).Select(s => s.Sections[0].Content).ToArray();
+			pyScripts = scripts.Where(script => script.Sections[0].Handler == TemplateHandler.Python).Select(s => s.Sections[0].Content).ToArray();
+			luaScripts = scripts.Where(script => script.Sections[0].Handler == TemplateHandler.Lua).Select(s => s.Sections[0].Content).ToArray();
+		}
+
 		var processor = new TemplateProcessor(
 			[
 				new TextSectionHandler(),
-				new CsSectionHandler(),
+				new CsSectionHandler(csScripts),
 				new ReflectionSectionHandler(),
-				new PySectionHandler(),
-				new JintSectionHandler(),
-				new LuaSectionHandler()
+				new PySectionHandler(pyScripts),
+				new JintSectionHandler(jsScripts),
+				new LuaSectionHandler(luaScripts)
 			], project, definitions);
 
 		if (!string.IsNullOrWhiteSpace(project.ResourcesScriptPath))
 		{
-			var resourcesScript = TemplatesReader.ReadResourceScript(path, project.ResourcesScriptPath);
+			var resourcesScript = TemplatesReader.ReadScript(path, project.ResourcesScriptPath);
 
 			try
 			{

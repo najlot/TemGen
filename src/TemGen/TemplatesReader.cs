@@ -100,7 +100,7 @@ public static class TemplatesReader
 		};
 	}
 
-	public static Template ReadResourceScript(string path, string resourcesScriptPath)
+	public static Template ReadScript(string path, string resourcesScriptPath)
 	{
 		path = Path.GetFullPath(path);
 		resourcesScriptPath = Path.Combine(path, resourcesScriptPath);
@@ -116,6 +116,13 @@ public static class TemplatesReader
 		};
 	}
 
+	public static List<Template> ReadScripts(string scriptsPath)
+	{
+		var files = Directory.GetFiles(scriptsPath, "*", SearchOption.AllDirectories);
+		var templates = files.Select(file => ReadScript(scriptsPath, file)).ToList();
+		return templates;
+	}
+
 	public static List<Template> ReadTemplates(string templatesPath)
 	{
 		var files = Directory.GetFiles(templatesPath, "*", SearchOption.AllDirectories);
@@ -123,7 +130,7 @@ public static class TemplatesReader
 
 		foreach (var file in files)
 		{
-			using var reader = new StreamReader(file, Encoding.UTF8, true);
+			using var reader = new StreamReader(file, Encoding.Default, true);
 			var content = reader.ReadToEnd();
 			var sections = GetSections(content);
 

@@ -55,7 +55,7 @@ public class TemplateReaderTests
 		File.WriteAllText(path, content);
 
 		// Act
-		var template = TemplatesReader.ReadResourceScript(".", path);
+		var template = TemplatesReader.ReadScript(".", path);
 
 		// Cleanup
 		Directory.Delete(directory, true);
@@ -84,7 +84,7 @@ public class TemplateReaderTests
 		File.WriteAllText(path, content);
 
 		// Act
-		var template = TemplatesReader.ReadResourceScript(Directory.GetCurrentDirectory(), path);
+		var template = TemplatesReader.ReadScript(Directory.GetCurrentDirectory(), path);
 
 		// Cleanup
 		Directory.Delete(directory, true);
@@ -113,7 +113,7 @@ public class TemplateReaderTests
 		File.WriteAllText(path, content);
 
 		// Act
-		var template = TemplatesReader.ReadResourceScript(".", path);
+		var template = TemplatesReader.ReadScript(".", path);
 
 		// Cleanup
 		Directory.Delete(directory, true);
@@ -142,7 +142,7 @@ public class TemplateReaderTests
 		File.WriteAllText(path, content);
 
 		// Act
-		var template = TemplatesReader.ReadResourceScript(Directory.GetCurrentDirectory(), path);
+		var template = TemplatesReader.ReadScript(Directory.GetCurrentDirectory(), path);
 
 		// Cleanup
 		Directory.Delete(directory, true);
