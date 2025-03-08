@@ -108,7 +108,7 @@ public static class TemplatesReader
 		var extension = Path.GetExtension(resourcesScriptPath).TrimStart('.');
 		var handler = GetHandlerFromLanguage(extension);
 		var content = File.ReadAllText(resourcesScriptPath);
-		
+
 		return new Template()
 		{
 			RelativePath = Path.GetRelativePath(path, resourcesScriptPath),
