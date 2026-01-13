@@ -1,0 +1,77 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Update="CommonLoc.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>CommonLoc.resx</DependentUpon>
+		</Compile>
+		<Compile Update="ProfileLoc.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>ProfileLoc.resx</DependentUpon>
+		</Compile>
+		<Compile Update="SourceLoc.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>SourceLoc.resx</DependentUpon>
+		</Compile>
+		<Compile Update="UserLoc.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>UserLoc.resx</DependentUpon>
+		</Compile>
+<#cs
+foreach(var definition in Definitions)
+{
+	if (definition.Name.Equals("user", StringComparison.OrdinalIgnoreCase)) continue;
+	
+	WriteLine($"		<Compile Update=\"{definition.Name}Loc.Designer.cs\">");
+	WriteLine("			<DesignTime>True</DesignTime>");
+	WriteLine("			<AutoGen>True</AutoGen>");
+	WriteLine($"			<DependentUpon>{definition.Name}Loc.resx</DependentUpon>");
+	WriteLine("		</Compile>");
+}
+#>	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="CommonLoc.de.resx">
+			<Generator></Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="CommonLoc.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>CommonLoc.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="ProfileLoc.de.resx">
+			<Generator></Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="ProfileLoc.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>ProfileLoc.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="SourceLoc.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>SourceLoc.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="UserLoc.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>UserLoc.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+<#cs
+foreach(var definition in Definitions)
+{
+	if (definition.Name.Equals("user", StringComparison.OrdinalIgnoreCase)) continue;
+
+	WriteLine($"		<EmbeddedResource Update=\"{definition.Name}Loc.resx\">");
+		WriteLine("			<Generator>PublicResXFileCodeGenerator</Generator>");
+		WriteLine($"			<LastGenOutput>{definition.Name}Loc.Designer.cs</LastGenOutput>");
+		WriteLine("		</EmbeddedResource>");
+}
+#>	</ItemGroup>
+
+</Project>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

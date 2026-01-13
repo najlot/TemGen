@@ -1,5 +1,0 @@
-int Id
-string Description
-string Street
-# Like London, Berlin, Paris...
-double Brutto

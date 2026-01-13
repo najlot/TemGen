@@ -1,0 +1,10 @@
+string Title
+string Content
+DateTime CreatedAt
+string CreatedBy
+UserId AssignedTo
+TodoItemStatus Status
+DateTime ChangedAt
+string ChangedBy
+string Priority
+ChecklistTask[] Checklist

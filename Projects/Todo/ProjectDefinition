@@ -1,0 +1,16 @@
+#Global
+Namespace:Todo
+
+#Paths
+DefinitionsPath:./Definitions
+TemplatesPath:../../Templates/Default/Template
+OutputPath:./Output
+ResourcesPath:./Resources
+ResourcesScriptPath:../../Templates/Default/Resources.cs
+ScriptsPath:../../Templates/Default/Scripts
+
+#Colors
+PrimaryColor:#004d40
+PrimaryDarkColor:#00251a
+AccentColor:#39796b
+ForegroundColor:#ffffff

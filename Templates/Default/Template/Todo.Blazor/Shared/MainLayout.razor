@@ -1,0 +1,67 @@
+@using <#cs Write(Project.Namespace)#>.Blazor.Services;
+@inherits LayoutComponentBase
+@implements IErrorService
+
+<PageTitle><#cs Write(Project.Namespace)#></PageTitle>
+
+<div class="page">
+	<div class="sidebar">
+		<NavMenu />
+	</div>
+
+	<main>
+		<div class="top-row px-4 auth navbar navbar-dark">
+			<LoginDisplay />
+		</div>
+
+		@if (_isErrorActive)
+		{
+			<div class="alert alert-danger d-flex" role="alert">
+				<div>
+					<h3>@_title</h3>
+					<p>@_message</p>
+				</div>
+				<div class="ms-auto">
+					<button type="button" class="btn-close" data-dismiss="alert" aria-label="Close" @onclick="HideError" />
+				</div>
+			</div>
+		}
+
+		<CascadingValue Value="this" Name="ErrorService">
+			<div class="content container px-1">
+				@Body
+			</div>
+		</CascadingValue>
+	</main>
+</div>
+
+@code {
+	private bool _isErrorActive;
+	private string _title = "";
+	private string _message = "";
+
+	public void ShowError(string title, string message)
+	{
+		_isErrorActive = true;
+		_title = title;
+		_message = message;
+
+		StateHasChanged();
+		// InvokeAsync(StateHasChanged);
+	}
+
+	public void HideError()
+	{
+		if (!_isErrorActive)
+		{
+			return;
+		}
+
+		_title = string.Empty;
+		_message = string.Empty;
+		_isErrorActive = false;
+
+		StateHasChanged();
+		// InvokeAsync(StateHasChanged);
+	}
+}<#cs SetOutputPathAndSkipOtherDefinitions()#>

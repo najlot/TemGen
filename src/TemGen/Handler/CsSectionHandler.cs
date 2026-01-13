@@ -14,7 +14,7 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 
 	static CsSectionHandler()
 	{
-		_emptyScript = CSharpScript.Create("", _options, typeof(Globals), _loader);
+		_emptyScript = CSharpScript.Create(string.Empty, _options, typeof(Globals), _loader);
 		_emptyScript.Compile();
 	}
 

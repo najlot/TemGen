@@ -1,0 +1,105 @@
+@page "/Manage"
+
+@using System.ComponentModel.DataAnnotations;
+@using <#cs Write(Project.Namespace)#>.Client.Data;
+@using <#cs Write(Project.Namespace)#>.Blazor.Services;
+@using <#cs Write(Project.Namespace)#>.Client.Data.Services;
+@using <#cs Write(Project.Namespace)#>.Client.Data.Identity;
+@using <#cs Write(Project.Namespace)#>.Client.Localisation;
+
+@inject ITokenProvider TokenProvider
+@inject IUserService UserService
+@inject ILogger<Manage> Logger
+@inject NavigationManager NavigationManager
+
+<PageTitle>@CommonLoc.UserNamagement</PageTitle>
+
+<div>
+	<EditForm Model="@Input" OnValidSubmit="@SavePassword">
+		<section class="w-100 p-4 d-flex justify-content-center pb-4">
+			<div>
+				<h1>@CommonLoc.UserNamagement</h1>
+				<br />
+				<DataAnnotationsValidator />
+				<ValidationSummary />
+
+				<!-- New password input -->
+				<div class="mb-4">
+					<label class="form-label" for="PasswordInput">@CommonLoc.NewPassword</label>
+					<InputText type="password" id="PasswordInput" class="form-control" @bind-Value="Input.Password" />
+				</div>
+
+				<!-- New password confirm input -->
+				<div class="mb-4">
+					<label class="form-label" for="PasswordConfirm">@CommonLoc.ConfirmNewPassword</label>
+					<InputText type="password" id="PasswordConfirm" class="form-control" @bind-Value="Input.PasswordConfirm" />
+				</div>
+
+				<div class="mb-4">
+					<button type="submit" class="btn btn-primary w-100">@CommonLoc.ChangePassword</button>
+				</div>
+			</div>
+		</section>
+	</EditForm>
+</div>
+
+@code {
+	private class InputModel
+	{
+		[Required]
+		[DataType(DataType.Password)]
+		[StringLength(30, MinimumLength = 8)]
+		public string Password { get; set; } = string.Empty;
+
+		[Required]
+		[DataType(DataType.Password)]
+		[StringLength(30, MinimumLength = 8)]
+		public string PasswordConfirm { get; set; } = string.Empty;
+	}
+
+	private InputModel Input = new();
+
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		ErrorService?.HideError();
+		await base.OnInitializedAsync();
+	}
+
+	private async Task SavePassword()
+	{
+		if (Input.Password != Input.PasswordConfirm)
+		{
+			ErrorService?.ShowError("Manage", "Passwords do not match.");
+			Input.PasswordConfirm = "";
+			return;
+		}
+
+		try
+		{
+			var token = await TokenProvider.GetToken();
+			if (token is null)
+			{
+				var url = NavigationManager.BuildReturnUrl("/login");
+				NavigationManager.NavigateTo(url);
+				return;
+			}
+
+			var user = await UserService.GetCurrentUserAsync();
+			user.Password = Input.Password;
+			await UserService.UpdateItemAsync(user);
+
+			Input.Password = "";
+			Input.PasswordConfirm = "";
+
+			ErrorService?.HideError();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error updating user.");
+			ErrorService?.ShowError("Login", "Could update user data. Server error.");
+		}
+	}
+}<#cs SetOutputPathAndSkipOtherDefinitions()#>

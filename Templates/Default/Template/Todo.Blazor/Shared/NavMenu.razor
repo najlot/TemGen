@@ -1,0 +1,50 @@
+@using <#cs Write(Project.Namespace)#>.Client.Localisation;
+
+<div class="top-row ps-3 navbar navbar-dark">
+	<div class="container-fluid">
+		<a class="navbar-brand" href=""><#cs Write(Project.Namespace)#>.Blazor</a>
+		<button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+	</div>
+</div>
+
+<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+	<nav class="flex-column">
+		<div class="nav-item px-3">
+			<NavLink class="nav-link ps-3" href="" Match="NavLinkMatch.All">
+				<span class="oi oi-home" aria-hidden="true"></span> @CommonLoc.Home
+			</NavLink>
+		</div>
+<#cs
+foreach (var definition in Definitions.Where(d => !(d.IsArray
+	|| d.IsEnumeration 
+	|| d.IsOwnedType
+	|| d.Name == "User")))
+{
+	var name = definition.Name.ToLower();
+	if (name.EndsWith("entry"))
+	{
+		name = name[0..^5] + "entrie";
+	}
+
+WriteLine("		<div class=\"nav-item px-3\">");
+WriteLine($"			<NavLink class=\"nav-link ps-3\" href=\"{name}s\">");
+WriteLine($"				<span class=\"oi oi-list-rich\" aria-hidden=\"true\"></span> @{definition.Name}Loc.{definition.Name}s");
+WriteLine("			</NavLink>");
+WriteLine("		</div>");
+}
+#>	</nav>
+</div>
+
+@code {
+	private bool collapseNavMenu = true;
+
+	private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+	private void ToggleNavMenu()
+	{
+		collapseNavMenu = !collapseNavMenu;
+	}
+}
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

@@ -1,0 +1,183 @@
+@page "/<#cs 
+if (!Definition.Name.ToLower().EndsWith("entry"))
+{
+	Write(Definition.Name.ToLower());
+}
+else
+{
+	Write(Definition.Name.ToLower()[0..^5] + "entrie");
+}
+#>s"
+@using Cosei.Client.Base;
+@using Cosei.Client.Http;
+@using Microsoft.Extensions.Localization;
+@using <#cs Write(Project.Namespace)#>.Blazor.Identity;
+@using <#cs Write(Project.Namespace)#>.Blazor.Services;
+@using <#cs Write(Project.Namespace)#>.Client.Data.Models;
+@using <#cs Write(Project.Namespace)#>.Client.Data.Services;
+@using <#cs Write(Project.Namespace)#>.Client.Data;
+@using <#cs Write(Project.Namespace)#>.Client.Localisation;
+@using <#cs Write(Project.Namespace)#>.Contracts.Events;
+@inject ILogger<<#cs Write(Definition.Name)#>s> Log
+@inject Najlot.Map.IMap Map
+@inject I<#cs Write(Definition.Name)#>Service <#cs Write(Definition.Name)#>Service
+@inject ISubscriberProvider SubscriberProvider
+@inject IAuthenticationService AuthenticationService
+@inject NavigationManager NavigationManager
+@implements IDisposable
+
+<PageTitle>@<#cs Write(Definition.Name)#>Loc.<#cs Write(Definition.Name)#>s</PageTitle>
+
+@if (<#cs Write(Definition.NameLow)#>s == null)
+{
+	<p><em>@CommonLoc.Loading...</em></p>
+}
+else
+{
+	<table class="table table-sm table-striped">
+		<thead>
+			<tr>
+<#cs
+foreach (var entry in Definition.Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2))
+{
+	WriteLine($"				<th>@{Definition.Name}Loc.{entry.Field}</th>");
+}
+
+Result = Result.TrimEnd(' ', '\r', '\n');
+#>
+				<th><a href="/<#cs Write(Definition.Name)#>/@Guid.Empty" class="btn btn-success w-100">@CommonLoc.New</a></th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var <#cs Write(Definition.NameLow)#> in <#cs Write(Definition.NameLow)#>s)
+			{
+				<tr scope="row">
+<#cs
+foreach (var entry in Definition.Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2))
+{
+	if (entry.EntryType.ToLower() == "string")
+	{
+		WriteLine($"					<td class=\"text-break\">@LimitDisplayLength({Definition.NameLow}.{entry.Field}, 75)</td>");
+	}
+	else
+	{
+		WriteLine($"					<td class=\"text-break\">@{Definition.NameLow}.{entry.Field}</td>");
+	}
+}
+
+Result = Result.TrimEnd(' ', '\r', '\n');
+#>
+					<td><a href="/<#cs Write(Definition.Name)#>/@<#cs Write(Definition.NameLow)#>.Id" class="btn btn-primary w-100">@CommonLoc.Edit</a></td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+@code {
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	private List<<#cs Write(Definition.Name)#>ListItemModel>? <#cs Write(Definition.NameLow)#>s;
+
+	private ISubscriber? Subscriber;
+
+	private string LimitDisplayLength(string? value, int maxLength)
+	{
+		if (maxLength < 3) throw new InvalidOperationException("MaxLength must be greater than 3");
+		if (string.IsNullOrWhiteSpace(value)) return "";
+		if (value.Length <= maxLength) return value;
+		return value.Substring(0, maxLength - 3) + "...";
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		var state = await AuthenticationService.GetAuthenticationStateAsync();
+
+		if (state.User.Identity is null)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigationManager.NavigateTo(url);
+			return;
+		}
+
+		try
+		{
+			<#cs Write(Definition.NameLow)#>s = new List<<#cs Write(Definition.Name)#>ListItemModel>(await <#cs Write(Definition.Name)#>Service.GetItemsAsync());
+
+			Subscriber = await SubscriberProvider.GetSubscriber();
+
+			Subscriber.Register<<#cs Write(Definition.Name)#>Created>(Handle);
+			Subscriber.Register<<#cs Write(Definition.Name)#>Updated>(Handle);
+			Subscriber.Register<<#cs Write(Definition.Name)#>Deleted>(Handle);
+
+			await Subscriber.StartAsync();
+		}
+		catch (System.Security.Authentication.AuthenticationException)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigationManager.NavigateTo(url);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error loading <#cs Write(Definition.Name.ToLower())#>s.");
+			ErrorService?.ShowError("Error", "Could not load. Server error.");
+		}
+	}
+
+	private async Task Handle(<#cs Write(Definition.Name)#>Created message)
+	{
+		if (<#cs Write(Definition.NameLow)#>s is null)
+		{
+			return;
+		}
+
+		var item = Map.From(message).To<<#cs Write(Definition.Name)#>ListItemModel>();
+
+		<#cs Write(Definition.NameLow)#>s.Insert(0, item);
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private async Task Handle(<#cs Write(Definition.Name)#>Updated message)
+	{
+		if (<#cs Write(Definition.NameLow)#>s is null)
+		{
+			return;
+		}
+
+		var entry = <#cs Write(Definition.NameLow)#>s.FirstOrDefault(t => t.Id == message.Id);
+
+		if (entry is not null)
+		{
+			Map.From(message).To(entry);
+		}
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private async Task Handle(<#cs Write(Definition.Name)#>Deleted message)
+	{
+		if (<#cs Write(Definition.NameLow)#>s is null)
+		{
+			return;
+		}
+
+		var entry = <#cs Write(Definition.NameLow)#>s.FirstOrDefault(t => t.Id == message.Id);
+
+		if (entry is null)
+		{
+			return;
+		}
+
+		<#cs Write(Definition.NameLow)#>s.Remove(entry);
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	public void Dispose()
+	{
+		Subscriber?.Unregister(this);
+	}
+}
+<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

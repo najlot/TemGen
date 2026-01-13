@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows7.0</TargetFramework>
+		<UseWPF>true</UseWPF>
+		<ApplicationIcon>icon.ico</ApplicationIcon>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\<#cs Write(Project.Namespace)#>.Client.MVVM\<#cs Write(Project.Namespace)#>.Client.MVVM.csproj" />
+		<ProjectReference Include="..\<#cs Write(Project.Namespace)#>.ClientBase\<#cs Write(Project.Namespace)#>.ClientBase.csproj" />
+	</ItemGroup>
+
+</Project>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

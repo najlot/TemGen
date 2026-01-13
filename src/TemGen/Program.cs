@@ -1,5 +1,6 @@
 ﻿using Najlot.Log;
 using System;
+using System.Collections.Concurrent;
 using System.CommandLine;
 using System.Diagnostics;
 using System.IO;
@@ -36,15 +37,14 @@ internal class Program
 			luaScripts = scripts.Where(script => script.Sections[0].Handler == TemplateHandler.Lua).Select(s => s.Sections[0].Content).ToArray();
 		}
 
-		var processor = new TemplateProcessor(
-			[
-				new TextSectionHandler(),
-				new CsSectionHandler(csScripts),
-				new ReflectionSectionHandler(),
-				new PySectionHandler(pyScripts),
-				new JintSectionHandler(jsScripts),
-				new LuaSectionHandler(luaScripts)
-			], project, definitions);
+		var processor = new TemplateProcessor([
+			new TextSectionHandler(),
+			new CsSectionHandler(csScripts),
+			new ReflectionSectionHandler(),
+			new PySectionHandler(pyScripts),
+			new JintSectionHandler(jsScripts),
+			new LuaSectionHandler(luaScripts)
+		], project, definitions);
 
 		if (!string.IsNullOrWhiteSpace(project.ResourcesScriptPath))
 		{
@@ -107,25 +107,32 @@ internal class Program
 
 		var rootCommand = new RootCommand("TemGen - Template based code generator");
 
-		var pathOption = new Option<string>(
-			aliases: ["--path", "-p"],
-			description: "Path to a project definition file or a folder containing a ProjectDefinition file.",
-			getDefaultValue: () => ".");
-		rootCommand.AddOption(pathOption);
-
-		var loopOption = new Option<bool>(
-			aliases: ["--loop", "-l"],
-			description: "Run execution in a loop.");
-		rootCommand.AddOption(loopOption);
-
-		var logLevelOption = new Option<LogLevel>(
-			name: "--log-level",
-			description: "Log level to use.",
-			getDefaultValue: () => LogLevel.Info);
-		rootCommand.AddOption(logLevelOption);
-
-		rootCommand.SetHandler(async (path, repeat, logLevel) =>
+		var pathOption = new Option<string>("--path", "-p")
 		{
+			Description = "Path to a project definition file or a folder containing a ProjectDefinition file.",
+			DefaultValueFactory = (r) => "."
+		};
+		rootCommand.Add(pathOption);
+
+		var loopOption = new Option<bool>("--loop", "-l")
+		{
+			Description = "Run execution in a loop."
+		};
+		rootCommand.Add(loopOption);
+
+		var logLevelOption = new Option<LogLevel>("--log-level")
+		{
+			Description = "Log level to use.",
+			DefaultValueFactory = (r) => LogLevel.Info
+		};
+		rootCommand.Add(logLevelOption);
+
+		rootCommand.SetAction(async r =>
+		{
+			var path = r.GetValue(pathOption);
+			var repeat = r.GetValue(loopOption);
+			var logLevel = r.GetValue(logLevelOption);
+
 			admin.SetLogLevel(logLevel);
 
 			do
@@ -144,8 +151,8 @@ internal class Program
 				}
 			}
 			while (repeat);
-		}, pathOption, loopOption, logLevelOption);
+		});
 
-		return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
+		return await rootCommand.Parse(args).InvokeAsync().ConfigureAwait(false);
 	}
 }

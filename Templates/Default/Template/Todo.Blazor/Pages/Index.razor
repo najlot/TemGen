@@ -1,0 +1,54 @@
+@page "/"
+@using <#cs Write(Project.Namespace)#>.Blazor.Services
+@using <#cs Write(Project.Namespace)#>.Client.Localisation
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>@CommonLoc.Home</PageTitle>
+
+<section class="w-100 p-4 d-flex justify-content-center pb-4">
+	<div>
+	<AuthorizeView>
+		<Authorized>
+				<div class="form-outline mb-4">
+					<h1>@CommonLoc.Welcome, @name!</h1>
+				</div>
+		</Authorized>
+		<NotAuthorized>
+				<div class="form-outline mb-4">
+					<h1>@CommonLoc.Welcome!</h1>
+					<p>@CommonLoc.RegisterOrLogin</p>
+				</div>
+				<div class="form-outline mb-4">
+					<a href="/login" class="btn btn-primary w-100">@CommonLoc.Login</a>
+				</div>
+				<div class="form-outline mb-4">
+					<a href="/register" class="btn btn-primary w-100">@CommonLoc.Register</a>
+				</div>
+		</NotAuthorized>
+	</AuthorizeView>
+	</div>
+</section>
+
+@code {
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	private string? name;
+
+	protected override async Task OnInitializedAsync()
+	{
+		name = "";
+		ErrorService?.HideError();
+
+		var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+		var user = authState.User;
+
+		if (user.Identity is not null && user.Identity.IsAuthenticated)
+		{
+			name = user.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.Name)?.Value;
+		}
+
+		await base.OnInitializedAsync();
+	}
+}<#cs SetOutputPathAndSkipOtherDefinitions()#>

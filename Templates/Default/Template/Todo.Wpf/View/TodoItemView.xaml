@@ -1,0 +1,192 @@
+﻿<UserControl x:Class="<#cs Write(Project.Namespace)#>.Wpf.View.<#cs Write(Definition.Name)#>View"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:local="clr-namespace:<#cs Write(Project.Namespace)#>.Wpf.View"
+			 xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
+			 xmlns:converter="clr-namespace:<#cs Write(Project.Namespace)#>.Wpf.Converter"
+			 mc:Ignorable="d"
+			 d:DesignHeight="500" d:DesignWidth="600">
+
+	<UserControl.Resources>
+		<ResourceDictionary>
+			<converter:EnumToTranslationConverter x:Key="EnumToTranslationConverter" />
+		</ResourceDictionary>
+	</UserControl.Resources>
+	
+	<DockPanel>
+		<WrapPanel HorizontalAlignment="Right" DockPanel.Dock="Top">
+			<Button ToolTip="{x:Static loc:CommonLoc.Save}" Command="{Binding SaveCommand}" Margin="5">
+				<Button.Content>
+					<Path
+						Width="18"
+						Height="18"
+						Stretch="Uniform"
+						Fill="{StaticResource ForegroundColor}"
+						Data="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z" />
+				</Button.Content>
+			</Button>
+			<Button ToolTip="{x:Static loc:CommonLoc.Delete}" Command="{Binding DeleteCommand}" Margin="5">
+				<Button.Content>
+					<Path
+						Width="18"
+						Height="18"
+						Stretch="Uniform"
+						Fill="{StaticResource ForegroundColor}"
+						Data="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z" />
+				</Button.Content>
+			</Button>
+		</WrapPanel>
+		<ScrollViewer>
+			<StackPanel Margin="2,0" MinWidth="400" MinHeight="200"
+						HorizontalAlignment="Center" VerticalAlignment="Center">
+<#cs
+foreach(var entry in Entries)
+{
+	if (!entry.IsArray && !entry.IsOwnedType)
+		WriteLine("				<DockPanel Margin=\"5\">");
+
+	if (entry.EntryType != "bool" && !entry.IsArray && !entry.IsOwnedType)
+	{
+		WriteLine($"					<Label Content=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" MinWidth=\"75\" />");
+	}
+	
+	if (entry.EntryType == "DateTime")
+	{
+		WriteLine($"					<DatePicker SelectedDate=\"{{Binding {entry.Field}}}\" />");
+	}
+	else if (entry.EntryType == "bool")
+	{
+		WriteLine($"					<Label Content=\"\" MinWidth=\"75\" />");
+		WriteLine($"					<CheckBox IsChecked=\"{{Binding {entry.Field}}}\" Content=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" />");
+	}
+	else if (entry.IsReference)
+	{
+		var definition  = Definitions.First(d => d.Name == entry.ReferenceType);
+		var displayField = definition.Entries.First(e => !(e.IsOwnedType || e.IsKey || e.IsArray || e.IsReference || e.IsEnumeration)).Field;
+		WriteLine($"					<ComboBox ItemsSource=\"{{Binding Available{definition.Name}s}}\" SelectedValue=\"{{Binding {entry.Field}Id}}\" SelectedValuePath=\"Id\" DisplayMemberPath=\"{displayField}\" IsEditable=\"True\" />");
+	}
+	else if (entry.IsOwnedType)
+	{
+		WriteLine($"				<Label Content=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" Foreground=\"{{StaticResource ForegroundColor}}\" Background=\"{{StaticResource BackgroundColor}}\" />");
+		WriteLine($"				<local:{entry.EntryType}View DataContext=\"{{Binding {entry.Field}}}\" />");
+	}
+	else if (entry.IsEnumeration)
+	{
+		WriteLine($"					<ComboBox ItemsSource=\"{{Binding Available{entry.EntryType}s, Converter={{StaticResource EnumToTranslationConverter}}, ConverterParameter={{x:Type loc:{entry.EntryType}Loc}}}}\" ");
+		WriteLine($"							  SelectedItem=\"{{Binding {entry.Field}, Converter={{StaticResource EnumToTranslationConverter}}, ConverterParameter={{x:Type loc:{entry.EntryType}Loc}}}}\" />");
+	}
+	else if (entry.IsArray)
+	{
+		WriteLine("				<DockPanel>");
+		WriteLine($"					<DockPanel DockPanel.Dock=\"Top\">");
+		WriteLine($"						<Button ToolTip=\"{{x:Static loc:CommonLoc.New}}\" Command=\"{{Binding Add{entry.EntryType}Command}}\" Margin=\"5\" DockPanel.Dock=\"Right\">");
+		WriteLine($"							<Button.Content>");
+		WriteLine($"								<Path");
+		WriteLine($"									Width=\"18\"");
+		WriteLine($"									Height=\"18\"");
+		WriteLine($"									Stretch=\"Uniform\"");
+		WriteLine($"									Fill=\"{{StaticResource ForegroundColor}}\"");
+		WriteLine($"									Data=\"M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7zm-1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z\" />");
+		WriteLine($"							</Button.Content>");
+		WriteLine($"						</Button>");
+		WriteLine($"");
+		WriteLine($"						<TextBlock Text=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" Foreground=\"{{StaticResource ForegroundColor}}\" Background=\"{{StaticResource BackgroundColor}}\" Padding=\"5\" Margin=\"0,5\"/>");
+		WriteLine($"					</DockPanel>");
+		WriteLine($"");
+		WriteLine($"					<DataGrid");
+		WriteLine($"						Margin=\"0,0,5,0\"");
+		WriteLine($"						RowHeaderWidth=\"0\"");
+		WriteLine($"						ItemsSource=\"{{Binding {entry.Field}}}\"");
+		WriteLine($"						CanUserSortColumns=\"False\"");
+		WriteLine($"						CanUserAddRows=\"False\"");
+		WriteLine($"						AutoGenerateColumns=\"False\"");
+		WriteLine($"						Background=\"{{StaticResource ForegroundColor}}\"");
+		WriteLine($"						HorizontalGridLinesBrush=\"LightGray\"");
+		WriteLine($"						VerticalGridLinesBrush=\"LightGray\"");
+		WriteLine($"						SelectionUnit=\"FullRow\"");
+		WriteLine($"						BorderBrush=\"LightGray\"");
+		WriteLine($"						SelectionMode=\"Single\">");
+		WriteLine($"");
+		WriteLine($"						<DataGrid.Resources>");
+		WriteLine($"							<SolidColorBrush x:Key=\"{{x:Static SystemColors.HighlightBrushKey}}\" Color=\"Transparent\" />");
+		WriteLine($"						</DataGrid.Resources>");
+		WriteLine($"");
+		WriteLine($"						<DataGrid.Columns>");
+		
+		var d = Definitions.First(d => d.Name == entry.EntryType);
+		foreach(var e in d.Entries.Where(ent => !ent.IsEnumeration))
+		{
+			var widthInfo = e.EntryType != "bool"? " MinWidth=\"100\"" : "";
+			WriteLine($"							<DataGridTemplateColumn Header=\"{{x:Static loc:{d.Name}Loc.{e.Field}}}\" Width=\"SizeToCells\"{widthInfo}>");
+			WriteLine($"								<DataGridTemplateColumn.CellTemplate>");
+			WriteLine($"									<DataTemplate>");
+			if(e.EntryType == "bool")
+			{
+				WriteLine($"										<CheckBox IsChecked=\"{{Binding {e.Field}, UpdateSourceTrigger=PropertyChanged}}\" Background=\"Transparent\" BorderThickness=\"0\" />");
+			}
+			else
+			{
+				WriteLine($"										<TextBox Text=\"{{Binding {e.Field}, UpdateSourceTrigger=PropertyChanged}}\" Background=\"Transparent\" BorderThickness=\"0\" />");
+			}
+			WriteLine($"									</DataTemplate>");
+			WriteLine($"								</DataGridTemplateColumn.CellTemplate>");
+			WriteLine($"							</DataGridTemplateColumn>");
+			WriteLine($"");
+		}
+		
+		WriteLine($"");
+		WriteLine($"							<DataGridTemplateColumn Header=\"Edit\" Width=\"SizeToCells\">");
+		WriteLine($"								<DataGridTemplateColumn.CellTemplate>");
+		WriteLine($"									<DataTemplate>");
+		WriteLine($"										<Button ToolTip=\"Edit\" DockPanel.Dock=\"Right\" Padding=\"2\"");
+		WriteLine($"												Command=\"{{Binding DataContext.Edit{entry.EntryType}Command, RelativeSource={{RelativeSource AncestorType=local:{Definition.Name}View}}}}\" CommandParameter=\"{{Binding .}}\">");
+		WriteLine($"											<Button.Content>");
+		WriteLine($"												<Path");
+		WriteLine($"													Width=\"14\"");
+		WriteLine($"													Height=\"14\"");
+		WriteLine($"													Stretch=\"Uniform\"");
+		WriteLine($"													Fill=\"{{StaticResource ForegroundColor}}\"");
+		WriteLine($"													Data=\"M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z\" />");
+		WriteLine($"											</Button.Content>");
+		WriteLine($"										</Button>");
+		WriteLine($"									</DataTemplate>");
+		WriteLine($"								</DataGridTemplateColumn.CellTemplate>");
+		WriteLine($"							</DataGridTemplateColumn>");
+		WriteLine($"");
+		WriteLine($"							<DataGridTemplateColumn Header=\"Delete\" Width=\"SizeToCells\">");
+		WriteLine($"								<DataGridTemplateColumn.CellTemplate>");
+		WriteLine($"									<DataTemplate>");
+		WriteLine($"										<Button ToolTip=\"Delete\" DockPanel.Dock=\"Right\" Padding=\"2\"");
+		WriteLine($"												Command=\"{{Binding DataContext.Delete{entry.EntryType}Command, RelativeSource={{RelativeSource AncestorType=local:{Definition.Name}View}}}}\" CommandParameter=\"{{Binding .}}\">");
+		WriteLine($"											<Button.Content>");
+		WriteLine($"												<Path");
+		WriteLine($"													Width=\"14\"");
+		WriteLine($"													Height=\"14\"");
+		WriteLine($"													Stretch=\"Uniform\"");
+		WriteLine($"													Fill=\"{{StaticResource ForegroundColor}}\"");
+		WriteLine($"													Data=\"M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z\" />");
+		WriteLine($"											</Button.Content>");
+		WriteLine($"										</Button>");
+		WriteLine($"									</DataTemplate>");
+		WriteLine($"								</DataGridTemplateColumn.CellTemplate>");
+		WriteLine($"							</DataGridTemplateColumn>");
+		WriteLine($"						</DataGrid.Columns>");
+		WriteLine($"					</DataGrid>");
+	}
+	else
+	{
+		WriteLine($"					<TextBox Text=\"{{Binding {entry.Field}}}\" />");
+	}
+	
+	if (!entry.IsOwnedType)
+		WriteLine("				</DockPanel>");
+}
+
+Result = Result.TrimEnd();
+#>
+			</StackPanel>
+		</ScrollViewer>
+	</DockPanel>
+</UserControl><#cs SetOutputPath(Definition.IsEnumeration || Definition.IsOwnedType)#>

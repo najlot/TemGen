@@ -1,0 +1,398 @@
+@page "/<#cs Write(Definition.Name.ToLower())#>/{id:guid}"
+@using Cosei.Client.Base;
+@using Cosei.Client.Http;
+@using Microsoft.Extensions.Localization;
+@using <#cs Write(Project.Namespace)#>.Blazor.Identity;
+@using <#cs Write(Project.Namespace)#>.Blazor.Services;
+<#cs
+if (Definitions.Any(d => d.IsArray))
+{
+	WriteLine($"@using {Project.Namespace}.Client.Data.Mappings;");	
+}#>@using <#cs Write(Project.Namespace)#>.Client.Data.Models;
+@using <#cs Write(Project.Namespace)#>.Client.Data.Services;
+@using <#cs Write(Project.Namespace)#>.Client.Data;
+@using <#cs Write(Project.Namespace)#>.Client.Localisation;
+@using <#cs Write(Project.Namespace)#>.Contracts;
+@using <#cs Write(Project.Namespace)#>.Contracts.Events;
+@inject ILogger<<#cs Write(Definition.Name)#>> Log
+@inject Najlot.Map.IMap Map;
+@inject I<#cs Write(Definition.Name)#>Service <#cs Write(Definition.Name)#>Service<#cs
+var references = Entries.Where(e => e.IsReference).ToArray();
+if (references.Any()) WriteLine("");
+foreach (var entry in references)
+{
+	WriteLine($"@inject I{entry.ReferenceType}Service {entry.ReferenceType}Service");
+}
+#>
+@inject ISubscriberProvider SubscriberProvider
+@inject IAuthenticationService AuthenticationService
+@inject NavigationManager NavigationManager
+<#cs
+var arrays = Entries.Where(e => e.IsEnumeration).ToArray();
+// if (arrays.Any()) WriteLine("");
+foreach (var entry in arrays)
+{
+	WriteLine($"@inject IStringLocalizer<{entry.EntryType}Loc> {entry.EntryType}Localizer");
+}
+#>
+@implements IDisposable
+
+@if (isNew)
+{
+	<PageTitle>@<#cs Write(Definition.Name)#>Loc.Create<#cs Write(Definition.Name)#></PageTitle>
+}
+else
+{
+	<PageTitle>@<#cs Write(Definition.Name)#>Loc.Edit<#cs Write(Definition.Name)#></PageTitle>
+}
+
+@if (Model == null)
+{
+	<p><em>@CommonLoc.Loading...</em></p>
+}
+else
+{
+	<EditForm Model="@Model" OnValidSubmit="@Save">
+		<section class="w-100 p-4 pb-4">
+			<div class="form-outline align-content-md-end mb-4 float-end">
+				<button type="submit" class="btn btn-success">@CommonLoc.Save</button>
+				<button @onclick="Remove" type="button" class="btn btn-danger">@CommonLoc.Delete</button>
+			</div>
+			<div class="form-outline mb-4">
+				@if (isNew)
+				{
+					<h1>@<#cs Write(Definition.Name)#>Loc.Create<#cs Write(Definition.Name)#></h1>
+				}
+				else
+				{
+					<h1>@<#cs Write(Definition.Name)#>Loc.Edit<#cs Write(Definition.Name)#></h1>
+				}
+			</div>
+			<div class="w-auto h-auto">
+				<DataAnnotationsValidator />
+				<ValidationSummary />
+
+<#cs
+foreach(var entry in Entries.Where(e => !e.IsArray))
+{
+	WriteLine($"				<!-- {entry.Field} input -->");
+	WriteLine("				<div class=\"form-outline mb-2\">");
+	WriteLine($"					<label class=\"form-label\" for=\"{entry.Field}Input\">@{Definition.Name}Loc.{entry.Field}</label>");
+
+	switch (entry.EntryType.ToLower())
+	{
+		case "string":
+			WriteLine($"					<InputText type=\"text\" id=\"{entry.Field}Input\" class=\"form-control\" @bind-Value=\"Model.{entry.Field}\" />");
+			break;
+		case "datetime":
+			WriteLine($"					<InputDate id=\"{entry.Field}Input\" class=\"form-control\" @bind-Value=\"Model.{entry.Field}\" ParsingErrorMessage=\"Must be a date\" />");
+			break;
+		case "bool":
+			WriteLine($"					<InputCheckbox id=\"{entry.Field}Input\" class=\"form-control\" @bind-Value=\"Model.{entry.Field}\" />");
+			break;
+		case "int":
+		case "long":
+		case "double":
+			WriteLine($"					<InputNumber id=\"{entry.Field}Input\" class=\"form-control\" @bind-Value=\"Model.{entry.Field}\" ParsingErrorMessage=\"Must be a number\" />");
+			break;
+		default:
+			if (entry.IsEnumeration)
+			{
+				WriteLine($"					<InputSelect id=\"{entry.Field}Input\" class=\"form-control\" @bind-Value=\"Model.{entry.Field}\" >");
+				WriteLine($"						@foreach (var value in Enum.GetValues(typeof(Contracts.{entry.EntryType})))");
+				WriteLine("						{");
+				WriteLine($"							<option value=\"@value\">@{entry.EntryType}Localizer[$\"{{@value}}\"]</option>");
+				WriteLine("						}");
+				WriteLine($"					</InputSelect>");
+			}
+			else if (entry.IsReference)
+			{
+				WriteLine($"					<InputSelect id=\"{entry.Field}Input\" class=\"form-control\" @bind-Value=\"Model.{entry.Field}Id\">");
+				WriteLine($"						@foreach (var value in _{entry.ReferenceTypeLow}s)");
+				WriteLine("						{");
+				var referenceDefinition = Definitions.First(e => e.Name == entry.ReferenceType);
+				var referenceEntry = referenceDefinition.Entries.First();
+				WriteLine($"							<option value=\"@value.Id\">@value.{referenceEntry.Field}</option>");
+				WriteLine("						}");
+				WriteLine($"					</InputSelect>");
+			}
+			else
+			{
+				WriteLine(entry.EntryType + " ???");
+			}
+			break;
+	}
+
+	WriteLine("				</div>");
+	WriteLine("");
+}
+Result = Result.TrimEnd(' ', '\r', '\n');
+WriteLine("");
+WriteLine("			</div>");
+#>		</section>
+<#cs
+var arrays = Entries.Where(e => e.IsArray).ToArray();
+if (arrays.Any())
+{
+	WriteLine("		<section>");
+}
+
+foreach(var entry in arrays)
+{
+	WriteLine("			<table class=\"table table-striped\">");
+	WriteLine("				<thead>");
+	WriteLine("					<tr>");
+
+	var referenceDefinition = Definitions.First(e => e.Name == entry.EntryType);
+
+	foreach(var e in referenceDefinition.Entries)
+	{
+		WriteLine($"						<th>@{entry.EntryType}Loc.{e.Field}</th>");
+	}
+
+	WriteLine($"						<th><button type=\"button\" class=\"btn btn-success w-100\" @onclick=\"Add{entry.Field}Entry\">@CommonLoc.New</button></th>");
+	WriteLine("					</tr>");
+	WriteLine("				</thead>");
+	WriteLine("				<tbody>");
+	WriteLine($"					@foreach (var entry in Model.{entry.Field})");
+	WriteLine("					{");
+	WriteLine("						<tr scope=\"row\">");
+	foreach(var e in referenceDefinition.Entries)
+	{
+		switch (e.EntryType.ToLower())
+		{
+			case "bool":
+				WriteLine($"							<td><input type=\"checkbox\" class=\"form-check-input\" @bind=entry.{e.Field} /></td>");
+			break;
+			default:
+				WriteLine($"							<td><input type=\"text\" class=\"form-control\" @bind=entry.{e.Field} /></td>");
+				break;
+		}
+	}
+	WriteLine($"							<td><button type=\"button\" class=\"btn btn-danger w-100\" @onclick=\"() => Remove{entry.Field}Entry(entry.Id)\">@CommonLoc.Delete</button></td>");
+	WriteLine("						</tr>");
+	WriteLine("					}");
+	WriteLine("				</tbody>");
+	WriteLine("			</table>");
+}
+
+if (arrays.Any())
+{
+	WriteLine("		</section>");
+}
+#>	</EditForm>
+}
+
+@code {
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	[Parameter]
+	public Guid Id { get; set; }
+
+	private ISubscriber? Subscriber;
+
+	private bool isNew = false;
+	private <#cs Write(Definition.Name)#>Model? Model;
+
+<#cs
+foreach (var entry in Entries.Where(e => e.IsReference))
+{
+	WriteLine($"	private IEnumerable<{entry.ReferenceType}ListItemModel> _users = Array.Empty<{entry.ReferenceType}ListItemModel>();");
+}
+#>
+	protected override async Task OnInitializedAsync()
+	{
+		var state = await AuthenticationService.GetAuthenticationStateAsync();
+
+		if (state.User.Identity is null)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigationManager.NavigateTo(url);
+			return;
+		}
+
+		try
+		{
+			if (Id == Guid.Empty)
+			{
+				Model = <#cs Write(Definition.Name)#>Service.Create<#cs Write(Definition.Name)#>();
+				isNew = true;
+			}
+			else
+			{
+				Model = await <#cs Write(Definition.Name)#>Service.GetItemAsync(Id);
+			}
+
+<#cs
+foreach (var entry in Entries.Where(e => e.IsReference))
+{
+	WriteLine($"			_{entry.ReferenceTypeLow}s = await {entry.ReferenceType}Service.GetItemsAsync(true);");
+}
+#>
+			Subscriber = await SubscriberProvider.GetSubscriber();
+
+			Subscriber.Register<<#cs Write(Definition.Name)#>Updated>(Handle);
+
+			await Subscriber.StartAsync();
+		}
+		catch (System.Security.Authentication.AuthenticationException)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigationManager.NavigateTo(url);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error loading <#cs Write(Definition.Name.ToLower())#>.");
+			ErrorService?.ShowError("Error", "Could not load. Server error.");
+		}
+	}
+
+	private async Task Save()
+	{
+		if (Model is null)
+		{
+			ErrorService?.ShowError("Error", "Model is null. Please reload the page.");
+			return;
+		}
+
+		try
+		{
+			if (isNew)
+			{
+				await <#cs Write(Definition.Name)#>Service.AddItemAsync(Model);
+				Id = Model.Id;
+				NavigationManager.NavigateTo($"/<#cs 
+var name = Definition.Name.ToLower();
+if (name.EndsWith("entry"))
+{
+	name = name[0..^5] + "entrie";
+}
+Write(name);
+#>/{Model.Id}", false, true);
+				isNew = false;
+			}
+			else
+			{
+				await <#cs Write(Definition.Name)#>Service.UpdateItemAsync(Model);
+			}
+
+			NavigationManager.NavigateTo("/<#cs 
+var name = Definition.Name.ToLower();
+if (name.EndsWith("entry"))
+{
+	name = name[0..^5] + "entrie";
+}
+Write(name);
+#>s");
+		}
+		catch (System.Security.Authentication.AuthenticationException)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigationManager.NavigateTo(url);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error saving <#cs Write(Definition.Name.ToLower())#>.");
+			ErrorService?.ShowError("Error", "Could not save. Server error.");
+		}
+	}
+
+	private async Task Remove()
+	{
+		if (Model is null)
+		{
+			ErrorService?.ShowError("Error", "Model is null. Please reload the page.");
+			return;
+		}
+
+		try
+		{
+			if (!isNew)
+			{
+				await <#cs Write(Definition.Name)#>Service.DeleteItemAsync(Model.Id);
+			}
+
+			NavigationManager.NavigateTo("/<#cs 
+var name = Definition.Name.ToLower();
+if (name.EndsWith("entry"))
+{
+	name = name[0..^5] + "entrie";
+}
+Write(name);
+#>s");
+		}
+		catch (System.Security.Authentication.AuthenticationException)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigationManager.NavigateTo(url);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error saving <#cs Write(Definition.Name.ToLower())#>.");
+			ErrorService?.ShowError("Error", "Could not save. Server error.");
+		}
+	}
+
+	private async Task Handle(<#cs Write(Definition.Name)#>Updated message)
+	{
+		if (Model is null || Model.Id != message.Id)
+		{
+			return;
+		}
+
+		Map.From(message).To(Model);
+
+		await InvokeAsync(StateHasChanged);
+	}
+<#cs
+var arrays = Entries.Where(e => e.IsArray).ToArray();
+foreach (var entry in arrays)
+{
+	WriteLine("");
+	WriteLine($"	private void Add{entry.Field}Entry()");
+	WriteLine("	{");
+	WriteLine("		if (Model is null)");
+	WriteLine("		{");
+	WriteLine("			return;");
+	WriteLine("		}");
+	WriteLine("");
+	WriteLine("		var max = 0;");
+	WriteLine("");
+	WriteLine($"		if (Model.{entry.Field}.Count > 0)");
+	WriteLine("		{");
+	WriteLine($"			max = Model.{entry.Field}.Max(e => e.Id) + 1;");
+	WriteLine("		}");
+	WriteLine("");
+	WriteLine($"		var model = new {entry.EntryType}Model() {{ Id = max }};");
+	WriteLine("");
+	WriteLine($"		Model.{entry.Field}.Add(model);");
+	WriteLine("	}");
+	WriteLine("");
+	WriteLine($"	private void Remove{entry.Field}Entry(int id)");
+	WriteLine("	{");
+	WriteLine("		if (Model is null)");
+	WriteLine("		{");
+	WriteLine("			return;");
+	WriteLine("		}");
+	WriteLine("");
+	WriteLine($"		var oldItem = Model.{entry.Field}.FirstOrDefault(i => i.Id == id);");
+	WriteLine("");
+	WriteLine("		if (oldItem != null)");
+	WriteLine("		{");
+	WriteLine($"			var index = Model.{entry.Field}.IndexOf(oldItem);");
+	WriteLine("");
+	WriteLine("			if (index != -1)");
+	WriteLine("			{");
+	WriteLine($"				Model.{entry.Field}.RemoveAt(index);");
+	WriteLine("			}");
+	WriteLine("		}");
+	WriteLine("	}");
+}
+#>
+	public void Dispose()
+	{
+		Subscriber?.Unregister(this);
+	}
+}
+<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Cosei.Client.Http" Version="0.1.1" />
+		<PackageReference Include="Cosei.Client.RabbitMq" Version="0.1.1" />
+		<PackageReference Include="Najlot.Map" Version="0.0.5" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.7.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\<#cs Write(Project.Namespace)#>.Contracts\<#cs Write(Project.Namespace)#>.Contracts.csproj" />
+	</ItemGroup>
+
+</Project>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

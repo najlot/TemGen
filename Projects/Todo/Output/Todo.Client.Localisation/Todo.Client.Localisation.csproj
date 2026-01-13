@@ -1,0 +1,100 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Update="CommonLoc.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>CommonLoc.resx</DependentUpon>
+		</Compile>
+		<Compile Update="ProfileLoc.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>ProfileLoc.resx</DependentUpon>
+		</Compile>
+		<Compile Update="SourceLoc.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>SourceLoc.resx</DependentUpon>
+		</Compile>
+		<Compile Update="UserLoc.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>UserLoc.resx</DependentUpon>
+		</Compile>
+		<Compile Update="ChecklistTaskLoc.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>ChecklistTaskLoc.resx</DependentUpon>
+		</Compile>
+		<Compile Update="NoteLoc.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>NoteLoc.resx</DependentUpon>
+		</Compile>
+		<Compile Update="PredefinedColorLoc.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>PredefinedColorLoc.resx</DependentUpon>
+		</Compile>
+		<Compile Update="TodoItemLoc.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>TodoItemLoc.resx</DependentUpon>
+		</Compile>
+		<Compile Update="TodoItemStatusLoc.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>TodoItemStatusLoc.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="CommonLoc.de.resx">
+			<Generator></Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="CommonLoc.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>CommonLoc.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="ProfileLoc.de.resx">
+			<Generator></Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="ProfileLoc.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>ProfileLoc.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="SourceLoc.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>SourceLoc.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="UserLoc.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>UserLoc.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="ChecklistTaskLoc.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>ChecklistTaskLoc.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="NoteLoc.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>NoteLoc.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="PredefinedColorLoc.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>PredefinedColorLoc.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="TodoItemLoc.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>TodoItemLoc.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="TodoItemStatusLoc.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>TodoItemStatusLoc.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+	</ItemGroup>
+
+</Project>

@@ -1,8 +1,0 @@
-Guid Id
-string Name
-DateTime CreatedAt
-DateTime? ModifiedAt
-CustomerId Client
-OrderInfo MoreInfo
-OrderStatus Status
-Position[] Positions
