@@ -6,8 +6,8 @@ public static class ServiceCollectionExtensions
 {
 	public static Najlot.Map.IMap RegisterDataMappings(this Najlot.Map.IMap map)
 	{
-		map.Register<ChecklistTaskMappings>();
 		map.Register<NoteMappings>();
+		map.Register<ChecklistTaskMappings>();
 		map.Register<TodoItemMappings>();
 		map.Register<UserMappings>();
 

@@ -7,8 +7,8 @@ public static class MapRegisterExtensions
 {
 	public static IMap RegisterDataMappings(this IMap map)
 	{
-		map.Register<ChecklistTaskMappings>();
 		map.Register<NoteMappings>();
+		map.Register<ChecklistTaskMappings>();
 		map.Register<TodoItemMappings>();
 		map.Register<UserMappings>();
 

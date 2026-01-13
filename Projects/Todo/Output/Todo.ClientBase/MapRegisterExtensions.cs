@@ -7,8 +7,8 @@ public static class MapRegisterExtensions
 {
 	public static IMap RegisterViewModelMappings(this IMap map)
 	{
-		map.Register<ChecklistTaskViewModelMappings>();
 		map.Register<NoteViewModelMappings>();
+		map.Register<ChecklistTaskViewModelMappings>();
 		map.Register<TodoItemViewModelMappings>();
 
 		return map;
