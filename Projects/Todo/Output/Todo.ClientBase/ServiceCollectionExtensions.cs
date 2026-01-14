@@ -18,10 +18,10 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddScoped<AllNotesViewModel>();
 		serviceCollection.AddScoped<AllTodoItemsViewModel>();
 
-		serviceCollection.AddTransient<NoteViewModel>();
-		serviceCollection.AddSingleton<Func<NoteViewModel>>(c => () => c.GetRequiredService<NoteViewModel>());
 		serviceCollection.AddTransient<ChecklistTaskViewModel>();
 		serviceCollection.AddSingleton<Func<ChecklistTaskViewModel>>(c => () => c.GetRequiredService<ChecklistTaskViewModel>());
+		serviceCollection.AddTransient<NoteViewModel>();
+		serviceCollection.AddSingleton<Func<NoteViewModel>>(c => () => c.GetRequiredService<NoteViewModel>());
 		serviceCollection.AddTransient<TodoItemViewModel>();
 		serviceCollection.AddSingleton<Func<TodoItemViewModel>>(c => () => c.GetRequiredService<TodoItemViewModel>());
 	}

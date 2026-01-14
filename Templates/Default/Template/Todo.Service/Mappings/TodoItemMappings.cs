@@ -22,12 +22,24 @@ internal partial class <#cs Write(Definition.Name)#>Mappings
 <#cs WriteCtorMapping("", "", MapArrayStrategy.LeaveAsIs)#>);
 
 	public static partial void MapToModel(IMap map, Create<#cs Write(Definition.Name)#> from, <#cs Write(Definition.Name)#>Model to);
-
-	public static void MapToModel(IMap map, Update<#cs Write(Definition.Name)#> from, <#cs Write(Definition.Name)#>Model to)
+<#cs 
+	bool hasArray = Entries.Any(e => e.IsArray);
+	WriteLine("");
+	foreach(var entry in Entries.Where(e => e.IsArray))
 	{
-		to.Id = from.Id;
-<#cs WriteFromToMapping("", "", arrayStrategy: MapArrayStrategy.MapInto)#>	}
-
+		WriteLine($"	[MapIgnoreProperty(nameof(to.{entry.Field}))]");
+	}
+	WriteLine($"	private static partial void MapPartialToModel(IMap map, Update{Definition.Name} from, {Definition.Name}Model to);");
+	WriteLine($"	public static void MapToModel(IMap map, Update{Definition.Name} from, {Definition.Name}Model to)");
+	WriteLine("	{");
+	WriteLine("		MapPartialToModel(map, from, to);");
+	if (hasArray) WriteLine("");
+	foreach(var entry in Entries.Where(e => e.IsArray))
+	{
+		WriteLine($"		to.{entry.Field} = map.From<{entry.EntryType}>(from.{entry.Field}).ToList(to.{entry.Field});");
+	}
+	WriteLine("	}");
+#>
 	public static partial void MapToModel(IMap map, <#cs Write(Definition.Name)#>Model from, <#cs Write(Definition.Name)#> to);
 
 	public static Expression<Func<<#cs Write(Definition.Name)#>Model, <#cs Write(Definition.Name)#>ListItem>> GetListItemExpression()
@@ -50,8 +62,5 @@ Result = Result.TrimEnd(',', '\n', '\r');
 		};
 	}
 
-	public static void MapToModel(IMap map, <#cs Write(Definition.Name)#>Model from, <#cs Write(Definition.Name)#>ListItem to)
-	{
-		to.Id = from.Id;
-<#cs WriteFromToMapping("Model", "", 2, onlySimple: true)#>	}
+	public static partial void MapToModel(IMap map, <#cs Write(Definition.Name)#>Model from, <#cs Write(Definition.Name)#>ListItem to);
 }<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

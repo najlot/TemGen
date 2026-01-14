@@ -10,6 +10,7 @@
 		<PackageReference Include="Cosei.Client.Http" Version="0.1.2" />
 		<PackageReference Include="Cosei.Client.RabbitMq" Version="0.1.2" />
 		<PackageReference Include="Najlot.Map" Version="0.1.2" />
+		<PackageReference Include="Najlot.Map.SourceGenerator" Version="0.1.2" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
 	</ItemGroup>
 

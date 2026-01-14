@@ -350,3 +350,4 @@ MigrationBackup/
 .ionide/
 /src/TemGen/Properties/launchSettings.json
 /Projects/Todo/Output/Todo.Service/config
+*.bak

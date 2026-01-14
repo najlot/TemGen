@@ -7,36 +7,52 @@ using <#cs Write(Project.Namespace)#>.Contracts.Events;
 
 namespace <#cs Write(Project.Namespace)#>.ClientBase.Mappings;
 
-internal sealed class <#cs Write(Definition.Name)#>ViewModelMappings
+[Mapping]
+internal sealed partial class <#cs Write(Definition.Name)#>ViewModelMappings
 {
-	[MapIgnoreProperty(nameof(to.IsBusy))]
-	[MapIgnoreProperty(nameof(to.IsNew))]
-	[MapIgnoreProperty(nameof(to.HasErrors))]
-	[MapIgnoreProperty(nameof(to.Errors))]
-	public static void MapToViewModel(IMap map, <#cs Write(Definition.Name)#>Updated from, <#cs Write(Definition.Name)#>ViewModel to)
-	{
-		to.Id = from.Id;
-<#cs WriteFromToMapping("", "ViewModel", int.MaxValue, MapArrayStrategy.RemapToCustomCollection)#>
-<#cs foreach(var entry in Entries.Where(e => e.IsArray))
-{
-	WriteLine($"		foreach (var e in to.{entry.Field}) e.ParentId = from.Id;");
-}#>	}
+<#cs 
 
-	public static void MapToModel(IMap map, <#cs Write(Definition.Name)#>ViewModel from, <#cs Write(Definition.Name)#>Model to)
-	{
-		to.Id = from.Id;
-<#cs WriteFromToMapping("ViewModel", "Model")#>	}
+bool hasArrays = Entries.Any(e => e.IsArray);
 
-	[MapIgnoreProperty(nameof(to.IsBusy))]
-	[MapIgnoreProperty(nameof(to.IsNew))]
-	[MapIgnoreProperty(nameof(to.HasErrors))]
-	[MapIgnoreProperty(nameof(to.Errors))]
-	public static void MapToViewModel(IMap map, <#cs Write(Definition.Name)#>Model from, <#cs Write(Definition.Name)#>ViewModel to)
-	{
-		to.Id = from.Id;
-<#cs WriteFromToMapping("Model", "ViewModel", int.MaxValue, MapArrayStrategy.RemapToCustomCollection)#>
-<#cs foreach(var entry in Entries.Where(e => e.IsArray))
+foreach(var entry in Entries.Where(e => e.IsArray))
 {
+	WriteLine($"	[MapIgnoreProperty(nameof(to.{entry.Field}))]");
+}
+WriteLine($"	private static partial void MapPartialToViewModel(IMap map, {Definition.Name}Updated from, {Definition.Name}ViewModel to);");
+WriteLine("");
+WriteLine("	[MapValidateSource]");
+WriteLine($"	public static void MapToViewModel(IMap map, {Definition.Name}Updated from, {Definition.Name}ViewModel to)");
+WriteLine("	{");
+WriteLine("		MapPartialToViewModel(map, from, to);");
+if (hasArrays) WriteLine("");
+foreach(var entry in Entries.Where(e => e.IsArray))
+{
+	WriteLine($"		to.{entry.Field} = [.. map.From<{entry.EntryType}>(from.{entry.Field}).To<{entry.EntryType}ViewModel>()];");
+	WriteLine("");
 	WriteLine($"		foreach (var e in to.{entry.Field}) e.ParentId = from.Id;");
-}#>	}
+}
+WriteLine("	}");
+WriteLine("");
+WriteLine($"	public static partial void MapToModel(IMap map, {Definition.Name}ViewModel from, {Definition.Name}Model to);");
+WriteLine("");
+foreach(var entry in Entries.Where(e => e.IsArray))
+{
+	WriteLine($"	[MapIgnoreProperty(nameof(to.{entry.Field}))]");
+}
+WriteLine($"	private static partial void MapPartialToViewModel(IMap map, {Definition.Name}Model from, {Definition.Name}ViewModel to);");
+WriteLine("");
+WriteLine("	[MapValidateSource]");
+WriteLine($"	public static void MapToViewModel(IMap map, {Definition.Name}Model from, {Definition.Name}ViewModel to)");
+WriteLine("	{");
+WriteLine("		MapPartialToViewModel(map, from, to);");
+if (hasArrays) WriteLine("");
+foreach(var entry in Entries.Where(e => e.IsArray))
+{
+	WriteLine($"		to.{entry.Field} = [.. map.From<{entry.EntryType}Model>(from.{entry.Field}).To<{entry.EntryType}ViewModel>()];");
+	WriteLine("");
+	WriteLine($"		foreach (var e in to.{entry.Field}) e.ParentId = from.Id;");
+}
+Write("	}");
+
+#>
 }<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>
