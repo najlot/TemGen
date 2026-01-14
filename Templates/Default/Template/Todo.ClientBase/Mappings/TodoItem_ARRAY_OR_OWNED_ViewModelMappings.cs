@@ -15,14 +15,10 @@ internal sealed partial class <#cs Write(Definition.Name)#>ViewModelMappings
 	[MapIgnoreProperty(nameof(to.Errors))]
 	public static partial void MapFromViewModelToViewModel(IMap map, <#cs Write(Definition.Name)#>ViewModel from, <#cs Write(Definition.Name)#>ViewModel to);
 
-	[MapIgnoreProperty(nameof(to.ParentId))]
-	[MapIgnoreProperty(nameof(to.HasErrors))]
-	[MapIgnoreProperty(nameof(to.Errors))]
+	[MapValidateSource]
 	public static partial void MapToViewModel(IMap map, <#cs Write(Definition.Name)#>Model from, <#cs Write(Definition.Name)#>ViewModel to);
 
-	[MapIgnoreProperty(nameof(to.ParentId))]
-	[MapIgnoreProperty(nameof(to.HasErrors))]
-	[MapIgnoreProperty(nameof(to.Errors))]
+	[MapValidateSource]
 	public static partial void MapToViewModel(IMap map, <#cs Write(Definition.Name)#> from, <#cs Write(Definition.Name)#>ViewModel to);
 }<#cs
 SetOutputPath(!(Definition.IsOwnedType || Definition.IsArray));
