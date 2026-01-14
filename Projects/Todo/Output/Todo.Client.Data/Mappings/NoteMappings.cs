@@ -1,5 +1,4 @@
 using Najlot.Map;
-using Najlot.Map.Attributes;
 using Todo.Client.Data.Models;
 using Todo.Contracts;
 using Todo.Contracts.Commands;
@@ -8,42 +7,73 @@ using Todo.Contracts.ListItems;
 
 namespace Todo.Client.Data.Mappings;
 
-[Mapping]
-internal sealed partial class NoteMappings
+internal sealed class NoteMappings
 {
-	public static CreateNote MapToCreate(IMap map, NoteModel from) =>
+	public CreateNote MapToCreate(IMap map, NoteModel from) =>
 		new(from.Id,
 			from.Title,
 			from.Content,
 			from.Color);
 
-	public static NoteCreated MapToCreated(IMap map, NoteModel from) =>
+	public NoteCreated MapToCreated(IMap map, NoteModel from) =>
 		new(from.Id,
 			from.Title,
 			from.Content,
 			from.Color);
 
-	public static UpdateNote MapToUpdate(IMap map, NoteModel from) =>
+	public UpdateNote MapToUpdate(IMap map, NoteModel from) =>
 		new(from.Id,
 			from.Title,
 			from.Content,
 			from.Color);
 
-	public static NoteUpdated MapToUpdated(IMap map, NoteModel from) =>
+	public NoteUpdated MapToUpdated(IMap map, NoteModel from) =>
 		new(from.Id,
 			from.Title,
 			from.Content,
 			from.Color);
 
-	public static partial void MapToModel(IMap map, NoteCreated from, NoteListItemModel to);
+	public void MapToModel(IMap map, NoteCreated from, NoteListItemModel to)
+	{
+		to.Id = from.Id;
+		to.Title = from.Title;
+		to.Content = from.Content;
+	}
 
-	public static partial void MapToModel(IMap map, NoteUpdated from, NoteListItemModel to);
+	public void MapToModel(IMap map, NoteUpdated from, NoteListItemModel to)
+	{
+		to.Id = from.Id;
+		to.Title = from.Title;
+		to.Content = from.Content;
+	}
 
-	public static partial void MapToModel(IMap map, NoteListItem from, NoteListItemModel to);
+	public void MapToModel(IMap map, NoteListItem from, NoteListItemModel to)
+	{
+		to.Id = from.Id;
+		to.Title = from.Title;
+		to.Content = from.Content;
+	}
 
-	public static partial void MapModelToModel(IMap map, NoteModel from, NoteListItemModel to);
+	public void MapModelToModel(IMap map, NoteModel from, NoteListItemModel to)
+	{
+		to.Id = from.Id;
+		to.Title = from.Title;
+		to.Content = from.Content;
+	}
 
-	public static partial void MapToModel(IMap map, Note from, NoteModel to);
+	public void MapToModel(IMap map, Note from, NoteModel to)
+	{
+		to.Id = from.Id;
+		to.Title = from.Title;
+		to.Content = from.Content;
+		to.Color = from.Color;
+	}
 
-	public static partial void MapToModel(IMap map, NoteUpdated from, NoteModel to);
+	public void MapToModel(IMap map, NoteUpdated from, NoteModel to)
+	{
+		to.Id = from.Id;
+		to.Title = from.Title;
+		to.Content = from.Content;
+		to.Color = from.Color;
+	}
 }

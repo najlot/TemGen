@@ -1,0 +1,112 @@
+@page "/Register"
+
+@using System.ComponentModel.DataAnnotations;
+@using Todo.Blazor.Identity;
+@using Todo.Blazor.Services;
+@using Todo.Client.Data.Identity;
+@using Todo.Client.Localisation;
+
+@inject IAuthenticationService AuthenticationService
+@inject ITokenService TokenService
+@inject IRegistrationService RegistrationService
+@inject NavigationManager NavigationManager
+@inject ILogger<Register> Logger
+
+<PageTitle>Register</PageTitle>
+
+<EditForm Model="@Input" OnValidSubmit="@TryRegister">
+	<section class="w-100 p-4 d-flex justify-content-center pb-4">
+		<div>
+			<h1>@CommonLoc.Register</h1>
+			<br />
+			<DataAnnotationsValidator />
+			<ValidationSummary />
+
+			<!-- Username input -->
+			<div class="form-outline mb-4">
+				<label class="form-label" for="UsernameInput">@CommonLoc.Username</label>
+				<InputText type="text" id="UsernameInput" class="form-control" @bind-Value="Input.Username" />
+			</div>
+
+			<!-- Email input -->
+			<div class="form-outline mb-4">
+				<label class="form-label" for="EmailInput">@CommonLoc.EmailAddress</label>
+				<InputText type="email" id="EmailInput" class="form-control" @bind-Value="Input.EMail" />
+			</div>
+
+			<!-- Password input -->
+			<div class="form-outline mb-4">
+				<label class="form-label" for="PasswordInput">@CommonLoc.Password</label>
+				<InputText type="password" id="PasswordInput" class="form-control" @bind-Value="Input.Password" />
+			</div>
+
+			<div class="form-outline mb-4">
+				<button type="submit" class="btn btn-primary w-100">@CommonLoc.Register</button>
+			</div>
+		</div>
+	</section>
+</EditForm>
+
+@code {
+	private class InputModel
+	{
+		[Required]
+		[StringLength(30, MinimumLength = 3)]
+		public string Username { get; set; } = string.Empty;
+
+		[Required]
+		[EmailAddress]
+		public string EMail { get; set; } = string.Empty;
+
+		[Required]
+		[DataType(DataType.Password)]
+		[StringLength(30, MinimumLength = 8)]
+		public string Password { get; set; } = string.Empty;
+	}
+
+	private InputModel Input = new();
+
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		ErrorService?.HideError();
+		await AuthenticationService.LogoutAsync();
+		await base.OnInitializedAsync();
+	}
+
+	private async Task TryRegister()
+	{
+		string? token = null;
+		var result = await RegistrationService.Register(Guid.NewGuid(), Input.Username, Input.EMail, Input.Password);
+
+		if (!result.IsSuccess)
+		{
+			Input.Password = "";
+			ErrorService?.ShowError("Register", result.ErrorMessage);
+			return;
+		}
+
+		try
+		{
+			token = await TokenService.CreateToken(Input.Username, Input.Password);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error creating token.");
+		}
+
+		if (string.IsNullOrWhiteSpace(token))
+		{
+			ErrorService?.ShowError("Login", "Could not login. Server error.");
+			await AuthenticationService.LogoutAsync();
+		}
+		else
+		{
+			await AuthenticationService.LoginAsync(Input.Username, token);
+			ErrorService?.HideError();
+			NavigationManager.NavigateTo("/");
+		}
+	}
+}

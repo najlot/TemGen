@@ -27,10 +27,12 @@ internal partial class NoteMappings
 
 	public static partial void MapToModel(IMap map, CreateNote from, NoteModel to);
 
-	private static partial void MapPartialToModel(IMap map, UpdateNote from, NoteModel to);
 	public static void MapToModel(IMap map, UpdateNote from, NoteModel to)
 	{
-		MapPartialToModel(map, from, to);
+		to.Id = from.Id;
+		to.Title = from.Title;
+		to.Content = from.Content;
+		to.Color = from.Color;
 	}
 
 	public static partial void MapToModel(IMap map, NoteModel from, Note to);
@@ -45,5 +47,10 @@ internal partial class NoteMappings
 		};
 	}
 
-	public static partial void MapToModel(IMap map, NoteModel from, NoteListItem to);
+	public static void MapToModel(IMap map, NoteModel from, NoteListItem to)
+	{
+		to.Id = from.Id;
+		to.Title = from.Title;
+		to.Content = from.Content;
+	}
 }

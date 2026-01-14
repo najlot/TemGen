@@ -1,5 +1,4 @@
 using Najlot.Map;
-using Najlot.Map.Attributes;
 using Todo.Client.Data.Models;
 using Todo.Contracts;
 using Todo.Contracts.Commands;
@@ -8,10 +7,9 @@ using Todo.Contracts.ListItems;
 
 namespace Todo.Client.Data.Mappings;
 
-[Mapping]
-internal sealed partial class TodoItemMappings
+internal sealed class TodoItemMappings
 {
-	public static CreateTodoItem MapToCreate(IMap map, TodoItemModel from) =>
+	public CreateTodoItem MapToCreate(IMap map, TodoItemModel from) =>
 		new(from.Id,
 			from.Title,
 			from.Content,
@@ -24,7 +22,7 @@ internal sealed partial class TodoItemMappings
 			from.Priority,
 			map.From<ChecklistTaskModel>(from.Checklist).ToList<ChecklistTask>());
 
-	public static TodoItemCreated MapToCreated(IMap map, TodoItemModel from) =>
+	public TodoItemCreated MapToCreated(IMap map, TodoItemModel from) =>
 		new(from.Id,
 			from.Title,
 			from.Content,
@@ -37,7 +35,7 @@ internal sealed partial class TodoItemMappings
 			from.Priority,
 			map.From<ChecklistTaskModel>(from.Checklist).ToList<ChecklistTask>());
 
-	public static UpdateTodoItem MapToUpdate(IMap map, TodoItemModel from) =>
+	public UpdateTodoItem MapToUpdate(IMap map, TodoItemModel from) =>
 		new(from.Id,
 			from.Title,
 			from.Content,
@@ -50,7 +48,7 @@ internal sealed partial class TodoItemMappings
 			from.Priority,
 			map.From<ChecklistTaskModel>(from.Checklist).ToList<ChecklistTask>());
 
-	public static TodoItemUpdated MapToUpdated(IMap map, TodoItemModel from) =>
+	public TodoItemUpdated MapToUpdated(IMap map, TodoItemModel from) =>
 		new(from.Id,
 			from.Title,
 			from.Content,
@@ -63,15 +61,61 @@ internal sealed partial class TodoItemMappings
 			from.Priority,
 			map.From<ChecklistTaskModel>(from.Checklist).ToList<ChecklistTask>());
 
-	public static partial void MapToModel(IMap map, TodoItemCreated from, TodoItemListItemModel to);
+	public void MapToModel(IMap map, TodoItemCreated from, TodoItemListItemModel to)
+	{
+		to.Id = from.Id;
+		to.Title = from.Title;
+		to.Content = from.Content;
+	}
 
-	public static partial void MapToModel(IMap map, TodoItemUpdated from, TodoItemListItemModel to);
+	public void MapToModel(IMap map, TodoItemUpdated from, TodoItemListItemModel to)
+	{
+		to.Id = from.Id;
+		to.Title = from.Title;
+		to.Content = from.Content;
+	}
 
-	public static partial void MapToModel(IMap map, TodoItemListItem from, TodoItemListItemModel to);
+	public void MapToModel(IMap map, TodoItemListItem from, TodoItemListItemModel to)
+	{
+		to.Id = from.Id;
+		to.Title = from.Title;
+		to.Content = from.Content;
+	}
 
-	public static partial void MapModelToModel(IMap map, TodoItemModel from, TodoItemListItemModel to);
+	public void MapModelToModel(IMap map, TodoItemModel from, TodoItemListItemModel to)
+	{
+		to.Id = from.Id;
+		to.Title = from.Title;
+		to.Content = from.Content;
+	}
 
-	public static partial void MapToModel(IMap map, TodoItem from, TodoItemModel to);
+	public void MapToModel(IMap map, TodoItem from, TodoItemModel to)
+	{
+		to.Id = from.Id;
+		to.Title = from.Title;
+		to.Content = from.Content;
+		to.CreatedAt = from.CreatedAt;
+		to.CreatedBy = from.CreatedBy;
+		to.AssignedToId = from.AssignedToId;
+		to.Status = from.Status;
+		to.ChangedAt = from.ChangedAt;
+		to.ChangedBy = from.ChangedBy;
+		to.Priority = from.Priority;
+		to.Checklist = map.From<ChecklistTask>(from.Checklist).ToList<ChecklistTaskModel>();
+	}
 
-	public static partial void MapToModel(IMap map, TodoItemUpdated from, TodoItemModel to);
+	public void MapToModel(IMap map, TodoItemUpdated from, TodoItemModel to)
+	{
+		to.Id = from.Id;
+		to.Title = from.Title;
+		to.Content = from.Content;
+		to.CreatedAt = from.CreatedAt;
+		to.CreatedBy = from.CreatedBy;
+		to.AssignedToId = from.AssignedToId;
+		to.Status = from.Status;
+		to.ChangedAt = from.ChangedAt;
+		to.ChangedBy = from.ChangedBy;
+		to.Priority = from.Priority;
+		to.Checklist = map.From<ChecklistTask>(from.Checklist).ToList<ChecklistTaskModel>();
+	}
 }

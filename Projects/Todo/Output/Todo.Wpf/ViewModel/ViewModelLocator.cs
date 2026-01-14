@@ -17,7 +17,7 @@ public class ViewModelLocator
 	public ViewModelLocator()
 	{
 		var serviceCollection = new ServiceCollection();
-		var map = new Najlot.Map.Map().RegisterTodoClientDataMappings().RegisterTodoClientBaseMappings();
+		var map = new Najlot.Map.Map().RegisterDataMappings().RegisterViewModelMappings();
 		serviceCollection.AddSingleton(map);
 
 		// Register services
