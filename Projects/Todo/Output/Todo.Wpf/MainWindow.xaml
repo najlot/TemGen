@@ -36,11 +36,11 @@
 		<DataTemplate DataType="{x:Type vms:AllTodoItemsViewModel}">
 			<Views:AllTodoItemsView />
 		</DataTemplate>
-		<DataTemplate DataType="{x:Type vms:ChecklistTaskViewModel}">
-			<Views:ChecklistTaskView />
-		</DataTemplate>
 		<DataTemplate DataType="{x:Type vms:NoteViewModel}">
 			<Views:NoteView />
+		</DataTemplate>
+		<DataTemplate DataType="{x:Type vms:ChecklistTaskViewModel}">
+			<Views:ChecklistTaskView />
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vms:TodoItemViewModel}">
 			<Views:TodoItemView />
