@@ -50,7 +50,6 @@ internal partial class TodoItemMappings
 		to.Checklist = map.From<ChecklistTask>(from.Checklist).ToList(to.Checklist);
 	}
 
-
 	public static partial void MapToModel(IMap map, TodoItemModel from, TodoItem to);
 
 	public static Expression<Func<TodoItemModel, TodoItemListItem>> GetListItemExpression()

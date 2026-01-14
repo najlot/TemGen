@@ -8,8 +8,11 @@ namespace <#cs Write(Project.Namespace)#>.Client.Data.Mappings;
 [Mapping]
 internal sealed partial class <#cs Write(Definition.Name)#>Mappings
 {
-	[MapIgnoreProperty(nameof(to.Id))] // Do not map the Id property as it makes problems with entity tracking in EF Core
-	public static partial void Map(IMap map, <#cs Write(Definition.Name)#> from, <#cs Write(Definition.Name)#> to);
+	public static partial void MapFromModel(IMap map, <#cs Write(Definition.Name)#>Model from, <#cs Write(Definition.Name)#> to);
+
+	public static partial void MapToModel(IMap map, <#cs Write(Definition.Name)#> from, <#cs Write(Definition.Name)#>Model to);
+
+	public static partial void MapFromModelToModel(IMap map, <#cs Write(Definition.Name)#>Model from, <#cs Write(Definition.Name)#>Model to);
 }<#cs
 SetOutputPath(!(Definition.IsOwnedType || Definition.IsArray));
 RelativePath = RelativePath.Replace("_ARRAY_OR_OWNED_", "");
