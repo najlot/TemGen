@@ -28,7 +28,6 @@ TemGen is a powerful template-based code generator that processes templates with
   - Blazor web applications
   - Contracts, events, and DTOs
   - Tests and localization
-- **Incremental updates**: Only regenerates files that have changed
 - **Customizable templates**: Create your own templates or use the included default template
 - **Resource management**: Copy and process resource files alongside generated code
 - **Watch mode**: Run in loop mode to continuously regenerate on demand
@@ -291,7 +290,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Author
-
-Created by [Najlot](https://github.com/Najlot)
