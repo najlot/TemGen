@@ -41,20 +41,15 @@ internal partial class TodoItemMappings
 
 	public static partial void MapToModel(IMap map, CreateTodoItem from, TodoItemModel to);
 
+	[MapIgnoreProperty(nameof(to.Checklist))]
+	private static partial void MapPartialToModel(IMap map, UpdateTodoItem from, TodoItemModel to);
 	public static void MapToModel(IMap map, UpdateTodoItem from, TodoItemModel to)
 	{
-		to.Id = from.Id;
-		to.Title = from.Title;
-		to.Content = from.Content;
-		to.CreatedAt = from.CreatedAt;
-		to.CreatedBy = from.CreatedBy;
-		to.AssignedToId = from.AssignedToId;
-		to.Status = from.Status;
-		to.ChangedAt = from.ChangedAt;
-		to.ChangedBy = from.ChangedBy;
-		to.Priority = from.Priority;
+		MapPartialToModel(map, from, to);
+
 		to.Checklist = map.From<ChecklistTask>(from.Checklist).ToList(to.Checklist);
 	}
+
 
 	public static partial void MapToModel(IMap map, TodoItemModel from, TodoItem to);
 
@@ -68,10 +63,5 @@ internal partial class TodoItemMappings
 		};
 	}
 
-	public static void MapToModel(IMap map, TodoItemModel from, TodoItemListItem to)
-	{
-		to.Id = from.Id;
-		to.Title = from.Title;
-		to.Content = from.Content;
-	}
+	public static partial void MapToModel(IMap map, TodoItemModel from, TodoItemListItem to);
 }

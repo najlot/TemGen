@@ -6,36 +6,24 @@ using <#cs Write(Project.Namespace)#>.Contracts;
 
 namespace <#cs Write(Project.Namespace)#>.ClientBase.Mappings;
 
-internal sealed class <#cs Write(Definition.Name)#>ViewModelMappings
+[Mapping]
+internal sealed partial class <#cs Write(Definition.Name)#>ViewModelMappings
 {
-	public static void MapToModel(IMap map, <#cs Write(Definition.Name)#>ViewModel from, <#cs Write(Definition.Name)#>Model to)
-	{
-		to.Id = from.Id;
-<#cs WriteFromToMapping("ViewModel", "Model")#>	}
+	public static partial void MapToModel(IMap map, <#cs Write(Definition.Name)#>ViewModel from, <#cs Write(Definition.Name)#>Model to);
 
 	[MapIgnoreProperty(nameof(to.HasErrors))]
 	[MapIgnoreProperty(nameof(to.Errors))]
-	public static void MapFromViewModelToViewModel(IMap map, <#cs Write(Definition.Name)#>ViewModel from, <#cs Write(Definition.Name)#>ViewModel to)
-	{
-		to.Id = from.Id;
-		to.ParentId = from.ParentId;
-<#cs WriteFromToMapping("Model", "ViewModel")#>	}
+	public static partial void MapFromViewModelToViewModel(IMap map, <#cs Write(Definition.Name)#>ViewModel from, <#cs Write(Definition.Name)#>ViewModel to);
 
 	[MapIgnoreProperty(nameof(to.ParentId))]
 	[MapIgnoreProperty(nameof(to.HasErrors))]
 	[MapIgnoreProperty(nameof(to.Errors))]
-	public static void MapToViewModel(IMap map, <#cs Write(Definition.Name)#>Model from, <#cs Write(Definition.Name)#>ViewModel to)
-	{
-		to.Id = from.Id;
-<#cs WriteFromToMapping("Model", "ViewModel")#>	}
+	public static partial void MapToViewModel(IMap map, <#cs Write(Definition.Name)#>Model from, <#cs Write(Definition.Name)#>ViewModel to);
 
 	[MapIgnoreProperty(nameof(to.ParentId))]
 	[MapIgnoreProperty(nameof(to.HasErrors))]
 	[MapIgnoreProperty(nameof(to.Errors))]
-	public static void MapToViewModel(IMap map, <#cs Write(Definition.Name)#> from, <#cs Write(Definition.Name)#>ViewModel to)
-	{
-		to.Id = from.Id;
-<#cs WriteFromToMapping("", "ViewModel")#>	}
+	public static partial void MapToViewModel(IMap map, <#cs Write(Definition.Name)#> from, <#cs Write(Definition.Name)#>ViewModel to);
 }<#cs
 SetOutputPath(!(Definition.IsOwnedType || Definition.IsArray));
 RelativePath = RelativePath.Replace("_ARRAY_OR_OWNED_", "");

@@ -7,62 +7,35 @@ using Todo.Contracts.Events;
 
 namespace Todo.ClientBase.Mappings;
 
-internal sealed class TodoItemViewModelMappings
+[Mapping]
+internal sealed partial class TodoItemViewModelMappings
 {
-	[MapIgnoreProperty(nameof(to.IsBusy))]
-	[MapIgnoreProperty(nameof(to.IsNew))]
-	[MapIgnoreProperty(nameof(to.HasErrors))]
-	[MapIgnoreProperty(nameof(to.Errors))]
+	[MapIgnoreProperty(nameof(to.Checklist))]
+	private static partial void MapPartialToViewModel(IMap map, TodoItemUpdated from, TodoItemViewModel to);
+
+	[MapValidateSource]
 	public static void MapToViewModel(IMap map, TodoItemUpdated from, TodoItemViewModel to)
 	{
-		to.Id = from.Id;
-		to.Title = from.Title;
-		to.Content = from.Content;
-		to.CreatedAt = from.CreatedAt;
-		to.CreatedBy = from.CreatedBy;
-		to.AssignedToId = from.AssignedToId;
-		to.Status = from.Status;
-		to.ChangedAt = from.ChangedAt;
-		to.ChangedBy = from.ChangedBy;
-		to.Priority = from.Priority;
+		MapPartialToViewModel(map, from, to);
+
 		to.Checklist = [.. map.From<ChecklistTask>(from.Checklist).To<ChecklistTaskViewModel>()];
 
 		foreach (var e in to.Checklist) e.ParentId = from.Id;
 	}
 
-	public static void MapToModel(IMap map, TodoItemViewModel from, TodoItemModel to)
-	{
-		to.Id = from.Id;
-		to.Title = from.Title;
-		to.Content = from.Content;
-		to.CreatedAt = from.CreatedAt;
-		to.CreatedBy = from.CreatedBy;
-		to.AssignedToId = from.AssignedToId;
-		to.Status = from.Status;
-		to.ChangedAt = from.ChangedAt;
-		to.ChangedBy = from.ChangedBy;
-		to.Priority = from.Priority;
-		to.Checklist = map.From<ChecklistTaskViewModel>(from.Checklist).ToList<ChecklistTaskModel>();
-	}
+	public static partial void MapToModel(IMap map, TodoItemViewModel from, TodoItemModel to);
 
-	[MapIgnoreProperty(nameof(to.IsBusy))]
-	[MapIgnoreProperty(nameof(to.IsNew))]
-	[MapIgnoreProperty(nameof(to.HasErrors))]
-	[MapIgnoreProperty(nameof(to.Errors))]
+	[MapIgnoreProperty(nameof(to.Checklist))]
+	private static partial void MapPartialToViewModel(IMap map, TodoItemModel from, TodoItemViewModel to);
+
+	[MapValidateSource]
 	public static void MapToViewModel(IMap map, TodoItemModel from, TodoItemViewModel to)
 	{
-		to.Id = from.Id;
-		to.Title = from.Title;
-		to.Content = from.Content;
-		to.CreatedAt = from.CreatedAt;
-		to.CreatedBy = from.CreatedBy;
-		to.AssignedToId = from.AssignedToId;
-		to.Status = from.Status;
-		to.ChangedAt = from.ChangedAt;
-		to.ChangedBy = from.ChangedBy;
-		to.Priority = from.Priority;
+		MapPartialToViewModel(map, from, to);
+
 		to.Checklist = [.. map.From<ChecklistTaskModel>(from.Checklist).To<ChecklistTaskViewModel>()];
 
 		foreach (var e in to.Checklist) e.ParentId = from.Id;
 	}
+
 }

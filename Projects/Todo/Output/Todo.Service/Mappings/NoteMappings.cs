@@ -35,6 +35,7 @@ internal partial class NoteMappings
 		to.Color = from.Color;
 	}
 
+
 	public static partial void MapToModel(IMap map, NoteModel from, Note to);
 
 	public static Expression<Func<NoteModel, NoteListItem>> GetListItemExpression()
@@ -47,10 +48,5 @@ internal partial class NoteMappings
 		};
 	}
 
-	public static void MapToModel(IMap map, NoteModel from, NoteListItem to)
-	{
-		to.Id = from.Id;
-		to.Title = from.Title;
-		to.Content = from.Content;
-	}
+	public static partial void MapToModel(IMap map, NoteModel from, NoteListItem to);
 }
