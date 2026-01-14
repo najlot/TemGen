@@ -13,9 +13,20 @@
 		<PackageProjectUrl>https://github.com/Najlot/TemGen</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/Najlot/TemGen</RepositoryUrl>
-		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<Version>1.0.1</Version>
+		<PackageTags>dotnet;template;generator</PackageTags>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageIcon>icon.png</PackageIcon>
 	</PropertyGroup>
 	<ItemGroup>
+	  <None Include="..\..\images\icon.png">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	  <None Include="..\..\LICENSE">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
 	  <None Include="..\..\README.md">
 	    <Pack>True</Pack>
 	    <PackagePath>\</PackagePath>
