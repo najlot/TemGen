@@ -50,7 +50,7 @@ public class Program
 
 		var builder = WebApplication.CreateBuilder(args);
 		var map = new Najlot.Map.Map();
-		builder.Services.AddSingleton(map.RegisterDataMappings());
+		builder.Services.AddSingleton(map.RegisterTodoClientDataMappings());
 
 		// Configure Logging
 		builder.Logging.ClearProviders();

@@ -7,6 +7,6 @@ public class MapTest
 	[Test]
 	public void Map_must_be_valid()
 	{
-		new Najlot.Map.Map().RegisterDataMappings().Validate();
+		new Najlot.Map.Map().RegisterTodoClientDataMappings().Validate();
 	}
 }

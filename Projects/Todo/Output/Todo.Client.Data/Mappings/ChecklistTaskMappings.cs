@@ -1,29 +1,16 @@
 using Najlot.Map;
+using Najlot.Map.Attributes;
 using Todo.Client.Data.Models;
 using Todo.Contracts;
 
 namespace Todo.Client.Data.Mappings;
 
-internal sealed class ChecklistTaskMappings
+[Mapping]
+internal sealed partial class ChecklistTaskMappings
 {
-	public void MapFromModel(IMap map, ChecklistTaskModel from, ChecklistTask to)
-	{
-		to.Id = from.Id;
-		to.IsDone = from.IsDone;
-		to.Description = from.Description;
-	}
+	public static partial void MapFromModel(IMap map, ChecklistTaskModel from, ChecklistTask to);
 
-	public void MapToModel(IMap map, ChecklistTask from, ChecklistTaskModel to)
-	{
-		to.Id = from.Id;
-		to.IsDone = from.IsDone;
-		to.Description = from.Description;
-	}
+	public static partial void MapToModel(IMap map, ChecklistTask from, ChecklistTaskModel to);
 
-	public void MapFromModelToModel(IMap map, ChecklistTaskModel from, ChecklistTaskModel to)
-	{
-		to.Id = from.Id;
-		to.IsDone = from.IsDone;
-		to.Description = from.Description;
-	}
+	public static partial void MapFromModelToModel(IMap map, ChecklistTaskModel from, ChecklistTaskModel to);
 }

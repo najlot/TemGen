@@ -7,39 +7,24 @@ using Todo.Contracts.Events;
 
 namespace Todo.ClientBase.Mappings;
 
-internal sealed class NoteViewModelMappings
+[Mapping]
+internal sealed partial class NoteViewModelMappings
 {
-	[MapIgnoreProperty(nameof(to.IsBusy))]
-	[MapIgnoreProperty(nameof(to.IsNew))]
-	[MapIgnoreProperty(nameof(to.HasErrors))]
-	[MapIgnoreProperty(nameof(to.Errors))]
+	private static partial void MapPartialToViewModel(IMap map, NoteUpdated from, NoteViewModel to);
+
+	[MapValidateSource]
 	public static void MapToViewModel(IMap map, NoteUpdated from, NoteViewModel to)
 	{
-		to.Id = from.Id;
-		to.Title = from.Title;
-		to.Content = from.Content;
-		to.Color = from.Color;
-
+		MapPartialToViewModel(map, from, to);
 	}
 
-	public static void MapToModel(IMap map, NoteViewModel from, NoteModel to)
-	{
-		to.Id = from.Id;
-		to.Title = from.Title;
-		to.Content = from.Content;
-		to.Color = from.Color;
-	}
+	public static partial void MapToModel(IMap map, NoteViewModel from, NoteModel to);
 
-	[MapIgnoreProperty(nameof(to.IsBusy))]
-	[MapIgnoreProperty(nameof(to.IsNew))]
-	[MapIgnoreProperty(nameof(to.HasErrors))]
-	[MapIgnoreProperty(nameof(to.Errors))]
+	private static partial void MapPartialToViewModel(IMap map, NoteModel from, NoteViewModel to);
+
+	[MapValidateSource]
 	public static void MapToViewModel(IMap map, NoteModel from, NoteViewModel to)
 	{
-		to.Id = from.Id;
-		to.Title = from.Title;
-		to.Content = from.Content;
-		to.Color = from.Color;
-
+		MapPartialToViewModel(map, from, to);
 	}
 }
