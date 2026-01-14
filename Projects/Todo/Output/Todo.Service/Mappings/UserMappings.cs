@@ -1,4 +1,6 @@
 using Najlot.Map.Attributes;
+using System;
+using System.Linq.Expressions;
 using Todo.Contracts;
 using Todo.Contracts.Commands;
 using Todo.Contracts.Events;
@@ -7,21 +9,22 @@ using Todo.Service.Model;
 
 namespace Todo.Service.Mappings;
 
-internal class UserMappings
+[Mapping]
+internal partial class UserMappings
 {
-	public UserCreated MapToCreated(UserModel from) =>
+	public static UserCreated MapToCreated(UserModel from) =>
 		new(from.Id,
 		from.Username,
 		from.EMail);
 
-	public UserUpdated MapToUpdated(UserModel from) =>
+	public static UserUpdated MapToUpdated(UserModel from) =>
 		new(from.Id,
 		from.Username,
 		from.EMail);
 
 	[MapIgnoreProperty(nameof(to.PasswordHash))]
 	[MapIgnoreProperty(nameof(to.IsActive))]
-	public void MapToModel(CreateUser from, UserModel to)
+	public static void MapToModel(CreateUser from, UserModel to)
 	{
 		to.Id = from.Id;
 		to.Username = from.Username;
@@ -29,14 +32,24 @@ internal class UserMappings
 	}
 
 	[MapIgnoreProperty(nameof(to.Password))]
-	public void MapFromModel(UserModel from, User to)
+	public static void MapFromModel(UserModel from, User to)
 	{
 		to.Id = from.Id;
 		to.Username = from.Username;
 		to.EMail = from.EMail;
 	}
 
-	public void MapFromModel(UserModel from, UserListItem to)
+	public static Expression<Func<UserModel, UserListItem>> GetListItemExpression()
+	{
+		return from => new UserListItem
+		{
+			Id = from.Id,
+			Username = from.Username,
+			EMail = from.EMail
+		};
+	}
+
+	public static void MapFromModel(UserModel from, UserListItem to)
 	{
 		to.Id = from.Id;
 		to.Username = from.Username;

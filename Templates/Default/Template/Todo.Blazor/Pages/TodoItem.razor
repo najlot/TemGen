@@ -227,7 +227,7 @@ foreach (var entry in Entries.Where(e => e.IsReference))
 <#cs
 foreach (var entry in Entries.Where(e => e.IsReference))
 {
-	WriteLine($"			_{entry.ReferenceTypeLow}s = await {entry.ReferenceType}Service.GetItemsAsync(true);");
+	WriteLine($"			_{entry.ReferenceTypeLow}s = await {entry.ReferenceType}Service.GetItemsAsync();");
 }
 #>
 			Subscriber = await SubscriberProvider.GetSubscriber();

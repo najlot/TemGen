@@ -25,20 +25,12 @@ public class NoteViewModel : AbstractValidationViewModel, IDisposable
 
 	public List<PredefinedColor> AvailablePredefinedColors { get; } = new(Enum.GetValues(typeof(PredefinedColor)) as PredefinedColor[]);
 
-	private Guid _id;
-	public Guid Id { get => _id; set => Set(ref _id, value); }
+	public Guid Id { get => field; set => Set(ref field, value); }
+	public string Title { get => field; set => Set(ref field, value); }
+	public string Content { get => field; set => Set(ref field, value); }
+	public PredefinedColor Color { get => field; set => Set(ref field, value); }
 
-	private string _title = string.Empty;
-	public string Title { get => _title; set => Set(ref _title, value); }
-
-	private string _content = string.Empty;
-	public string Content { get => _content; set => Set(ref _content, value); }
-
-	private PredefinedColor _color;
-	public PredefinedColor Color { get => _color; set => Set(ref _color, value); }
-
-	private bool _isBusy;
-	public bool IsBusy { get => _isBusy; private set => Set(ref _isBusy, value); }
+	public bool IsBusy { get => field; private set => Set(ref field, value); }
 
 	public bool IsNew { get; set; }
 

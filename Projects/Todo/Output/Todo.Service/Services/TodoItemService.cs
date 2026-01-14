@@ -76,7 +76,7 @@ public class TodoItemService
 
 	public IAsyncEnumerable<TodoItemListItem> GetItemsForUserAsync(TodoItemFilter filter, Guid userId)
 	{
-		var enumerable = _todoItemRepository.GetAll();
+		var enumerable = _todoItemRepository.GetAllQueryable();
 
 		if (!string.IsNullOrEmpty(filter.Title))
 			enumerable = enumerable.Where(e => e.Title.Contains(filter.Title));
@@ -101,12 +101,12 @@ public class TodoItemService
 		if (!string.IsNullOrEmpty(filter.Priority))
 			enumerable = enumerable.Where(e => e.Priority.Contains(filter.Priority));
 
-		return _map.From(enumerable).To<TodoItemListItem>();
+		return _map.From(enumerable).To<TodoItemListItem>().ToAsyncEnumerable();
 	}
 
 	public IAsyncEnumerable<TodoItemListItem> GetItemsForUserAsync(Guid userId)
 	{
-		var enumerable = _todoItemRepository.GetAll();
-		return _map.From(enumerable).To<TodoItemListItem>();
+		var enumerable = _todoItemRepository.GetAllQueryable();
+		return _map.From(enumerable).To<TodoItemListItem>().ToAsyncEnumerable();
 	}
 }

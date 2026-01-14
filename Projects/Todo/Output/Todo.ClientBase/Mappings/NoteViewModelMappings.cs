@@ -13,7 +13,7 @@ internal sealed class NoteViewModelMappings
 	[MapIgnoreProperty(nameof(to.IsNew))]
 	[MapIgnoreProperty(nameof(to.HasErrors))]
 	[MapIgnoreProperty(nameof(to.Errors))]
-	public void MapToViewModel(IMap map, NoteUpdated from, NoteViewModel to)
+	public static void MapToViewModel(IMap map, NoteUpdated from, NoteViewModel to)
 	{
 		to.Id = from.Id;
 		to.Title = from.Title;
@@ -22,7 +22,7 @@ internal sealed class NoteViewModelMappings
 
 	}
 
-	public void MapToModel(IMap map, NoteViewModel from, NoteModel to)
+	public static void MapToModel(IMap map, NoteViewModel from, NoteModel to)
 	{
 		to.Id = from.Id;
 		to.Title = from.Title;
@@ -34,7 +34,7 @@ internal sealed class NoteViewModelMappings
 	[MapIgnoreProperty(nameof(to.IsNew))]
 	[MapIgnoreProperty(nameof(to.HasErrors))]
 	[MapIgnoreProperty(nameof(to.Errors))]
-	public void MapToViewModel(IMap map, NoteModel from, NoteViewModel to)
+	public static void MapToViewModel(IMap map, NoteModel from, NoteViewModel to)
 	{
 		to.Id = from.Id;
 		to.Title = from.Title;

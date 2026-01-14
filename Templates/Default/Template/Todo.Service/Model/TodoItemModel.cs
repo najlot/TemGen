@@ -13,21 +13,22 @@ public class <#cs Write(Definition.Name)#>Model
 <#cs
 foreach(var entry in Entries)
 {
-	if (entry.IsArray)
+	var typePrefix = entry.IsArray ? "List<" : "";
+	var typeSuffix = entry.IsNullable ? "?" : "";
+	typeSuffix = entry.IsArray ? ">" : typeSuffix;
+	var suffix = entry.IsReference? "Id" : "";
+
+	var defaultValue = "";
+	if (entry.EntryType == "string")
 	{
-		WriteLine($"	public List<{entry.EntryType}> {entry.Field} {{ get; set; }} = [];");
+		defaultValue = " = string.Empty;";
 	}
-	else
+	else if (entry.IsArray)
 	{
-		var q = entry.IsNullable? "?" : "";
-		var entryType = entry.IsReference? entry.ReferenceType + "Model" : entry.EntryType;
-		var defaultValue = "";
-		if (!entry.IsNullable && entry.EntryType.ToLower() == "string")
-		{
-			defaultValue = " = string.Empty;";
-		}
-		WriteLine($"	public {entryType}{q} {entry.Field} {{ get; set; }}{defaultValue}");
+		defaultValue = " = [];";
 	}
+
+	WriteLine($"	public {typePrefix}{entry.EntryType}{typeSuffix} {entry.Field}{suffix} {{ get; set; }}{defaultValue}");
 }
 
 Result = Result.TrimEnd();

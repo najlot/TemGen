@@ -14,7 +14,7 @@ public class TodoItemModel
 	public string Content { get; set; } = string.Empty;
 	public DateTime CreatedAt { get; set; }
 	public string CreatedBy { get; set; } = string.Empty;
-	public UserModel AssignedTo { get; set; }
+	public Guid AssignedToId { get; set; }
 	public TodoItemStatus Status { get; set; }
 	public DateTime ChangedAt { get; set; }
 	public string ChangedBy { get; set; } = string.Empty;

@@ -27,38 +27,18 @@ public partial class TodoItemViewModel : AbstractValidationViewModel, IDisposabl
 	public IEnumerable<UserListItemModel> AvailableUsers { get => _availableUsers; set => Set(nameof(AvailableUsers), ref _availableUsers, value); }
 	public List<TodoItemStatus> AvailableTodoItemStatus { get; } = new(Enum.GetValues(typeof(TodoItemStatus)) as TodoItemStatus[]);
 
-	private Guid _id;
-	public Guid Id { get => _id; set => Set(ref _id, value); }
+	public Guid Id { get => field; set => Set(ref field, value); }
+	public string Title { get => field; set => Set(ref field, value); }
+	public string Content { get => field; set => Set(ref field, value); }
+	public DateTime CreatedAt { get => field; set => Set(ref field, value); }
+	public string CreatedBy { get => field; set => Set(ref field, value); }
+	public Guid AssignedToId { get => field; set => Set(ref field, value); }
+	public TodoItemStatus Status { get => field; set => Set(ref field, value); }
+	public DateTime ChangedAt { get => field; set => Set(ref field, value); }
+	public string ChangedBy { get => field; set => Set(ref field, value); }
+	public string Priority { get => field; set => Set(ref field, value); }
 
-	private string _title = string.Empty;
-	public string Title { get => _title; set => Set(ref _title, value); }
-
-	private string _content = string.Empty;
-	public string Content { get => _content; set => Set(ref _content, value); }
-
-	private DateTime _createdAt;
-	public DateTime CreatedAt { get => _createdAt; set => Set(ref _createdAt, value); }
-
-	private string _createdBy = string.Empty;
-	public string CreatedBy { get => _createdBy; set => Set(ref _createdBy, value); }
-
-	private Guid _assignedTo;
-	public Guid AssignedTo { get => _assignedTo; set => Set(ref _assignedTo, value); }
-
-	private TodoItemStatus _status;
-	public TodoItemStatus Status { get => _status; set => Set(ref _status, value); }
-
-	private DateTime _changedAt;
-	public DateTime ChangedAt { get => _changedAt; set => Set(ref _changedAt, value); }
-
-	private string _changedBy = string.Empty;
-	public string ChangedBy { get => _changedBy; set => Set(ref _changedBy, value); }
-
-	private string _priority = string.Empty;
-	public string Priority { get => _priority; set => Set(ref _priority, value); }
-
-	private bool _isBusy;
-	public bool IsBusy { get => _isBusy; private set => Set(ref _isBusy, value); }
+	public bool IsBusy { get => field; private set => Set(ref field, value); }
 
 	public bool IsNew { get; set; }
 

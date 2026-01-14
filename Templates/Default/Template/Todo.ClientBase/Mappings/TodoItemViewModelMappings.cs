@@ -13,7 +13,7 @@ internal sealed class <#cs Write(Definition.Name)#>ViewModelMappings
 	[MapIgnoreProperty(nameof(to.IsNew))]
 	[MapIgnoreProperty(nameof(to.HasErrors))]
 	[MapIgnoreProperty(nameof(to.Errors))]
-	public void MapToViewModel(IMap map, <#cs Write(Definition.Name)#>Updated from, <#cs Write(Definition.Name)#>ViewModel to)
+	public static void MapToViewModel(IMap map, <#cs Write(Definition.Name)#>Updated from, <#cs Write(Definition.Name)#>ViewModel to)
 	{
 		to.Id = from.Id;
 <#cs WriteFromToMapping("", "ViewModel", int.MaxValue, MapArrayStrategy.RemapToCustomCollection)#>
@@ -22,7 +22,7 @@ internal sealed class <#cs Write(Definition.Name)#>ViewModelMappings
 	WriteLine($"		foreach (var e in to.{entry.Field}) e.ParentId = from.Id;");
 }#>	}
 
-	public void MapToModel(IMap map, <#cs Write(Definition.Name)#>ViewModel from, <#cs Write(Definition.Name)#>Model to)
+	public static void MapToModel(IMap map, <#cs Write(Definition.Name)#>ViewModel from, <#cs Write(Definition.Name)#>Model to)
 	{
 		to.Id = from.Id;
 <#cs WriteFromToMapping("ViewModel", "Model")#>	}
@@ -31,7 +31,7 @@ internal sealed class <#cs Write(Definition.Name)#>ViewModelMappings
 	[MapIgnoreProperty(nameof(to.IsNew))]
 	[MapIgnoreProperty(nameof(to.HasErrors))]
 	[MapIgnoreProperty(nameof(to.Errors))]
-	public void MapToViewModel(IMap map, <#cs Write(Definition.Name)#>Model from, <#cs Write(Definition.Name)#>ViewModel to)
+	public static void MapToViewModel(IMap map, <#cs Write(Definition.Name)#>Model from, <#cs Write(Definition.Name)#>ViewModel to)
 	{
 		to.Id = from.Id;
 <#cs WriteFromToMapping("Model", "ViewModel", int.MaxValue, MapArrayStrategy.RemapToCustomCollection)#>

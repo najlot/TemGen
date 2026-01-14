@@ -65,25 +65,27 @@ foreach(var entry in Entries.Where(e => e.IsEnumeration))
 	}
 }
 #>
-	private Guid _id;
-	public Guid Id { get => _id; set => Set(ref _id, value); }
+	public Guid Id { get => field; set => Set(ref field, value); }
 <#cs
 foreach (var entry in Entries.Where(e => !e.IsArray))
 {
-	WriteLine("");
-
 	var defaultValue = "";
 	if (!entry.IsNullable && entry.EntryType.ToLower() == "string")
 	{
 		defaultValue = " = string.Empty";
 	}
 
-	WriteLine($"	private {entry.EntryType} _{entry.FieldLow}{defaultValue};");
-	WriteLine($"	public {entry.EntryType} {entry.Field} {{ get => _{entry.FieldLow}; set => Set(ref _{entry.FieldLow}, value); }}");
+	var suffix = "";
+
+	if (entry.IsReference)
+	{
+		suffix = "Id";
+	}
+	
+	WriteLine($"	public {entry.EntryType} {entry.Field}{suffix} {{ get => field; set => Set(ref field, value); }}");
 }
 #>
-	private bool _isBusy;
-	public bool IsBusy { get => _isBusy; private set => Set(ref _isBusy, value); }
+	public bool IsBusy { get => field; private set => Set(ref field, value); }
 
 	public bool IsNew { get; set; }
 

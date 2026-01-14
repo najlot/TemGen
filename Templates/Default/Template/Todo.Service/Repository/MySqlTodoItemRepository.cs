@@ -46,7 +46,8 @@ foreach(var entry in Entries)
 {
 	if (entry.IsReference)
 	{
-		WriteLine($"		await _context.Entry(e).Reference(r => r.{entry.Field}).LoadAsync().ConfigureAwait(false);");
+		// Owned types are loaded automatically
+		// WriteLine($"		await _context.Entry(e).Reference(r => r.{entry.Field}).LoadAsync().ConfigureAwait(false);");
 	}
 }
 

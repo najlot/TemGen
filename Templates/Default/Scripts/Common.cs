@@ -22,7 +22,7 @@ void WriteContractProperties()
         typeSuffix = entry.IsArray ? ">" : typeSuffix;
         var suffix = entry.IsReference? "Id" : "";
         
-        WriteLine($"	public {typePrefix}{entry.EntryType}{typeSuffix} {entry.Field}{suffix} {{ get; }} = {entry.FieldLow};");
+        WriteLine($"	public {typePrefix}{entry.EntryType}{typeSuffix} {entry.Field}{suffix} {{ get; }} = {entry.FieldLow}{suffix};");
     }
 
     Result = Result.TrimEnd();
@@ -103,6 +103,10 @@ void WriteFromToMapping(
         {
             WriteLine($"		to.{entry.Field} = map.From(from.{entry.Field}).To<{entry.EntryType}{toSuffix}>();");
         }
+        else if (entry.IsReference)
+        {
+            WriteLine($"		to.{entry.Field}Id = from.{entry.Field}Id;");
+        }
         else
         {
             WriteLine($"		to.{entry.Field} = from.{entry.Field};");
@@ -137,6 +141,10 @@ void WriteCtorMapping(
         else if (entry.IsOwnedType)
         {
             WriteLine($"{tabs}map.From(from.{entry.Field}).To<{entry.EntryType}{toSuffix}>(),");
+        }
+        else if (entry.IsReference)
+        {
+            WriteLine($"{tabs}from.{entry.Field}Id,");
         }
         else
         {

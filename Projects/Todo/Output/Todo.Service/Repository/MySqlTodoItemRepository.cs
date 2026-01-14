@@ -41,7 +41,6 @@ public class MySqlTodoItemRepository : ITodoItemRepository
 			return null;
 		}
 
-		await _context.Entry(e).Reference(r => r.AssignedTo).LoadAsync().ConfigureAwait(false);
 
 		return e;
 	}

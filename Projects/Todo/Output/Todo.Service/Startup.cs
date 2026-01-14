@@ -9,7 +9,6 @@ using System;
 using Todo.Service.Configuration;
 using Todo.Service.Repository;
 using Todo.Service.Services;
-using Todo.Service.Mappings;
 
 namespace Todo.Service;
 
@@ -68,7 +67,8 @@ public class Startup
 			services.AddCoseiRabbitMq(rmqConfig);
 		}
 
-		services.RegisterDataMappings();
+		var map = new Najlot.Map.Map().RegisterTodoServiceMappings();
+		services.AddSingleton(map);
 
 		services.AddCoseiHttp();
 
