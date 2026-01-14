@@ -27,5 +27,4 @@ internal sealed partial class NoteViewModelMappings
 	{
 		MapPartialToViewModel(map, from, to);
 	}
-
 }

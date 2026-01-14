@@ -37,5 +37,4 @@ internal sealed partial class TodoItemViewModelMappings
 
 		foreach (var e in to.Checklist) e.ParentId = from.Id;
 	}
-
 }
