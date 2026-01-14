@@ -73,7 +73,7 @@ public class NoteService
 
 	public IAsyncEnumerable<NoteListItem> GetItemsForUserAsync(NoteFilter filter, Guid userId)
 	{
-		var enumerable = _noteRepository.GetAll();
+		var enumerable = _noteRepository.GetAllQueryable();
 
 		if (!string.IsNullOrEmpty(filter.Title))
 			enumerable = enumerable.Where(e => e.Title.Contains(filter.Title));
@@ -82,12 +82,12 @@ public class NoteService
 		if (filter.Color != null)
 			enumerable = enumerable.Where(e => e.Color == filter.Color);
 
-		return _map.From(enumerable).To<NoteListItem>();
+		return _map.From(enumerable).To<NoteListItem>().ToAsyncEnumerable();
 	}
 
 	public IAsyncEnumerable<NoteListItem> GetItemsForUserAsync(Guid userId)
 	{
-		var enumerable = _noteRepository.GetAll();
-		return _map.From(enumerable).To<NoteListItem>();
+		var enumerable = _noteRepository.GetAllQueryable();
+		return _map.From(enumerable).To<NoteListItem>().ToAsyncEnumerable();
 	}
 }

@@ -88,7 +88,7 @@ WriteLine($"			_{definition.NameLow}Repository = {definition.NameLow}Repository;
 
 	public IAsyncEnumerable<<#cs Write(Definition.Name)#>ListItem> GetItemsForUserAsync(<#cs Write(Definition.Name)#>Filter filter, Guid userId)
 	{
-		var enumerable = _<#cs Write(Definition.NameLow)#>Repository.GetAll();
+		var enumerable = _<#cs Write(Definition.NameLow)#>Repository.GetAllQueryable();
 
 <#cs
 foreach(var entry in Entries)
@@ -128,12 +128,12 @@ foreach(var entry in Entries)
 Result = Result.TrimEnd();
 #>
 
-		return _map.From(enumerable).To<<#cs Write(Definition.Name)#>ListItem>();
+		return _map.From(enumerable).To<<#cs Write(Definition.Name)#>ListItem>().ToAsyncEnumerable();
 	}
 
 	public IAsyncEnumerable<<#cs Write(Definition.Name)#>ListItem> GetItemsForUserAsync(Guid userId)
 	{
-		var enumerable = _<#cs Write(Definition.NameLow)#>Repository.GetAll();
-		return _map.From(enumerable).To<<#cs Write(Definition.Name)#>ListItem>();
+		var enumerable = _<#cs Write(Definition.NameLow)#>Repository.GetAllQueryable();
+		return _map.From(enumerable).To<<#cs Write(Definition.Name)#>ListItem>().ToAsyncEnumerable();
 	}
 }<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

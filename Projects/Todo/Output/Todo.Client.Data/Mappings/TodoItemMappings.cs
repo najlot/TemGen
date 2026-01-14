@@ -15,7 +15,7 @@ internal sealed class TodoItemMappings
 			from.Content,
 			from.CreatedAt,
 			from.CreatedBy,
-			from.AssignedTo,
+			from.AssignedToId,
 			from.Status,
 			from.ChangedAt,
 			from.ChangedBy,
@@ -28,7 +28,7 @@ internal sealed class TodoItemMappings
 			from.Content,
 			from.CreatedAt,
 			from.CreatedBy,
-			from.AssignedTo,
+			from.AssignedToId,
 			from.Status,
 			from.ChangedAt,
 			from.ChangedBy,
@@ -41,7 +41,7 @@ internal sealed class TodoItemMappings
 			from.Content,
 			from.CreatedAt,
 			from.CreatedBy,
-			from.AssignedTo,
+			from.AssignedToId,
 			from.Status,
 			from.ChangedAt,
 			from.ChangedBy,
@@ -54,7 +54,7 @@ internal sealed class TodoItemMappings
 			from.Content,
 			from.CreatedAt,
 			from.CreatedBy,
-			from.AssignedTo,
+			from.AssignedToId,
 			from.Status,
 			from.ChangedAt,
 			from.ChangedBy,
@@ -96,7 +96,7 @@ internal sealed class TodoItemMappings
 		to.Content = from.Content;
 		to.CreatedAt = from.CreatedAt;
 		to.CreatedBy = from.CreatedBy;
-		to.AssignedTo = from.AssignedTo;
+		to.AssignedToId = from.AssignedToId;
 		to.Status = from.Status;
 		to.ChangedAt = from.ChangedAt;
 		to.ChangedBy = from.ChangedBy;
@@ -111,7 +111,7 @@ internal sealed class TodoItemMappings
 		to.Content = from.Content;
 		to.CreatedAt = from.CreatedAt;
 		to.CreatedBy = from.CreatedBy;
-		to.AssignedTo = from.AssignedTo;
+		to.AssignedToId = from.AssignedToId;
 		to.Status = from.Status;
 		to.ChangedAt = from.ChangedAt;
 		to.ChangedBy = from.ChangedBy;

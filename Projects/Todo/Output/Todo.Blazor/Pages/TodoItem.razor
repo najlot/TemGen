@@ -184,7 +184,7 @@ else
 				Model = await TodoItemService.GetItemAsync(Id);
 			}
 
-			_users = await UserService.GetItemsAsync(true);
+			_users = await UserService.GetItemsAsync();
 
 			Subscriber = await SubscriberProvider.GetSubscriber();
 

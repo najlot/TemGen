@@ -21,7 +21,7 @@ public class UpdateTodoItem(
 	public string Content { get; } = content;
 	public DateTime CreatedAt { get; } = createdAt;
 	public string CreatedBy { get; } = createdBy;
-	public Guid AssignedToId { get; } = assignedTo;
+	public Guid AssignedToId { get; } = assignedToId;
 	public TodoItemStatus Status { get; } = status;
 	public DateTime ChangedAt { get; } = changedAt;
 	public string ChangedBy { get; } = changedBy;

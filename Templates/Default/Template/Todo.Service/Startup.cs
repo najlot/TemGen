@@ -9,7 +9,6 @@ using System;
 using <#cs Write(Project.Namespace)#>.Service.Configuration;
 using <#cs Write(Project.Namespace)#>.Service.Repository;
 using <#cs Write(Project.Namespace)#>.Service.Services;
-using <#cs Write(Project.Namespace)#>.Service.Mappings;
 
 namespace <#cs Write(Project.Namespace)#>.Service;
 
@@ -86,7 +85,8 @@ foreach(var definition in Definitions.Where(d => !(d.IsArray
 			services.AddCoseiRabbitMq(rmqConfig);
 		}
 
-		services.RegisterDataMappings();
+		var map = new Najlot.Map.Map().Register<#cs Write(Project.Namespace.Replace(".", ""))#>ServiceMappings();
+		services.AddSingleton(map);
 
 		services.AddCoseiHttp();
 

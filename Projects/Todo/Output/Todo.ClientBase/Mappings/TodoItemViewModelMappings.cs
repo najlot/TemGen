@@ -13,14 +13,14 @@ internal sealed class TodoItemViewModelMappings
 	[MapIgnoreProperty(nameof(to.IsNew))]
 	[MapIgnoreProperty(nameof(to.HasErrors))]
 	[MapIgnoreProperty(nameof(to.Errors))]
-	public void MapToViewModel(IMap map, TodoItemUpdated from, TodoItemViewModel to)
+	public static void MapToViewModel(IMap map, TodoItemUpdated from, TodoItemViewModel to)
 	{
 		to.Id = from.Id;
 		to.Title = from.Title;
 		to.Content = from.Content;
 		to.CreatedAt = from.CreatedAt;
 		to.CreatedBy = from.CreatedBy;
-		to.AssignedTo = from.AssignedTo;
+		to.AssignedToId = from.AssignedToId;
 		to.Status = from.Status;
 		to.ChangedAt = from.ChangedAt;
 		to.ChangedBy = from.ChangedBy;
@@ -30,14 +30,14 @@ internal sealed class TodoItemViewModelMappings
 		foreach (var e in to.Checklist) e.ParentId = from.Id;
 	}
 
-	public void MapToModel(IMap map, TodoItemViewModel from, TodoItemModel to)
+	public static void MapToModel(IMap map, TodoItemViewModel from, TodoItemModel to)
 	{
 		to.Id = from.Id;
 		to.Title = from.Title;
 		to.Content = from.Content;
 		to.CreatedAt = from.CreatedAt;
 		to.CreatedBy = from.CreatedBy;
-		to.AssignedTo = from.AssignedTo;
+		to.AssignedToId = from.AssignedToId;
 		to.Status = from.Status;
 		to.ChangedAt = from.ChangedAt;
 		to.ChangedBy = from.ChangedBy;
@@ -49,14 +49,14 @@ internal sealed class TodoItemViewModelMappings
 	[MapIgnoreProperty(nameof(to.IsNew))]
 	[MapIgnoreProperty(nameof(to.HasErrors))]
 	[MapIgnoreProperty(nameof(to.Errors))]
-	public void MapToViewModel(IMap map, TodoItemModel from, TodoItemViewModel to)
+	public static void MapToViewModel(IMap map, TodoItemModel from, TodoItemViewModel to)
 	{
 		to.Id = from.Id;
 		to.Title = from.Title;
 		to.Content = from.Content;
 		to.CreatedAt = from.CreatedAt;
 		to.CreatedBy = from.CreatedBy;
-		to.AssignedTo = from.AssignedTo;
+		to.AssignedToId = from.AssignedToId;
 		to.Status = from.Status;
 		to.ChangedAt = from.ChangedAt;
 		to.ChangedBy = from.ChangedBy;

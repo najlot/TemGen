@@ -8,14 +8,14 @@ namespace <#cs Write(Project.Namespace)#>.ClientBase.Mappings;
 
 internal sealed class <#cs Write(Definition.Name)#>ViewModelMappings
 {
-	public void MapToModel(IMap map, <#cs Write(Definition.Name)#>ViewModel from, <#cs Write(Definition.Name)#>Model to)
+	public static void MapToModel(IMap map, <#cs Write(Definition.Name)#>ViewModel from, <#cs Write(Definition.Name)#>Model to)
 	{
 		to.Id = from.Id;
 <#cs WriteFromToMapping("ViewModel", "Model")#>	}
 
 	[MapIgnoreProperty(nameof(to.HasErrors))]
 	[MapIgnoreProperty(nameof(to.Errors))]
-	public void MapFromViewModelToViewModel(IMap map, <#cs Write(Definition.Name)#>ViewModel from, <#cs Write(Definition.Name)#>ViewModel to)
+	public static void MapFromViewModelToViewModel(IMap map, <#cs Write(Definition.Name)#>ViewModel from, <#cs Write(Definition.Name)#>ViewModel to)
 	{
 		to.Id = from.Id;
 		to.ParentId = from.ParentId;
@@ -24,7 +24,7 @@ internal sealed class <#cs Write(Definition.Name)#>ViewModelMappings
 	[MapIgnoreProperty(nameof(to.ParentId))]
 	[MapIgnoreProperty(nameof(to.HasErrors))]
 	[MapIgnoreProperty(nameof(to.Errors))]
-	public void MapToViewModel(IMap map, <#cs Write(Definition.Name)#>Model from, <#cs Write(Definition.Name)#>ViewModel to)
+	public static void MapToViewModel(IMap map, <#cs Write(Definition.Name)#>Model from, <#cs Write(Definition.Name)#>ViewModel to)
 	{
 		to.Id = from.Id;
 <#cs WriteFromToMapping("Model", "ViewModel")#>	}
@@ -32,7 +32,7 @@ internal sealed class <#cs Write(Definition.Name)#>ViewModelMappings
 	[MapIgnoreProperty(nameof(to.ParentId))]
 	[MapIgnoreProperty(nameof(to.HasErrors))]
 	[MapIgnoreProperty(nameof(to.Errors))]
-	public void MapToViewModel(IMap map, <#cs Write(Definition.Name)#> from, <#cs Write(Definition.Name)#>ViewModel to)
+	public static void MapToViewModel(IMap map, <#cs Write(Definition.Name)#> from, <#cs Write(Definition.Name)#>ViewModel to)
 	{
 		to.Id = from.Id;
 <#cs WriteFromToMapping("", "ViewModel")#>	}
