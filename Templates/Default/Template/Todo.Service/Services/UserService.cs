@@ -1,4 +1,3 @@
-using Cosei.Service.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +7,7 @@ using System.Threading.Tasks;
 using Najlot.Map;
 using <#cs Write(Project.Namespace)#>.Contracts;
 using <#cs Write(Project.Namespace)#>.Service.Model;
+using <#cs Write(Project.Namespace)#>.Service.Publisher;
 using <#cs Write(Project.Namespace)#>.Service.Repository;
 using <#cs Write(Project.Namespace)#>.Contracts.Commands;
 using <#cs Write(Project.Namespace)#>.Contracts.Events;

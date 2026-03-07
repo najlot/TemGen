@@ -1,11 +1,11 @@
-﻿using Cosei.Service.Base;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Najlot.Map;
 using Todo.Contracts;
 using Todo.Service.Model;
+using Todo.Service.Publisher;
 using Todo.Service.Repository;
 using Todo.Contracts.Commands;
 using Todo.Contracts.Events;

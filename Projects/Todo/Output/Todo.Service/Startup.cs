@@ -1,12 +1,11 @@
-﻿using Cosei.Service.Base;
-using Cosei.Service.Http;
-using Cosei.Service.RabbitMq;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Todo.Service.Configuration;
+using Todo.Service.Hubs;
+using Todo.Service.Publisher;
 using Todo.Service.Repository;
 using Todo.Service.Services;
 
@@ -24,7 +23,6 @@ public class Startup
 	// This method gets called by the runtime. Use this method to add services to the container.
 	public void ConfigureServices(IServiceCollection services)
 	{
-		var rmqConfig = Configuration.ReadConfiguration<RabbitMqConfiguration>();
 		var fileConfig = Configuration.ReadConfiguration<FileConfiguration>();
 		var mysqlConfig = Configuration.ReadConfiguration<MySqlConfiguration>();
 		var mongoDbConfig = Configuration.ReadConfiguration<MongoDbConfiguration>();
@@ -61,16 +59,10 @@ public class Startup
 			services.AddScoped<ITodoItemRepository, FileTodoItemRepository>();
 		}
 
-		if (rmqConfig != null)
-		{
-			rmqConfig.QueueName = "Todo.Service";
-			services.AddCoseiRabbitMq(rmqConfig);
-		}
-
 		var map = new Najlot.Map.Map().RegisterTodoServiceMappings();
 		services.AddSingleton(map);
 
-		services.AddCoseiHttp();
+		services.AddScoped<IPublisher, SignalRPublisher>();
 
 		services.AddScoped<IUserService, UserService>();
 		services.AddScoped<NoteService>();
@@ -111,10 +103,8 @@ public class Startup
 		app.UseEndpoints(endpoints =>
 		{
 			endpoints.MapControllers();
-			endpoints.MapHub<CoseiHub>("/cosei");
+			endpoints.MapHub<NotificationHub>("/notifications");
 		});
-
-		app.UseCosei();
 
 		using var scope = app.ApplicationServices.CreateScope();
 		scope.ServiceProvider.GetService<MySqlDbContext>()?.Database?.EnsureCreated();

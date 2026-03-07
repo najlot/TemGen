@@ -1,12 +1,11 @@
-﻿using Cosei.Service.Base;
-using Cosei.Service.Http;
-using Cosei.Service.RabbitMq;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using <#cs Write(Project.Namespace)#>.Service.Configuration;
+using <#cs Write(Project.Namespace)#>.Service.Hubs;
+using <#cs Write(Project.Namespace)#>.Service.Publisher;
 using <#cs Write(Project.Namespace)#>.Service.Repository;
 using <#cs Write(Project.Namespace)#>.Service.Services;
 
@@ -24,7 +23,6 @@ public class Startup
 	// This method gets called by the runtime. Use this method to add services to the container.
 	public void ConfigureServices(IServiceCollection services)
 	{
-		var rmqConfig = Configuration.ReadConfiguration<RabbitMqConfiguration>();
 		var fileConfig = Configuration.ReadConfiguration<FileConfiguration>();
 		var mysqlConfig = Configuration.ReadConfiguration<MySqlConfiguration>();
 		var mongoDbConfig = Configuration.ReadConfiguration<MongoDbConfiguration>();
@@ -79,16 +77,10 @@ foreach(var definition in Definitions.Where(d => !(d.IsArray
 }
 #>		}
 
-		if (rmqConfig != null)
-		{
-			rmqConfig.QueueName = "<#cs Write(Project.Namespace)#>.Service";
-			services.AddCoseiRabbitMq(rmqConfig);
-		}
-
 		var map = new Najlot.Map.Map().Register<#cs Write(Project.Namespace.Replace(".", ""))#>ServiceMappings();
 		services.AddSingleton(map);
 
-		services.AddCoseiHttp();
+		services.AddScoped<IPublisher, SignalRPublisher>();
 
 		services.AddScoped<IUserService, UserService>();
 <#cs
@@ -135,10 +127,8 @@ foreach(var definition in Definitions.Where(d => !(d.IsArray
 		app.UseEndpoints(endpoints =>
 		{
 			endpoints.MapControllers();
-			endpoints.MapHub<CoseiHub>("/cosei");
+			endpoints.MapHub<NotificationHub>("/notifications");
 		});
-
-		app.UseCosei();
 
 		using var scope = app.ApplicationServices.CreateScope();
 		scope.ServiceProvider.GetService<MySqlDbContext>()?.Database?.EnsureCreated();
