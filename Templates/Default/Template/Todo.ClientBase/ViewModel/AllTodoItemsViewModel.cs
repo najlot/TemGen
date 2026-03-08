@@ -50,9 +50,9 @@ foreach (var definition in Entries.Where(e => e.IsReference).Select(e => e.Refer
 #>
 		<#cs Write(Definition.Name)#>sView = new ObservableCollectionView<<#cs Write(Definition.Name)#>ListItemViewModel>(<#cs Write(Definition.Name)#>s, Filter<#cs Write(Definition.Name)#>);
 
-		_<#cs Write(Definition.NameLow)#>Service.OnItemCreated += Handle;
-		_<#cs Write(Definition.NameLow)#>Service.OnItemUpdated += Handle;
-		_<#cs Write(Definition.NameLow)#>Service.OnItemDeleted += Handle;
+		_<#cs Write(Definition.NameLow)#>Service.ItemCreated += Handle;
+		_<#cs Write(Definition.NameLow)#>Service.ItemUpdated += Handle;
+		_<#cs Write(Definition.NameLow)#>Service.ItemDeleted += Handle;
 
 		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
 		Add<#cs Write(Definition.Name)#>Command = new AsyncCommand(Add<#cs Write(Definition.Name)#>Async, t => HandleError(t.Exception));
@@ -215,9 +215,9 @@ foreach (var definition in Entries.Where(e => e.IsReference).Select(e => e.Refer
 		{
 			if (disposing)
 			{
-				_<#cs Write(Definition.NameLow)#>Service.OnItemCreated -= Handle;
-				_<#cs Write(Definition.NameLow)#>Service.OnItemUpdated -= Handle;
-				_<#cs Write(Definition.NameLow)#>Service.OnItemDeleted -= Handle;
+				_<#cs Write(Definition.NameLow)#>Service.ItemCreated -= Handle;
+				_<#cs Write(Definition.NameLow)#>Service.ItemUpdated -= Handle;
+				_<#cs Write(Definition.NameLow)#>Service.ItemDeleted -= Handle;
 			}
 
 			_disposedValue = true;

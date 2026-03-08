@@ -20,9 +20,9 @@ public sealed class <#cs Write(Definition.Name)#>Service(
 {
 	private HubConnection? _connection;
 
-	public event AsyncEventHandler<<#cs Write(Definition.Name)#>Created>? OnItemCreated;
-	public event AsyncEventHandler<<#cs Write(Definition.Name)#>Updated>? OnItemUpdated;
-	public event AsyncEventHandler<<#cs Write(Definition.Name)#>Deleted>? OnItemDeleted;
+	public event AsyncEventHandler<<#cs Write(Definition.Name)#>Created>? ItemCreated;
+	public event AsyncEventHandler<<#cs Write(Definition.Name)#>Updated>? ItemUpdated;
+	public event AsyncEventHandler<<#cs Write(Definition.Name)#>Deleted>? ItemDeleted;
 
 	public async Task StartEventListener()
 	{
@@ -45,7 +45,7 @@ public sealed class <#cs Write(Definition.Name)#>Service(
 
 		_connection.On<string>(typeof(<#cs Write(Definition.Name)#>Created).Name, async param =>
 		{
-			if (OnItemCreated is { } handler && JsonSerializer.Deserialize<<#cs Write(Definition.Name)#>Created>(param) is { } message)
+			if (ItemCreated is { } handler && JsonSerializer.Deserialize<<#cs Write(Definition.Name)#>Created>(param) is { } message)
 			{
 				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<<#cs Write(Definition.Name)#>Created>>())
 				{
@@ -56,7 +56,7 @@ public sealed class <#cs Write(Definition.Name)#>Service(
 
 		_connection.On<string>(typeof(<#cs Write(Definition.Name)#>Updated).Name, async param =>
 		{
-			if (OnItemUpdated is { } handler && JsonSerializer.Deserialize<<#cs Write(Definition.Name)#>Updated>(param) is { } message)
+			if (ItemUpdated is { } handler && JsonSerializer.Deserialize<<#cs Write(Definition.Name)#>Updated>(param) is { } message)
 			{
 				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<<#cs Write(Definition.Name)#>Updated>>())
 				{
@@ -67,7 +67,7 @@ public sealed class <#cs Write(Definition.Name)#>Service(
 
 		_connection.On<string>(typeof(<#cs Write(Definition.Name)#>Deleted).Name, async param =>
 		{
-			if (OnItemDeleted is { } handler && JsonSerializer.Deserialize<<#cs Write(Definition.Name)#>Deleted>(param) is { } message)
+			if (ItemDeleted is { } handler && JsonSerializer.Deserialize<<#cs Write(Definition.Name)#>Deleted>(param) is { } message)
 			{
 				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<<#cs Write(Definition.Name)#>Deleted>>())
 				{

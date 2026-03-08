@@ -8,9 +8,9 @@ namespace Todo.Client.Data.Services;
 
 public interface ITodoItemService
 {
-	event AsyncEventHandler<TodoItemCreated>? OnItemCreated;
-	event AsyncEventHandler<TodoItemUpdated>? OnItemUpdated;
-	event AsyncEventHandler<TodoItemDeleted>? OnItemDeleted;
+	event AsyncEventHandler<TodoItemCreated>? ItemCreated;
+	event AsyncEventHandler<TodoItemUpdated>? ItemUpdated;
+	event AsyncEventHandler<TodoItemDeleted>? ItemDeleted;
 
 	Task StartEventListener();
 

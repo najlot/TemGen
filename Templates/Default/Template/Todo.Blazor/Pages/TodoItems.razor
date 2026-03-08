@@ -92,9 +92,9 @@ Result = Result.TrimEnd(' ', '\r', '\n');
 		{
 			<#cs Write(Definition.NameLow)#>s = new List<<#cs Write(Definition.Name)#>ListItemModel>(await <#cs Write(Definition.Name)#>Service.GetItemsAsync());
 
-			<#cs Write(Definition.Name)#>Service.OnItemCreated += Handle;
-			<#cs Write(Definition.Name)#>Service.OnItemUpdated += Handle;
-			<#cs Write(Definition.Name)#>Service.OnItemDeleted += Handle;
+			<#cs Write(Definition.Name)#>Service.ItemCreated += Handle;
+			<#cs Write(Definition.Name)#>Service.ItemUpdated += Handle;
+			<#cs Write(Definition.Name)#>Service.ItemDeleted += Handle;
 
 			await <#cs Write(Definition.Name)#>Service.StartEventListener();
 		}
@@ -162,9 +162,9 @@ Result = Result.TrimEnd(' ', '\r', '\n');
 
 	public void Dispose()
 	{
-		<#cs Write(Definition.Name)#>Service.OnItemCreated -= Handle;
-		<#cs Write(Definition.Name)#>Service.OnItemUpdated -= Handle;
-		<#cs Write(Definition.Name)#>Service.OnItemDeleted -= Handle;
+		<#cs Write(Definition.Name)#>Service.ItemCreated -= Handle;
+		<#cs Write(Definition.Name)#>Service.ItemUpdated -= Handle;
+		<#cs Write(Definition.Name)#>Service.ItemDeleted -= Handle;
 	}
 }
 <#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

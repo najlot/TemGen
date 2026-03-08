@@ -216,7 +216,7 @@ foreach (var entry in Entries.Where(e => e.IsReference))
 	WriteLine($"			_{entry.ReferenceTypeLow}s = await {entry.ReferenceType}Service.GetItemsAsync();");
 }
 #>
-			<#cs Write(Definition.Name)#>Service.OnItemUpdated += Handle;
+			<#cs Write(Definition.Name)#>Service.ItemUpdated += Handle;
 
 			await <#cs Write(Definition.Name)#>Service.StartEventListener();
 		}
@@ -376,7 +376,7 @@ foreach (var entry in arrays)
 #>
 	public void Dispose()
 	{
-		<#cs Write(Definition.Name)#>Service.OnItemUpdated -= Handle;
+		<#cs Write(Definition.Name)#>Service.ItemUpdated -= Handle;
 	}
 }
 <#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

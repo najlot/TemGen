@@ -36,9 +36,9 @@ public class AllTodoItemsViewModel : ViewModelBase, IAsyncInitializable, IDispos
 
 		TodoItemsView = new ObservableCollectionView<TodoItemListItemViewModel>(TodoItems, FilterTodoItem);
 
-		_todoItemService.OnItemCreated += Handle;
-		_todoItemService.OnItemUpdated += Handle;
-		_todoItemService.OnItemDeleted += Handle;
+		_todoItemService.ItemCreated += Handle;
+		_todoItemService.ItemUpdated += Handle;
+		_todoItemService.ItemDeleted += Handle;
 
 		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
 		AddTodoItemCommand = new AsyncCommand(AddTodoItemAsync, t => HandleError(t.Exception));
@@ -189,9 +189,9 @@ public class AllTodoItemsViewModel : ViewModelBase, IAsyncInitializable, IDispos
 		{
 			if (disposing)
 			{
-				_todoItemService.OnItemCreated -= Handle;
-				_todoItemService.OnItemUpdated -= Handle;
-				_todoItemService.OnItemDeleted -= Handle;
+				_todoItemService.ItemCreated -= Handle;
+				_todoItemService.ItemUpdated -= Handle;
+				_todoItemService.ItemDeleted -= Handle;
 			}
 
 			_disposedValue = true;

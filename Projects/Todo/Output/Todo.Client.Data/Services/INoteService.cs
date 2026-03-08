@@ -8,9 +8,9 @@ namespace Todo.Client.Data.Services;
 
 public interface INoteService
 {
-	event AsyncEventHandler<NoteCreated>? OnItemCreated;
-	event AsyncEventHandler<NoteUpdated>? OnItemUpdated;
-	event AsyncEventHandler<NoteDeleted>? OnItemDeleted;
+	event AsyncEventHandler<NoteCreated>? ItemCreated;
+	event AsyncEventHandler<NoteUpdated>? ItemUpdated;
+	event AsyncEventHandler<NoteDeleted>? ItemDeleted;
 
 	Task StartEventListener();
 

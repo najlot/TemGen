@@ -129,7 +129,7 @@ foreach (var definition in references)
 			RedoCommand.RaiseCanExecuteChanged();
 		};
 
-		_<#cs Write(Definition.NameLow)#>Service.OnItemUpdated += Handle;
+		_<#cs Write(Definition.NameLow)#>Service.ItemUpdated += Handle;
 	}
 
 	public void SetParameters(IReadOnlyDictionary<string, object> parameters)
@@ -299,7 +299,7 @@ foreach (var entry in Entries.Where(e => e.IsEnumeration))
 		{
 			if (disposing)
 			{
-				_<#cs Write(Definition.NameLow)#>Service.OnItemUpdated -= Handle;
+				_<#cs Write(Definition.NameLow)#>Service.ItemUpdated -= Handle;
 			}
 
 			_disposedValue = true;

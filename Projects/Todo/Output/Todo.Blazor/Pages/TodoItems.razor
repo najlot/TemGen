@@ -64,9 +64,9 @@ else
 		{
 			todoItems = new List<TodoItemListItemModel>(await TodoItemService.GetItemsAsync());
 
-			TodoItemService.OnItemCreated += Handle;
-			TodoItemService.OnItemUpdated += Handle;
-			TodoItemService.OnItemDeleted += Handle;
+			TodoItemService.ItemCreated += Handle;
+			TodoItemService.ItemUpdated += Handle;
+			TodoItemService.ItemDeleted += Handle;
 
 			await TodoItemService.StartEventListener();
 		}
@@ -134,8 +134,8 @@ else
 
 	public void Dispose()
 	{
-		TodoItemService.OnItemCreated -= Handle;
-		TodoItemService.OnItemUpdated -= Handle;
-		TodoItemService.OnItemDeleted -= Handle;
+		TodoItemService.ItemCreated -= Handle;
+		TodoItemService.ItemUpdated -= Handle;
+		TodoItemService.ItemDeleted -= Handle;
 	}
 }

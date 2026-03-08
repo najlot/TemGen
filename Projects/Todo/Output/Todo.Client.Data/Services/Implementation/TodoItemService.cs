@@ -20,9 +20,9 @@ public sealed class TodoItemService(
 {
 	private HubConnection? _connection;
 
-	public event AsyncEventHandler<TodoItemCreated>? OnItemCreated;
-	public event AsyncEventHandler<TodoItemUpdated>? OnItemUpdated;
-	public event AsyncEventHandler<TodoItemDeleted>? OnItemDeleted;
+	public event AsyncEventHandler<TodoItemCreated>? ItemCreated;
+	public event AsyncEventHandler<TodoItemUpdated>? ItemUpdated;
+	public event AsyncEventHandler<TodoItemDeleted>? ItemDeleted;
 
 	public async Task StartEventListener()
 	{
@@ -45,7 +45,7 @@ public sealed class TodoItemService(
 
 		_connection.On<string>(typeof(TodoItemCreated).Name, async param =>
 		{
-			if (OnItemCreated is { } handler && JsonSerializer.Deserialize<TodoItemCreated>(param) is { } message)
+			if (ItemCreated is { } handler && JsonSerializer.Deserialize<TodoItemCreated>(param) is { } message)
 			{
 				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<TodoItemCreated>>())
 				{
@@ -56,7 +56,7 @@ public sealed class TodoItemService(
 
 		_connection.On<string>(typeof(TodoItemUpdated).Name, async param =>
 		{
-			if (OnItemUpdated is { } handler && JsonSerializer.Deserialize<TodoItemUpdated>(param) is { } message)
+			if (ItemUpdated is { } handler && JsonSerializer.Deserialize<TodoItemUpdated>(param) is { } message)
 			{
 				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<TodoItemUpdated>>())
 				{
@@ -67,7 +67,7 @@ public sealed class TodoItemService(
 
 		_connection.On<string>(typeof(TodoItemDeleted).Name, async param =>
 		{
-			if (OnItemDeleted is { } handler && JsonSerializer.Deserialize<TodoItemDeleted>(param) is { } message)
+			if (ItemDeleted is { } handler && JsonSerializer.Deserialize<TodoItemDeleted>(param) is { } message)
 			{
 				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<TodoItemDeleted>>())
 				{

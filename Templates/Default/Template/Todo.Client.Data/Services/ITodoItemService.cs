@@ -8,9 +8,9 @@ namespace <#cs Write(Project.Namespace)#>.Client.Data.Services;
 
 public interface I<#cs Write(Definition.Name)#>Service
 {
-	event AsyncEventHandler<<#cs Write(Definition.Name)#>Created>? OnItemCreated;
-	event AsyncEventHandler<<#cs Write(Definition.Name)#>Updated>? OnItemUpdated;
-	event AsyncEventHandler<<#cs Write(Definition.Name)#>Deleted>? OnItemDeleted;
+	event AsyncEventHandler<<#cs Write(Definition.Name)#>Created>? ItemCreated;
+	event AsyncEventHandler<<#cs Write(Definition.Name)#>Updated>? ItemUpdated;
+	event AsyncEventHandler<<#cs Write(Definition.Name)#>Deleted>? ItemDeleted;
 
 	Task StartEventListener();
 

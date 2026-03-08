@@ -33,9 +33,9 @@ public class AllNotesViewModel : ViewModelBase, IAsyncInitializable, IDisposable
 
 		NotesView = new ObservableCollectionView<NoteListItemViewModel>(Notes, FilterNote);
 
-		_noteService.OnItemCreated += Handle;
-		_noteService.OnItemUpdated += Handle;
-		_noteService.OnItemDeleted += Handle;
+		_noteService.ItemCreated += Handle;
+		_noteService.ItemUpdated += Handle;
+		_noteService.ItemDeleted += Handle;
 
 		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
 		AddNoteCommand = new AsyncCommand(AddNoteAsync, t => HandleError(t.Exception));
@@ -185,9 +185,9 @@ public class AllNotesViewModel : ViewModelBase, IAsyncInitializable, IDisposable
 		{
 			if (disposing)
 			{
-				_noteService.OnItemCreated -= Handle;
-				_noteService.OnItemUpdated -= Handle;
-				_noteService.OnItemDeleted -= Handle;
+				_noteService.ItemCreated -= Handle;
+				_noteService.ItemUpdated -= Handle;
+				_noteService.ItemDeleted -= Handle;
 			}
 
 			_disposedValue = true;

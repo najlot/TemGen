@@ -60,7 +60,7 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 			RedoCommand.RaiseCanExecuteChanged();
 		};
 
-		_todoItemService.OnItemUpdated += Handle;
+		_todoItemService.ItemUpdated += Handle;
 	}
 
 	public void SetParameters(IReadOnlyDictionary<string, object> parameters)
@@ -193,7 +193,7 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 		{
 			if (disposing)
 			{
-				_todoItemService.OnItemUpdated -= Handle;
+				_todoItemService.ItemUpdated -= Handle;
 			}
 
 			_disposedValue = true;

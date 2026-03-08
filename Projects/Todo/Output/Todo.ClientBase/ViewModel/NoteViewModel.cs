@@ -50,7 +50,7 @@ public class NoteViewModel : ValidationViewModelBase, IParameterizable, IAsyncIn
 			RedoCommand.RaiseCanExecuteChanged();
 		};
 
-		_noteService.OnItemUpdated += Handle;
+		_noteService.ItemUpdated += Handle;
 	}
 
 	public void SetParameters(IReadOnlyDictionary<string, object> parameters)
@@ -179,7 +179,7 @@ public class NoteViewModel : ValidationViewModelBase, IParameterizable, IAsyncIn
 		{
 			if (disposing)
 			{
-				_noteService.OnItemUpdated -= Handle;
+				_noteService.ItemUpdated -= Handle;
 			}
 
 			_disposedValue = true;

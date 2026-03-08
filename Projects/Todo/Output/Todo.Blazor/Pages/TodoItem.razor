@@ -172,7 +172,7 @@ else
 
 			_users = await UserService.GetItemsAsync();
 
-			TodoItemService.OnItemUpdated += Handle;
+			TodoItemService.ItemUpdated += Handle;
 
 			await TodoItemService.StartEventListener();
 		}
@@ -306,6 +306,6 @@ else
 
 	public void Dispose()
 	{
-		TodoItemService.OnItemUpdated -= Handle;
+		TodoItemService.ItemUpdated -= Handle;
 	}
 }

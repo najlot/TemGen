@@ -7,9 +7,9 @@ namespace <#cs Write(Project.Namespace)#>.Client.Data.Services;
 
 public interface IUserService
 {
-	event AsyncEventHandler<UserCreated>? OnItemCreated;
-	event AsyncEventHandler<UserUpdated>? OnItemUpdated;
-	event AsyncEventHandler<UserDeleted>? OnItemDeleted;
+	event AsyncEventHandler<UserCreated>? ItemCreated;
+	event AsyncEventHandler<UserUpdated>? ItemUpdated;
+	event AsyncEventHandler<UserDeleted>? ItemDeleted;
 
 	Task StartEventListener();
 

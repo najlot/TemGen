@@ -64,9 +64,9 @@ else
 		{
 			notes = new List<NoteListItemModel>(await NoteService.GetItemsAsync());
 
-			NoteService.OnItemCreated += Handle;
-			NoteService.OnItemUpdated += Handle;
-			NoteService.OnItemDeleted += Handle;
+			NoteService.ItemCreated += Handle;
+			NoteService.ItemUpdated += Handle;
+			NoteService.ItemDeleted += Handle;
 
 			await NoteService.StartEventListener();
 		}
@@ -134,8 +134,8 @@ else
 
 	public void Dispose()
 	{
-		NoteService.OnItemCreated -= Handle;
-		NoteService.OnItemUpdated -= Handle;
-		NoteService.OnItemDeleted -= Handle;
+		NoteService.ItemCreated -= Handle;
+		NoteService.ItemUpdated -= Handle;
+		NoteService.ItemDeleted -= Handle;
 	}
 }

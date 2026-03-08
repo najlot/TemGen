@@ -19,9 +19,9 @@ public sealed class UserService(
 {
 	private HubConnection? _connection;
 
-	public event AsyncEventHandler<UserCreated>? OnItemCreated;
-	public event AsyncEventHandler<UserUpdated>? OnItemUpdated;
-	public event AsyncEventHandler<UserDeleted>? OnItemDeleted;
+	public event AsyncEventHandler<UserCreated>? ItemCreated;
+	public event AsyncEventHandler<UserUpdated>? ItemUpdated;
+	public event AsyncEventHandler<UserDeleted>? ItemDeleted;
 
 	public async Task StartEventListener()
 	{
@@ -44,7 +44,7 @@ public sealed class UserService(
 
 		_connection.On<string>(typeof(UserCreated).Name, async param =>
 		{
-			if (OnItemCreated is { } handler && JsonSerializer.Deserialize<UserCreated>(param) is { } message)
+			if (ItemCreated is { } handler && JsonSerializer.Deserialize<UserCreated>(param) is { } message)
 			{
 				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<UserCreated>>())
 				{
@@ -55,7 +55,7 @@ public sealed class UserService(
 
 		_connection.On<string>(typeof(UserUpdated).Name, async param =>
 		{
-			if (OnItemUpdated is { } handler && JsonSerializer.Deserialize<UserUpdated>(param) is { } message)
+			if (ItemUpdated is { } handler && JsonSerializer.Deserialize<UserUpdated>(param) is { } message)
 			{
 				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<UserUpdated>>())
 				{
@@ -66,7 +66,7 @@ public sealed class UserService(
 
 		_connection.On<string>(typeof(UserDeleted).Name, async param =>
 		{
-			if (OnItemDeleted is { } handler && JsonSerializer.Deserialize<UserDeleted>(param) is { } message)
+			if (ItemDeleted is { } handler && JsonSerializer.Deserialize<UserDeleted>(param) is { } message)
 			{
 				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<UserDeleted>>())
 				{

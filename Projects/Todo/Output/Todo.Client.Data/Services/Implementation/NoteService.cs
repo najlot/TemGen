@@ -20,9 +20,9 @@ public sealed class NoteService(
 {
 	private HubConnection? _connection;
 
-	public event AsyncEventHandler<NoteCreated>? OnItemCreated;
-	public event AsyncEventHandler<NoteUpdated>? OnItemUpdated;
-	public event AsyncEventHandler<NoteDeleted>? OnItemDeleted;
+	public event AsyncEventHandler<NoteCreated>? ItemCreated;
+	public event AsyncEventHandler<NoteUpdated>? ItemUpdated;
+	public event AsyncEventHandler<NoteDeleted>? ItemDeleted;
 
 	public async Task StartEventListener()
 	{
@@ -45,7 +45,7 @@ public sealed class NoteService(
 
 		_connection.On<string>(typeof(NoteCreated).Name, async param =>
 		{
-			if (OnItemCreated is { } handler && JsonSerializer.Deserialize<NoteCreated>(param) is { } message)
+			if (ItemCreated is { } handler && JsonSerializer.Deserialize<NoteCreated>(param) is { } message)
 			{
 				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<NoteCreated>>())
 				{
@@ -56,7 +56,7 @@ public sealed class NoteService(
 
 		_connection.On<string>(typeof(NoteUpdated).Name, async param =>
 		{
-			if (OnItemUpdated is { } handler && JsonSerializer.Deserialize<NoteUpdated>(param) is { } message)
+			if (ItemUpdated is { } handler && JsonSerializer.Deserialize<NoteUpdated>(param) is { } message)
 			{
 				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<NoteUpdated>>())
 				{
@@ -67,7 +67,7 @@ public sealed class NoteService(
 
 		_connection.On<string>(typeof(NoteDeleted).Name, async param =>
 		{
-			if (OnItemDeleted is { } handler && JsonSerializer.Deserialize<NoteDeleted>(param) is { } message)
+			if (ItemDeleted is { } handler && JsonSerializer.Deserialize<NoteDeleted>(param) is { } message)
 			{
 				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<NoteDeleted>>())
 				{

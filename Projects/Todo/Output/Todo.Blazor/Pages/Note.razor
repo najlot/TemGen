@@ -106,7 +106,7 @@ else
 			}
 
 
-			NoteService.OnItemUpdated += Handle;
+			NoteService.ItemUpdated += Handle;
 
 			await NoteService.StartEventListener();
 		}
@@ -201,6 +201,6 @@ else
 
 	public void Dispose()
 	{
-		NoteService.OnItemUpdated -= Handle;
+		NoteService.ItemUpdated -= Handle;
 	}
 }
