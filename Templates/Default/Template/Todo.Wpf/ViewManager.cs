@@ -37,7 +37,12 @@ foreach(var definition in Definitions.Where(d => !(
 
 	public Control GetView<TViewModel>(TViewModel viewModel) where TViewModel : notnull
 	{
-		var viewType = _knownControls[typeof(TViewModel)];
+		if (!_knownControls.TryGetValue(typeof(TViewModel), out var viewType))
+		{
+			throw new InvalidOperationException(
+				$"No view is registered for view model type '{typeof(TViewModel).FullName}'. " +
+				$"Ensure that this view model type is added to the '{nameof(ViewManager)}' {_knownControls.GetType().Name} mapping.");
+		}
 
 		if (viewType.GetConstructor(Type.EmptyTypes) is not null)
 		{
