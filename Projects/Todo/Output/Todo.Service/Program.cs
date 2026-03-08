@@ -94,7 +94,6 @@ internal static class Program
 		services.AddScoped<TokenService>();
 
 		services.AddSignalR();
-		services.AddSingleton<MessageHub>();
 		services.AddSingleton<IPublisher, Publisher>();
 
 		var validationParameters = TokenService.GetValidationParameters(serviceConfig.Secret);

@@ -127,7 +127,6 @@ foreach(var definition in Definitions.Where(d => !(d.IsEnumeration
 #>		services.AddScoped<TokenService>();
 
 		services.AddSignalR();
-		services.AddSingleton<MessageHub>();
 		services.AddSingleton<IPublisher, Publisher>();
 
 		var validationParameters = TokenService.GetValidationParameters(serviceConfig.Secret);
