@@ -34,7 +34,7 @@ public sealed class TodoItemService(
 		using var client = httpClientFactory.CreateClient();
 		var serverUri = (client?.BaseAddress) ?? throw new NullReferenceException("Could not retrieve server connection information!");
 		var token = await tokenProvider.GetToken().ConfigureAwait(false);
-		var signalRUri = new Uri(serverUri, "/cosei");
+		var signalRUri = new Uri(serverUri, "/events");
 
 		_connection = new HubConnectionBuilder()
 			.WithUrl(

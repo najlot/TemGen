@@ -159,7 +159,7 @@ foreach(var definition in Definitions.Where(d => !(d.IsEnumeration
 		app.UseRouting();
 		app.UseAuthorization();
 		app.MapControllers();
-		app.MapHub<MessageHub>("/cosei");
+		app.MapHub<MessageHub>("/events");
 
 		using (var scope = app.Services.CreateScope())
 		{

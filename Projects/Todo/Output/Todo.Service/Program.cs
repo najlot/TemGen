@@ -126,7 +126,7 @@ internal static class Program
 		app.UseRouting();
 		app.UseAuthorization();
 		app.MapControllers();
-		app.MapHub<MessageHub>("/cosei");
+		app.MapHub<MessageHub>("/events");
 
 		using (var scope = app.Services.CreateScope())
 		{
