@@ -1,0 +1,67 @@
+<UserControl x:Class="Todo.Wpf.View.ManageView"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:loc="clr-namespace:Todo.Client.Localisation;assembly=Todo.Client.Localisation"
+			 xmlns:controls="clr-namespace:Todo.Wpf.Controls"
+			 mc:Ignorable="d"
+			 d:DesignHeight="450" d:DesignWidth="800">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
+
+		<Button Margin="1"
+				Padding="5"
+				HorizontalAlignment="Left"
+				Command="{Binding NavigateBackCommand}">
+			<Button.Content>
+				<Path Width="18"
+					  Height="18"
+					  Data="M11.67 3.87L9.9 2.1 0 12l9.9 9.9 1.77-1.77L3.54 12z"
+					  Fill="{StaticResource ForegroundColor}"
+					  Stretch="Uniform" />
+			</Button.Content>
+		</Button>
+
+		<Border Grid.Row="1"
+				MaxWidth="400"
+				Padding="32"
+				HorizontalAlignment="Center"
+				VerticalAlignment="Center"
+				BorderBrush="{StaticResource BackgroundColor}"
+				BorderThickness="1">
+			<StackPanel>
+				<TextBlock Margin="0,0,0,16"
+						   HorizontalAlignment="Center"
+						   FontSize="24"
+						   FontWeight="Bold"
+						   Foreground="{StaticResource BackgroundColor}"
+						   Text="{x:Static loc:CommonLoc.UserNamagement}" />
+
+				<!--  New Password  -->
+				<StackPanel Margin="0,0,0,16">
+					<TextBlock Margin="0,0,0,4" Text="{x:Static loc:CommonLoc.NewPassword}" />
+					<PasswordBox controls:PasswordBoxHelper.BindPassword="True"
+								 controls:PasswordBoxHelper.BoundPassword="{Binding Password, Mode=TwoWay, ValidatesOnNotifyDataErrors=True}" />
+				</StackPanel>
+
+				<!--  Confirm New Password  -->
+				<StackPanel Margin="0,0,0,16">
+					<TextBlock Margin="0,0,0,4" Text="{x:Static loc:CommonLoc.ConfirmNewPassword}" />
+					<PasswordBox controls:PasswordBoxHelper.BindPassword="True"
+								 controls:PasswordBoxHelper.BoundPassword="{Binding PasswordConfirm, Mode=TwoWay, ValidatesOnNotifyDataErrors=True}" />
+				</StackPanel>
+
+				<!--  Save Button  -->
+				<Button Margin="0,8,0,0"
+						HorizontalAlignment="Stretch"
+						HorizontalContentAlignment="Center"
+						Command="{Binding SaveCommand}"
+						Content="{x:Static loc:CommonLoc.ChangePassword}" />
+			</StackPanel>
+		</Border>
+	</Grid>
+</UserControl>

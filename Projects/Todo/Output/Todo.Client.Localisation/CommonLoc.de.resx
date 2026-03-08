@@ -135,6 +135,9 @@
   <data name="Error" xml:space="preserve">
     <value>Fehler</value>
   </data>
+  <data name="ErrorCouldNotLoad" xml:space="preserve">
+    <value>Konnte nicht laden. Serverfehler.</value>
+  </data>
   <data name="Hello" xml:space="preserve">
     <value>Hallo</value>
   </data>

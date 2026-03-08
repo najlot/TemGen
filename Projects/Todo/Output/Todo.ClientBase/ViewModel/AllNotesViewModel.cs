@@ -2,72 +2,54 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Najlot.Map;
 using Todo.Client.Localisation;
 using Todo.Client.MVVM;
-using Todo.Client.MVVM.ViewModel;
-using Todo.Client.MVVM.Services;
 using Todo.Client.Data.Services;
 using Todo.Client.Data.Models;
 using Todo.Contracts.Events;
 
 namespace Todo.ClientBase.ViewModel;
 
-public class AllNotesViewModel : AbstractViewModel, IDisposable
+public class AllNotesViewModel : ViewModelBase, IAsyncInitializable, IDisposable
 {
-	private readonly IErrorService _errorService;
 	private readonly INoteService _noteService;
-	private readonly INavigationService _navigationService;
-	private readonly IMessenger _messenger;
-	private readonly IMap _map;
 
-	private bool _isBusy;
-	private string _filter;
-
-	public bool IsBusy
-	{
-		get => _isBusy;
-		set => Set(nameof(IsBusy), ref _isBusy, value);
-	}
+	public bool IsBusy { get; set => Set(ref field, value); }
 
 	public string Filter
 	{
-		get => _filter;
-		set
-		{
-			Set(nameof(Filter), ref _filter, value);
-			NotesView.Refresh();
-		}
-	}
+		get;
+		set => Set(ref field, value, () => NotesView.Refresh());
+	} = string.Empty;
 
-	public ObservableCollectionView<NoteListItemModel> NotesView { get; }
-	public ObservableCollection<NoteListItemModel> Notes { get; } = [];
+	public ObservableCollectionView<NoteListItemViewModel> NotesView { get; }
+	public ObservableCollection<NoteListItemViewModel> Notes { get; } = [];
 
 	public AllNotesViewModel(
-		IErrorService errorService,
 		INoteService noteService,
-		INavigationService navigationService,
-		IMessenger messenger,
-		IMap map)
+		ViewModelBaseParameters <NoteViewModel> parameters) : base(parameters)
 	{
-		_errorService = errorService;
 		_noteService = noteService;
-		_navigationService = navigationService;
-		_messenger = messenger;
-		_map = map;
 
-		NotesView = new ObservableCollectionView<NoteListItemModel>(Notes, FilterNote);
+		NotesView = new ObservableCollectionView<NoteListItemViewModel>(Notes, FilterNote);
 
-		_messenger.Register<NoteCreated>(Handle);
-		_messenger.Register<NoteUpdated>(Handle);
-		_messenger.Register<NoteDeleted>(Handle);
+		_noteService.OnItemCreated += Handle;
+		_noteService.OnItemUpdated += Handle;
+		_noteService.OnItemDeleted += Handle;
 
-		AddNoteCommand = new AsyncCommand(AddNoteAsync, DisplayError);
-		EditNoteCommand = new AsyncCommand<NoteListItemModel>(EditNoteAsync, DisplayError);
-		RefreshNotesCommand = new AsyncCommand(RefreshNotesAsync, DisplayError);
+		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
+		AddNoteCommand = new AsyncCommand(AddNoteAsync, t => HandleError(t.Exception));
+		EditNoteCommand = new AsyncCommand<NoteListItemViewModel>(EditNoteAsync, t => HandleError(t.Exception));
+		RefreshNotesCommand = new AsyncCommand(RefreshNotesAsync, t => HandleError(t.Exception));
 	}
 
-	private bool FilterNote(NoteListItemModel item)
+	public async Task InitializeAsync()
+	{
+		await RefreshNotesAsync();
+		await _noteService.StartEventListener();
+	}
+
+	private bool FilterNote(NoteListItemViewModel item)
 	{
 		if (string.IsNullOrEmpty(Filter))
 		{
@@ -89,63 +71,36 @@ public class AllNotesViewModel : AbstractViewModel, IDisposable
 		return false;
 	}
 
-	private async Task DisplayError(Task task)
-	{
-		await _errorService.ShowAlertAsync(CommonLoc.Error, task.Exception);
-	}
-
-	private void Handle(NoteCreated obj)
-	{
-		Notes.Insert(0, new NoteListItemModel()
+	private async Task Handle(object? sender, NoteCreated obj)
+		=> await DispatcherHelper.InvokeOnUIThread(() =>
 		{
-			Id = obj.Id,
-			Title = obj.Title,
-			Content = obj.Content,
+			var item = Map.From(obj).To<NoteListItemViewModel>();
+			Notes.Insert(0, item);
 		});
-	}
 
-	private void Handle(NoteUpdated obj)
-	{
-		var oldItem = Notes.FirstOrDefault(i => i.Id == obj.Id);
-		var index = -1;
-
-		if (oldItem != null)
+	private async Task Handle(object? sender, NoteUpdated obj)
+		=> await DispatcherHelper.InvokeOnUIThread(() =>
 		{
-			index = Notes.IndexOf(oldItem);
-
-			if (index != -1)
+			if (Notes.FirstOrDefault(i => i.Id == obj.Id) is { } item)
 			{
-				Notes.RemoveAt(index);
+				Map.From(obj).To(item);
 			}
-		}
-
-		if (index == -1)
-		{
-			index = 0;
-		}
-
-		Notes.Insert(index, new NoteListItemModel()
-		{
-			Id = obj.Id,
-			Title = obj.Title,
-			Content = obj.Content,
 		});
-	}
 
-	private void Handle(NoteDeleted obj)
-	{
-		var oldItem = Notes.FirstOrDefault(i => i.Id == obj.Id);
-
-		if (oldItem != null)
+	private async Task Handle(object? sender, NoteDeleted obj)
+		=> await DispatcherHelper.InvokeOnUIThread(() =>
 		{
-			Notes.Remove(oldItem);
-		}
-	}
+			if (Notes.FirstOrDefault(i => i.Id == obj.Id) is { } item)
+			{
+				Notes.Remove(item);
+			}
+		});
 
-	public AsyncCommand<NoteListItemModel> EditNoteCommand { get; }
-	public async Task EditNoteAsync(NoteListItemModel model)
+	public AsyncCommand NavigateBackCommand { get; }
+	public AsyncCommand<NoteListItemViewModel> EditNoteCommand { get; }
+	public async Task EditNoteAsync(NoteListItemViewModel? model)
 	{
-		if (IsBusy)
+		if (IsBusy || model is null)
 		{
 			return;
 		}
@@ -153,15 +108,11 @@ public class AllNotesViewModel : AbstractViewModel, IDisposable
 		try
 		{
 			IsBusy = true;
-
-			var item = await _noteService.GetItemAsync(model.Id);
-			var viewModel = _map.From(item).To<NoteViewModel>();
-
-			await _navigationService.NavigateForward(viewModel);
+			await NavigationService.NavigateForward<NoteViewModel>(new() {{ "Id", model.Id }});
 		}
 		catch (Exception ex)
 		{
-			await _errorService.ShowAlertAsync("Error loading...", ex);
+			await NotificationService.ShowErrorAsync("Error loading..." + ex.Message);
 		}
 		finally
 		{
@@ -180,16 +131,11 @@ public class AllNotesViewModel : AbstractViewModel, IDisposable
 		try
 		{
 			IsBusy = true;
-
-			var item = _noteService.CreateNote();
-			var viewModel = _map.From(item).To<NoteViewModel>();
-			viewModel.IsNew = true;
-
-			await _navigationService.NavigateForward(viewModel);
+			await NavigationService.NavigateForward<NoteViewModel>();
 		}
 		catch (Exception ex)
 		{
-			await _errorService.ShowAlertAsync("Error adding...", ex);
+			await NotificationService.ShowErrorAsync("Error adding..." + ex.Message);
 		}
 		finally
 		{
@@ -214,15 +160,16 @@ public class AllNotesViewModel : AbstractViewModel, IDisposable
 			Notes.Clear();
 
 			var notes = await _noteService.GetItemsAsync();
+			var viewModels = Map.From<NoteListItemModel>(notes).To<NoteListItemViewModel>();
 
-			foreach (var item in notes)
+			foreach (var item in viewModels)
 			{
 				Notes.Add(item);
 			}
 		}
 		catch (Exception ex)
 		{
-			await _errorService.ShowAlertAsync("Error loading data...", ex);
+			await NotificationService.ShowErrorAsync("Error loading data..." + ex.Message);
 		}
 		finally
 		{
@@ -231,5 +178,25 @@ public class AllNotesViewModel : AbstractViewModel, IDisposable
 		}
 	}
 
-	public void Dispose() => _messenger.Unregister(this);
+	private bool _disposedValue;
+	protected virtual void Dispose(bool disposing)
+	{
+		if (!_disposedValue)
+		{
+			if (disposing)
+			{
+				_noteService.OnItemCreated -= Handle;
+				_noteService.OnItemUpdated -= Handle;
+				_noteService.OnItemDeleted -= Handle;
+			}
+
+			_disposedValue = true;
+		}
+	}
+
+	public void Dispose()
+	{
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+	}
 }

@@ -7,8 +7,20 @@
 			 xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
 			 mc:Ignorable="d"
 			 d:DesignHeight="450" d:DesignWidth="800">
-	<DockPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-		<StackPanel>
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
+
+		<StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+			<Button Command="{Binding ManageCommand}" Content="Manage" Margin="5" />
+			<Button Command="{Binding LogoutCommand}" Content="Logout" Margin="5" />
+		</StackPanel>
+
+		<StackPanel Grid.Row="1"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
 <#cs
 foreach(var definition in Definitions.Where(d => !d.IsOwnedType
 && !d.IsArray
@@ -21,6 +33,5 @@ foreach(var definition in Definitions.Where(d => !d.IsOwnedType
 Result = Result.TrimEnd();
 #>
 		</StackPanel>
-	</DockPanel>
-</UserControl>
-<#cs SetOutputPathAndSkipOtherDefinitions()#>
+	</Grid>
+</UserControl><#cs SetOutputPathAndSkipOtherDefinitions()#>

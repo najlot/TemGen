@@ -27,4 +27,8 @@ internal sealed partial class NoteViewModelMappings
 	{
 		MapPartialToViewModel(map, from, to);
 	}
+
+	public static partial void MapToViewModel(IMap map, NoteListItemModel from, NoteListItemViewModel to);
+	public static partial void MapToViewModel(IMap map, NoteCreated from, NoteListItemViewModel to);
+	public static partial void MapToViewModel(IMap map, NoteUpdated from, NoteListItemViewModel to);
 }

@@ -1,7 +1,8 @@
-using Cosei.Client.Base;
 using Najlot.Map;
 using System;
 using System.Threading.Tasks;
+using System.Net.Http;
+using System.Net.Http.Json;
 using <#cs Write(Project.Namespace)#>.Client.Data.Models;
 using <#cs Write(Project.Namespace)#>.Client.Data.Identity;
 using <#cs Write(Project.Namespace)#>.Contracts;
@@ -10,60 +11,50 @@ using <#cs Write(Project.Namespace)#>.Contracts.ListItems;
 
 namespace <#cs Write(Project.Namespace)#>.Client.Data.Repositories.Implementation;
 
-public sealed class UserRepository : IUserRepository
+public sealed class UserRepository(IHttpClientFactory httpClientFactory, ITokenProvider tokenProvider, IMap map)
+	: HttpClientRepository(httpClientFactory, tokenProvider), IUserRepository
 {
-	private readonly IRequestClient _client;
-	private readonly ITokenProvider _tokenProvider;
-	private readonly IMap _map;
-
-	public UserRepository(IRequestClient client, ITokenProvider tokenProvider, IMap map)
-	{
-		_tokenProvider = tokenProvider;
-		_client = client;
-		_map = map;
-	}
-
 	public async Task<UserListItemModel[]> GetItemsAsync()
 	{
-		var headers = await _tokenProvider.GetAuthorizationHeaders();
-		var users = await _client.GetAsync<UserListItem[]>("api/User", headers);
-		return _map.From<UserListItem>(users).ToArray<UserListItemModel>();
+		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
+		var users = await client.GetFromJsonAsync<UserListItem[]>("api/User").ConfigureAwait(false) ?? [];
+		return map.From<UserListItem>(users).ToArray<UserListItemModel>();
 	}
 
 	public async Task<UserModel> GetItemAsync(Guid id)
 	{
-		var headers = await _tokenProvider.GetAuthorizationHeaders();
-		var user = await _client.GetAsync<User>($"api/User/{id}", headers);
-		return _map.From(user).To<UserModel>();
+		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
+		var user = await client.GetFromJsonAsync<User>($"api/User/{id}").ConfigureAwait(false);
+		return map.From(user).To<UserModel>();
 	}
 
 	public async Task<UserModel> GetCurrentUserAsync()
 	{
-		var headers = await _tokenProvider.GetAuthorizationHeaders();
-		var user = await _client.GetAsync<User>("api/User/Current", headers);
-		return _map.From(user).To<UserModel>();
+		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
+		var user = await client.GetFromJsonAsync<User>("api/User/Current").ConfigureAwait(false);
+		return map.From(user).To<UserModel>();
 	}
 
 	public async Task AddItemAsync(UserModel item)
 	{
-		var headers = await _tokenProvider.GetAuthorizationHeaders();
-		var request = _map.From(item).To<CreateUser>();
-		await _client.PostAsync("api/User", request, headers);
+		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
+		var request = map.From(item).To<CreateUser>();
+		var response = await client.PostAsJsonAsync("api/User", request).ConfigureAwait(false);
+		response.EnsureSuccessStatusCode();
 	}
 
 	public async Task UpdateItemAsync(UserModel item)
 	{
-		var headers = await _tokenProvider.GetAuthorizationHeaders();
-		var request = _map.From(item).To<UpdateUser>();
-		await _client.PutAsync("api/User", request, headers);
+		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
+		var request = map.From(item).To<UpdateUser>();
+		var response = await client.PutAsJsonAsync("api/User", request).ConfigureAwait(false);
+		response.EnsureSuccessStatusCode();
 	}
 
 	public async Task DeleteItemAsync(Guid id)
 	{
-		var headers = await _tokenProvider.GetAuthorizationHeaders();
-		var response = await _client.DeleteAsync($"api/User/{id}", headers);
+		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
+		var response = await client.DeleteAsync($"api/User/{id}").ConfigureAwait(false);
 		response.EnsureSuccessStatusCode();
 	}
-
-	public void Dispose() => _client.Dispose();
 }<#cs SetOutputPathAndSkipOtherDefinitions()#>

@@ -1,30 +1,26 @@
-using Cosei.Client.Base;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http;
 using System.Security.Authentication;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace <#cs Write(Project.Namespace)#>.Client.Data.Identity;
 
-public class RefreshingTokenProvider : ITokenProvider
+public class RefreshingTokenProvider(IHttpClientFactory httpClientFactory, IUserDataStore userDataStore)
+	: ITokenProvider
 {
-	private readonly IRequestClient _client;
-	private readonly IUserDataStore _userDataStore;
 	private string? _token;
 
-	public RefreshingTokenProvider(IRequestClient client, IUserDataStore userDataStore)
+	public void ClearCache()
 	{
-		_client = client;
-		_userDataStore = userDataStore;
+		_token = null;
 	}
 
 	public async Task<string> GetToken()
 	{
 		if (string.IsNullOrEmpty(_token))
 		{
-			_token = await _userDataStore.GetAccessToken();
+			_token = await userDataStore.GetAccessToken();
 		}
 
 		if (string.IsNullOrEmpty(_token))
@@ -41,27 +37,24 @@ public class RefreshingTokenProvider : ITokenProvider
 		}
 		else if (validTo > DateTime.UtcNow)
 		{
-			var headers = new Dictionary<string, string>
-			{
-				{ "Authorization", $"Bearer {_token}" }
-			};
+			using var client = httpClientFactory.CreateClient();
+			client.DefaultRequestHeaders.Add("Authorization", $"Bearer {_token}");
+			var response = await client.GetAsync("api/Auth/Refresh").ConfigureAwait(false);
 
-			var response = await _client.GetAsync("api/Auth/Refresh", headers);
-
-			if (response.StatusCode >= 200 && response.StatusCode < 300)
+			if (response.IsSuccessStatusCode)
 			{
-				_token = Encoding.UTF8.GetString(response.Body.ToArray());
-				await _userDataStore.SetAccessToken(_token);
+				_token = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+				await userDataStore.SetAccessToken(_token);
 				return _token;
 			}
 		}
 		else
 		{
-			var token = await _userDataStore.GetAccessToken();
+			var token = await userDataStore.GetAccessToken().ConfigureAwait(false);
 			if (!string.IsNullOrWhiteSpace(token) && token != _token)
 			{
 				_token = token;
-				return await GetToken();
+				return await GetToken().ConfigureAwait(false);
 			}
 		}
 

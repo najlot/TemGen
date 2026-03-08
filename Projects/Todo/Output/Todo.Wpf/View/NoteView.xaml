@@ -8,36 +8,43 @@
 			 xmlns:converter="clr-namespace:Todo.Wpf.Converter"
 			 mc:Ignorable="d"
 			 d:DesignHeight="500" d:DesignWidth="600">
-
-	<UserControl.Resources>
-		<ResourceDictionary>
-			<converter:EnumToTranslationConverter x:Key="EnumToTranslationConverter" />
-		</ResourceDictionary>
-	</UserControl.Resources>
-	
 	<DockPanel>
-		<WrapPanel HorizontalAlignment="Right" DockPanel.Dock="Top">
-			<Button ToolTip="{x:Static loc:CommonLoc.Save}" Command="{Binding SaveCommand}" Margin="5">
+		<DockPanel DockPanel.Dock="Top">
+			<Button Margin="5"
+					DockPanel.Dock="Left"
+					Command="{Binding NavigateBackCommand}">
 				<Button.Content>
-					<Path
-						Width="18"
-						Height="18"
-						Stretch="Uniform"
-						Fill="{StaticResource ForegroundColor}"
-						Data="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z" />
+					<Path Width="18"
+						  Height="18"
+						  Data="M11.67 3.87L9.9 2.1 0 12l9.9 9.9 1.77-1.77L3.54 12z"
+						  Fill="{StaticResource ForegroundColor}"
+						  Stretch="Uniform" />
 				</Button.Content>
 			</Button>
-			<Button ToolTip="{x:Static loc:CommonLoc.Delete}" Command="{Binding DeleteCommand}" Margin="5">
-				<Button.Content>
-					<Path
-						Width="18"
-						Height="18"
-						Stretch="Uniform"
-						Fill="{StaticResource ForegroundColor}"
-						Data="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z" />
-				</Button.Content>
-			</Button>
-		</WrapPanel>
+
+			<WrapPanel HorizontalAlignment="Right" DockPanel.Dock="Right">
+				<Button Content=">" Command="{Binding RedoCommand}" Margin="5" />
+				<Button Content="&lt;" Command="{Binding UndoCommand}" Margin="5" />
+				<Button ToolTip="{x:Static loc:CommonLoc.Save}" Command="{Binding SaveCommand}" Margin="5">
+					<Button.Content>
+						<Path Width="18"
+							  Height="18"
+							  Stretch="Uniform"
+							  Fill="{StaticResource ForegroundColor}"
+							  Data="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z" />
+					</Button.Content>
+				</Button>
+				<Button ToolTip="{x:Static loc:CommonLoc.Delete}" Command="{Binding DeleteCommand}" Margin="5">
+					<Button.Content>
+						<Path Width="18"
+							  Height="18"
+							  Stretch="Uniform"
+							  Fill="{StaticResource ForegroundColor}"
+							  Data="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z" />
+					</Button.Content>
+				</Button>
+			</WrapPanel>
+		</DockPanel>
 		<ScrollViewer>
 			<StackPanel Margin="2,0" MinWidth="400" MinHeight="200"
 						HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -51,8 +58,8 @@
 				</DockPanel>
 				<DockPanel Margin="5">
 					<Label Content="{x:Static loc:NoteLoc.Color}" MinWidth="75" />
-					<ComboBox ItemsSource="{Binding AvailablePredefinedColors, Converter={StaticResource EnumToTranslationConverter}, ConverterParameter={x:Type loc:PredefinedColorLoc}}" 
-							  SelectedItem="{Binding Color, Converter={StaticResource EnumToTranslationConverter}, ConverterParameter={x:Type loc:PredefinedColorLoc}}" />
+					<ComboBox ItemsSource="{Binding AvailablePredefinedColors, Converter={x:Static converter:EnumToTranslationConverter.Instance}, ConverterParameter={x:Type loc:PredefinedColorLoc}}" 
+							  SelectedItem="{Binding Color, Converter={x:Static converter:EnumToTranslationConverter.Instance}, ConverterParameter={x:Type loc:PredefinedColorLoc}}" />
 				</DockPanel>
 			</StackPanel>
 		</ScrollViewer>

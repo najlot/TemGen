@@ -2,26 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Najlot.Map;
 using <#cs Write(Project.Namespace)#>.Client.Data.Models;
 using <#cs Write(Project.Namespace)#>.Client.Data.Services;
 using <#cs Write(Project.Namespace)#>.Client.MVVM;
-using <#cs Write(Project.Namespace)#>.Client.MVVM.Services;
-using <#cs Write(Project.Namespace)#>.Client.MVVM.Validation;
-using <#cs Write(Project.Namespace)#>.Client.MVVM.ViewModel;
-using <#cs Write(Project.Namespace)#>.ClientBase.Validation;
 using <#cs Write(Project.Namespace)#>.Contracts;
 using <#cs Write(Project.Namespace)#>.Contracts.Events;
 
 namespace <#cs Write(Project.Namespace)#>.ClientBase.ViewModel;
 
-public <#cs if(Entries.Where(e => e.IsArray).Any()) Write("partial ");#>class <#cs Write(Definition.Name)#>ViewModel : AbstractValidationViewModel, IDisposable
+public <#cs if(Entries.Where(e => e.IsArray).Any()) Write("partial ");#>class <#cs Write(Definition.Name)#>ViewModel : ValidationViewModelBase, IParameterizable, IAsyncInitializable, IDisposable
 {
-	private readonly IErrorService _errorService;
-	private readonly INavigationService _navigationService;
 	private readonly I<#cs Write(Definition.Name)#>Service _<#cs Write(Definition.NameLow)#>Service;
-	private readonly IMessenger _messenger;
-	private readonly IMap _map;
 <#cs
 var references = Entries
 	.Where(e => e.IsReference)
@@ -32,14 +23,14 @@ var references = Entries
 
 foreach (var definition in references)
 {
-	WriteLine($"	private IEnumerable<{definition.Name}ListItemModel> _available{definition.Name}s;");
+	WriteLine($"	private readonly I{definition.Name}Service _{definition.NameLow}Service;");
 }
 
 WriteLine("");
 
 foreach (var definition in references)
 {
-	WriteLine($"	public IEnumerable<{definition.Name}ListItemModel> Available{definition.Name}s {{ get => _available{definition.Name}s; set => Set(nameof(Available{definition.Name}s), ref _available{definition.Name}s, value); }}");
+	WriteLine($"	public IEnumerable<{definition.Name}ListItemModel> Available{definition.Name}s {{ get; set => Set(ref field, value); }} = [];");
 }
 
 foreach(var entry in Entries.Where(e => e.IsEnumeration))
@@ -61,18 +52,18 @@ foreach(var entry in Entries.Where(e => e.IsEnumeration))
 	}
 	else
 	{
-		WriteLine($"	public List<{entry.EntryType}> Available{entry.EntryType}s {{ get; }} = new(Enum.GetValues(typeof({entry.EntryType})) as {entry.EntryType}[]);");
+		WriteLine($"	public {entry.EntryType}[] Available{entry.EntryType}s {{ get; }} = Enum.GetValues<{entry.EntryType}>();");
 	}
 }
 #>
-	public Guid Id { get => field; set => Set(ref field, value); }
+	public Guid Id { get; set => Set(ref field, value); }
 <#cs
 foreach (var entry in Entries.Where(e => !e.IsArray))
 {
 	var defaultValue = "";
 	if (!entry.IsNullable && entry.EntryType.ToLower() == "string")
 	{
-		defaultValue = " = string.Empty";
+		defaultValue = " = string.Empty;";
 	}
 
 	var suffix = "";
@@ -81,51 +72,134 @@ foreach (var entry in Entries.Where(e => !e.IsArray))
 	{
 		suffix = "Id";
 	}
-	
-	WriteLine($"	public {entry.EntryType} {entry.Field}{suffix} {{ get => field; set => Set(ref field, value); }}");
+
+	WriteLine($"	public {entry.EntryType} {entry.Field}{suffix} {{ get; set => Set(ref field, value); }}{defaultValue}");
 }
 #>
-	public bool IsBusy { get => field; private set => Set(ref field, value); }
+	private readonly ChangeTracker _changeTracker = new();
+
+	public bool CanUndo => _changeTracker.CanUndo;
+	public bool CanRedo => _changeTracker.CanRedo;
+
+	public bool IsBusy { get; private set => Set(ref field, value); }
 
 	public bool IsNew { get; set; }
 
 	public <#cs Write(Definition.Name)#>ViewModel(
-		IErrorService errorService,
-		INavigationService navigationService,
 		I<#cs Write(Definition.Name)#>Service <#cs Write(Definition.NameLow)#>Service,
-		IMessenger messenger,
-		IMap map)
+<#cs
+var references = Entries
+	.Where(e => e.IsReference)
+	.Select(e => e.ReferenceType)
+	.Distinct()
+	.Select(n => Definitions.First(d => d.Name == n))
+	.ToArray();
+
+foreach (var definition in references)
+{
+	WriteLine($"		I{definition.Name}Service {definition.NameLow}Service,");
+}
+#>		ViewModelBaseParameters<<#cs Write(Definition.Name)#>ViewModel> parameters) : base(parameters)
 	{
-		_errorService = errorService;
-		_navigationService = navigationService;
 		_<#cs Write(Definition.NameLow)#>Service = <#cs Write(Definition.NameLow)#>Service;
-		_messenger = messenger;
-		_map = map;
+<#cs
+var references = Entries
+	.Where(e => e.IsReference)
+	.Select(e => e.ReferenceType)
+	.Distinct()
+	.Select(n => Definitions.First(d => d.Name == n))
+	.ToArray();
 
-		SaveCommand = new AsyncCommand(SaveAsync, DisplayError);
-		DeleteCommand = new AsyncCommand(DeleteAsync, DisplayError);
+foreach (var definition in references)
+{
+	WriteLine($"		_{definition.NameLow}Service = {definition.NameLow}Service;");
+}
+#>
+		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
+		SaveCommand = new AsyncCommand(SaveAsync, t => HandleError(t.Exception));
+		DeleteCommand = new AsyncCommand(DeleteAsync, t => HandleError(t.Exception));
+		UndoCommand = new RelayCommand(() => _changeTracker.Undo(), () => _changeTracker.CanUndo);
+		RedoCommand = new RelayCommand(() => _changeTracker.Redo(), () => _changeTracker.CanRedo);
 
-		SetValidation(new <#cs Write(Definition.Name)#>ValidationList());
-
-		_messenger.Register<<#cs Write(Definition.Name)#>Updated>(Handle);
-	}
-
-	private async Task DisplayError(Task task)
-	{
-		await _errorService.ShowAlertAsync("Error...", task.Exception);
-	}
-
-	public void Handle(<#cs Write(Definition.Name)#>Updated obj)
-	{
-		if (Id != obj.Id)
+		ChangeVisitor = _changeTracker;
+		_changeTracker.StateChanged += () =>
 		{
-			return;
+			RaisePropertiesChanged(nameof(CanUndo), nameof(CanRedo));
+			UndoCommand.RaiseCanExecuteChanged();
+			RedoCommand.RaiseCanExecuteChanged();
+		};
+
+		_<#cs Write(Definition.NameLow)#>Service.OnItemUpdated += Handle;
+	}
+
+	public void SetParameters(IReadOnlyDictionary<string, object> parameters)
+	{
+		if (parameters.TryGetValue("Id", out var idObj) && idObj is Guid id)
+		{
+			Id = id;
+		}
+	}
+
+	public async Task InitializeAsync()
+	{
+		if (Id == Guid.Empty)
+		{
+			var model = _<#cs Write(Definition.NameLow)#>Service.Create<#cs Write(Definition.Name)#>();
+			Map.From(model).To(this);
+			IsNew = true;
+		}
+		else
+		{
+			var model = await _<#cs Write(Definition.NameLow)#>Service.GetItemAsync(Id);
+			Map.From(model).To(this);
+			IsNew = false;
 		}
 
-		_map.From(obj).To(this);
-	}
+<#cs
+var references = Entries
+	.Where(e => e.IsReference)
+	.Select(e => e.ReferenceType)
+	.Distinct()
+	.Select(n => Definitions.First(d => d.Name == n))
+	.ToArray();
 
+foreach (var definition in references)
+{
+	WriteLine($"		Available{definition.Name}s = await _{definition.NameLow}Service.GetItemsAsync();");
+}
+
+if (references.Length > 0) WriteLine("");
+#>		await _<#cs Write(Definition.NameLow)#>Service.StartEventListener();
+
+		_changeTracker.Clear();
+<#cs
+foreach (var entry in Entries.Where(e => e.IsArray))
+{
+	WriteLine($"		Initialize{entry.Field}Tracking();");
+}
+#>	}
+
+	private async Task Handle(object? sender, <#cs Write(Definition.Name)#>Updated obj)
+		=> await DispatcherHelper.InvokeOnUIThread(() =>
+		{
+			if (Id != obj.Id)
+			{
+				return;
+			}
+
+			Map.From(obj).To(this);
+			_changeTracker.Clear();
+<#cs
+foreach (var entry in Entries.Where(e => e.IsArray))
+{
+	WriteLine($"			Initialize{entry.Field}Tracking();");
+}
+#>		});
+
+	public AsyncCommand NavigateBackCommand { get; }
 	public AsyncCommand SaveCommand { get; }
+	public RelayCommand UndoCommand { get; }
+	public RelayCommand RedoCommand { get; }
 	public async Task SaveAsync()
 	{
 		if (IsBusy)
@@ -137,35 +211,13 @@ foreach (var entry in Entries.Where(e => !e.IsArray))
 		{
 			IsBusy = true;
 
-			var errors = Errors
-				.Where(err => err.Severity > ValidationSeverity.Info)
-				.Select(e => e.Text);
-
-			if (errors.Any())
+			ValidateAll();
+			if (HasErrors)
 			{
-				var message = "There are some validation errors:";
-				message += Environment.NewLine + Environment.NewLine;
-				message += string.Join(Environment.NewLine, errors);
-				message += Environment.NewLine + Environment.NewLine;
-				message += "Do you want to continue?";
-
-				var vm = new YesNoPageViewModel()
-				{
-					Title = "Validation",
-					Message = message
-				};
-
-				var selection = await _navigationService.RequestInputAsync(vm);
-
-				if (!selection)
-				{
-					return;
-				}
+				return;
 			}
 
-			await _navigationService.NavigateBack();
-
-			var model = _map.From(this).To<<#cs Write(Definition.Name)#>Model>();
+			var model = Map.From(this).To<<#cs Write(Definition.Name)#>Model>();
 
 			if (IsNew)
 			{
@@ -176,10 +228,12 @@ foreach (var entry in Entries.Where(e => !e.IsArray))
 			{
 				await _<#cs Write(Definition.NameLow)#>Service.UpdateItemAsync(model);
 			}
+
+			_changeTracker.Clear();
 		}
 		catch (Exception ex)
 		{
-			await _errorService.ShowAlertAsync("Error saving...", ex);
+			await NotificationService.ShowErrorAsync("Error saving..." + ex.Message);
 		}
 		finally
 		{
@@ -199,23 +253,12 @@ foreach (var entry in Entries.Where(e => !e.IsArray))
 		{
 			IsBusy = true;
 
-			var vm = new YesNoPageViewModel()
-			{
-				Title = "Delete?",
-				Message = "Should the item be deleted?"
-			};
-
-			var selection = await _navigationService.RequestInputAsync(vm);
-
-			if (selection)
-			{
-				await _navigationService.NavigateBack();
-				await _<#cs Write(Definition.NameLow)#>Service.DeleteItemAsync(Id);
-			}
+			await _<#cs Write(Definition.NameLow)#>Service.DeleteItemAsync(Id);
+			await NavigationService.NavigateBack();
 		}
 		catch (Exception ex)
 		{
-			await _errorService.ShowAlertAsync("Error deleting...", ex);
+			await NotificationService.ShowErrorAsync("Error deleting..." + ex.Message);
 		}
 		finally
 		{
@@ -223,5 +266,49 @@ foreach (var entry in Entries.Where(e => !e.IsArray))
 		}
 	}
 
-	public void Dispose() => _messenger.Unregister(this);
+	protected override IEnumerable<ValidationResult> Validate(string? propertyName)
+	{
+		return [];
+	}
+
+	protected override bool ShouldIgnorePropertyForChangesAndValidation(string? propertyName)
+		=> base.ShouldIgnorePropertyForChangesAndValidation(propertyName)
+			|| propertyName is nameof(IsBusy) or nameof(IsNew) or nameof(Id)<#cs
+var ignoreReferences = Entries
+	.Where(e => e.IsReference)
+	.Select(e => e.ReferenceType)
+	.Distinct()
+	.Select(n => Definitions.First(d => d.Name == n))
+	.ToArray();
+
+foreach (var definition in ignoreReferences)
+{
+	Write($" or nameof(Available{definition.Name}s)");
+}
+
+foreach (var entry in Entries.Where(e => e.IsEnumeration))
+{
+	Write($" or nameof(Available{entry.EntryType}s)");
+}
+#>;
+
+	private bool _disposedValue;
+	protected virtual void Dispose(bool disposing)
+	{
+		if (!_disposedValue)
+		{
+			if (disposing)
+			{
+				_<#cs Write(Definition.NameLow)#>Service.OnItemUpdated -= Handle;
+			}
+
+			_disposedValue = true;
+		}
+	}
+
+	public void Dispose()
+	{
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+	}
 }<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

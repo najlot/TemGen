@@ -1,5 +1,3 @@
-using Cosei.Client.Base;
-using Cosei.Client.Http;
 using Najlot.Log.Destinations;
 using Najlot.Log.Middleware;
 using Najlot.Log;
@@ -9,14 +7,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Options;
 using <#cs Write(Project.Namespace)#>.Blazor.Identity;
-using <#cs Write(Project.Namespace)#>.Blazor.Services;
-using <#cs Write(Project.Namespace)#>.Blazor.Services.Implementation;
 using <#cs Write(Project.Namespace)#>.Client.Data;
 using <#cs Write(Project.Namespace)#>.Client.Data.Identity;
-using <#cs Write(Project.Namespace)#>.Client.Data.Repositories;
-using <#cs Write(Project.Namespace)#>.Client.Data.Repositories.Implementation;
-using <#cs Write(Project.Namespace)#>.Client.Data.Services;
-using <#cs Write(Project.Namespace)#>.Client.Data.Services.Implementation;
 
 namespace <#cs Write(Project.Namespace)#>.Blazor;
 
@@ -75,47 +67,13 @@ public class Program
 		builder.Services.AddScoped<AuthenticationStateProvider, AuthenticationService>();
 		builder.Services.AddScoped(c => (IAuthenticationService)c.GetRequiredService<AuthenticationStateProvider>());
 
-		builder.Services.AddScoped<IRequestClient, HttpFactoryRequestClient>();
-		builder.Services.AddScoped<ITokenService, TokenService>();
-		builder.Services.AddScoped<ITokenProvider, RefreshingTokenProvider>();
 		builder.Services.AddScoped<IUserDataStore, UserDataStore>();
 
-		builder.Services.AddScoped<IRegistrationService, RegistrationService>();
-
-		builder.Services.AddScoped<IUserRepository, UserRepository>();
-		builder.Services.AddScoped<IUserService, UserService>();
-<#cs
-foreach(var definition in Definitions.Where(d => !(d.IsArray 
-	|| d.IsEnumeration
-	|| d.IsOwnedType
-	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))))
-{
-	WriteLine($"		builder.Services.AddScoped<I{definition.Name}Repository, {definition.Name}Repository>();");
-}
-
-WriteLine("");
-
-foreach(var definition in Definitions.Where(d => !(d.IsArray
-	|| d.IsEnumeration
-	|| d.IsOwnedType
-	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))))
-{
-	WriteLine($"		builder.Services.AddScoped<I{definition.Name}Service, {definition.Name}Service>();");
-}
-#>
-		builder.Services.AddScoped<ISubscriberProvider, SubscriberProvider>();
+		builder.Services.RegisterClientData();
 
 		var app = builder.Build();
 		var serviceProvider = app.Services;
-		map.RegisterFactory(t =>
-		{
-			if (t.GetConstructor(Type.EmptyTypes) is not null)
-			{
-				return Activator.CreateInstance(t) ?? throw new NullReferenceException($"Could not create {t.FullName}. Result is null.");
-			}
-
-			return serviceProvider.GetRequiredService(t);
-		});
+		map.RegisterFactory(serviceProvider.GetRequiredService);
 
 		// Configure the HTTP request pipeline.
 		if (!app.Environment.IsDevelopment())

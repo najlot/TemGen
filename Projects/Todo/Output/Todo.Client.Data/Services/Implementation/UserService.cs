@@ -1,18 +1,81 @@
+using Microsoft.AspNetCore.SignalR.Client;
 using System;
-using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Todo.Client.Data.Identity;
 using Todo.Client.Data.Models;
 using Todo.Client.Data.Repositories;
+using Todo.Contracts.Events;
 
 namespace Todo.Client.Data.Services.Implementation;
 
-public sealed class UserService : IUserService
+public sealed class UserService(
+	ITokenProvider tokenProvider,
+	IHttpClientFactory httpClientFactory,
+	IUserRepository repository)
+	: IUserService, IAsyncDisposable
 {
-	private readonly IUserRepository _repository;
+	private HubConnection? _connection;
 
-	public UserService(IUserRepository repository)
+	public event AsyncEventHandler<UserCreated>? OnItemCreated;
+	public event AsyncEventHandler<UserUpdated>? OnItemUpdated;
+	public event AsyncEventHandler<UserDeleted>? OnItemDeleted;
+
+	public async Task StartEventListener()
 	{
-		_repository = repository;
+		if (_connection is not null)
+		{
+			return;
+		}
+
+		using var client = httpClientFactory.CreateClient();
+		var serverUri = (client?.BaseAddress) ?? throw new NullReferenceException("Could not retrieve server connection information!");
+		var token = await tokenProvider.GetToken().ConfigureAwait(false);
+		var signalRUri = new Uri(serverUri, "/cosei");
+
+		_connection = new HubConnectionBuilder()
+			.WithUrl(
+				signalRUri.AbsoluteUri,
+				options => options.Headers.Add("Authorization", $"Bearer {token}"))
+			.WithAutomaticReconnect()
+			.Build();
+
+		_connection.On<string>(typeof(UserCreated).Name, async param =>
+		{
+			if (OnItemCreated is { } handler && JsonSerializer.Deserialize<UserCreated>(param) is { } message)
+			{
+				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<UserCreated>>())
+				{
+					await invocation(this, message).ConfigureAwait(false);
+				}
+			}
+		});
+
+		_connection.On<string>(typeof(UserUpdated).Name, async param =>
+		{
+			if (OnItemUpdated is { } handler && JsonSerializer.Deserialize<UserUpdated>(param) is { } message)
+			{
+				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<UserUpdated>>())
+				{
+					await invocation(this, message).ConfigureAwait(false);
+				}
+			}
+		});
+
+		_connection.On<string>(typeof(UserDeleted).Name, async param =>
+		{
+			if (OnItemDeleted is { } handler && JsonSerializer.Deserialize<UserDeleted>(param) is { } message)
+			{
+				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<UserDeleted>>())
+				{
+					await invocation(this, message).ConfigureAwait(false);
+				}
+			}
+		});
+
+		await _connection.StartAsync().ConfigureAwait(false);
 	}
 
 	public UserModel CreateUser()
@@ -28,33 +91,40 @@ public sealed class UserService : IUserService
 
 	public async Task AddItemAsync(UserModel item)
 	{
-		await _repository.AddItemAsync(item);
+		await repository.AddItemAsync(item);
 	}
 
 	public async Task DeleteItemAsync(Guid id)
 	{
-		await _repository.DeleteItemAsync(id);
+		await repository.DeleteItemAsync(id);
 	}
 
 	public async Task<UserModel> GetCurrentUserAsync()
 	{
-		return await _repository.GetCurrentUserAsync();
+		return await repository.GetCurrentUserAsync();
 	}
 
 	public async Task<UserModel> GetItemAsync(Guid id)
 	{
-		return await _repository.GetItemAsync(id);
+		return await repository.GetItemAsync(id);
 	}
 
-	public async Task<IEnumerable<UserListItemModel>> GetItemsAsync()
+	public async Task<UserListItemModel[]> GetItemsAsync()
 	{
-		return await _repository.GetItemsAsync();
+		return await repository.GetItemsAsync();
 	}
 
 	public async Task UpdateItemAsync(UserModel item)
 	{
-		await _repository.UpdateItemAsync(item);
+		await repository.UpdateItemAsync(item);
 	}
 
-	public void Dispose() => _repository.Dispose();
+	public async ValueTask DisposeAsync()
+	{
+		if (_connection is not null)
+		{
+			await _connection.DisposeAsync();
+			_connection = null;
+		}
+	}
 }

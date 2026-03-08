@@ -1,0 +1,11 @@
+@using <#cs Write(Project.Namespace)#>.Blazor.Pages
+@inject NavigationManager NavigationManager
+
+@code {
+    protected override void OnInitialized()
+    {
+        var url = NavigationManager.BuildReturnUrl("/Login");
+        NavigationManager.NavigateTo(url, forceLoad: false);
+    }
+}
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

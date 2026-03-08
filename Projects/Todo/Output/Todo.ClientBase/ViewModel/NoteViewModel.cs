@@ -2,75 +2,101 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Najlot.Map;
 using Todo.Client.Data.Models;
 using Todo.Client.Data.Services;
 using Todo.Client.MVVM;
-using Todo.Client.MVVM.Services;
-using Todo.Client.MVVM.Validation;
-using Todo.Client.MVVM.ViewModel;
-using Todo.ClientBase.Validation;
 using Todo.Contracts;
 using Todo.Contracts.Events;
 
 namespace Todo.ClientBase.ViewModel;
 
-public class NoteViewModel : AbstractValidationViewModel, IDisposable
+public class NoteViewModel : ValidationViewModelBase, IParameterizable, IAsyncInitializable, IDisposable
 {
-	private readonly IErrorService _errorService;
-	private readonly INavigationService _navigationService;
 	private readonly INoteService _noteService;
-	private readonly IMessenger _messenger;
-	private readonly IMap _map;
 
-	public List<PredefinedColor> AvailablePredefinedColors { get; } = new(Enum.GetValues(typeof(PredefinedColor)) as PredefinedColor[]);
+	public PredefinedColor[] AvailablePredefinedColors { get; } = Enum.GetValues<PredefinedColor>();
 
-	public Guid Id { get => field; set => Set(ref field, value); }
-	public string Title { get => field; set => Set(ref field, value); }
-	public string Content { get => field; set => Set(ref field, value); }
-	public PredefinedColor Color { get => field; set => Set(ref field, value); }
+	public Guid Id { get; set => Set(ref field, value); }
+	public string Title { get; set => Set(ref field, value); } = string.Empty;
+	public string Content { get; set => Set(ref field, value); } = string.Empty;
+	public PredefinedColor Color { get; set => Set(ref field, value); }
 
-	public bool IsBusy { get => field; private set => Set(ref field, value); }
+	private readonly ChangeTracker _changeTracker = new();
+
+	public bool CanUndo => _changeTracker.CanUndo;
+	public bool CanRedo => _changeTracker.CanRedo;
+
+	public bool IsBusy { get; private set => Set(ref field, value); }
 
 	public bool IsNew { get; set; }
 
 	public NoteViewModel(
-		IErrorService errorService,
-		INavigationService navigationService,
 		INoteService noteService,
-		IMessenger messenger,
-		IMap map)
+		ViewModelBaseParameters<NoteViewModel> parameters) : base(parameters)
 	{
-		_errorService = errorService;
-		_navigationService = navigationService;
 		_noteService = noteService;
-		_messenger = messenger;
-		_map = map;
 
-		SaveCommand = new AsyncCommand(SaveAsync, DisplayError);
-		DeleteCommand = new AsyncCommand(DeleteAsync, DisplayError);
+		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
+		SaveCommand = new AsyncCommand(SaveAsync, t => HandleError(t.Exception));
+		DeleteCommand = new AsyncCommand(DeleteAsync, t => HandleError(t.Exception));
+		UndoCommand = new RelayCommand(() => _changeTracker.Undo(), () => _changeTracker.CanUndo);
+		RedoCommand = new RelayCommand(() => _changeTracker.Redo(), () => _changeTracker.CanRedo);
 
-		SetValidation(new NoteValidationList());
-
-		_messenger.Register<NoteUpdated>(Handle);
-	}
-
-	private async Task DisplayError(Task task)
-	{
-		await _errorService.ShowAlertAsync("Error...", task.Exception);
-	}
-
-	public void Handle(NoteUpdated obj)
-	{
-		if (Id != obj.Id)
+		ChangeVisitor = _changeTracker;
+		_changeTracker.StateChanged += () =>
 		{
-			return;
+			RaisePropertiesChanged(nameof(CanUndo), nameof(CanRedo));
+			UndoCommand.RaiseCanExecuteChanged();
+			RedoCommand.RaiseCanExecuteChanged();
+		};
+
+		_noteService.OnItemUpdated += Handle;
+	}
+
+	public void SetParameters(IReadOnlyDictionary<string, object> parameters)
+	{
+		if (parameters.TryGetValue("Id", out var idObj) && idObj is Guid id)
+		{
+			Id = id;
+		}
+	}
+
+	public async Task InitializeAsync()
+	{
+		if (Id == Guid.Empty)
+		{
+			var model = _noteService.CreateNote();
+			Map.From(model).To(this);
+			IsNew = true;
+		}
+		else
+		{
+			var model = await _noteService.GetItemAsync(Id);
+			Map.From(model).To(this);
+			IsNew = false;
 		}
 
-		_map.From(obj).To(this);
+		await _noteService.StartEventListener();
+
+		_changeTracker.Clear();
 	}
 
+	private async Task Handle(object? sender, NoteUpdated obj)
+		=> await DispatcherHelper.InvokeOnUIThread(() =>
+		{
+			if (Id != obj.Id)
+			{
+				return;
+			}
+
+			Map.From(obj).To(this);
+			_changeTracker.Clear();
+		});
+
+	public AsyncCommand NavigateBackCommand { get; }
 	public AsyncCommand SaveCommand { get; }
+	public RelayCommand UndoCommand { get; }
+	public RelayCommand RedoCommand { get; }
 	public async Task SaveAsync()
 	{
 		if (IsBusy)
@@ -82,35 +108,13 @@ public class NoteViewModel : AbstractValidationViewModel, IDisposable
 		{
 			IsBusy = true;
 
-			var errors = Errors
-				.Where(err => err.Severity > ValidationSeverity.Info)
-				.Select(e => e.Text);
-
-			if (errors.Any())
+			ValidateAll();
+			if (HasErrors)
 			{
-				var message = "There are some validation errors:";
-				message += Environment.NewLine + Environment.NewLine;
-				message += string.Join(Environment.NewLine, errors);
-				message += Environment.NewLine + Environment.NewLine;
-				message += "Do you want to continue?";
-
-				var vm = new YesNoPageViewModel()
-				{
-					Title = "Validation",
-					Message = message
-				};
-
-				var selection = await _navigationService.RequestInputAsync(vm);
-
-				if (!selection)
-				{
-					return;
-				}
+				return;
 			}
 
-			await _navigationService.NavigateBack();
-
-			var model = _map.From(this).To<NoteModel>();
+			var model = Map.From(this).To<NoteModel>();
 
 			if (IsNew)
 			{
@@ -121,10 +125,12 @@ public class NoteViewModel : AbstractValidationViewModel, IDisposable
 			{
 				await _noteService.UpdateItemAsync(model);
 			}
+
+			_changeTracker.Clear();
 		}
 		catch (Exception ex)
 		{
-			await _errorService.ShowAlertAsync("Error saving...", ex);
+			await NotificationService.ShowErrorAsync("Error saving..." + ex.Message);
 		}
 		finally
 		{
@@ -144,23 +150,12 @@ public class NoteViewModel : AbstractValidationViewModel, IDisposable
 		{
 			IsBusy = true;
 
-			var vm = new YesNoPageViewModel()
-			{
-				Title = "Delete?",
-				Message = "Should the item be deleted?"
-			};
-
-			var selection = await _navigationService.RequestInputAsync(vm);
-
-			if (selection)
-			{
-				await _navigationService.NavigateBack();
-				await _noteService.DeleteItemAsync(Id);
-			}
+			await _noteService.DeleteItemAsync(Id);
+			await NavigationService.NavigateBack();
 		}
 		catch (Exception ex)
 		{
-			await _errorService.ShowAlertAsync("Error deleting...", ex);
+			await NotificationService.ShowErrorAsync("Error deleting..." + ex.Message);
 		}
 		finally
 		{
@@ -168,5 +163,32 @@ public class NoteViewModel : AbstractValidationViewModel, IDisposable
 		}
 	}
 
-	public void Dispose() => _messenger.Unregister(this);
+	protected override IEnumerable<ValidationResult> Validate(string? propertyName)
+	{
+		return [];
+	}
+
+	protected override bool ShouldIgnorePropertyForChangesAndValidation(string? propertyName)
+		=> base.ShouldIgnorePropertyForChangesAndValidation(propertyName)
+			|| propertyName is nameof(IsBusy) or nameof(IsNew) or nameof(Id) or nameof(AvailablePredefinedColors);
+
+	private bool _disposedValue;
+	protected virtual void Dispose(bool disposing)
+	{
+		if (!_disposedValue)
+		{
+			if (disposing)
+			{
+				_noteService.OnItemUpdated -= Handle;
+			}
+
+			_disposedValue = true;
+		}
+	}
+
+	public void Dispose()
+	{
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+	}
 }

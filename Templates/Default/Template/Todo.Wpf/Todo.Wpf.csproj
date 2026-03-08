@@ -5,10 +5,11 @@
 		<TargetFramework>net10.0-windows</TargetFramework>
 		<UseWPF>true</UseWPF>
 		<ApplicationIcon>icon.ico</ApplicationIcon>
+		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
+		<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.141" />
 	</ItemGroup>
 
 	<ItemGroup>

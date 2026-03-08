@@ -11,17 +11,18 @@ namespace <#cs Write(Project.Namespace)#>.Client.MVVM;
 
 public class ObservableCollectionView<T> : IEnumerable<T>, INotifyCollectionChanged
 {
+	public event NotifyCollectionChangedEventHandler? CollectionChanged;
 	public ObservableCollection<T> SourceCollection { get; private set; }
 	private readonly List<T> _filteredItems;
 	private readonly Func<T, bool> _filter;
-	private readonly Func<T, object> _order;
+	private readonly Func<T, object>? _order;
 	private readonly bool _descending;
 	private bool _isEnabled = true;
 
-	public ObservableCollectionView(ObservableCollection<T> sourceCollection, Func<T, bool> filter, Func<T, object> order = null, bool descending = false)
+	public ObservableCollectionView(ObservableCollection<T> sourceCollection, Func<T, bool> filter, Func<T, object>? order = null, bool descending = false)
 	{
 		SourceCollection = sourceCollection;
-		_filteredItems = new List<T>(sourceCollection);
+		_filteredItems = [.. sourceCollection];
 
 		_filter = filter;
 		_order = order;
@@ -30,7 +31,7 @@ public class ObservableCollectionView<T> : IEnumerable<T>, INotifyCollectionChan
 		SourceCollection.CollectionChanged += SourceCollectionChanged;
 	}
 
-	private void SourceCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+	private void SourceCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 	{
 		Refresh();
 	}
@@ -88,6 +89,4 @@ public class ObservableCollectionView<T> : IEnumerable<T>, INotifyCollectionChan
 	{
 		return _filteredItems.GetEnumerator();
 	}
-
-	public event NotifyCollectionChangedEventHandler CollectionChanged;
 }<#cs SetOutputPathAndSkipOtherDefinitions()#>

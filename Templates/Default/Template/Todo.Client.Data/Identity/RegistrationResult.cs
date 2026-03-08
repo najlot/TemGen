@@ -15,7 +15,7 @@ public class RegistrationResult : IEquatable<RegistrationResult>
 
 	public static RegistrationResult Success()
 	{
-		return new RegistrationResult(true, "");
+		return new RegistrationResult(true, string.Empty);
 	}
 
 	public static RegistrationResult Failure(string errorMessage)
@@ -40,10 +40,7 @@ public class RegistrationResult : IEquatable<RegistrationResult>
 		return IsSuccess == other.IsSuccess && ErrorMessage == other.ErrorMessage;
 	}
 
-	public override int GetHashCode()
-	{
-		return (IsSuccess, ErrorMessage).GetHashCode();
-	}
+	public override int GetHashCode() => HashCode.Combine(IsSuccess, ErrorMessage);
 
 	public static bool operator ==(RegistrationResult left, RegistrationResult right)
 	{

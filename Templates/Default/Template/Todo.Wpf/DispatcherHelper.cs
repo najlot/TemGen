@@ -7,12 +7,13 @@ namespace <#cs Write(Project.Namespace)#>.Wpf;
 
 public class DispatcherHelper : IDispatcherHelper
 {
-	public void BeginInvokeOnMainThread(Action action)
+	public Task InvokeOnUIThread(Action action)
 	{
 		Application.Current.Dispatcher.Invoke(action);
+		return Task.CompletedTask;
 	}
 
-	public async Task BeginInvokeOnMainThread(Func<Task> action)
+	public async Task InvokeOnUIThread(Func<Task> action)
 	{
 		await Application.Current.Dispatcher.Invoke(action);
 	}

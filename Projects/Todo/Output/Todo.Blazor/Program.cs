@@ -1,5 +1,3 @@
-using Cosei.Client.Base;
-using Cosei.Client.Http;
 using Najlot.Log.Destinations;
 using Najlot.Log.Middleware;
 using Najlot.Log;
@@ -9,14 +7,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Options;
 using Todo.Blazor.Identity;
-using Todo.Blazor.Services;
-using Todo.Blazor.Services.Implementation;
 using Todo.Client.Data;
 using Todo.Client.Data.Identity;
-using Todo.Client.Data.Repositories;
-using Todo.Client.Data.Repositories.Implementation;
-using Todo.Client.Data.Services;
-using Todo.Client.Data.Services.Implementation;
 
 namespace Todo.Blazor;
 
@@ -75,34 +67,13 @@ public class Program
 		builder.Services.AddScoped<AuthenticationStateProvider, AuthenticationService>();
 		builder.Services.AddScoped(c => (IAuthenticationService)c.GetRequiredService<AuthenticationStateProvider>());
 
-		builder.Services.AddScoped<IRequestClient, HttpFactoryRequestClient>();
-		builder.Services.AddScoped<ITokenService, TokenService>();
-		builder.Services.AddScoped<ITokenProvider, RefreshingTokenProvider>();
 		builder.Services.AddScoped<IUserDataStore, UserDataStore>();
 
-		builder.Services.AddScoped<IRegistrationService, RegistrationService>();
-
-		builder.Services.AddScoped<IUserRepository, UserRepository>();
-		builder.Services.AddScoped<IUserService, UserService>();
-		builder.Services.AddScoped<INoteRepository, NoteRepository>();
-		builder.Services.AddScoped<ITodoItemRepository, TodoItemRepository>();
-
-		builder.Services.AddScoped<INoteService, NoteService>();
-		builder.Services.AddScoped<ITodoItemService, TodoItemService>();
-
-		builder.Services.AddScoped<ISubscriberProvider, SubscriberProvider>();
+		builder.Services.RegisterClientData();
 
 		var app = builder.Build();
 		var serviceProvider = app.Services;
-		map.RegisterFactory(t =>
-		{
-			if (t.GetConstructor(Type.EmptyTypes) is not null)
-			{
-				return Activator.CreateInstance(t) ?? throw new NullReferenceException($"Could not create {t.FullName}. Result is null.");
-			}
-
-			return serviceProvider.GetRequiredService(t);
-		});
+		map.RegisterFactory(serviceProvider.GetRequiredService);
 
 		// Configure the HTTP request pipeline.
 		if (!app.Environment.IsDevelopment())

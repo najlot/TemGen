@@ -7,11 +7,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Cosei.Client.Http" Version="0.1.2" />
-		<PackageReference Include="Cosei.Client.RabbitMq" Version="0.1.2" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.3" />
 		<PackageReference Include="Najlot.Map" Version="0.1.2" />
 		<PackageReference Include="Najlot.Map.SourceGenerator" Version="0.1.2" />
-		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
 	</ItemGroup>
 
 	<ItemGroup>

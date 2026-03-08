@@ -2,75 +2,57 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Najlot.Map;
 using Todo.Client.Localisation;
 using Todo.Client.MVVM;
-using Todo.Client.MVVM.ViewModel;
-using Todo.Client.MVVM.Services;
 using Todo.Client.Data.Services;
 using Todo.Client.Data.Models;
 using Todo.Contracts.Events;
 
 namespace Todo.ClientBase.ViewModel;
 
-public class AllTodoItemsViewModel : AbstractViewModel, IDisposable
+public class AllTodoItemsViewModel : ViewModelBase, IAsyncInitializable, IDisposable
 {
 	private readonly IUserService _userService;
-	private readonly IErrorService _errorService;
 	private readonly ITodoItemService _todoItemService;
-	private readonly INavigationService _navigationService;
-	private readonly IMessenger _messenger;
-	private readonly IMap _map;
 
-	private bool _isBusy;
-	private string _filter;
-
-	public bool IsBusy
-	{
-		get => _isBusy;
-		set => Set(nameof(IsBusy), ref _isBusy, value);
-	}
+	public bool IsBusy { get; set => Set(ref field, value); }
 
 	public string Filter
 	{
-		get => _filter;
-		set
-		{
-			Set(nameof(Filter), ref _filter, value);
-			TodoItemsView.Refresh();
-		}
-	}
+		get;
+		set => Set(ref field, value, () => TodoItemsView.Refresh());
+	} = string.Empty;
 
-	public ObservableCollectionView<TodoItemListItemModel> TodoItemsView { get; }
-	public ObservableCollection<TodoItemListItemModel> TodoItems { get; } = [];
+	public ObservableCollectionView<TodoItemListItemViewModel> TodoItemsView { get; }
+	public ObservableCollection<TodoItemListItemViewModel> TodoItems { get; } = [];
 
 	public AllTodoItemsViewModel(
-		IErrorService errorService,
-		IUserService userService,
 		ITodoItemService todoItemService,
-		INavigationService navigationService,
-		IMessenger messenger,
-		IMap map)
+		IUserService userService,
+		ViewModelBaseParameters <TodoItemViewModel> parameters) : base(parameters)
 	{
-		_errorService = errorService;
-		_userService = userService;
 		_todoItemService = todoItemService;
-		_navigationService = navigationService;
-		_messenger = messenger;
-		_map = map;
+		_userService = userService;
 
-		TodoItemsView = new ObservableCollectionView<TodoItemListItemModel>(TodoItems, FilterTodoItem);
+		TodoItemsView = new ObservableCollectionView<TodoItemListItemViewModel>(TodoItems, FilterTodoItem);
 
-		_messenger.Register<TodoItemCreated>(Handle);
-		_messenger.Register<TodoItemUpdated>(Handle);
-		_messenger.Register<TodoItemDeleted>(Handle);
+		_todoItemService.OnItemCreated += Handle;
+		_todoItemService.OnItemUpdated += Handle;
+		_todoItemService.OnItemDeleted += Handle;
 
-		AddTodoItemCommand = new AsyncCommand(AddTodoItemAsync, DisplayError);
-		EditTodoItemCommand = new AsyncCommand<TodoItemListItemModel>(EditTodoItemAsync, DisplayError);
-		RefreshTodoItemsCommand = new AsyncCommand(RefreshTodoItemsAsync, DisplayError);
+		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
+		AddTodoItemCommand = new AsyncCommand(AddTodoItemAsync, t => HandleError(t.Exception));
+		EditTodoItemCommand = new AsyncCommand<TodoItemListItemViewModel>(EditTodoItemAsync, t => HandleError(t.Exception));
+		RefreshTodoItemsCommand = new AsyncCommand(RefreshTodoItemsAsync, t => HandleError(t.Exception));
 	}
 
-	private bool FilterTodoItem(TodoItemListItemModel item)
+	public async Task InitializeAsync()
+	{
+		await RefreshTodoItemsAsync();
+		await _todoItemService.StartEventListener();
+	}
+
+	private bool FilterTodoItem(TodoItemListItemViewModel item)
 	{
 		if (string.IsNullOrEmpty(Filter))
 		{
@@ -92,63 +74,36 @@ public class AllTodoItemsViewModel : AbstractViewModel, IDisposable
 		return false;
 	}
 
-	private async Task DisplayError(Task task)
-	{
-		await _errorService.ShowAlertAsync(CommonLoc.Error, task.Exception);
-	}
-
-	private void Handle(TodoItemCreated obj)
-	{
-		TodoItems.Insert(0, new TodoItemListItemModel()
+	private async Task Handle(object? sender, TodoItemCreated obj)
+		=> await DispatcherHelper.InvokeOnUIThread(() =>
 		{
-			Id = obj.Id,
-			Title = obj.Title,
-			Content = obj.Content,
+			var item = Map.From(obj).To<TodoItemListItemViewModel>();
+			TodoItems.Insert(0, item);
 		});
-	}
 
-	private void Handle(TodoItemUpdated obj)
-	{
-		var oldItem = TodoItems.FirstOrDefault(i => i.Id == obj.Id);
-		var index = -1;
-
-		if (oldItem != null)
+	private async Task Handle(object? sender, TodoItemUpdated obj)
+		=> await DispatcherHelper.InvokeOnUIThread(() =>
 		{
-			index = TodoItems.IndexOf(oldItem);
-
-			if (index != -1)
+			if (TodoItems.FirstOrDefault(i => i.Id == obj.Id) is { } item)
 			{
-				TodoItems.RemoveAt(index);
+				Map.From(obj).To(item);
 			}
-		}
-
-		if (index == -1)
-		{
-			index = 0;
-		}
-
-		TodoItems.Insert(index, new TodoItemListItemModel()
-		{
-			Id = obj.Id,
-			Title = obj.Title,
-			Content = obj.Content,
 		});
-	}
 
-	private void Handle(TodoItemDeleted obj)
-	{
-		var oldItem = TodoItems.FirstOrDefault(i => i.Id == obj.Id);
-
-		if (oldItem != null)
+	private async Task Handle(object? sender, TodoItemDeleted obj)
+		=> await DispatcherHelper.InvokeOnUIThread(() =>
 		{
-			TodoItems.Remove(oldItem);
-		}
-	}
+			if (TodoItems.FirstOrDefault(i => i.Id == obj.Id) is { } item)
+			{
+				TodoItems.Remove(item);
+			}
+		});
 
-	public AsyncCommand<TodoItemListItemModel> EditTodoItemCommand { get; }
-	public async Task EditTodoItemAsync(TodoItemListItemModel model)
+	public AsyncCommand NavigateBackCommand { get; }
+	public AsyncCommand<TodoItemListItemViewModel> EditTodoItemCommand { get; }
+	public async Task EditTodoItemAsync(TodoItemListItemViewModel? model)
 	{
-		if (IsBusy)
+		if (IsBusy || model is null)
 		{
 			return;
 		}
@@ -156,15 +111,11 @@ public class AllTodoItemsViewModel : AbstractViewModel, IDisposable
 		try
 		{
 			IsBusy = true;
-
-			var item = await _todoItemService.GetItemAsync(model.Id);
-			var viewModel = _map.From(item).To<TodoItemViewModel>();
-
-			await _navigationService.NavigateForward(viewModel);
+			await NavigationService.NavigateForward<TodoItemViewModel>(new() {{ "Id", model.Id }});
 		}
 		catch (Exception ex)
 		{
-			await _errorService.ShowAlertAsync("Error loading...", ex);
+			await NotificationService.ShowErrorAsync("Error loading..." + ex.Message);
 		}
 		finally
 		{
@@ -183,16 +134,11 @@ public class AllTodoItemsViewModel : AbstractViewModel, IDisposable
 		try
 		{
 			IsBusy = true;
-
-			var item = _todoItemService.CreateTodoItem();
-			var viewModel = _map.From(item).To<TodoItemViewModel>();
-			viewModel.IsNew = true;
-
-			await _navigationService.NavigateForward(viewModel);
+			await NavigationService.NavigateForward<TodoItemViewModel>();
 		}
 		catch (Exception ex)
 		{
-			await _errorService.ShowAlertAsync("Error adding...", ex);
+			await NotificationService.ShowErrorAsync("Error adding..." + ex.Message);
 		}
 		finally
 		{
@@ -218,15 +164,16 @@ public class AllTodoItemsViewModel : AbstractViewModel, IDisposable
 
 			var users = await _userService.GetItemsAsync();
 			var todoItems = await _todoItemService.GetItemsAsync();
+			var viewModels = Map.From<TodoItemListItemModel>(todoItems).To<TodoItemListItemViewModel>();
 
-			foreach (var item in todoItems)
+			foreach (var item in viewModels)
 			{
 				TodoItems.Add(item);
 			}
 		}
 		catch (Exception ex)
 		{
-			await _errorService.ShowAlertAsync("Error loading data...", ex);
+			await NotificationService.ShowErrorAsync("Error loading data..." + ex.Message);
 		}
 		finally
 		{
@@ -235,5 +182,25 @@ public class AllTodoItemsViewModel : AbstractViewModel, IDisposable
 		}
 	}
 
-	public void Dispose() => _messenger.Unregister(this);
+	private bool _disposedValue;
+	protected virtual void Dispose(bool disposing)
+	{
+		if (!_disposedValue)
+		{
+			if (disposing)
+			{
+				_todoItemService.OnItemCreated -= Handle;
+				_todoItemService.OnItemUpdated -= Handle;
+				_todoItemService.OnItemDeleted -= Handle;
+			}
+
+			_disposedValue = true;
+		}
+	}
+
+	public void Dispose()
+	{
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+	}
 }

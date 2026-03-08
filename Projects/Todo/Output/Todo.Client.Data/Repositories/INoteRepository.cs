@@ -5,7 +5,7 @@ using Todo.Contracts.Filters;
 
 namespace Todo.Client.Data.Repositories;
 
-public interface INoteRepository : IDisposable
+public interface INoteRepository
 {
 	Task<NoteListItemModel[]> GetItemsAsync();
 

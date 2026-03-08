@@ -1,28 +1,21 @@
-using Cosei.Client.Base;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Text;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using <#cs Write(Project.Namespace)#>.Contracts.Commands;
 
 namespace <#cs Write(Project.Namespace)#>.Client.Data.Identity;
 
-public class RegistrationService : IRegistrationService
+public class RegistrationService(IHttpClientFactory httpClientFactory, ILogger<RegistrationService> log)
+	: IRegistrationService
 {
-	private readonly IRequestClient _requestClient;
-	private readonly ILogger _logger;
-
-	public RegistrationService(IRequestClient requestClient, ILogger<RegistrationService> logger)
-	{
-		_requestClient = requestClient;
-		_logger = logger;
-	}
-
 	public async Task<RegistrationResult> Register(Guid id, string username, string email, string password)
 	{
 		try
 		{
-			_logger.LogDebug("Registering user.");
+			log.LogDebug("Registering user.");
+			using var client = httpClientFactory.CreateClient();
 
 			var command = new CreateUser(
 				id,
@@ -30,20 +23,19 @@ public class RegistrationService : IRegistrationService
 				email,
 				password);
 
-			var json = System.Text.Json.JsonSerializer.Serialize(command);
-			var result = await _requestClient.PostAsync("api/Auth/Register", json, "application/json");
+			var result = await client.PostAsJsonAsync("api/Auth/Register", command);
 
-			if (result.StatusCode >= 200 && result.StatusCode < 300)
+			if (result.IsSuccessStatusCode)
 			{
 				return RegistrationResult.Success();
 			}
 
-			return RegistrationResult.Failure(result.StatusCode.ToString() + " " + Encoding.UTF8.GetString(result.Body.ToArray()));
+			var errorText = await result.Content.ReadAsStringAsync();
+			return RegistrationResult.Failure($"{result.StatusCode} {errorText}");
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Error registering user.");
-
+			log.LogError(ex, "Error registering user.");
 			return RegistrationResult.Failure("Registration is currently unavailable. Please try later.");
 		}
 	}

@@ -2,83 +2,115 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Najlot.Map;
 using Todo.Client.Data.Models;
 using Todo.Client.Data.Services;
 using Todo.Client.MVVM;
-using Todo.Client.MVVM.Services;
-using Todo.Client.MVVM.Validation;
-using Todo.Client.MVVM.ViewModel;
-using Todo.ClientBase.Validation;
 using Todo.Contracts;
 using Todo.Contracts.Events;
 
 namespace Todo.ClientBase.ViewModel;
 
-public partial class TodoItemViewModel : AbstractValidationViewModel, IDisposable
+public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizable, IAsyncInitializable, IDisposable
 {
-	private readonly IErrorService _errorService;
-	private readonly INavigationService _navigationService;
 	private readonly ITodoItemService _todoItemService;
-	private readonly IMessenger _messenger;
-	private readonly IMap _map;
-	private IEnumerable<UserListItemModel> _availableUsers;
+	private readonly IUserService _userService;
 
-	public IEnumerable<UserListItemModel> AvailableUsers { get => _availableUsers; set => Set(nameof(AvailableUsers), ref _availableUsers, value); }
-	public List<TodoItemStatus> AvailableTodoItemStatus { get; } = new(Enum.GetValues(typeof(TodoItemStatus)) as TodoItemStatus[]);
+	public IEnumerable<UserListItemModel> AvailableUsers { get; set => Set(ref field, value); } = [];
+	public TodoItemStatus[] AvailableTodoItemStatus { get; } = Enum.GetValues<TodoItemStatus>();
 
-	public Guid Id { get => field; set => Set(ref field, value); }
-	public string Title { get => field; set => Set(ref field, value); }
-	public string Content { get => field; set => Set(ref field, value); }
-	public DateTime CreatedAt { get => field; set => Set(ref field, value); }
-	public string CreatedBy { get => field; set => Set(ref field, value); }
-	public Guid AssignedToId { get => field; set => Set(ref field, value); }
-	public TodoItemStatus Status { get => field; set => Set(ref field, value); }
-	public DateTime ChangedAt { get => field; set => Set(ref field, value); }
-	public string ChangedBy { get => field; set => Set(ref field, value); }
-	public string Priority { get => field; set => Set(ref field, value); }
+	public Guid Id { get; set => Set(ref field, value); }
+	public string Title { get; set => Set(ref field, value); } = string.Empty;
+	public string Content { get; set => Set(ref field, value); } = string.Empty;
+	public DateTime CreatedAt { get; set => Set(ref field, value); }
+	public string CreatedBy { get; set => Set(ref field, value); } = string.Empty;
+	public Guid AssignedToId { get; set => Set(ref field, value); }
+	public TodoItemStatus Status { get; set => Set(ref field, value); }
+	public DateTime ChangedAt { get; set => Set(ref field, value); }
+	public string ChangedBy { get; set => Set(ref field, value); } = string.Empty;
+	public string Priority { get; set => Set(ref field, value); } = string.Empty;
 
-	public bool IsBusy { get => field; private set => Set(ref field, value); }
+	private readonly ChangeTracker _changeTracker = new();
+
+	public bool CanUndo => _changeTracker.CanUndo;
+	public bool CanRedo => _changeTracker.CanRedo;
+
+	public bool IsBusy { get; private set => Set(ref field, value); }
 
 	public bool IsNew { get; set; }
 
 	public TodoItemViewModel(
-		IErrorService errorService,
-		INavigationService navigationService,
 		ITodoItemService todoItemService,
-		IMessenger messenger,
-		IMap map)
+		IUserService userService,
+		ViewModelBaseParameters<TodoItemViewModel> parameters) : base(parameters)
 	{
-		_errorService = errorService;
-		_navigationService = navigationService;
 		_todoItemService = todoItemService;
-		_messenger = messenger;
-		_map = map;
+		_userService = userService;
 
-		SaveCommand = new AsyncCommand(SaveAsync, DisplayError);
-		DeleteCommand = new AsyncCommand(DeleteAsync, DisplayError);
+		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
+		SaveCommand = new AsyncCommand(SaveAsync, t => HandleError(t.Exception));
+		DeleteCommand = new AsyncCommand(DeleteAsync, t => HandleError(t.Exception));
+		UndoCommand = new RelayCommand(() => _changeTracker.Undo(), () => _changeTracker.CanUndo);
+		RedoCommand = new RelayCommand(() => _changeTracker.Redo(), () => _changeTracker.CanRedo);
 
-		SetValidation(new TodoItemValidationList());
-
-		_messenger.Register<TodoItemUpdated>(Handle);
-	}
-
-	private async Task DisplayError(Task task)
-	{
-		await _errorService.ShowAlertAsync("Error...", task.Exception);
-	}
-
-	public void Handle(TodoItemUpdated obj)
-	{
-		if (Id != obj.Id)
+		ChangeVisitor = _changeTracker;
+		_changeTracker.StateChanged += () =>
 		{
-			return;
+			RaisePropertiesChanged(nameof(CanUndo), nameof(CanRedo));
+			UndoCommand.RaiseCanExecuteChanged();
+			RedoCommand.RaiseCanExecuteChanged();
+		};
+
+		_todoItemService.OnItemUpdated += Handle;
+	}
+
+	public void SetParameters(IReadOnlyDictionary<string, object> parameters)
+	{
+		if (parameters.TryGetValue("Id", out var idObj) && idObj is Guid id)
+		{
+			Id = id;
+		}
+	}
+
+	public async Task InitializeAsync()
+	{
+		if (Id == Guid.Empty)
+		{
+			var model = _todoItemService.CreateTodoItem();
+			Map.From(model).To(this);
+			IsNew = true;
+		}
+		else
+		{
+			var model = await _todoItemService.GetItemAsync(Id);
+			Map.From(model).To(this);
+			IsNew = false;
 		}
 
-		_map.From(obj).To(this);
+		AvailableUsers = await _userService.GetItemsAsync();
+
+		await _todoItemService.StartEventListener();
+
+		_changeTracker.Clear();
+		InitializeChecklistTracking();
 	}
 
+	private async Task Handle(object? sender, TodoItemUpdated obj)
+		=> await DispatcherHelper.InvokeOnUIThread(() =>
+		{
+			if (Id != obj.Id)
+			{
+				return;
+			}
+
+			Map.From(obj).To(this);
+			_changeTracker.Clear();
+			InitializeChecklistTracking();
+		});
+
+	public AsyncCommand NavigateBackCommand { get; }
 	public AsyncCommand SaveCommand { get; }
+	public RelayCommand UndoCommand { get; }
+	public RelayCommand RedoCommand { get; }
 	public async Task SaveAsync()
 	{
 		if (IsBusy)
@@ -90,35 +122,13 @@ public partial class TodoItemViewModel : AbstractValidationViewModel, IDisposabl
 		{
 			IsBusy = true;
 
-			var errors = Errors
-				.Where(err => err.Severity > ValidationSeverity.Info)
-				.Select(e => e.Text);
-
-			if (errors.Any())
+			ValidateAll();
+			if (HasErrors)
 			{
-				var message = "There are some validation errors:";
-				message += Environment.NewLine + Environment.NewLine;
-				message += string.Join(Environment.NewLine, errors);
-				message += Environment.NewLine + Environment.NewLine;
-				message += "Do you want to continue?";
-
-				var vm = new YesNoPageViewModel()
-				{
-					Title = "Validation",
-					Message = message
-				};
-
-				var selection = await _navigationService.RequestInputAsync(vm);
-
-				if (!selection)
-				{
-					return;
-				}
+				return;
 			}
 
-			await _navigationService.NavigateBack();
-
-			var model = _map.From(this).To<TodoItemModel>();
+			var model = Map.From(this).To<TodoItemModel>();
 
 			if (IsNew)
 			{
@@ -129,10 +139,12 @@ public partial class TodoItemViewModel : AbstractValidationViewModel, IDisposabl
 			{
 				await _todoItemService.UpdateItemAsync(model);
 			}
+
+			_changeTracker.Clear();
 		}
 		catch (Exception ex)
 		{
-			await _errorService.ShowAlertAsync("Error saving...", ex);
+			await NotificationService.ShowErrorAsync("Error saving..." + ex.Message);
 		}
 		finally
 		{
@@ -152,23 +164,12 @@ public partial class TodoItemViewModel : AbstractValidationViewModel, IDisposabl
 		{
 			IsBusy = true;
 
-			var vm = new YesNoPageViewModel()
-			{
-				Title = "Delete?",
-				Message = "Should the item be deleted?"
-			};
-
-			var selection = await _navigationService.RequestInputAsync(vm);
-
-			if (selection)
-			{
-				await _navigationService.NavigateBack();
-				await _todoItemService.DeleteItemAsync(Id);
-			}
+			await _todoItemService.DeleteItemAsync(Id);
+			await NavigationService.NavigateBack();
 		}
 		catch (Exception ex)
 		{
-			await _errorService.ShowAlertAsync("Error deleting...", ex);
+			await NotificationService.ShowErrorAsync("Error deleting..." + ex.Message);
 		}
 		finally
 		{
@@ -176,5 +177,32 @@ public partial class TodoItemViewModel : AbstractValidationViewModel, IDisposabl
 		}
 	}
 
-	public void Dispose() => _messenger.Unregister(this);
+	protected override IEnumerable<ValidationResult> Validate(string? propertyName)
+	{
+		return [];
+	}
+
+	protected override bool ShouldIgnorePropertyForChangesAndValidation(string? propertyName)
+		=> base.ShouldIgnorePropertyForChangesAndValidation(propertyName)
+			|| propertyName is nameof(IsBusy) or nameof(IsNew) or nameof(Id) or nameof(AvailableUsers) or nameof(AvailableTodoItemStatus);
+
+	private bool _disposedValue;
+	protected virtual void Dispose(bool disposing)
+	{
+		if (!_disposedValue)
+		{
+			if (disposing)
+			{
+				_todoItemService.OnItemUpdated -= Handle;
+			}
+
+			_disposedValue = true;
+		}
+	}
+
+	public void Dispose()
+	{
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+	}
 }

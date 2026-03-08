@@ -1,6 +1,4 @@
 @page "/note/{id:guid}"
-@using Cosei.Client.Base;
-@using Cosei.Client.Http;
 @using Microsoft.Extensions.Localization;
 @using Todo.Blazor.Identity;
 @using Todo.Blazor.Services;
@@ -14,11 +12,10 @@
 @inject ILogger<Note> Log
 @inject Najlot.Map.IMap Map;
 @inject INoteService NoteService
-@inject ISubscriberProvider SubscriberProvider
-@inject IAuthenticationService AuthenticationService
 @inject NavigationManager NavigationManager
 @inject IStringLocalizer<PredefinedColorLoc> PredefinedColorLocalizer
 
+@attribute [Authorize]
 @implements IDisposable
 
 @if (isNew)
@@ -90,23 +87,12 @@ else
 	[Parameter]
 	public Guid Id { get; set; }
 
-	private ISubscriber? Subscriber;
-
 	private bool isNew = false;
 	private NoteModel? Model;
 
 
 	protected override async Task OnInitializedAsync()
 	{
-		var state = await AuthenticationService.GetAuthenticationStateAsync();
-
-		if (state.User.Identity is null)
-		{
-			var url = NavigationManager.BuildReturnUrl("/login");
-			NavigationManager.NavigateTo(url);
-			return;
-		}
-
 		try
 		{
 			if (Id == Guid.Empty)
@@ -120,11 +106,9 @@ else
 			}
 
 
-			Subscriber = await SubscriberProvider.GetSubscriber();
+			NoteService.OnItemUpdated += Handle;
 
-			Subscriber.Register<NoteUpdated>(Handle);
-
-			await Subscriber.StartAsync();
+			await NoteService.StartEventListener();
 		}
 		catch (System.Security.Authentication.AuthenticationException)
 		{
@@ -203,7 +187,7 @@ else
 		}
 	}
 
-	private async Task Handle(NoteUpdated message)
+	private async Task Handle(object? sender, NoteUpdated message)
 	{
 		if (Model is null || Model.Id != message.Id)
 		{
@@ -217,6 +201,6 @@ else
 
 	public void Dispose()
 	{
-		Subscriber?.Unregister(this);
+		NoteService.OnItemUpdated -= Handle;
 	}
 }

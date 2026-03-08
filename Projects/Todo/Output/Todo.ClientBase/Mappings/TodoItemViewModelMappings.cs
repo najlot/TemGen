@@ -37,4 +37,8 @@ internal sealed partial class TodoItemViewModelMappings
 
 		foreach (var e in to.Checklist) e.ParentId = from.Id;
 	}
+
+	public static partial void MapToViewModel(IMap map, TodoItemListItemModel from, TodoItemListItemViewModel to);
+	public static partial void MapToViewModel(IMap map, TodoItemCreated from, TodoItemListItemViewModel to);
+	public static partial void MapToViewModel(IMap map, TodoItemUpdated from, TodoItemListItemViewModel to);
 }

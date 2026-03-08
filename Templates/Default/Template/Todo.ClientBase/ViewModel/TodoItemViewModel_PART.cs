@@ -1,18 +1,24 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using <#cs Write(Project.Namespace)#>.Client.Data.Models;
 using <#cs Write(Project.Namespace)#>.Client.MVVM;
-using <#cs Write(Project.Namespace)#>.Client.MVVM.Services;
-using <#cs Write(Project.Namespace)#>.Client.MVVM.ViewModel;
 
 namespace <#cs Write(Project.Namespace)#>.ClientBase.ViewModel;
 
 public partial class <#cs Write(Definition.Name)#>ViewModel
 {
-	private ObservableCollection<<#cs Write(DefinitionEntry?.EntryType)#>ViewModel> _<#cs Write(DefinitionEntry?.FieldLow)#> = [];
-	public ObservableCollection<<#cs Write(DefinitionEntry?.EntryType)#>ViewModel> <#cs Write(DefinitionEntry?.Field)#> { get => _<#cs Write(DefinitionEntry?.FieldLow)#>; set => Set(nameof(<#cs Write(DefinitionEntry?.Field)#>), ref _<#cs Write(DefinitionEntry?.FieldLow)#>, value); }
+	public ObservableCollection<<#cs Write(DefinitionEntry?.EntryType)#>ViewModel> <#cs Write(DefinitionEntry?.Field)#> { get; set => Set(ref field, value); } = [];
+
+	private void Initialize<#cs Write(DefinitionEntry?.Field)#>Tracking()
+	{
+		foreach (var item in <#cs Write(DefinitionEntry?.Field)#>)
+		{
+			item.ChangeVisitor = _changeTracker;
+		}
+	}
 
 	public RelayCommand Add<#cs Write(DefinitionEntry?.EntryType)#>Command => new(Add<#cs Write(DefinitionEntry?.EntryType)#>);
 	private void Add<#cs Write(DefinitionEntry?.EntryType)#>()
@@ -25,62 +31,27 @@ public partial class <#cs Write(Definition.Name)#>ViewModel
 		}
 
 		var model = new <#cs Write(DefinitionEntry?.EntryType)#>Model() { Id = max };
-		var viewModel = _map.From(model).To<<#cs Write(DefinitionEntry?.EntryType)#>ViewModel>();
+		var viewModel = Map.From(model).To<<#cs Write(DefinitionEntry?.EntryType)#>ViewModel>();
 		viewModel.Id = max;
 		viewModel.ParentId = Id;
+		viewModel.ChangeVisitor = _changeTracker;
 
 		<#cs Write(DefinitionEntry?.Field)#>.Add(viewModel);
+
+		_changeTracker.Track(
+			nameof(<#cs Write(DefinitionEntry?.Field)#>),
+			() => <#cs Write(DefinitionEntry?.Field)#>.Remove(viewModel),
+			() =>
+			{
+				viewModel.ChangeVisitor = _changeTracker;
+				<#cs Write(DefinitionEntry?.Field)#>.Add(viewModel);
+			});
 	}
 
-	public AsyncCommand<<#cs Write(DefinitionEntry?.EntryType)#>ViewModel> Edit<#cs Write(DefinitionEntry?.EntryType)#>Command => new(Edit<#cs Write(DefinitionEntry?.EntryType)#>, DisplayError);
-	private async Task Edit<#cs Write(DefinitionEntry?.EntryType)#>(<#cs Write(DefinitionEntry?.EntryType)#>ViewModel vm)
+	public AsyncCommand<<#cs Write(DefinitionEntry?.EntryType)#>ViewModel> Delete<#cs Write(DefinitionEntry?.EntryType)#>Command => new(Delete<#cs Write(DefinitionEntry?.EntryType)#>Async, t => HandleError(t.Exception));
+	private async Task<bool> Delete<#cs Write(DefinitionEntry?.EntryType)#>Async(<#cs Write(DefinitionEntry?.EntryType)#>ViewModel? viewModel)
 	{
-		if (IsBusy)
-		{
-			return;
-		}
-
-		try
-		{
-			IsBusy = true;
-
-			var viewModel = _map.From(vm).To<<#cs Write(DefinitionEntry?.EntryType)#>ViewModel>();
-			viewModel.ParentId = Id;
-
-			viewModel.OnSaveRequested(Save<#cs Write(DefinitionEntry?.EntryType)#>Async);
-			viewModel.OnDeleteRequested(Delete<#cs Write(DefinitionEntry?.EntryType)#>Async);
-
-			await _navigationService.NavigateForward(viewModel);
-		}
-		catch (Exception ex)
-		{
-			await _errorService.ShowAlertAsync("Error loading...", ex);
-		}
-		finally
-		{
-			IsBusy = false;
-		}
-	}
-
-	private async Task Save<#cs Write(DefinitionEntry?.EntryType)#>Async(<#cs Write(DefinitionEntry?.EntryType)#>ViewModel viewModel)
-	{
-		try
-		{
-			var vm = <#cs Write(DefinitionEntry?.Field)#>.FirstOrDefault(i => i.Id == viewModel.Id);
-			_map.From(viewModel).ToNullable(vm);
-
-			await _navigationService.NavigateBack();
-		}
-		catch (Exception ex)
-		{
-			await _errorService.ShowAlertAsync("Error saving...", ex);
-		}
-	}
-
-	public AsyncCommand<<#cs Write(DefinitionEntry?.EntryType)#>ViewModel> Delete<#cs Write(DefinitionEntry?.EntryType)#>Command => new(Delete<#cs Write(DefinitionEntry?.EntryType)#>Async, DisplayError);
-	private async Task<bool> Delete<#cs Write(DefinitionEntry?.EntryType)#>Async(<#cs Write(DefinitionEntry?.EntryType)#>ViewModel viewModel)
-	{
-		if (IsBusy)
+		if (IsBusy || viewModel is null)
 		{
 			return false;
 		}
@@ -89,34 +60,32 @@ public partial class <#cs Write(Definition.Name)#>ViewModel
 		{
 			IsBusy = true;
 
-			var yesNoPageViewModel = new YesNoPageViewModel()
+			var oldItem = <#cs Write(DefinitionEntry?.Field)#>.FirstOrDefault(i => i.Id == viewModel.Id);
+
+			if (oldItem is not null)
 			{
-				Title = "Delete?",
-				Message = "Should the item be deleted?"
-			};
+				var index = <#cs Write(DefinitionEntry?.Field)#>.IndexOf(oldItem);
 
-			var selection = await _navigationService.RequestInputAsync(yesNoPageViewModel);
-
-			if (selection)
-			{
-				var oldItem = <#cs Write(DefinitionEntry?.Field)#>.FirstOrDefault(i => i.Id == viewModel.Id);
-
-				if (oldItem != null)
+				if (index != -1)
 				{
-					var index = <#cs Write(DefinitionEntry?.Field)#>.IndexOf(oldItem);
+					<#cs Write(DefinitionEntry?.Field)#>.RemoveAt(index);
 
-					if (index != -1)
-					{
-						<#cs Write(DefinitionEntry?.Field)#>.RemoveAt(index);
-					}
+					_changeTracker.Track(
+						nameof(<#cs Write(DefinitionEntry?.Field)#>),
+						() =>
+						{
+							oldItem.ChangeVisitor = _changeTracker;
+							<#cs Write(DefinitionEntry?.Field)#>.Insert(index, oldItem);
+						},
+						() => <#cs Write(DefinitionEntry?.Field)#>.Remove(oldItem));
 				}
 			}
 
-			return selection;
+			return true;
 		}
 		catch (Exception ex)
 		{
-			await _errorService.ShowAlertAsync("Error deleting...", ex);
+			await NotificationService.ShowErrorAsync("Error deleting..." + ex.Message);
 		}
 		finally
 		{

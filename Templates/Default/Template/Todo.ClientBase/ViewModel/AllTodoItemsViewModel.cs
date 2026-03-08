@@ -2,18 +2,15 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Najlot.Map;
 using <#cs Write(Project.Namespace)#>.Client.Localisation;
 using <#cs Write(Project.Namespace)#>.Client.MVVM;
-using <#cs Write(Project.Namespace)#>.Client.MVVM.ViewModel;
-using <#cs Write(Project.Namespace)#>.Client.MVVM.Services;
 using <#cs Write(Project.Namespace)#>.Client.Data.Services;
 using <#cs Write(Project.Namespace)#>.Client.Data.Models;
 using <#cs Write(Project.Namespace)#>.Contracts.Events;
 
 namespace <#cs Write(Project.Namespace)#>.ClientBase.ViewModel;
 
-public class All<#cs Write(Definition.Name)#>sViewModel : AbstractViewModel, IDisposable
+public class All<#cs Write(Definition.Name)#>sViewModel : ViewModelBase, IAsyncInitializable, IDisposable
 {
 <#cs
 foreach (var definition in Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n)))
@@ -21,73 +18,55 @@ foreach (var definition in Entries.Where(e => e.IsReference).Select(e => e.Refer
 	WriteLine($"	private readonly I{definition.Name}Service _{definition.NameLow}Service;");
 }
 
-#>	private readonly IErrorService _errorService;
-	private readonly I<#cs Write(Definition.Name)#>Service _<#cs Write(Definition.NameLow)#>Service;
-	private readonly INavigationService _navigationService;
-	private readonly IMessenger _messenger;
-	private readonly IMap _map;
+#>	private readonly I<#cs Write(Definition.Name)#>Service _<#cs Write(Definition.NameLow)#>Service;
 
-	private bool _isBusy;
-	private string _filter;
-
-	public bool IsBusy
-	{
-		get => _isBusy;
-		set => Set(nameof(IsBusy), ref _isBusy, value);
-	}
+	public bool IsBusy { get; set => Set(ref field, value); }
 
 	public string Filter
 	{
-		get => _filter;
-		set
-		{
-			Set(nameof(Filter), ref _filter, value);
-			<#cs Write(Definition.Name)#>sView.Refresh();
-		}
-	}
+		get;
+		set => Set(ref field, value, () => <#cs Write(Definition.Name)#>sView.Refresh());
+	} = string.Empty;
 
-	public ObservableCollectionView<<#cs Write(Definition.Name)#>ListItemModel> <#cs Write(Definition.Name)#>sView { get; }
-	public ObservableCollection<<#cs Write(Definition.Name)#>ListItemModel> <#cs Write(Definition.Name)#>s { get; } = [];
+	public ObservableCollectionView<<#cs Write(Definition.Name)#>ListItemViewModel> <#cs Write(Definition.Name)#>sView { get; }
+	public ObservableCollection<<#cs Write(Definition.Name)#>ListItemViewModel> <#cs Write(Definition.Name)#>s { get; } = [];
 
 	public All<#cs Write(Definition.Name)#>sViewModel(
-		IErrorService errorService,
-<#cs 
-foreach (var definition in Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n)))
+		I<#cs Write(Definition.Name)#>Service <#cs Write(Definition.NameLow)#>Service,
+<#cs
+				  foreach (var definition in Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n)))
 {
 	WriteLine($"		I{definition.Name}Service {definition.NameLow}Service,");
 }
 
-Write("		I" + Definition.Name)
-#>Service <#cs Write(Definition.NameLow)#>Service,
-		INavigationService navigationService,
-		IMessenger messenger,
-		IMap map)
+#>		ViewModelBaseParameters <<#cs Write(Definition.Name)#>ViewModel> parameters) : base(parameters)
 	{
-		_errorService = errorService;
-<#cs 
+		_<#cs Write(Definition.NameLow)#>Service = <#cs Write(Definition.NameLow)#>Service;
+<#cs
 foreach (var definition in Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n)))
-{
-	WriteLine($"		_{definition.NameLow}Service = {definition.NameLow}Service;");
-}
+	{
+		WriteLine($"		_{definition.NameLow}Service = {definition.NameLow}Service;");
+	}
+#>
+		<#cs Write(Definition.Name)#>sView = new ObservableCollectionView<<#cs Write(Definition.Name)#>ListItemViewModel>(<#cs Write(Definition.Name)#>s, Filter<#cs Write(Definition.Name)#>);
 
-Write("		_" + Definition.NameLow)
-			#>Service = <#cs Write(Definition.NameLow)#>Service;
-		_navigationService = navigationService;
-		_messenger = messenger;
-		_map = map;
+		_<#cs Write(Definition.NameLow)#>Service.OnItemCreated += Handle;
+		_<#cs Write(Definition.NameLow)#>Service.OnItemUpdated += Handle;
+		_<#cs Write(Definition.NameLow)#>Service.OnItemDeleted += Handle;
 
-		<#cs Write(Definition.Name)#>sView = new ObservableCollectionView<<#cs Write(Definition.Name)#>ListItemModel>(<#cs Write(Definition.Name)#>s, Filter<#cs Write(Definition.Name)#>);
-
-		_messenger.Register<<#cs Write(Definition.Name)#>Created>(Handle);
-		_messenger.Register<<#cs Write(Definition.Name)#>Updated>(Handle);
-		_messenger.Register<<#cs Write(Definition.Name)#>Deleted>(Handle);
-
-		Add<#cs Write(Definition.Name)#>Command = new AsyncCommand(Add<#cs Write(Definition.Name)#>Async, DisplayError);
-		Edit<#cs Write(Definition.Name)#>Command = new AsyncCommand<<#cs Write(Definition.Name)#>ListItemModel>(Edit<#cs Write(Definition.Name)#>Async, DisplayError);
-		Refresh<#cs Write(Definition.Name)#>sCommand = new AsyncCommand(Refresh<#cs Write(Definition.Name)#>sAsync, DisplayError);
+		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
+		Add<#cs Write(Definition.Name)#>Command = new AsyncCommand(Add<#cs Write(Definition.Name)#>Async, t => HandleError(t.Exception));
+		Edit<#cs Write(Definition.Name)#>Command = new AsyncCommand<<#cs Write(Definition.Name)#>ListItemViewModel>(Edit<#cs Write(Definition.Name)#>Async, t => HandleError(t.Exception));
+		Refresh<#cs Write(Definition.Name)#>sCommand = new AsyncCommand(Refresh<#cs Write(Definition.Name)#>sAsync, t => HandleError(t.Exception));
 	}
 
-	private bool Filter<#cs Write(Definition.Name)#>(<#cs Write(Definition.Name)#>ListItemModel item)
+	public async Task InitializeAsync()
+	{
+		await Refresh<#cs Write(Definition.Name)#>sAsync();
+		await _<#cs Write(Definition.NameLow)#>Service.StartEventListener();
+	}
+
+	private bool Filter<#cs Write(Definition.Name)#>(<#cs Write(Definition.Name)#>ListItemViewModel item)
 	{
 		if (string.IsNullOrEmpty(Filter))
 		{
@@ -117,89 +96,36 @@ foreach (var entry in Entries
 #>		return false;
 	}
 
-	private async Task DisplayError(Task task)
-	{
-		await _errorService.ShowAlertAsync(CommonLoc.Error, task.Exception);
-	}
-
-	private void Handle(<#cs Write(Definition.Name)#>Created obj)
-	{
-		<#cs Write(Definition.Name)#>s.Insert(0, new <#cs Write(Definition.Name)#>ListItemModel()
+	private async Task Handle(object? sender, <#cs Write(Definition.Name)#>Created obj)
+		=> await DispatcherHelper.InvokeOnUIThread(() =>
 		{
-			Id = obj.Id,
-<#cs
-foreach(var entry in Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2))
-{
-	if (entry.IsReference)
-	{
-		WriteLine($"			{entry.Field}Id = obj.{entry.Field}Id,");
-	}
-	else
-	{
-		WriteLine($"			{entry.Field} = obj.{entry.Field},");
-	}
-}
-
-Result = Result.TrimEnd('\r', '\n');
-#>
+			var item = Map.From(obj).To<<#cs Write(Definition.Name)#>ListItemViewModel>();
+			<#cs Write(Definition.Name)#>s.Insert(0, item);
 		});
-	}
 
-	private void Handle(<#cs Write(Definition.Name)#>Updated obj)
-	{
-		var oldItem = <#cs Write(Definition.Name)#>s.FirstOrDefault(i => i.Id == obj.Id);
-		var index = -1;
-
-		if (oldItem != null)
+	private async Task Handle(object? sender, <#cs Write(Definition.Name)#>Updated obj)
+		=> await DispatcherHelper.InvokeOnUIThread(() =>
 		{
-			index = <#cs Write(Definition.Name)#>s.IndexOf(oldItem);
-
-			if (index != -1)
+			if (<#cs Write(Definition.Name)#>s.FirstOrDefault(i => i.Id == obj.Id) is { } item)
 			{
-				<#cs Write(Definition.Name)#>s.RemoveAt(index);
+				Map.From(obj).To(item);
 			}
-		}
-
-		if (index == -1)
-		{
-			index = 0;
-		}
-
-		<#cs Write(Definition.Name)#>s.Insert(index, new <#cs Write(Definition.Name)#>ListItemModel()
-		{
-			Id = obj.Id,
-<#cs
-foreach(var entry in Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2))
-{
-	if (entry.IsReference)
-	{
-		WriteLine($"			{entry.Field}Id = obj.{entry.Field}Id,");
-	}
-	else
-	{
-		WriteLine($"			{entry.Field} = obj.{entry.Field},");
-	}
-}
-
-Result = Result.TrimEnd('\r', '\n');
-#>
 		});
-	}
 
-	private void Handle(<#cs Write(Definition.Name)#>Deleted obj)
-	{
-		var oldItem = <#cs Write(Definition.Name)#>s.FirstOrDefault(i => i.Id == obj.Id);
-
-		if (oldItem != null)
+	private async Task Handle(object? sender, <#cs Write(Definition.Name)#>Deleted obj)
+		=> await DispatcherHelper.InvokeOnUIThread(() =>
 		{
-			<#cs Write(Definition.Name)#>s.Remove(oldItem);
-		}
-	}
+			if (<#cs Write(Definition.Name)#>s.FirstOrDefault(i => i.Id == obj.Id) is { } item)
+			{
+				<#cs Write(Definition.Name)#>s.Remove(item);
+			}
+		});
 
-	public AsyncCommand<<#cs Write(Definition.Name)#>ListItemModel> Edit<#cs Write(Definition.Name)#>Command { get; }
-	public async Task Edit<#cs Write(Definition.Name)#>Async(<#cs Write(Definition.Name)#>ListItemModel model)
+	public AsyncCommand NavigateBackCommand { get; }
+	public AsyncCommand<<#cs Write(Definition.Name)#>ListItemViewModel> Edit<#cs Write(Definition.Name)#>Command { get; }
+	public async Task Edit<#cs Write(Definition.Name)#>Async(<#cs Write(Definition.Name)#>ListItemViewModel? model)
 	{
-		if (IsBusy)
+		if (IsBusy || model is null)
 		{
 			return;
 		}
@@ -207,15 +133,11 @@ Result = Result.TrimEnd('\r', '\n');
 		try
 		{
 			IsBusy = true;
-
-			var item = await _<#cs Write(Definition.NameLow)#>Service.GetItemAsync(model.Id);
-			var viewModel = _map.From(item).To<<#cs Write(Definition.Name)#>ViewModel>();
-
-			await _navigationService.NavigateForward(viewModel);
+			await NavigationService.NavigateForward<<#cs Write(Definition.Name)#>ViewModel>(new() {{ "Id", model.Id }});
 		}
 		catch (Exception ex)
 		{
-			await _errorService.ShowAlertAsync("Error loading...", ex);
+			await NotificationService.ShowErrorAsync("Error loading..." + ex.Message);
 		}
 		finally
 		{
@@ -234,16 +156,11 @@ Result = Result.TrimEnd('\r', '\n');
 		try
 		{
 			IsBusy = true;
-
-			var item = _<#cs Write(Definition.NameLow)#>Service.Create<#cs Write(Definition.Name)#>();
-			var viewModel = _map.From(item).To<<#cs Write(Definition.Name)#>ViewModel>();
-			viewModel.IsNew = true;
-
-			await _navigationService.NavigateForward(viewModel);
+			await NavigationService.NavigateForward<<#cs Write(Definition.Name)#>ViewModel>();
 		}
 		catch (Exception ex)
 		{
-			await _errorService.ShowAlertAsync("Error adding...", ex);
+			await NotificationService.ShowErrorAsync("Error adding..." + ex.Message);
 		}
 		finally
 		{
@@ -273,15 +190,16 @@ foreach (var definition in Entries.Where(e => e.IsReference).Select(e => e.Refer
 	WriteLine($"			var {definition.NameLow}s = await _{definition.NameLow}Service.GetItemsAsync();");
 }
 #>			var <#cs Write(Definition.NameLow)#>s = await _<#cs Write(Definition.NameLow)#>Service.GetItemsAsync();
+			var viewModels = Map.From<<#cs Write(Definition.Name)#>ListItemModel>(<#cs Write(Definition.NameLow)#>s).To<<#cs Write(Definition.Name)#>ListItemViewModel>();
 
-			foreach (var item in <#cs Write(Definition.NameLow)#>s)
+			foreach (var item in viewModels)
 			{
 				<#cs Write(Definition.Name)#>s.Add(item);
 			}
 		}
 		catch (Exception ex)
 		{
-			await _errorService.ShowAlertAsync("Error loading data...", ex);
+			await NotificationService.ShowErrorAsync("Error loading data..." + ex.Message);
 		}
 		finally
 		{
@@ -290,5 +208,25 @@ foreach (var definition in Entries.Where(e => e.IsReference).Select(e => e.Refer
 		}
 	}
 
-	public void Dispose() => _messenger.Unregister(this);
+	private bool _disposedValue;
+	protected virtual void Dispose(bool disposing)
+	{
+		if (!_disposedValue)
+		{
+			if (disposing)
+			{
+				_<#cs Write(Definition.NameLow)#>Service.OnItemCreated -= Handle;
+				_<#cs Write(Definition.NameLow)#>Service.OnItemUpdated -= Handle;
+				_<#cs Write(Definition.NameLow)#>Service.OnItemDeleted -= Handle;
+			}
+
+			_disposedValue = true;
+		}
+	}
+
+	public void Dispose()
+	{
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+	}
 }<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

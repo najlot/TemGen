@@ -1,19 +1,82 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.SignalR.Client;
+using System;
+using System.Linq;
+using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Todo.Client.Data.Identity;
 using Todo.Client.Data.Models;
 using Todo.Client.Data.Repositories;
+using Todo.Contracts.Events;
 using Todo.Contracts.Filters;
 
 namespace Todo.Client.Data.Services.Implementation;
 
-public sealed class NoteService : INoteService
+public sealed class NoteService(
+	ITokenProvider tokenProvider,
+	IHttpClientFactory httpClientFactory,
+	INoteRepository repository)
+	: INoteService, IAsyncDisposable
 {
-	private readonly INoteRepository _repository;
+	private HubConnection? _connection;
 
-	public NoteService(INoteRepository repository)
+	public event AsyncEventHandler<NoteCreated>? OnItemCreated;
+	public event AsyncEventHandler<NoteUpdated>? OnItemUpdated;
+	public event AsyncEventHandler<NoteDeleted>? OnItemDeleted;
+
+	public async Task StartEventListener()
 	{
-		_repository = repository;
+		if (_connection is not null)
+		{
+			return;
+		}
+
+		using var client = httpClientFactory.CreateClient();
+		var serverUri = (client?.BaseAddress) ?? throw new NullReferenceException("Could not retrieve server connection information!");
+		var token = await tokenProvider.GetToken().ConfigureAwait(false);
+		var signalRUri = new Uri(serverUri, "/cosei");
+
+		_connection = new HubConnectionBuilder()
+			.WithUrl(
+				signalRUri.AbsoluteUri,
+				options => options.Headers.Add("Authorization", $"Bearer {token}"))
+			.WithAutomaticReconnect()
+			.Build();
+
+		_connection.On<string>(typeof(NoteCreated).Name, async param =>
+		{
+			if (OnItemCreated is { } handler && JsonSerializer.Deserialize<NoteCreated>(param) is { } message)
+			{
+				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<NoteCreated>>())
+				{
+					await invocation(this, message).ConfigureAwait(false);
+				}
+			}
+		});
+
+		_connection.On<string>(typeof(NoteUpdated).Name, async param =>
+		{
+			if (OnItemUpdated is { } handler && JsonSerializer.Deserialize<NoteUpdated>(param) is { } message)
+			{
+				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<NoteUpdated>>())
+				{
+					await invocation(this, message).ConfigureAwait(false);
+				}
+			}
+		});
+
+		_connection.On<string>(typeof(NoteDeleted).Name, async param =>
+		{
+			if (OnItemDeleted is { } handler && JsonSerializer.Deserialize<NoteDeleted>(param) is { } message)
+			{
+				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<NoteDeleted>>())
+				{
+					await invocation(this, message).ConfigureAwait(false);
+				}
+			}
+		});
+
+		await _connection.StartAsync().ConfigureAwait(false);
 	}
 
 	public NoteModel CreateNote()
@@ -28,33 +91,40 @@ public sealed class NoteService : INoteService
 
 	public async Task AddItemAsync(NoteModel item)
 	{
-		await _repository.AddItemAsync(item);
+		await repository.AddItemAsync(item);
 	}
 
 	public async Task DeleteItemAsync(Guid id)
 	{
-		await _repository.DeleteItemAsync(id);
+		await repository.DeleteItemAsync(id);
 	}
 
 	public async Task<NoteModel> GetItemAsync(Guid id)
 	{
-		return await _repository.GetItemAsync(id);
+		return await repository.GetItemAsync(id);
 	}
 
-	public async Task<IEnumerable<NoteListItemModel>> GetItemsAsync()
+	public async Task<NoteListItemModel[]> GetItemsAsync()
 	{
-		return await _repository.GetItemsAsync();
+		return await repository.GetItemsAsync();
 	}
 
-	public async Task<IEnumerable<NoteListItemModel>> GetItemsAsync(NoteFilter filter)
+	public async Task<NoteListItemModel[]> GetItemsAsync(NoteFilter filter)
 	{
-		return await _repository.GetItemsAsync(filter);
+		return await repository.GetItemsAsync(filter);
 	}
 
 	public async Task UpdateItemAsync(NoteModel item)
 	{
-		await _repository.UpdateItemAsync(item);
+		await repository.UpdateItemAsync(item);
 	}
 
-	public void Dispose() => _repository.Dispose();
+	public async ValueTask DisposeAsync()
+	{
+		if (_connection is not null)
+		{
+			await _connection.DisposeAsync();
+			_connection = null;
+		}
+	}
 }

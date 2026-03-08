@@ -2,94 +2,31 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using <#cs Write(Project.Namespace)#>.Client.MVVM;
-using <#cs Write(Project.Namespace)#>.Client.MVVM.Services;
-using <#cs Write(Project.Namespace)#>.Client.MVVM.ViewModel;
-using <#cs Write(Project.Namespace)#>.ClientBase.Validation;
 
 namespace <#cs Write(Project.Namespace)#>.ClientBase.ViewModel;
 
-public class <#cs Write(Definition.Name)#>ViewModel : AbstractValidationViewModel
+public class <#cs Write(Definition.Name)#>ViewModel : ValidationViewModelBase
 {
-	private readonly IErrorService _errorService;
-	private readonly INavigationService _navigationService;
-<#cs
-var references = Entries
-	.Where(e => e.IsReference)
-	.Select(e => e.ReferenceType)
-	.Distinct()
-	.Select(n => Definitions.First(d => d.Name == n))
-	.ToArray();
+	public int Id { get; set => Set(ref field, value); }
 
-foreach (var definition in references)
-{
-	WriteLine($"	private IEnumerable<{definition.Name}ListItemModel> _available{definition.Name}s;");
-}
-
-WriteLine("");
-
-foreach (var definition in references)
-{
-	WriteLine($"	public IEnumerable<{definition.Name}ListItemModel> Available{definition.Name}s {{ get => _available{definition.Name}s; set => Set(nameof(Available{definition.Name}s), ref _available{definition.Name}s, value); }}");
-}
-
-foreach(var entry in Entries.Where(e => e.IsEnumeration))
-{
-	if (entry.IsNullable)
-	{
-		WriteLine("");
-		WriteLine($"	private static IEnumerable<{entry.EntryType}?> GetAvailable{entry.EntryType}s()");
-		WriteLine("	{");
-		WriteLine("		yield return null;");
-		WriteLine("");
-		WriteLine($"		foreach (var entry in Enum.GetValues(typeof({entry.EntryType})) as {entry.EntryType}[])");
-		WriteLine("		{");
-		WriteLine("			yield return entry;");
-		WriteLine("		}");
-		WriteLine("	}");
-		WriteLine("");
-		WriteLine($"	public List<{entry.EntryType}?> Available{entry.EntryType}s {{ get; }} = GetAvailable{entry.EntryType}s().ToList();");
-	}
-	else
-	{
-		WriteLine($"	public List<{entry.EntryType}> Available{entry.EntryType}s {{ get; }} = new(Enum.GetValues(typeof({entry.EntryType})) as {entry.EntryType}[]);");
-	}
-}
-#>	private int _id;
-	public int Id { get => _id; set => Set(ref _id, value); }
 <#cs
 foreach (var entry in Entries.Where(e => !e.IsArray))
 {
-	WriteLine("");
-
 	var defaultValue = "";
 	if (!entry.IsNullable && entry.EntryType.ToLower() == "string")
 	{
-		defaultValue = " = string.Empty";
+		defaultValue = " = string.Empty;";
 	}
 
-	WriteLine($"	private {entry.EntryType} _{entry.FieldLow}{defaultValue};");
-	WriteLine($"	public {entry.EntryType} {entry.Field} {{ get => _{entry.FieldLow}; set => Set(ref _{entry.FieldLow}, value); }}");
+	WriteLine($"	public {entry.EntryType} {entry.Field} {{ get; set => Set(ref field, value); }}{defaultValue}");
 }
 #>
-	private Guid _parentId;
-	public Guid ParentId { get => _parentId; set => Set(nameof(ParentId), ref _parentId, value); }
+	public Guid ParentId { get; set => Set( ref field, value); }
 
-	public <#cs Write(Definition.Name)#>ViewModel(
-		IErrorService errorService,
-		INavigationService navigationService)
+	public <#cs Write(Definition.Name)#>ViewModel(ViewModelBaseParameters<<#cs Write(Definition.Name)#>ViewModel> parameters) : base(parameters)
 	{
-		_errorService = errorService;
-		_navigationService = navigationService;
-
-		SaveCommand = new AsyncCommand(RequestSave, DisplayError);
-		DeleteCommand = new AsyncCommand(RequestDelete, DisplayError);
-
-		SetValidation(new <#cs Write(Definition.Name)#>ValidationList());
-	}
-
-	private async Task DisplayError(Task task)
-	{
-		await _errorService.ShowAlertAsync("Error...", task.Exception);
+		SaveCommand = new AsyncCommand(RequestSave, t => HandleError(t.Exception));
+		DeleteCommand = new AsyncCommand(RequestDelete, t => HandleError(t.Exception));
 	}
 
 	private readonly List<Func<<#cs Write(Definition.Name)#>ViewModel, Task>> _onSaveRequested = [];
@@ -122,9 +59,18 @@ foreach (var entry in Entries.Where(e => !e.IsArray))
 
 		if (navigateBack)
 		{
-			await _navigationService.NavigateBack();
+			await NavigationService.NavigateBack();
 		}
 	}
+
+	protected override IEnumerable<ValidationResult> Validate(string? propertyName)
+	{
+		return [];
+	}
+
+	protected override bool ShouldIgnorePropertyForChangesAndValidation(string? propertyName)
+		=> base.ShouldIgnorePropertyForChangesAndValidation(propertyName)
+			|| propertyName is nameof(Id) or nameof(ParentId);
 }<#cs
 SetOutputPath(!Definition.IsArray);
 RelativePath = RelativePath.Replace("_ARRAY_", "");

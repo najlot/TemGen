@@ -18,29 +18,33 @@ public class RelayCommand : RelayCommand<object>
 
 public class RelayCommand<T> : ICommand
 {
-	private readonly Action<T> _action;
-	private readonly Func<T, bool> _canExecute;
+	private readonly Action<T?> _action;
+	private readonly Func<T?, bool> _canExecute;
 
-	public event EventHandler CanExecuteChanged;
+	public event EventHandler? CanExecuteChanged;
 
-	public RelayCommand(Action<T> action, Func<T, bool> canExecute = null)
+	public RelayCommand(Action<T?> action, Func<T?, bool>? canExecute = null)
 	{
 		_action = action;
 
 		if (canExecute != null)
+		{
 			_canExecute = canExecute;
+		}
 		else
+		{
 			_canExecute = ReturnTrue;
+		}
 	}
 
-	private static bool ReturnTrue(T param) => true;
+	private static bool ReturnTrue(T? param) => true;
 
 	public void RaiseCanExecuteChanged()
 	{
 		CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 	}
 
-	public bool CanExecute(object parameter)
+	public bool CanExecute(object? parameter)
 	{
 		if (parameter == null)
 		{
@@ -53,10 +57,10 @@ public class RelayCommand<T> : ICommand
 			parameter = typeConverter.ConvertFrom(parameter);
 		}
 
-		return _canExecute((T)parameter);
+		return _canExecute((T?)parameter);
 	}
 
-	public void Execute(object parameter)
+	public void Execute(object? parameter)
 	{
 		if (CanExecute(parameter))
 		{
@@ -72,7 +76,7 @@ public class RelayCommand<T> : ICommand
 				parameter = typeConverter.ConvertFrom(parameter);
 			}
 
-			_action((T)parameter);
+			_action((T?)parameter);
 		}
 	}
 }<#cs SetOutputPathAndSkipOtherDefinitions()#>

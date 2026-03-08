@@ -1,6 +1,4 @@
 @page "/todoitems"
-@using Cosei.Client.Base;
-@using Cosei.Client.Http;
 @using Microsoft.Extensions.Localization;
 @using Todo.Blazor.Identity;
 @using Todo.Blazor.Services;
@@ -12,9 +10,9 @@
 @inject ILogger<TodoItems> Log
 @inject Najlot.Map.IMap Map
 @inject ITodoItemService TodoItemService
-@inject ISubscriberProvider SubscriberProvider
-@inject IAuthenticationService AuthenticationService
 @inject NavigationManager NavigationManager
+
+@attribute [Authorize]
 @implements IDisposable
 
 <PageTitle>@TodoItemLoc.TodoItems</PageTitle>
@@ -52,8 +50,6 @@ else
 
 	private List<TodoItemListItemModel>? todoItems;
 
-	private ISubscriber? Subscriber;
-
 	private string LimitDisplayLength(string? value, int maxLength)
 	{
 		if (maxLength < 3) throw new InvalidOperationException("MaxLength must be greater than 3");
@@ -64,26 +60,15 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
-		var state = await AuthenticationService.GetAuthenticationStateAsync();
-
-		if (state.User.Identity is null)
-		{
-			var url = NavigationManager.BuildReturnUrl("/login");
-			NavigationManager.NavigateTo(url);
-			return;
-		}
-
 		try
 		{
 			todoItems = new List<TodoItemListItemModel>(await TodoItemService.GetItemsAsync());
 
-			Subscriber = await SubscriberProvider.GetSubscriber();
+			TodoItemService.OnItemCreated += Handle;
+			TodoItemService.OnItemUpdated += Handle;
+			TodoItemService.OnItemDeleted += Handle;
 
-			Subscriber.Register<TodoItemCreated>(Handle);
-			Subscriber.Register<TodoItemUpdated>(Handle);
-			Subscriber.Register<TodoItemDeleted>(Handle);
-
-			await Subscriber.StartAsync();
+			await TodoItemService.StartEventListener();
 		}
 		catch (System.Security.Authentication.AuthenticationException)
 		{
@@ -97,7 +82,7 @@ else
 		}
 	}
 
-	private async Task Handle(TodoItemCreated message)
+	private async Task Handle(object? sender, TodoItemCreated message)
 	{
 		if (todoItems is null)
 		{
@@ -111,7 +96,7 @@ else
 		await InvokeAsync(StateHasChanged);
 	}
 
-	private async Task Handle(TodoItemUpdated message)
+	private async Task Handle(object? sender, TodoItemUpdated message)
 	{
 		if (todoItems is null)
 		{
@@ -128,7 +113,7 @@ else
 		await InvokeAsync(StateHasChanged);
 	}
 
-	private async Task Handle(TodoItemDeleted message)
+	private async Task Handle(object? sender, TodoItemDeleted message)
 	{
 		if (todoItems is null)
 		{
@@ -149,6 +134,8 @@ else
 
 	public void Dispose()
 	{
-		Subscriber?.Unregister(this);
+		TodoItemService.OnItemCreated -= Handle;
+		TodoItemService.OnItemUpdated -= Handle;
+		TodoItemService.OnItemDeleted -= Handle;
 	}
 }

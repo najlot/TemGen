@@ -8,8 +8,6 @@ else
 	Write(Definition.Name.ToLower()[0..^5] + "entrie");
 }
 #>s"
-@using Cosei.Client.Base;
-@using Cosei.Client.Http;
 @using Microsoft.Extensions.Localization;
 @using <#cs Write(Project.Namespace)#>.Blazor.Identity;
 @using <#cs Write(Project.Namespace)#>.Blazor.Services;
@@ -21,9 +19,9 @@ else
 @inject ILogger<<#cs Write(Definition.Name)#>s> Log
 @inject Najlot.Map.IMap Map
 @inject I<#cs Write(Definition.Name)#>Service <#cs Write(Definition.Name)#>Service
-@inject ISubscriberProvider SubscriberProvider
-@inject IAuthenticationService AuthenticationService
 @inject NavigationManager NavigationManager
+
+@attribute [Authorize]
 @implements IDisposable
 
 <PageTitle>@<#cs Write(Definition.Name)#>Loc.<#cs Write(Definition.Name)#>s</PageTitle>
@@ -80,8 +78,6 @@ Result = Result.TrimEnd(' ', '\r', '\n');
 
 	private List<<#cs Write(Definition.Name)#>ListItemModel>? <#cs Write(Definition.NameLow)#>s;
 
-	private ISubscriber? Subscriber;
-
 	private string LimitDisplayLength(string? value, int maxLength)
 	{
 		if (maxLength < 3) throw new InvalidOperationException("MaxLength must be greater than 3");
@@ -92,26 +88,15 @@ Result = Result.TrimEnd(' ', '\r', '\n');
 
 	protected override async Task OnInitializedAsync()
 	{
-		var state = await AuthenticationService.GetAuthenticationStateAsync();
-
-		if (state.User.Identity is null)
-		{
-			var url = NavigationManager.BuildReturnUrl("/login");
-			NavigationManager.NavigateTo(url);
-			return;
-		}
-
 		try
 		{
 			<#cs Write(Definition.NameLow)#>s = new List<<#cs Write(Definition.Name)#>ListItemModel>(await <#cs Write(Definition.Name)#>Service.GetItemsAsync());
 
-			Subscriber = await SubscriberProvider.GetSubscriber();
+			<#cs Write(Definition.Name)#>Service.OnItemCreated += Handle;
+			<#cs Write(Definition.Name)#>Service.OnItemUpdated += Handle;
+			<#cs Write(Definition.Name)#>Service.OnItemDeleted += Handle;
 
-			Subscriber.Register<<#cs Write(Definition.Name)#>Created>(Handle);
-			Subscriber.Register<<#cs Write(Definition.Name)#>Updated>(Handle);
-			Subscriber.Register<<#cs Write(Definition.Name)#>Deleted>(Handle);
-
-			await Subscriber.StartAsync();
+			await <#cs Write(Definition.Name)#>Service.StartEventListener();
 		}
 		catch (System.Security.Authentication.AuthenticationException)
 		{
@@ -125,7 +110,7 @@ Result = Result.TrimEnd(' ', '\r', '\n');
 		}
 	}
 
-	private async Task Handle(<#cs Write(Definition.Name)#>Created message)
+	private async Task Handle(object? sender, <#cs Write(Definition.Name)#>Created message)
 	{
 		if (<#cs Write(Definition.NameLow)#>s is null)
 		{
@@ -139,7 +124,7 @@ Result = Result.TrimEnd(' ', '\r', '\n');
 		await InvokeAsync(StateHasChanged);
 	}
 
-	private async Task Handle(<#cs Write(Definition.Name)#>Updated message)
+	private async Task Handle(object? sender, <#cs Write(Definition.Name)#>Updated message)
 	{
 		if (<#cs Write(Definition.NameLow)#>s is null)
 		{
@@ -156,7 +141,7 @@ Result = Result.TrimEnd(' ', '\r', '\n');
 		await InvokeAsync(StateHasChanged);
 	}
 
-	private async Task Handle(<#cs Write(Definition.Name)#>Deleted message)
+	private async Task Handle(object? sender, <#cs Write(Definition.Name)#>Deleted message)
 	{
 		if (<#cs Write(Definition.NameLow)#>s is null)
 		{
@@ -177,7 +162,9 @@ Result = Result.TrimEnd(' ', '\r', '\n');
 
 	public void Dispose()
 	{
-		Subscriber?.Unregister(this);
+		<#cs Write(Definition.Name)#>Service.OnItemCreated -= Handle;
+		<#cs Write(Definition.Name)#>Service.OnItemUpdated -= Handle;
+		<#cs Write(Definition.Name)#>Service.OnItemDeleted -= Handle;
 	}
 }
 <#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

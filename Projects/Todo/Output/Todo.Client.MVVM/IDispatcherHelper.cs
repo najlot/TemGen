@@ -5,6 +5,6 @@ namespace Todo.Client.MVVM;
 
 public interface IDispatcherHelper
 {
-	void BeginInvokeOnMainThread(Action action);
-	Task BeginInvokeOnMainThread(Func<Task> action);
+	Task InvokeOnUIThread(Action action);
+	Task InvokeOnUIThread(Func<Task> action);
 }
