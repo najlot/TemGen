@@ -44,7 +44,7 @@ public abstract class AbstractViewModel : INotifyPropertyChanged
 		RaisePropertyChanged(propertyName);
 
 		if (ChangeVisitor is { IsApplyingChange: false } visitor 
-			&& propertyName is not null
+			&& !string.IsNullOrEmpty(propertyName)
 			&& ShouldTrackChange(propertyName))
 		{
 			visitor.Visit(this, propertyName, previous, newValue);
