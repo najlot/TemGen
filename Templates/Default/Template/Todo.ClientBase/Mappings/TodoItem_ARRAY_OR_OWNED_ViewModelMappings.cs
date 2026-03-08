@@ -12,7 +12,6 @@ internal sealed partial class <#cs Write(Definition.Name)#>ViewModelMappings
 	public static partial void MapToModel(IMap map, <#cs Write(Definition.Name)#>ViewModel from, <#cs Write(Definition.Name)#>Model to);
 
 	[MapIgnoreProperty(nameof(to.HasErrors))]
-	[MapIgnoreProperty(nameof(to.Errors))]
 	public static partial void MapFromViewModelToViewModel(IMap map, <#cs Write(Definition.Name)#>ViewModel from, <#cs Write(Definition.Name)#>ViewModel to);
 
 	[MapValidateSource]

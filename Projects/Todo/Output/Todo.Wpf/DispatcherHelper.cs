@@ -7,13 +7,13 @@ namespace Todo.Wpf;
 
 public class DispatcherHelper : IDispatcherHelper
 {
-	public void BeginInvokeOnMainThread(Action action)
+	public async Task InvokeOnUIThread(Action action)
 	{
-		Application.Current.Dispatcher.Invoke(action);
+		await Application.Current.Dispatcher.InvokeAsync(action);
 	}
 
-	public async Task BeginInvokeOnMainThread(Func<Task> action)
+	public async Task InvokeOnUIThread(Func<Task> action)
 	{
-		await Application.Current.Dispatcher.Invoke(action);
+		await Application.Current.Dispatcher.InvokeAsync(action);
 	}
 }

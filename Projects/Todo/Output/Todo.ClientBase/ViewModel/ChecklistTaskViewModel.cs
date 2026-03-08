@@ -2,45 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Todo.Client.MVVM;
-using Todo.Client.MVVM.Services;
-using Todo.Client.MVVM.ViewModel;
-using Todo.ClientBase.Validation;
 
 namespace Todo.ClientBase.ViewModel;
 
-public class ChecklistTaskViewModel : AbstractValidationViewModel
+public class ChecklistTaskViewModel : ValidationViewModelBase
 {
-	private readonly IErrorService _errorService;
-	private readonly INavigationService _navigationService;
+	public int Id { get; set => Set(ref field, value); }
 
-	private int _id;
-	public int Id { get => _id; set => Set(ref _id, value); }
+	public bool IsDone { get; set => Set(ref field, value); }
+	public string Description { get; set => Set(ref field, value); } = string.Empty;
 
-	private bool _isDone;
-	public bool IsDone { get => _isDone; set => Set(ref _isDone, value); }
+	public Guid ParentId { get; set => Set( ref field, value); }
 
-	private string _description = string.Empty;
-	public string Description { get => _description; set => Set(ref _description, value); }
-
-	private Guid _parentId;
-	public Guid ParentId { get => _parentId; set => Set(nameof(ParentId), ref _parentId, value); }
-
-	public ChecklistTaskViewModel(
-		IErrorService errorService,
-		INavigationService navigationService)
+	public ChecklistTaskViewModel(ViewModelBaseParameters<ChecklistTaskViewModel> parameters) : base(parameters)
 	{
-		_errorService = errorService;
-		_navigationService = navigationService;
-
-		SaveCommand = new AsyncCommand(RequestSave, DisplayError);
-		DeleteCommand = new AsyncCommand(RequestDelete, DisplayError);
-
-		SetValidation(new ChecklistTaskValidationList());
-	}
-
-	private async Task DisplayError(Task task)
-	{
-		await _errorService.ShowAlertAsync("Error...", task.Exception);
+		SaveCommand = new AsyncCommand(RequestSave, t => HandleError(t.Exception));
+		DeleteCommand = new AsyncCommand(RequestDelete, t => HandleError(t.Exception));
 	}
 
 	private readonly List<Func<ChecklistTaskViewModel, Task>> _onSaveRequested = [];
@@ -73,7 +50,16 @@ public class ChecklistTaskViewModel : AbstractValidationViewModel
 
 		if (navigateBack)
 		{
-			await _navigationService.NavigateBack();
+			await NavigationService.NavigateBack();
 		}
 	}
+
+	protected override IEnumerable<ValidationResult> Validate(string? propertyName)
+	{
+		return [];
+	}
+
+	protected override bool ShouldIgnorePropertyForChangesAndValidation(string? propertyName)
+		=> base.ShouldIgnorePropertyForChangesAndValidation(propertyName)
+			|| propertyName is nameof(Id) or nameof(ParentId);
 }

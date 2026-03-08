@@ -42,6 +42,12 @@ public static class NavigationManagerExtensions
 	public static string BuildReturnUrl(this NavigationManager navManager, string relativeTo)
 	{
 		var uri = navManager.ToBaseRelativePath(navManager.Uri);
+
+		if (string.IsNullOrWhiteSpace(uri))
+		{
+			return relativeTo;
+		}
+
 		return QueryHelpers.AddQueryString(relativeTo, "ReturnUrl", uri);
 	}
 }

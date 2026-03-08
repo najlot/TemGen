@@ -12,7 +12,6 @@ internal sealed partial class ChecklistTaskViewModelMappings
 	public static partial void MapToModel(IMap map, ChecklistTaskViewModel from, ChecklistTaskModel to);
 
 	[MapIgnoreProperty(nameof(to.HasErrors))]
-	[MapIgnoreProperty(nameof(to.Errors))]
 	public static partial void MapFromViewModelToViewModel(IMap map, ChecklistTaskViewModel from, ChecklistTaskViewModel to);
 
 	[MapValidateSource]

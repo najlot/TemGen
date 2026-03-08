@@ -1,8 +1,8 @@
-using Cosei.Client.Base;
 using Najlot.Map;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Net.Http;
+using System.Net.Http.Json;
 using Todo.Client.Data.Models;
 using Todo.Client.Data.Identity;
 using Todo.Contracts;
@@ -12,60 +12,51 @@ using Todo.Contracts.ListItems;
 
 namespace Todo.Client.Data.Repositories.Implementation;
 
-public class TodoItemRepository : ITodoItemRepository
+public class TodoItemRepository(IHttpClientFactory httpClientFactory, ITokenProvider tokenProvider, IMap map)
+	: HttpClientRepository(httpClientFactory, tokenProvider), ITodoItemRepository
 {
-	private readonly IRequestClient _client;
-	private readonly ITokenProvider _tokenProvider;
-	private readonly IMap _map;
-
-	public TodoItemRepository(IRequestClient client, ITokenProvider tokenProvider, IMap map)
-	{
-		_tokenProvider = tokenProvider;
-		_client = client;
-		_map = map;
-	}
-
 	public async Task<TodoItemListItemModel[]> GetItemsAsync()
 	{
-		var headers = await _tokenProvider.GetAuthorizationHeaders();
-		var items = await _client.GetAsync<TodoItemListItem[]>("api/TodoItem", headers);
-		return _map.From<TodoItemListItem>(items).ToArray<TodoItemListItemModel>();
+		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
+		var items = await client.GetFromJsonAsync<TodoItemListItem[]>("api/TodoItem").ConfigureAwait(false) ?? [];
+		return map.From<TodoItemListItem>(items).ToArray<TodoItemListItemModel>();
 	}
 
 	public async Task<TodoItemListItemModel[]> GetItemsAsync(TodoItemFilter filter)
 	{
-		var headers = await _tokenProvider.GetAuthorizationHeaders();
-		var items = await _client.PostAsync<List<TodoItemListItem>, TodoItemFilter>("api/TodoItem/ListFiltered", filter, headers);
-		return _map.From<TodoItemListItem>(items).ToArray<TodoItemListItemModel>();
+		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
+		var response = await client.PostAsJsonAsync("api/TodoItem/ListFiltered", filter).ConfigureAwait(false);
+		var items = await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<TodoItemListItem[]>().ConfigureAwait(false) ?? [];
+		return map.From<TodoItemListItem>(items).ToArray<TodoItemListItemModel>();
 	}
 
 	public async Task<TodoItemModel> GetItemAsync(Guid id)
 	{
-		var headers = await _tokenProvider.GetAuthorizationHeaders();
-		var item = await _client.GetAsync<TodoItem>($"api/TodoItem/{id}", headers);
-		return _map.From(item).To<TodoItemModel>();
+		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
+		var item = await client.GetFromJsonAsync<TodoItem>($"api/TodoItem/{id}").ConfigureAwait(false);
+		return map.From(item).To<TodoItemModel>();
 	}
 
 	public async Task AddItemAsync(TodoItemModel item)
 	{
-		var headers = await _tokenProvider.GetAuthorizationHeaders();
-		var request = _map.From(item).To<CreateTodoItem>();
-		await _client.PostAsync("api/TodoItem", request, headers);
+		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
+		var request = map.From(item).To<CreateTodoItem>();
+		var response = await client.PostAsJsonAsync("api/TodoItem", request).ConfigureAwait(false);
+		response.EnsureSuccessStatusCode();
 	}
 
 	public async Task UpdateItemAsync(TodoItemModel item)
 	{
-		var headers = await _tokenProvider.GetAuthorizationHeaders();
-		var request = _map.From(item).To<UpdateTodoItem>();
-		await _client.PutAsync("api/TodoItem", request, headers);
+		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
+		var request = map.From(item).To<UpdateTodoItem>();
+		var response = await client.PutAsJsonAsync("api/TodoItem", request).ConfigureAwait(false);
+		response.EnsureSuccessStatusCode();
 	}
 
 	public async Task DeleteItemAsync(Guid id)
 	{
-		var headers = await _tokenProvider.GetAuthorizationHeaders();
-		var response = await _client.DeleteAsync($"api/TodoItem/{id}", headers);
+		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
+		var response = await client.DeleteAsync($"api/TodoItem/{id}").ConfigureAwait(false);
 		response.EnsureSuccessStatusCode();
 	}
-
-	public void Dispose() => _client.Dispose();
 }

@@ -4,7 +4,7 @@ using <#cs Write(Project.Namespace)#>.Client.Data.Models;
 
 namespace <#cs Write(Project.Namespace)#>.Client.Data.Repositories;
 
-public interface IUserRepository : IDisposable
+public interface IUserRepository
 {
 	Task<UserModel> GetCurrentUserAsync();
 

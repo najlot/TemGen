@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using <#cs Write(Project.Namespace)#>.Blazor.Services;
 using <#cs Write(Project.Namespace)#>.Client.Data.Identity;
 
 namespace <#cs Write(Project.Namespace)#>.Blazor.Identity;
@@ -9,13 +8,11 @@ namespace <#cs Write(Project.Namespace)#>.Blazor.Identity;
 public class AuthenticationService : AuthenticationStateProvider, IAuthenticationService
 {
 	private readonly IUserDataStore _userDataStore;
-	private readonly ISubscriberProvider _subscriberProvider;
 	private readonly ILogger _logger;
 
-	public AuthenticationService(IUserDataStore userDataStore, ISubscriberProvider subscriberProvider, ILogger<AuthenticationService> logger)
+	public AuthenticationService(IUserDataStore userDataStore, ILogger<AuthenticationService> logger)
 	{
 		_userDataStore = userDataStore;
-		_subscriberProvider = subscriberProvider;
 		_logger = logger;
 	}
 
@@ -49,7 +46,6 @@ public class AuthenticationService : AuthenticationStateProvider, IAuthenticatio
 	public async Task LoginAsync(string username, string token)
 	{
 		await _userDataStore.SetUserData(username, token);
-		_ = await _subscriberProvider.GetSubscriber();
 
 		NotifyAuthenticationStateChanged(GenerateAuthenticationState(username));
 	}
@@ -57,7 +53,6 @@ public class AuthenticationService : AuthenticationStateProvider, IAuthenticatio
 	public async Task LogoutAsync()
 	{
 		await _userDataStore.SetUserData("", "");
-		await _subscriberProvider.ClearSubscriber();
 
 		NotifyAuthenticationStateChanged(GenerateEmptyAuthenticationState());
 	}

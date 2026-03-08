@@ -1,159 +1,124 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Todo.ClientBase.ProfileHandler;
-using Todo.ClientBase.Services;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using Todo.Client.Data.Identity;
 using Todo.Client.Localisation;
 using Todo.Client.MVVM;
-using Todo.Client.MVVM.ViewModel;
-using Todo.Client.MVVM.Services;
 
 namespace Todo.ClientBase.ViewModel;
 
-public class LoginViewModel : AbstractViewModel
+public class LoginViewModel : AbstractValidationViewModel, IAsyncInitializable, ISessionStart
 {
-	private readonly IErrorService _errorService;
+	private readonly ITokenService _tokenService;
+	private readonly IUserDataStore _userDataStore;
+	private readonly ITokenProvider _tokenProvider;
 	private readonly INavigationService _navigationService;
-	private readonly IProfilesService _profilesService;
-	private readonly IProfileHandler _profileHandler;
-	private readonly IServiceProvider _serviceProvider;
-	private readonly Func<ProfileViewModel> _createProfileViewModel;
-	private readonly Func<LoginProfileViewModel> _createLoginProfileViewModel;
-	private IServiceScope _serviceScope;
-	private ObservableCollection<LoginProfileViewModel> _loginProfiles = [];
+	private readonly INotificationService _notificationService;
+	private readonly ILogger<LoginViewModel> _logger;
 
-	public ObservableCollection<LoginProfileViewModel> LoginProfiles
-	{
-		get => _loginProfiles;
-		private set => Set(nameof(LoginProfiles), ref _loginProfiles, value);
-	}
+	public AsyncCommand LoginCommand { get; }
+	public ICommand NavigateToRegisterCommand { get; }
 
-	public LoginViewModel(IErrorService errorService,
+	public LoginViewModel(
+		ITokenService tokenService,
+		IUserDataStore userDataStore,
+		ITokenProvider tokenProvider,
 		INavigationService navigationService,
-		IProfilesService profilesService,
-		IProfileHandler profileHandler,
-		IServiceProvider serviceProvider,
-		Func<ProfileViewModel> createProfileViewModel,
-		Func<LoginProfileViewModel> createLoginProfileViewModel)
+		INotificationService notificationService,
+		ILogger<LoginViewModel> logger)
 	{
-		_errorService = errorService;
+		_tokenService = tokenService;
+		_userDataStore = userDataStore;
+		_tokenProvider = tokenProvider;
 		_navigationService = navigationService;
-		_profilesService = profilesService;
-		_profileHandler = profileHandler;
-		_serviceProvider = serviceProvider;
-		_createProfileViewModel = createProfileViewModel;
-		_createLoginProfileViewModel = createLoginProfileViewModel;
+		_notificationService = notificationService;
+		_logger = logger;
 
-		CreateProfileCommand = new AsyncCommand(CreateProfileAsync, DisplayError);
-		EditProfileCommand = new AsyncCommand<LoginProfileViewModel>(EditProfileAsync, DisplayError);
-		DeleteProfileCommand = new AsyncCommand<LoginProfileViewModel>(DeleteProfileAsync, DisplayError);
-		LoginProfileCommand = new AsyncCommand<LoginProfileViewModel>(LoginProfileAsync, DisplayError);
+		LoginCommand = new AsyncCommand(TryLoginAsync, OnError, () => !IsSubmitting && !HasErrors);
+		NavigateToRegisterCommand = new AsyncCommand(() => _navigationService.NavigateForward<RegisterViewModel>(), OnError);
 
-		LoadProfilesAsync().ContinueWith(DisplayError, TaskContinuationOptions.OnlyOnFaulted);
+		ErrorsChanged += (s, e) => LoginCommand.RaiseCanExecuteChanged();
 	}
 
-	private async Task DisplayError(Task task)
+	public string Username { get; set => Set(ref field, value); } = string.Empty;
+	public string Password { get; set => Set(ref field, value); } = string.Empty;
+	public bool IsSubmitting { get; private set => Set(ref field, value, LoginCommand.RaiseCanExecuteChanged); }
+
+	public Task InitializeAsync()
 	{
-		await _errorService.ShowAlertAsync(CommonLoc.Error, task.Exception);
+		// Clear any cached token on initialization
+		_tokenProvider.ClearCache();
+		return Task.CompletedTask;
 	}
 
-	public AsyncCommand CreateProfileCommand { get; }
-
-	private async Task CreateProfileAsync()
+	private async Task TryLoginAsync()
 	{
-		var viewModel = _createProfileViewModel();
-		viewModel.OnSaveRequested(HandleSaveAsync);
-		await _navigationService.NavigateForward(viewModel);
-	}
+		ValidateAll();
 
-	private async Task HandleSaveAsync(ProfileViewModel obj)
-	{
-		var profile = obj.Profile;
-		var profileVm = LoginProfiles.FirstOrDefault(vm => vm.Profile.Id == profile.Id);
-
-		if (profileVm != null)
-		{
-			LoginProfiles.Remove(profileVm);
-		}
-
-		profileVm = _createLoginProfileViewModel();
-		profileVm.Profile = profile;
-
-		LoginProfiles.Add(profileVm);
-
-		await _profilesService.SaveAsync(LoginProfiles.Select(vm => vm.Profile).ToList());
-	}
-
-	private async Task LoadProfilesAsync()
-	{
-		var profiles = await _profilesService.LoadAsync();
-		var loginProfiles = new ObservableCollection<LoginProfileViewModel>(
-			profiles.Select(profile =>
-			{
-				var vm = _createLoginProfileViewModel();
-				vm.Profile = profile;
-
-				return vm;
-			}));
-
-		LoginProfiles = loginProfiles;
-	}
-
-	public AsyncCommand<LoginProfileViewModel> DeleteProfileCommand { get; }
-	private async Task DeleteProfileAsync(LoginProfileViewModel obj)
-	{
-		var profile = obj.Profile;
-		var profileVm = LoginProfiles.FirstOrDefault(viewModel => viewModel.Profile.Id == profile.Id);
-
-		if (profileVm == null)
+		if (HasErrors)
 		{
 			return;
 		}
 
-		var message = string.Format(ProfileLoc.DeleteProfile, profileVm.Profile.Name);
+		IsSubmitting = true;
+		await _notificationService.ClearNotificationsAsync();
 
-		var vm = new YesNoPageViewModel()
-		{
-			Title = ProfileLoc.DeleteQ,
-			Message = message
-		};
-
-		var selection = await _navigationService.RequestInputAsync(vm);
-
-		if (selection)
-		{
-			LoginProfiles.Remove(profileVm);
-			await _profilesService.RemoveAsync(profile);
-		}
-	}
-
-	public AsyncCommand<LoginProfileViewModel> EditProfileCommand { get; }
-	private async Task EditProfileAsync(LoginProfileViewModel obj)
-	{
-		var profile = obj.Profile;
-		var viewModel = _createProfileViewModel();
-		viewModel.Profile = profile.Clone();
-		viewModel.OnSaveRequested(HandleSaveAsync);
-		await _navigationService.NavigateForward(viewModel);
-	}
-
-	public AsyncCommand<LoginProfileViewModel> LoginProfileCommand { get; }
-	private async Task LoginProfileAsync(LoginProfileViewModel obj)
-	{
 		try
 		{
-			_serviceScope?.Dispose();
-			_serviceScope = _serviceProvider.CreateScope();
+			string? token;
+			try
+			{
+				token = await _tokenService.CreateToken(Username, Password);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Failed to create token for user {Username}", Username);
+				await _notificationService.ShowErrorAsync(ex.Message ?? CommonLoc.ErrorCouldNotLoad);
+				return;
+			}
 
-			await _profileHandler.SetProfile(obj.Profile);
-			var viewModel = _serviceScope.ServiceProvider.GetRequiredService<MenuViewModel>();
-			await _navigationService.NavigateForward(viewModel);
+			if (string.IsNullOrWhiteSpace(token))
+			{
+				_logger.LogWarning("Login failed for user {Username}: invalid credentials", Username);
+				await _notificationService.ShowErrorAsync(CommonLoc.ErrorCouldNotLoad);
+			}
+			else
+			{
+				await _userDataStore.SetUserData(Username, token);
+				await _notificationService.ClearNotificationsAsync();
+
+				await _navigationService.NavigateForward<MenuViewModel>();
+			}
+
+			Password = string.Empty;
 		}
-		catch (Exception ex)
+		finally
 		{
-			await _errorService.ShowAlertAsync(ProfileLoc.CouldNotLogin, ex);
+			IsSubmitting = false;
 		}
+	}
+
+	private async Task OnError(Task task)
+	{
+		var ex = task.Exception;
+		_logger.LogError(ex, "An error occurred during login operation");
+
+		IsSubmitting = false;
+		await _notificationService.ShowErrorAsync(ex?.Message ?? CommonLoc.ErrorCouldNotLoad);
+	}
+
+	protected override IEnumerable<ValidationResult> Validate(string? propertyName)
+	{
+		yield return Result(
+			nameof(Username),
+			!string.IsNullOrWhiteSpace(Username) && Username.Length >= 3,
+			"Username too short");
+
+		yield return Result(
+			nameof(Password),
+			!string.IsNullOrWhiteSpace(Password) && Password.Length >= 6,
+			"Password too short");
 	}
 }

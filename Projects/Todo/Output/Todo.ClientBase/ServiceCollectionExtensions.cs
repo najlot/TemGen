@@ -1,28 +1,33 @@
 using Microsoft.Extensions.DependencyInjection;
-using Todo.ClientBase.ViewModel;
 using System;
+using Todo.ClientBase.ViewModel;
 
 namespace Todo.ClientBase;
 
 public static class ServiceCollectionExtensions
 {
-	public static void RegisterViewModels(this IServiceCollection serviceCollection)
+	extension(IServiceCollection serviceCollection)
 	{
-		serviceCollection.AddSingleton<LoginViewModel>();
-		serviceCollection.AddTransient<ProfileViewModel>();
-		serviceCollection.AddSingleton<Func<ProfileViewModel>>(c => () => c.GetRequiredService<ProfileViewModel>());
-		serviceCollection.AddTransient<LoginProfileViewModel>();
-		serviceCollection.AddSingleton<Func<LoginProfileViewModel>>(c => () => c.GetRequiredService<LoginProfileViewModel>());
-		serviceCollection.AddScoped<MenuViewModel>();
+		public void RegisterClientBase()
+		{
+			serviceCollection.RegisterClientBaseViewModels();
+		}
 
-		serviceCollection.AddScoped<AllNotesViewModel>();
-		serviceCollection.AddScoped<AllTodoItemsViewModel>();
+		public void RegisterClientBaseViewModels()
+		{
+			serviceCollection.AddTransient(typeof(ViewModelBaseParameters<>));
 
-		serviceCollection.AddTransient<ChecklistTaskViewModel>();
-		serviceCollection.AddSingleton<Func<ChecklistTaskViewModel>>(c => () => c.GetRequiredService<ChecklistTaskViewModel>());
-		serviceCollection.AddTransient<NoteViewModel>();
-		serviceCollection.AddSingleton<Func<NoteViewModel>>(c => () => c.GetRequiredService<NoteViewModel>());
-		serviceCollection.AddTransient<TodoItemViewModel>();
-		serviceCollection.AddSingleton<Func<TodoItemViewModel>>(c => () => c.GetRequiredService<TodoItemViewModel>());
+			serviceCollection.AddTransient<LoginViewModel>();
+			serviceCollection.AddTransient<RegisterViewModel>();
+			serviceCollection.AddTransient<MenuViewModel>();
+			serviceCollection.AddTransient<ManageViewModel>();
+
+			serviceCollection.AddTransient<AllNotesViewModel>();
+			serviceCollection.AddTransient<AllTodoItemsViewModel>();
+
+			serviceCollection.AddTransient<ChecklistTaskViewModel>();
+			serviceCollection.AddTransient<NoteViewModel>();
+			serviceCollection.AddTransient<TodoItemViewModel>();
+		}
 	}
 }

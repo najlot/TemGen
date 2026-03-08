@@ -1,8 +1,8 @@
-using Cosei.Client.Base;
 using Najlot.Map;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Net.Http;
+using System.Net.Http.Json;
 using Todo.Client.Data.Models;
 using Todo.Client.Data.Identity;
 using Todo.Contracts;
@@ -12,60 +12,51 @@ using Todo.Contracts.ListItems;
 
 namespace Todo.Client.Data.Repositories.Implementation;
 
-public class NoteRepository : INoteRepository
+public class NoteRepository(IHttpClientFactory httpClientFactory, ITokenProvider tokenProvider, IMap map)
+	: HttpClientRepository(httpClientFactory, tokenProvider), INoteRepository
 {
-	private readonly IRequestClient _client;
-	private readonly ITokenProvider _tokenProvider;
-	private readonly IMap _map;
-
-	public NoteRepository(IRequestClient client, ITokenProvider tokenProvider, IMap map)
-	{
-		_tokenProvider = tokenProvider;
-		_client = client;
-		_map = map;
-	}
-
 	public async Task<NoteListItemModel[]> GetItemsAsync()
 	{
-		var headers = await _tokenProvider.GetAuthorizationHeaders();
-		var items = await _client.GetAsync<NoteListItem[]>("api/Note", headers);
-		return _map.From<NoteListItem>(items).ToArray<NoteListItemModel>();
+		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
+		var items = await client.GetFromJsonAsync<NoteListItem[]>("api/Note").ConfigureAwait(false) ?? [];
+		return map.From<NoteListItem>(items).ToArray<NoteListItemModel>();
 	}
 
 	public async Task<NoteListItemModel[]> GetItemsAsync(NoteFilter filter)
 	{
-		var headers = await _tokenProvider.GetAuthorizationHeaders();
-		var items = await _client.PostAsync<List<NoteListItem>, NoteFilter>("api/Note/ListFiltered", filter, headers);
-		return _map.From<NoteListItem>(items).ToArray<NoteListItemModel>();
+		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
+		var response = await client.PostAsJsonAsync("api/Note/ListFiltered", filter).ConfigureAwait(false);
+		var items = await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<NoteListItem[]>().ConfigureAwait(false) ?? [];
+		return map.From<NoteListItem>(items).ToArray<NoteListItemModel>();
 	}
 
 	public async Task<NoteModel> GetItemAsync(Guid id)
 	{
-		var headers = await _tokenProvider.GetAuthorizationHeaders();
-		var item = await _client.GetAsync<Note>($"api/Note/{id}", headers);
-		return _map.From(item).To<NoteModel>();
+		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
+		var item = await client.GetFromJsonAsync<Note>($"api/Note/{id}").ConfigureAwait(false);
+		return map.From(item).To<NoteModel>();
 	}
 
 	public async Task AddItemAsync(NoteModel item)
 	{
-		var headers = await _tokenProvider.GetAuthorizationHeaders();
-		var request = _map.From(item).To<CreateNote>();
-		await _client.PostAsync("api/Note", request, headers);
+		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
+		var request = map.From(item).To<CreateNote>();
+		var response = await client.PostAsJsonAsync("api/Note", request).ConfigureAwait(false);
+		response.EnsureSuccessStatusCode();
 	}
 
 	public async Task UpdateItemAsync(NoteModel item)
 	{
-		var headers = await _tokenProvider.GetAuthorizationHeaders();
-		var request = _map.From(item).To<UpdateNote>();
-		await _client.PutAsync("api/Note", request, headers);
+		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
+		var request = map.From(item).To<UpdateNote>();
+		var response = await client.PutAsJsonAsync("api/Note", request).ConfigureAwait(false);
+		response.EnsureSuccessStatusCode();
 	}
 
 	public async Task DeleteItemAsync(Guid id)
 	{
-		var headers = await _tokenProvider.GetAuthorizationHeaders();
-		var response = await _client.DeleteAsync($"api/Note/{id}", headers);
+		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
+		var response = await client.DeleteAsync($"api/Note/{id}").ConfigureAwait(false);
 		response.EnsureSuccessStatusCode();
 	}
-
-	public void Dispose() => _client.Dispose();
 }

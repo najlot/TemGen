@@ -1,6 +1,4 @@
 @page "/notes"
-@using Cosei.Client.Base;
-@using Cosei.Client.Http;
 @using Microsoft.Extensions.Localization;
 @using Todo.Blazor.Identity;
 @using Todo.Blazor.Services;
@@ -12,9 +10,9 @@
 @inject ILogger<Notes> Log
 @inject Najlot.Map.IMap Map
 @inject INoteService NoteService
-@inject ISubscriberProvider SubscriberProvider
-@inject IAuthenticationService AuthenticationService
 @inject NavigationManager NavigationManager
+
+@attribute [Authorize]
 @implements IDisposable
 
 <PageTitle>@NoteLoc.Notes</PageTitle>
@@ -52,8 +50,6 @@ else
 
 	private List<NoteListItemModel>? notes;
 
-	private ISubscriber? Subscriber;
-
 	private string LimitDisplayLength(string? value, int maxLength)
 	{
 		if (maxLength < 3) throw new InvalidOperationException("MaxLength must be greater than 3");
@@ -64,26 +60,15 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
-		var state = await AuthenticationService.GetAuthenticationStateAsync();
-
-		if (state.User.Identity is null)
-		{
-			var url = NavigationManager.BuildReturnUrl("/login");
-			NavigationManager.NavigateTo(url);
-			return;
-		}
-
 		try
 		{
 			notes = new List<NoteListItemModel>(await NoteService.GetItemsAsync());
 
-			Subscriber = await SubscriberProvider.GetSubscriber();
+			NoteService.ItemCreated += Handle;
+			NoteService.ItemUpdated += Handle;
+			NoteService.ItemDeleted += Handle;
 
-			Subscriber.Register<NoteCreated>(Handle);
-			Subscriber.Register<NoteUpdated>(Handle);
-			Subscriber.Register<NoteDeleted>(Handle);
-
-			await Subscriber.StartAsync();
+			await NoteService.StartEventListener();
 		}
 		catch (System.Security.Authentication.AuthenticationException)
 		{
@@ -97,7 +82,7 @@ else
 		}
 	}
 
-	private async Task Handle(NoteCreated message)
+	private async Task Handle(object? sender, NoteCreated message)
 	{
 		if (notes is null)
 		{
@@ -111,7 +96,7 @@ else
 		await InvokeAsync(StateHasChanged);
 	}
 
-	private async Task Handle(NoteUpdated message)
+	private async Task Handle(object? sender, NoteUpdated message)
 	{
 		if (notes is null)
 		{
@@ -128,7 +113,7 @@ else
 		await InvokeAsync(StateHasChanged);
 	}
 
-	private async Task Handle(NoteDeleted message)
+	private async Task Handle(object? sender, NoteDeleted message)
 	{
 		if (notes is null)
 		{
@@ -149,6 +134,8 @@ else
 
 	public void Dispose()
 	{
-		Subscriber?.Unregister(this);
+		NoteService.ItemCreated -= Handle;
+		NoteService.ItemUpdated -= Handle;
+		NoteService.ItemDeleted -= Handle;
 	}
 }

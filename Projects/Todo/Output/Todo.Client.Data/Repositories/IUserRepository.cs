@@ -4,7 +4,7 @@ using Todo.Client.Data.Models;
 
 namespace Todo.Client.Data.Repositories;
 
-public interface IUserRepository : IDisposable
+public interface IUserRepository
 {
 	Task<UserModel> GetCurrentUserAsync();
 

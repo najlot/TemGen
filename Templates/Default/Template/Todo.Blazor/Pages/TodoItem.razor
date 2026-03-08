@@ -1,6 +1,4 @@
 @page "/<#cs Write(Definition.Name.ToLower())#>/{id:guid}"
-@using Cosei.Client.Base;
-@using Cosei.Client.Http;
 @using Microsoft.Extensions.Localization;
 @using <#cs Write(Project.Namespace)#>.Blazor.Identity;
 @using <#cs Write(Project.Namespace)#>.Blazor.Services;
@@ -24,8 +22,6 @@ foreach (var entry in references)
 	WriteLine($"@inject I{entry.ReferenceType}Service {entry.ReferenceType}Service");
 }
 #>
-@inject ISubscriberProvider SubscriberProvider
-@inject IAuthenticationService AuthenticationService
 @inject NavigationManager NavigationManager
 <#cs
 var arrays = Entries.Where(e => e.IsEnumeration).ToArray();
@@ -35,6 +31,7 @@ foreach (var entry in arrays)
 	WriteLine($"@inject IStringLocalizer<{entry.EntryType}Loc> {entry.EntryType}Localizer");
 }
 #>
+@attribute [Authorize]
 @implements IDisposable
 
 @if (isNew)
@@ -190,8 +187,6 @@ if (arrays.Any())
 	[Parameter]
 	public Guid Id { get; set; }
 
-	private ISubscriber? Subscriber;
-
 	private bool isNew = false;
 	private <#cs Write(Definition.Name)#>Model? Model;
 
@@ -203,15 +198,6 @@ foreach (var entry in Entries.Where(e => e.IsReference))
 #>
 	protected override async Task OnInitializedAsync()
 	{
-		var state = await AuthenticationService.GetAuthenticationStateAsync();
-
-		if (state.User.Identity is null)
-		{
-			var url = NavigationManager.BuildReturnUrl("/login");
-			NavigationManager.NavigateTo(url);
-			return;
-		}
-
 		try
 		{
 			if (Id == Guid.Empty)
@@ -230,11 +216,9 @@ foreach (var entry in Entries.Where(e => e.IsReference))
 	WriteLine($"			_{entry.ReferenceTypeLow}s = await {entry.ReferenceType}Service.GetItemsAsync();");
 }
 #>
-			Subscriber = await SubscriberProvider.GetSubscriber();
+			<#cs Write(Definition.Name)#>Service.ItemUpdated += Handle;
 
-			Subscriber.Register<<#cs Write(Definition.Name)#>Updated>(Handle);
-
-			await Subscriber.StartAsync();
+			await <#cs Write(Definition.Name)#>Service.StartEventListener();
 		}
 		catch (System.Security.Authentication.AuthenticationException)
 		{
@@ -334,7 +318,7 @@ Write(name);
 		}
 	}
 
-	private async Task Handle(<#cs Write(Definition.Name)#>Updated message)
+	private async Task Handle(object? sender, <#cs Write(Definition.Name)#>Updated message)
 	{
 		if (Model is null || Model.Id != message.Id)
 		{
@@ -392,7 +376,7 @@ foreach (var entry in arrays)
 #>
 	public void Dispose()
 	{
-		Subscriber?.Unregister(this);
+		<#cs Write(Definition.Name)#>Service.ItemUpdated -= Handle;
 	}
 }
 <#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

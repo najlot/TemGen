@@ -1,6 +1,4 @@
 @page "/todoitem/{id:guid}"
-@using Cosei.Client.Base;
-@using Cosei.Client.Http;
 @using Microsoft.Extensions.Localization;
 @using Todo.Blazor.Identity;
 @using Todo.Blazor.Services;
@@ -16,11 +14,10 @@
 @inject ITodoItemService TodoItemService
 @inject IUserService UserService
 
-@inject ISubscriberProvider SubscriberProvider
-@inject IAuthenticationService AuthenticationService
 @inject NavigationManager NavigationManager
 @inject IStringLocalizer<TodoItemStatusLoc> TodoItemStatusLocalizer
 
+@attribute [Authorize]
 @implements IDisposable
 
 @if (isNew)
@@ -154,8 +151,6 @@ else
 	[Parameter]
 	public Guid Id { get; set; }
 
-	private ISubscriber? Subscriber;
-
 	private bool isNew = false;
 	private TodoItemModel? Model;
 
@@ -163,15 +158,6 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
-		var state = await AuthenticationService.GetAuthenticationStateAsync();
-
-		if (state.User.Identity is null)
-		{
-			var url = NavigationManager.BuildReturnUrl("/login");
-			NavigationManager.NavigateTo(url);
-			return;
-		}
-
 		try
 		{
 			if (Id == Guid.Empty)
@@ -186,11 +172,9 @@ else
 
 			_users = await UserService.GetItemsAsync();
 
-			Subscriber = await SubscriberProvider.GetSubscriber();
+			TodoItemService.ItemUpdated += Handle;
 
-			Subscriber.Register<TodoItemUpdated>(Handle);
-
-			await Subscriber.StartAsync();
+			await TodoItemService.StartEventListener();
 		}
 		catch (System.Security.Authentication.AuthenticationException)
 		{
@@ -269,7 +253,7 @@ else
 		}
 	}
 
-	private async Task Handle(TodoItemUpdated message)
+	private async Task Handle(object? sender, TodoItemUpdated message)
 	{
 		if (Model is null || Model.Id != message.Id)
 		{
@@ -322,6 +306,6 @@ else
 
 	public void Dispose()
 	{
-		Subscriber?.Unregister(this);
+		TodoItemService.ItemUpdated -= Handle;
 	}
 }

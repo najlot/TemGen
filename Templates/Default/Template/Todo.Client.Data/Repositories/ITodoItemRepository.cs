@@ -5,7 +5,7 @@ using <#cs Write(Project.Namespace)#>.Contracts.Filters;
 
 namespace <#cs Write(Project.Namespace)#>.Client.Data.Repositories;
 
-public interface I<#cs Write(Definition.Name)#>Repository : IDisposable
+public interface I<#cs Write(Definition.Name)#>Repository
 {
 	Task<<#cs Write(Definition.Name)#>ListItemModel[]> GetItemsAsync();
 
