@@ -8,5 +8,4 @@ public enum TodoItemStatus
 	Todo,
 	InProgress,
 	Done,
-	Deleted,
 }

@@ -8,26 +8,20 @@ using <#cs Write(Project.Namespace)#>.Contracts;
 using <#cs Write(Project.Namespace)#>.Service.Services;
 using <#cs Write(Project.Namespace)#>.Contracts.Commands;
 using <#cs Write(Project.Namespace)#>.Contracts.ListItems;
+using <#cs Write(Project.Namespace)#>.Service.Repository;
 
 namespace <#cs Write(Project.Namespace)#>.Service.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class UserController : ControllerBase
+public class UserController(IUserService userService) : ControllerBase
 {
-	private readonly IUserService _userService;
-
-	public UserController(IUserService userService)
-	{
-		_userService = userService;
-	}
-
 	[HttpGet]
 	public async Task<ActionResult<List<UserListItem>>> List()
 	{
 		var userId = User.GetUserId();
-		var query = _userService.GetItemsForUser(userId);
+		var query = userService.GetItemsForUser(userId);
 		var items = await query.ToListAsync().ConfigureAwait(false);
 		return Ok(items);
 	}
@@ -36,7 +30,7 @@ public class UserController : ControllerBase
 	public async Task<ActionResult<User>> GetCurrentUser()
 	{
 		var userId = User.GetUserId();
-		var item = await _userService.GetItem(userId).ConfigureAwait(false);
+		var item = await userService.GetItem(userId).ConfigureAwait(false);
 		if (item == null)
 		{
 			return NotFound();
@@ -48,7 +42,7 @@ public class UserController : ControllerBase
 	[HttpGet("{id}")]
 	public async Task<ActionResult<User>> GetItem(Guid id)
 	{
-		var item = await _userService.GetItem(id).ConfigureAwait(false);
+		var item = await userService.GetItem(id).ConfigureAwait(false);
 		if (item == null)
 		{
 			return NotFound();
@@ -58,26 +52,33 @@ public class UserController : ControllerBase
 	}
 
 	[HttpPost]
-	public async Task<ActionResult> Create([FromBody] CreateUser command)
+	public async Task<ActionResult> Create(
+		[FromBody] CreateUser command,
+		[FromServices] IUnitOfWork unitOfWork)
 	{
 		var userId = User.GetUserId();
-		await _userService.CreateUser(command, userId).ConfigureAwait(false);
+		await userService.CreateUser(command, userId).ConfigureAwait(false);
+		await unitOfWork.CommitAsync().ConfigureAwait(false);
 		return Ok();
 	}
 
 	[HttpPut]
-	public async Task<ActionResult> Update([FromBody] UpdateUser command)
+	public async Task<ActionResult> Update(
+		[FromBody] UpdateUser command,
+		[FromServices] IUnitOfWork unitOfWork)
 	{
 		var userId = User.GetUserId();
-		await _userService.UpdateUser(command, userId).ConfigureAwait(false);
+		await userService.UpdateUser(command, userId).ConfigureAwait(false);
+		await unitOfWork.CommitAsync().ConfigureAwait(false);
 		return Ok();
 	}
 
 	[HttpDelete("{id}")]
-	public async Task<ActionResult> Delete(Guid id)
+	public async Task<ActionResult> Delete(Guid id, [FromServices] IUnitOfWork unitOfWork)
 	{
 		var userId = User.GetUserId();
-		await _userService.DeleteUser(id, userId).ConfigureAwait(false);
+		await userService.DeleteUser(id, userId).ConfigureAwait(false);
+		await unitOfWork.CommitAsync().ConfigureAwait(false);
 		return Ok();
 	}
 }<#cs SetOutputPathAndSkipOtherDefinitions()#>

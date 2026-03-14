@@ -4,6 +4,9 @@ namespace Todo.ClientBase.ViewModel;
 
 public class MenuViewModel : ViewModelBase
 {
+	public bool IsDrawerOpen { get; set => Set(ref field, value); }
+	public RelayCommand ToggleDrawerCommand { get; }
+
 	public AsyncCommand NavigateToNotes { get; }
 	public AsyncCommand NavigateToTodoItems { get; }
 	public AsyncCommand ManageCommand { get; }
@@ -11,6 +14,7 @@ public class MenuViewModel : ViewModelBase
 
 	public MenuViewModel(ViewModelBaseParameters<MenuViewModel> parameters) : base(parameters)
 	{
+		ToggleDrawerCommand = new RelayCommand(() => IsDrawerOpen = !IsDrawerOpen);
 		NavigateToNotes = CreateNavigationCommand<AllNotesViewModel>();
 		NavigateToTodoItems = CreateNavigationCommand<AllTodoItemsViewModel>();
 		ManageCommand = CreateNavigationCommand<ManageViewModel>();
@@ -18,5 +22,9 @@ public class MenuViewModel : ViewModelBase
 	}
 
 	private AsyncCommand CreateNavigationCommand<TViewModel>() where TViewModel : notnull
-		=> new(NavigationService.NavigateForward<TViewModel>, t => HandleError(t.Exception));
+		=> new(async () =>
+		{
+			await NavigationService.NavigateForward<TViewModel>();
+			IsDrawerOpen = false;
+		}, t => HandleError(t.Exception));
 }

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using <#cs Write(Project.Namespace)#>.Client.MVVM;
 using <#cs Write(Project.Namespace)#>.ClientBase;
 using <#cs Write(Project.Namespace)#>.ClientBase.ViewModel;
 using <#cs Write(Project.Namespace)#>.Wpf.View;
@@ -60,6 +61,16 @@ foreach(var definition in Definitions.Where(d => !(
 		}
 
 		throw new NullReferenceException($"The Class {viewType.FullName} is not a Control.");
+	}
+
+	public async Task<bool> CanNavigateAsync(Control? currentView)
+	{
+		if (currentView?.DataContext is INavigationGuard navigationGuard)
+		{
+			return await navigationGuard.CanNavigateAsync().ConfigureAwait(false);
+		}
+
+		return true;
 	}
 
 	public async Task DisposeView(Control? control)

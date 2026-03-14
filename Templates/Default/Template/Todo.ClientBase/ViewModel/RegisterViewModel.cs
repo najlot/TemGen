@@ -88,14 +88,14 @@ public class RegisterViewModel : AbstractValidationViewModel, IAsyncInitializabl
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Failed to create token for user {Username}", Username);
-				await _notificationService.ShowErrorAsync(ex.Message ?? CommonLoc.ErrorCouldNotLoad);
+				await _notificationService.ShowErrorAsync(ex.Message ?? ErrorLoc.ErrorCouldNotLoad);
 				return;
 			}
 
 			if (string.IsNullOrWhiteSpace(token))
 			{
 				_logger.LogWarning("Auto-login failed for user {Username} after registration", Username);
-				await _notificationService.ShowErrorAsync(CommonLoc.ErrorCouldNotLoad);
+				await _notificationService.ShowErrorAsync(ErrorLoc.ErrorCouldNotLogin);
 			}
 			else
 			{
@@ -116,7 +116,7 @@ public class RegisterViewModel : AbstractValidationViewModel, IAsyncInitializabl
 		_logger.LogError(ex, "An error occurred during registration operation");
 
 		IsSubmitting = false;
-		await _notificationService.ShowErrorAsync(ex?.Message ?? CommonLoc.ErrorCouldNotLoad);
+		await _notificationService.ShowErrorAsync(ex?.Message ?? ErrorLoc.ErrorCouldNotLoad);
 	}
 
 	protected override IEnumerable<ValidationResult> Validate(string? propertyName)
@@ -124,19 +124,19 @@ public class RegisterViewModel : AbstractValidationViewModel, IAsyncInitializabl
 		yield return Result(
 			nameof(Username),
 			!string.IsNullOrWhiteSpace(Username) && Username.Length >= 3,
-			"Username too short");
+			ErrorLoc.UsernameTooShort);
 
 		if (ShouldValidate(propertyName, nameof(EMail)))
 		{
 			yield return Result(
 				nameof(EMail),
 				!string.IsNullOrWhiteSpace(EMail) && Regex.IsMatch(EMail, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"),
-				"Invalid email address");
+				ErrorLoc.InvalidEmailAddress);
 		}
 
 		yield return Result(
 			nameof(Password),
 			!string.IsNullOrWhiteSpace(Password) && Password.Length >= 6,
-			"Password too short");
+			ErrorLoc.PasswordTooShort);
 	}
 }<#cs SetOutputPathAndSkipOtherDefinitions()#>

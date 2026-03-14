@@ -23,42 +23,98 @@ TemGen is a template-based code generator built with .NET 10.0. It processes tem
 
 The project uses the default template (`./Templates/Default`) to generate the output project (`./Projects/Todo`) based on definitions. The Todo project serves as both an example and a test case for the code generation functionality.
 
-## Building and Testing
-
-### Build the Project
+## Quick Reference
 
 ```bash
+# Build
 dotnet build src/TemGen.slnx
-```
 
-### Run Tests
-
-```bash
+# Run tests
 dotnet test src/TemGen.Tests/TemGen.Tests.csproj
-```
 
-### Run the Tool Locally
-
-```bash
+# Run code generation for the Todo project
 dotnet run --project src/TemGen/TemGen.csproj -- --path ./Projects/Todo
+
+# Run the Tool Locally
+dotnet run --project src/TemGen/TemGen.csproj -- --path ./Projects/Todo
+
+# Verify templates produce no output changes
+dotnet run --project src/TemGen/TemGen.csproj -- --path ./Projects/Todo && git diff --stat Projects/Todo/Output
 ```
 
-## Key Technologies
+## Working with Templates
 
-- **.NET 10.0** - Target framework
-- **System.CommandLine** - CLI parsing
-- **Microsoft.CodeAnalysis.Scripting** - C# scripting support
-- **Jint** - JavaScript execution
-- **IronPython** - Python scripting
-- **MoonSharp** - Lua scripting
-- **Najlot.Log** - Logging framework
+### How TemGen Processes Templates
+
+Each template file in `Templates/Default/Template/` is processed **once per definition** (from `Projects/Todo/Definitions/`). The template controls its output via:
+
+- **`RelativePath`**: Set to empty string to skip output for a definition. `SetOutputPath(bool skip)` helper: if skip is true, sets `RelativePath = ""` (no output); otherwise replaces `TodoItem` with `Definition.Name` and `Todo` with `Project.Namespace` in the path.
+- **`SkipOtherDefinitions`**: Set to `true` to stop processing further definitions. `SetOutputPathAndSkipOtherDefinitions()` sets the output path and stops after the first definition (used for files generated once, like converters, shared base classes).
+- **`SetOutputPath(bool skip)`**: Common helper. Called at the END of per-definition templates (e.g., `<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>`).
+
+### Template Code Blocks
+
+- `<#cs ... #>` - Embedded C# code block (executes, text output via `Write()`/`WriteLine()`)
+- `<#cs Write(expr) #>` - Inline expression output
+- `Result` - The accumulated text output; can be modified (e.g., `Result = Result.TrimEnd()`)
+
+### Definition Properties
+
+Each **Definition** has:
+- `Name` / `NameLow` - Definition name (e.g., "TodoItem" / "todoItem")
+- `IsOwnedType` - Directly embedded child type (not referenced by ID)
+- `IsEnumeration` - Enum type (e.g., PredefinedColor, TodoItemStatus)
+- `IsArray` - Referenced as an array in another type (e.g., ChecklistTask is `IsArray=true` because TodoItem has `ChecklistTask[]`)
+- `Entries` - List of fields/properties
+
+Each **DefinitionEntry** has:
+- `EntryType` / `Field` - Type and name
+- `IsOwnedType`, `IsKey`, `IsArray`, `IsReference`, `IsEnumeration`, `IsNullable`
+- `ReferenceType` - For references, the target definition name
+
+### Todo Project Definitions
+
+| Definition | IsArray | IsOwnedType | IsEnumeration | Notes |
+|---|---|---|---|---|
+| TodoItem | false | false | false | Main entity, has ChecklistTask[] array |
+| Note | false | false | false | Simple entity with PredefinedColor enum |
+| ChecklistTask | true | false | false | Array child of TodoItem |
+| User | false | false | false | Referenced by TodoItem |
+| PredefinedColor | false | false | true | Enum used by Note |
+| TodoItemStatus | false | false | true | Enum used by TodoItem |
+
+### Common Template Patterns
+
+**Skip conditions** for per-definition templates:
+- `SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)` - Skip owned types, enums, and array types
+- `SetOutputPath(Definition.IsEnumeration || Definition.IsOwnedType)` - Skip enums and owned types (generates for array types too)
+
+**Conditional code based on entries:**
+- `Entries.Where(e => e.IsArray).Any()` - True when definition has array children (e.g., TodoItem has Checklist)
+- `Entries.Where(e => e.IsReference)` - Reference entries (generate ComboBox, service dependencies)
+- `Entries.Where(e => e.IsEnumeration)` - Enum entries (generate enum ComboBox with converter)
+
+### Fixing Templates Workflow
+
+1. Run temgen: `dotnet run --project src/TemGen/TemGen.csproj -- --path ./Projects/Todo`
+2. Check diff: `git diff Projects/Todo/Output`
+3. For each changed output file, compare template vs expected output
+4. Fix the template in `Templates/Default/Template/` to produce the exact expected output
+5. Re-run temgen and verify `git diff --stat Projects/Todo/Output` shows no changes
+
+### Key Files
+
+- `Templates/Default/Scripts/Common.cs` - Helper functions (`SetOutputPath`, `SetOutputPathAndSkipOtherDefinitions`, `WriteFromToMapping`, etc.)
+- `Projects/Todo/ProjectDefinition` - Defines namespace (`Todo`), paths to definitions/templates/output
+- `src/TemGen/Definition.cs` - Definition class model
+- `src/TemGen/DefinitionEntry.cs` - Entry class model
+- `src/TemGen/TemplateProcessor.cs` - Core processing logic (skips empty RelativePath, breaks on SkipOtherDefinitions)
 
 ## Coding Conventions
 
 - Follow existing code style as defined in `.editorconfig`
 - Use latest C# language features (LangVersion: latest)
 - Keep namespace and file structure consistent with existing patterns
-- Template handlers are extensible via the `ISectionHandler` interface
 
 ## When Making Changes
 

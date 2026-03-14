@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
   <data name="ChangePassword" xml:space="preserve">
     <value>Passwort ändern</value>
   </data>
@@ -126,17 +129,23 @@
   <data name="Delete" xml:space="preserve">
     <value>Löschen</value>
   </data>
+  <data name="DeleteConfirmationDescription" xml:space="preserve">
+    <value>Möchten Sie dieses Element wirklich löschen?</value>
+  </data>
+  <data name="DeleteConfirmationTitle" xml:space="preserve">
+    <value>Löschen?</value>
+  </data>
+  <data name="Discard" xml:space="preserve">
+    <value>Verwerfen</value>
+  </data>
   <data name="Edit" xml:space="preserve">
     <value>Bearbeiten</value>
   </data>
   <data name="EmailAddress" xml:space="preserve">
     <value>Email Adresse</value>
   </data>
-  <data name="Error" xml:space="preserve">
-    <value>Fehler</value>
-  </data>
-  <data name="ErrorCouldNotLoad" xml:space="preserve">
-    <value>Konnte nicht laden. Serverfehler.</value>
+  <data name="Filter" xml:space="preserve">
+    <value>Filter:</value>
   </data>
   <data name="Hello" xml:space="preserve">
     <value>Hallo</value>
@@ -153,6 +162,9 @@
   <data name="Logout" xml:space="preserve">
     <value>Ausloggen</value>
   </data>
+  <data name="Navigation" xml:space="preserve">
+    <value>Navigation</value>
+  </data>
   <data name="New" xml:space="preserve">
     <value>Neu</value>
   </data>
@@ -162,8 +174,17 @@
   <data name="No" xml:space="preserve">
     <value>Nein</value>
   </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Nicht gefunden</value>
+  </data>
+  <data name="NotFoundMessage" xml:space="preserve">
+    <value>Unter dieser Adresse wurde nichts gefunden.</value>
+  </data>
   <data name="Password" xml:space="preserve">
     <value>Passwort</value>
+  </data>
+  <data name="Redo" xml:space="preserve">
+    <value>Wiederherstellen</value>
   </data>
   <data name="Refresh" xml:space="preserve">
     <value>Aktualisieren</value>
@@ -176,6 +197,15 @@
   </data>
   <data name="Save" xml:space="preserve">
     <value>Speichern</value>
+  </data>
+  <data name="SaveConfirmationDescription" xml:space="preserve">
+    <value>Sie haben ungespeicherte Änderungen. Möchten Sie diese speichern?</value>
+  </data>
+  <data name="SaveConfirmationTitle" xml:space="preserve">
+    <value>Änderungen speichern?</value>
+  </data>
+  <data name="Undo" xml:space="preserve">
+    <value>Rückgängig</value>
   </data>
   <data name="UserNamagement" xml:space="preserve">
     <value>Benutzerverwaltung</value>

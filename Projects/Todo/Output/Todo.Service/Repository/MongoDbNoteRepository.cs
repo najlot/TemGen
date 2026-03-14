@@ -2,9 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Todo.Service.Configuration;
 using Todo.Service.Model;
 
 namespace Todo.Service.Repository;
@@ -17,7 +15,7 @@ public class MongoDbNoteRepository : INoteRepository
 	public MongoDbNoteRepository(MongoDbContext context)
 	{
 		_context = context;
-		_collection = _context.Database.GetCollection<NoteModel>(nameof(NoteModel)[0..^5]);
+		_collection = _context.Database.GetCollection<NoteModel>("Note");
 	}
 
 	public async IAsyncEnumerable<NoteModel> GetAll()

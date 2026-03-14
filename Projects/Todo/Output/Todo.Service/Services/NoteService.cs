@@ -13,80 +13,89 @@ using Todo.Contracts.Filters;
 
 namespace Todo.Service.Services;
 
-public class NoteService
+public class NoteService(
+	INoteRepository noteRepository,
+	IPublisher publisher,
+	IMap map)
 {
-	private readonly INoteRepository _noteRepository;
-	private readonly IPublisher _publisher;
-	private readonly IMap _map;
-
-	public NoteService(
-		INoteRepository noteRepository,
-		IPublisher publisher,
-		IMap map)
-	{
-		_noteRepository = noteRepository;
-		_publisher = publisher;
-		_map = map;
-	}
-
 	public async Task CreateNote(CreateNote command, Guid userId)
 	{
-		var item = _map.From(command).To<NoteModel>();
+		var item = map.From(command).To<NoteModel>();
 
-		await _noteRepository.Insert(item).ConfigureAwait(false);
+		await noteRepository.Insert(item).ConfigureAwait(false);
 
-		var message = _map.From(item).To<NoteCreated>();
-		await _publisher.PublishAsync(message).ConfigureAwait(false);
+		var message = map.From(item).To<NoteCreated>();
+		await publisher.PublishAsync(message).ConfigureAwait(false);
 	}
 
 	public async Task UpdateNote(UpdateNote command, Guid userId)
 	{
-		var item = await _noteRepository.Get(command.Id).ConfigureAwait(false);
+		var item = await noteRepository.Get(command.Id).ConfigureAwait(false);
 
 		if (item == null)
 		{
 			throw new InvalidOperationException("Note not found!");
 		}
 
-		_map.From(command).To(item);
+		map.From(command).To(item);
 
-		await _noteRepository.Update(item).ConfigureAwait(false);
+		await noteRepository.Update(item).ConfigureAwait(false);
 
-		var message = _map.From(item).To<NoteUpdated>();
-		await _publisher.PublishAsync(message).ConfigureAwait(false);
+		var message = map.From(item).To<NoteUpdated>();
+		await publisher.PublishAsync(message).ConfigureAwait(false);
 	}
 
 	public async Task DeleteNote(Guid id, Guid userId)
 	{
-		await _noteRepository.Delete(id).ConfigureAwait(false);
+		var item = await noteRepository.Get(id).ConfigureAwait(false);
+
+		if (item == null)
+		{
+			throw new InvalidOperationException("Note not found!");
+		}
+
+		if (item.DeletedAt == null)
+		{
+			item.DeletedAt = DateTime.UtcNow;
+			await noteRepository.Update(item).ConfigureAwait(false);
+		}
+		else
+		{
+			await noteRepository.Delete(id).ConfigureAwait(false);
+		}
 
 		var message = new NoteDeleted(id);
-		await _publisher.PublishAsync(message).ConfigureAwait(false);
+		await publisher.PublishAsync(message).ConfigureAwait(false);
 	}
 
 	public async Task<Note?> GetItemAsync(Guid id, Guid userId)
 	{
-		var item = await _noteRepository.Get(id).ConfigureAwait(false);
-		return _map.FromNullable(item)?.To<Note>();
+		var item = await noteRepository.Get(id).ConfigureAwait(false);
+		return map.FromNullable(item)?.To<Note>();
 	}
 
 	public IAsyncEnumerable<NoteListItem> GetItemsForUserAsync(NoteFilter filter, Guid userId)
 	{
-		var enumerable = _noteRepository.GetAllQueryable();
+		var query = noteRepository.GetAllQueryable();
+
+		query = query.Where(e => e.DeletedAt == null);
 
 		if (!string.IsNullOrEmpty(filter.Title))
-			enumerable = enumerable.Where(e => e.Title.Contains(filter.Title));
+			query = query.Where(e => e.Title.Contains(filter.Title));
 		if (!string.IsNullOrEmpty(filter.Content))
-			enumerable = enumerable.Where(e => e.Content.Contains(filter.Content));
+			query = query.Where(e => e.Content.Contains(filter.Content));
 		if (filter.Color != null)
-			enumerable = enumerable.Where(e => e.Color == filter.Color);
+			query = query.Where(e => e.Color == filter.Color);
 
-		return _map.From(enumerable).To<NoteListItem>().ToAsyncEnumerable();
+		return map.From(query).To<NoteListItem>().ToAsyncEnumerable();
 	}
 
 	public IAsyncEnumerable<NoteListItem> GetItemsForUserAsync(Guid userId)
 	{
-		var enumerable = _noteRepository.GetAllQueryable();
-		return _map.From(enumerable).To<NoteListItem>().ToAsyncEnumerable();
+		var query = noteRepository.GetAllQueryable();
+
+		query = query.Where(e => e.DeletedAt == null);
+
+		return map.From(query).To<NoteListItem>().ToAsyncEnumerable();
 	}
 }

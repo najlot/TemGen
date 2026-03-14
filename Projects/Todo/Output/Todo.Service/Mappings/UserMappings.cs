@@ -23,7 +23,7 @@ internal partial class UserMappings
 		from.EMail);
 
 	[MapIgnoreProperty(nameof(to.PasswordHash))]
-	[MapIgnoreProperty(nameof(to.IsActive))]
+	[MapIgnoreProperty(nameof(to.DeletedAt))]
 	public static void MapToModel(CreateUser from, UserModel to)
 	{
 		to.Id = from.Id;

@@ -8,7 +8,7 @@ namespace <#cs Write(Project.Namespace)#>.Wpf.Converter;
 
 public class EnumToTranslationConverter : IValueConverter
 {
-	public static IValueConverter Instance { get; } = new EnumToTranslationConverter();
+	public static EnumToTranslationConverter Instance { get; } = new();
 
 	public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 	{

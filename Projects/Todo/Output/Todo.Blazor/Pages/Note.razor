@@ -36,8 +36,24 @@ else
 	<EditForm Model="@Model" OnValidSubmit="@Save">
 		<section class="w-100 p-4 pb-4">
 			<div class="form-outline align-content-md-end mb-4 float-end">
-				<button type="submit" class="btn btn-success">@CommonLoc.Save</button>
-				<button @onclick="Remove" type="button" class="btn btn-danger">@CommonLoc.Delete</button>
+				<IconButton Icon="Undo"
+							ButtonClass="btn btn-secondary"
+							CanExecute="() => _changeTracker.CanUndo"
+							Execute="_changeTracker.Undo" />
+				<IconButton Icon="Redo"
+							ButtonClass="btn btn-secondary"
+							CanExecute="() => _changeTracker.CanRedo"
+							Execute="_changeTracker.Redo" />
+				<IconButton Icon="Save"
+							ButtonClass="btn btn-success"
+							CanExecute="() => _changeTracker.CanUndo"
+							Execute="Save"
+							Title="@CommonLoc.Save" />
+				<IconButton Icon="Delete"
+							ButtonClass="btn btn-danger"
+							CanExecute="() => !isDeleteRequested"
+							Execute="() => isDeleteRequested = true"
+							Title="@CommonLoc.Delete" />
 			</div>
 			<div class="form-outline mb-4">
 				@if (isNew)
@@ -56,19 +72,28 @@ else
 				<!-- Title input -->
 				<div class="form-outline mb-2">
 					<label class="form-label" for="TitleInput">@NoteLoc.Title</label>
-					<InputText type="text" id="TitleInput" class="form-control" @bind-Value="Model.Title" />
+					<InputText type="text" id="TitleInput" class="form-control"
+							   Value="@Model.Title"
+							   ValueChanged="@((string v) => _changeTracker.TrackChange(Model, nameof(Model.Title), Model.Title, v))"
+							   ValueExpression="@(() => Model.Title)" />
 				</div>
 
 				<!-- Content input -->
 				<div class="form-outline mb-2">
 					<label class="form-label" for="ContentInput">@NoteLoc.Content</label>
-					<InputText type="text" id="ContentInput" class="form-control" @bind-Value="Model.Content" />
+					<InputText type="text" id="ContentInput" class="form-control"
+							   Value="@Model.Content"
+							   ValueChanged="@((string v) => _changeTracker.TrackChange(Model, nameof(Model.Content), Model.Content, v))"
+							   ValueExpression="@(() => Model.Content)" />
 				</div>
 
 				<!-- Color input -->
 				<div class="form-outline mb-2">
 					<label class="form-label" for="ColorInput">@NoteLoc.Color</label>
-					<InputSelect id="ColorInput" class="form-control" @bind-Value="Model.Color" >
+					<InputSelect id="ColorInput" class="form-control"
+								 Value="@Model.Color"
+								 ValueChanged="@((Contracts.PredefinedColor v) => _changeTracker.TrackChange(Model, nameof(Model.Color), Model.Color, v))"
+								 ValueExpression="@(() => Model.Color)" >
 						@foreach (var value in Enum.GetValues(typeof(Contracts.PredefinedColor)))
 						{
 							<option value="@value">@PredefinedColorLocalizer[$"{@value}"]</option>
@@ -78,6 +103,8 @@ else
 			</div>
 		</section>
 	</EditForm>
+
+	<DeleteConfirmationDialog @bind-IsVisible="isDeleteRequested" Remove="Remove" />
 }
 
 @code {
@@ -88,7 +115,9 @@ else
 	public Guid Id { get; set; }
 
 	private bool isNew = false;
+	private bool isDeleteRequested = false;
 	private NoteModel? Model;
+	private readonly ChangeTracker _changeTracker = new();
 
 
 	protected override async Task OnInitializedAsync()
@@ -107,6 +136,7 @@ else
 
 
 			NoteService.ItemUpdated += Handle;
+			_changeTracker.StateChanged += () => InvokeAsync(StateHasChanged);
 
 			await NoteService.StartEventListener();
 		}
@@ -118,7 +148,7 @@ else
 		catch (Exception ex)
 		{
 			Log.LogError(ex, "Error loading note.");
-			ErrorService?.ShowError("Error", "Could not load. Server error.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotLoad);
 		}
 	}
 
@@ -126,7 +156,7 @@ else
 	{
 		if (Model is null)
 		{
-			ErrorService?.ShowError("Error", "Model is null. Please reload the page.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorModelIsNullReload);
 			return;
 		}
 
@@ -144,7 +174,7 @@ else
 				await NoteService.UpdateItemAsync(Model);
 			}
 
-			NavigationManager.NavigateTo("/notes");
+			_changeTracker.Clear();
 		}
 		catch (System.Security.Authentication.AuthenticationException)
 		{
@@ -154,7 +184,7 @@ else
 		catch (Exception ex)
 		{
 			Log.LogError(ex, "Error saving note.");
-			ErrorService?.ShowError("Error", "Could not save. Server error.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotSave);
 		}
 	}
 
@@ -162,7 +192,7 @@ else
 	{
 		if (Model is null)
 		{
-			ErrorService?.ShowError("Error", "Model is null. Please reload the page.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorModelIsNullReload);
 			return;
 		}
 
@@ -173,6 +203,7 @@ else
 				await NoteService.DeleteItemAsync(Model.Id);
 			}
 
+			_changeTracker.Clear();
 			NavigationManager.NavigateTo("/notes");
 		}
 		catch (System.Security.Authentication.AuthenticationException)
@@ -182,8 +213,8 @@ else
 		}
 		catch (Exception ex)
 		{
-			Log.LogError(ex, "Error saving note.");
-			ErrorService?.ShowError("Error", "Could not save. Server error.");
+			Log.LogError(ex, "Error deleting note.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorDeleting);
 		}
 	}
 
@@ -195,6 +226,7 @@ else
 		}
 
 		Map.From(message).To(Model);
+		_changeTracker.Clear();
 
 		await InvokeAsync(StateHasChanged);
 	}

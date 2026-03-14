@@ -6,10 +6,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Dapper" Version="2.1.66" />
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.3" />
+		<PackageReference Include="Dapper" Version="2.1.72" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.4" />
 		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.16.0" />
-		<PackageReference Include="MongoDB.Driver" Version="3.6.0" />
+		<PackageReference Include="MongoDB.Driver" Version="3.7.0" />
 		<PackageReference Include="Najlot.Log.Configuration.FileSource" Version="4.0.4" />
 		<PackageReference Include="Najlot.Log.Extensions.Logging" Version="4.0.4" />
 		<PackageReference Include="Najlot.Map" Version="0.1.2" />

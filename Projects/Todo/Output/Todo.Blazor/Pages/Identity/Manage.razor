@@ -74,7 +74,7 @@
 	{
 		if (Input.Password != Input.PasswordConfirm)
 		{
-			ErrorService?.ShowError("Manage", "Passwords do not match.");
+			ErrorService?.ShowError(CommonLoc.UserNamagement, ErrorLoc.ErrorPasswordsDoNotMatch);
 			Input.PasswordConfirm = "";
 			return;
 		}
@@ -101,7 +101,7 @@
 		catch (Exception ex)
 		{
 			Logger.LogError(ex, "Error updating user.");
-			ErrorService?.ShowError("Login", "Could update user data. Server error.");
+			ErrorService?.ShowError(CommonLoc.UserNamagement, ErrorLoc.ErrorCouldNotUpdateUserData);
 		}
 	}
 }

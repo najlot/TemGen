@@ -11,5 +11,5 @@ public class UserModel
 	public string Username { get; set; } = string.Empty;
 	public string EMail { get; set; } = string.Empty;
 	public byte[] PasswordHash { get; set; } = [];
-	public bool IsActive { get; set; }
+	public DateTime? DeletedAt { get; set; }
 }

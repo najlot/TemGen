@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -34,6 +35,24 @@ public class FileUserRepository : IUserRepository
 		}
 	}
 
+	public IQueryable<UserModel> GetAllQueryable()
+	{
+		var items = new List<UserModel>();
+
+		foreach (var path in Directory.GetFiles(_storagePath))
+		{
+			var bytes = File.ReadAllBytes(path);
+			var text = Encoding.UTF8.GetString(bytes);
+			var item = JsonSerializer.Deserialize<UserModel>(text, _options);
+			if (item is not null)
+			{
+				items.Add(item);
+			}
+		}
+
+		return items.AsQueryable();
+	}
+
 	public async Task<UserModel?> Get(Guid id)
 	{
 		var path = Path.Combine(_storagePath, id.ToString());
@@ -57,7 +76,7 @@ public class FileUserRepository : IUserRepository
 			var text = Encoding.UTF8.GetString(bytes);
 			var item = JsonSerializer.Deserialize<UserModel>(text, _options);
 
-			if (item is not null && item.IsActive && item.Username == username)
+			if (item is not null && item.DeletedAt == null && item.Username == username)
 			{
 				return item;
 			}

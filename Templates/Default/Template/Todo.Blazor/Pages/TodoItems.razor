@@ -106,7 +106,7 @@ Result = Result.TrimEnd(' ', '\r', '\n');
 		catch (Exception ex)
 		{
 			Log.LogError(ex, "Error loading <#cs Write(Definition.Name.ToLower())#>s.");
-			ErrorService?.ShowError("Error", "Could not load. Server error.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotLoad);
 		}
 	}
 

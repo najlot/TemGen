@@ -12,7 +12,7 @@
 @inject NavigationManager NavigationManager
 @inject ILogger<Register> Logger
 
-<PageTitle>Register</PageTitle>
+<PageTitle>@CommonLoc.Register</PageTitle>
 
 <EditForm Model="@Input" OnValidSubmit="@TryRegister">
 	<section class="w-100 p-4 d-flex justify-content-center pb-4">
@@ -84,7 +84,7 @@
 		if (!result.IsSuccess)
 		{
 			Input.Password = "";
-			ErrorService?.ShowError("Register", result.ErrorMessage);
+			ErrorService?.ShowError(CommonLoc.Register, result.ErrorMessage);
 			return;
 		}
 
@@ -99,7 +99,7 @@
 
 		if (string.IsNullOrWhiteSpace(token))
 		{
-			ErrorService?.ShowError("Login", "Could not login. Server error.");
+			ErrorService?.ShowError(CommonLoc.Login, ErrorLoc.ErrorCouldNotLogin);
 			await AuthenticationService.LogoutAsync();
 		}
 		else

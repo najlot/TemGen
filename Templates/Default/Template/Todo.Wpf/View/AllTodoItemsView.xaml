@@ -6,20 +6,15 @@
 			 xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
 			 xmlns:local="clr-namespace:<#cs Write(Project.Namespace)#>.Wpf.View"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:materialIcons="clr-namespace:Material.Icons.WPF;assembly=Material.Icons.WPF"
 			 d:DesignHeight="450"
 			 d:DesignWidth="800"
 			 mc:Ignorable="d">
 	<DockPanel>
 		<DockPanel DockPanel.Dock="Top">
-			<Button Margin="5"
-					DockPanel.Dock="Left"
-					Command="{Binding NavigateBackCommand}">
+			<Button Margin="5" DockPanel.Dock="Left" Command="{Binding NavigateBackCommand}">
 				<Button.Content>
-					<Path Width="18"
-						  Height="18"
-						  Data="M11.67 3.87L9.9 2.1 0 12l9.9 9.9 1.77-1.77L3.54 12z"
-						  Fill="{StaticResource ForegroundColor}"
-						  Stretch="Uniform" />
+					<materialIcons:MaterialIcon Kind="ArrowLeft" Width="18" Height="18" />
 				</Button.Content>
 			</Button>
 
@@ -28,11 +23,7 @@
 						Command="{Binding Refresh<#cs Write(Definition.Name)#>sCommand}"
 						ToolTip="{x:Static loc:CommonLoc.Refresh}">
 					<Button.Content>
-						<Path Width="18"
-							  Height="18"
-							  Data="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8c-.45-.83-.7-1.79-.7-2.8 0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"
-							  Fill="{StaticResource ForegroundColor}"
-							  Stretch="Uniform" />
+						<materialIcons:MaterialIcon Kind="Refresh" Width="18" Height="18" />
 					</Button.Content>
 				</Button>
 
@@ -40,17 +31,13 @@
 						Command="{Binding Add<#cs Write(Definition.Name)#>Command}"
 						ToolTip="{x:Static loc:CommonLoc.New}">
 					<Button.Content>
-						<Path Width="18"
-							  Height="18"
-							  Data="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7zm-1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"
-							  Fill="{StaticResource ForegroundColor}"
-							  Stretch="Uniform" />
+						<materialIcons:MaterialIcon Kind="Add" Width="18" Height="18" />
 					</Button.Content>
 				</Button>
 			</WrapPanel>
 
 			<DockPanel DockPanel.Dock="Left">
-				<Label VerticalAlignment="Center" Content="Filter:" />
+				<Label VerticalAlignment="Center" Content="{x:Static loc:CommonLoc.Filter}" />
 				<TextBox Margin="5"
 						 VerticalAlignment="Center"
 						 Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}" />

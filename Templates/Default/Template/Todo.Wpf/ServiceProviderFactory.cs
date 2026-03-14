@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
 using System.Windows.Controls;
@@ -16,7 +17,12 @@ public static class ServiceProviderFactory
 		INavigationService navigationService,
 		INotificationService notificationService)
 	{
-		var dataServiceUrl = "http://localhost:5000/";
+		var configuration = new ConfigurationBuilder()
+			.AddJsonFile("appsettings.json")
+			.AddJsonFile("appsettings.development.json", optional: true)
+			.Build();
+
+		var dataServiceUrl = configuration.GetSection("DataServiceUrl")?.Get<string>() ?? throw new InvalidOperationException("DataServiceUrl not found.");
 
 		var serviceCollection = new ServiceCollection();
 		var map = new Najlot.Map.Map()

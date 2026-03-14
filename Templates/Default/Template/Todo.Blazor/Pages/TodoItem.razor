@@ -5,7 +5,7 @@
 <#cs
 if (Definitions.Any(d => d.IsArray))
 {
-	WriteLine($"@using {Project.Namespace}.Client.Data.Mappings;");	
+	WriteLine($"@using {Project.Namespace}.Client.Data.Mappings;");
 }#>@using <#cs Write(Project.Namespace)#>.Client.Data.Models;
 @using <#cs Write(Project.Namespace)#>.Client.Data.Services;
 @using <#cs Write(Project.Namespace)#>.Client.Data;
@@ -52,8 +52,24 @@ else
 	<EditForm Model="@Model" OnValidSubmit="@Save">
 		<section class="w-100 p-4 pb-4">
 			<div class="form-outline align-content-md-end mb-4 float-end">
-				<button type="submit" class="btn btn-success">@CommonLoc.Save</button>
-				<button @onclick="Remove" type="button" class="btn btn-danger">@CommonLoc.Delete</button>
+				<IconButton Icon="Undo"
+							ButtonClass="btn btn-secondary"
+							CanExecute="() => _changeTracker.CanUndo"
+							Execute="_changeTracker.Undo" />
+				<IconButton Icon="Redo"
+							ButtonClass="btn btn-secondary"
+							CanExecute="() => _changeTracker.CanRedo"
+							Execute="_changeTracker.Redo" />
+				<IconButton Icon="Save"
+							ButtonClass="btn btn-success"
+							CanExecute="() => _changeTracker.CanUndo"
+							Execute="Save"
+							Title="@CommonLoc.Save" />
+				<IconButton Icon="Delete"
+							ButtonClass="btn btn-danger"
+							CanExecute="() => !isDeleteRequested"
+							Execute="() => isDeleteRequested = true"
+							Title="@CommonLoc.Delete" />
 			</div>
 			<div class="form-outline mb-4">
 				@if (isNew)
@@ -79,23 +95,38 @@ foreach(var entry in Entries.Where(e => !e.IsArray))
 	switch (entry.EntryType.ToLower())
 	{
 		case "string":
-			WriteLine($"					<InputText type=\"text\" id=\"{entry.Field}Input\" class=\"form-control\" @bind-Value=\"Model.{entry.Field}\" />");
+			WriteLine($"					<InputText type=\"text\" id=\"{entry.Field}Input\" class=\"form-control\"");
+			WriteLine($"							   Value=\"@Model.{entry.Field}\"");
+			WriteLine($"							   ValueChanged=\"@((string v) => _changeTracker.TrackChange(Model, nameof(Model.{entry.Field}), Model.{entry.Field}, v))\"");
+			WriteLine($"							   ValueExpression=\"@(() => Model.{entry.Field})\" />");
 			break;
 		case "datetime":
-			WriteLine($"					<InputDate id=\"{entry.Field}Input\" class=\"form-control\" @bind-Value=\"Model.{entry.Field}\" ParsingErrorMessage=\"Must be a date\" />");
+			WriteLine($"					<InputDate id=\"{entry.Field}Input\" class=\"form-control\"");
+			WriteLine($"							   Value=\"@Model.{entry.Field}\"");
+			WriteLine($"							   ValueChanged=\"@((DateTime v) => _changeTracker.TrackChange(Model, nameof(Model.{entry.Field}), Model.{entry.Field}, v))\"");
+			WriteLine($"							   ValueExpression=\"@(() => Model.{entry.Field})\" ParsingErrorMessage=\"@ErrorLoc.ParsingErrorMustBeDate\" />");
 			break;
 		case "bool":
-			WriteLine($"					<InputCheckbox id=\"{entry.Field}Input\" class=\"form-control\" @bind-Value=\"Model.{entry.Field}\" />");
+			WriteLine($"					<InputCheckbox id=\"{entry.Field}Input\" class=\"form-control\"");
+			WriteLine($"								   Value=\"@Model.{entry.Field}\"");
+			WriteLine($"								   ValueChanged=\"@((bool v) => _changeTracker.TrackChange(Model, nameof(Model.{entry.Field}), Model.{entry.Field}, v))\"");
+			WriteLine($"								   ValueExpression=\"@(() => Model.{entry.Field})\" />");
 			break;
 		case "int":
 		case "long":
 		case "double":
-			WriteLine($"					<InputNumber id=\"{entry.Field}Input\" class=\"form-control\" @bind-Value=\"Model.{entry.Field}\" ParsingErrorMessage=\"Must be a number\" />");
+			WriteLine($"					<InputNumber id=\"{entry.Field}Input\" class=\"form-control\"");
+			WriteLine($"								 Value=\"@Model.{entry.Field}\"");
+			WriteLine($"								 ValueChanged=\"@(({entry.EntryType} v) => _changeTracker.TrackChange(Model, nameof(Model.{entry.Field}), Model.{entry.Field}, v))\"");
+			WriteLine($"								 ValueExpression=\"@(() => Model.{entry.Field})\" ParsingErrorMessage=\"@ErrorLoc.ParsingErrorMustBeNumber\" />");
 			break;
 		default:
 			if (entry.IsEnumeration)
 			{
-				WriteLine($"					<InputSelect id=\"{entry.Field}Input\" class=\"form-control\" @bind-Value=\"Model.{entry.Field}\" >");
+				WriteLine($"					<InputSelect id=\"{entry.Field}Input\" class=\"form-control\"");
+				WriteLine($"								 Value=\"@Model.{entry.Field}\"");
+				WriteLine($"								 ValueChanged=\"@((Contracts.{entry.EntryType} v) => _changeTracker.TrackChange(Model, nameof(Model.{entry.Field}), Model.{entry.Field}, v))\"");
+				WriteLine($"								 ValueExpression=\"@(() => Model.{entry.Field})\" >");
 				WriteLine($"						@foreach (var value in Enum.GetValues(typeof(Contracts.{entry.EntryType})))");
 				WriteLine("						{");
 				WriteLine($"							<option value=\"@value\">@{entry.EntryType}Localizer[$\"{{@value}}\"]</option>");
@@ -104,7 +135,10 @@ foreach(var entry in Entries.Where(e => !e.IsArray))
 			}
 			else if (entry.IsReference)
 			{
-				WriteLine($"					<InputSelect id=\"{entry.Field}Input\" class=\"form-control\" @bind-Value=\"Model.{entry.Field}Id\">");
+				WriteLine($"					<InputSelect id=\"{entry.Field}Input\" class=\"form-control\"");
+				WriteLine($"								 Value=\"@Model.{entry.Field}Id\"");
+				WriteLine($"								 ValueChanged=\"@((Guid v) => _changeTracker.TrackChange(Model, nameof(Model.{entry.Field}Id), Model.{entry.Field}Id, v))\"");
+				WriteLine($"								 ValueExpression=\"@(() => Model.{entry.Field}Id)\">");
 				WriteLine($"						@foreach (var value in _{entry.ReferenceTypeLow}s)");
 				WriteLine("						{");
 				var referenceDefinition = Definitions.First(e => e.Name == entry.ReferenceType);
@@ -147,7 +181,12 @@ foreach(var entry in arrays)
 		WriteLine($"						<th>@{entry.EntryType}Loc.{e.Field}</th>");
 	}
 
-	WriteLine($"						<th><button type=\"button\" class=\"btn btn-success w-100\" @onclick=\"Add{entry.Field}Entry\">@CommonLoc.New</button></th>");
+	WriteLine("						<th>");
+	WriteLine("							<IconButton Icon=\"Add\"");
+	WriteLine("										ButtonClass=\"btn btn-success\"");
+	WriteLine($"										Execute=\"Add{entry.Field}Entry\"");
+	WriteLine("										Title=\"@CommonLoc.New\" />");
+	WriteLine("						</th>");
 	WriteLine("					</tr>");
 	WriteLine("				</thead>");
 	WriteLine("				<tbody>");
@@ -159,14 +198,19 @@ foreach(var entry in arrays)
 		switch (e.EntryType.ToLower())
 		{
 			case "bool":
-				WriteLine($"							<td><input type=\"checkbox\" class=\"form-check-input\" @bind=entry.{e.Field} /></td>");
+				WriteLine($"							<td><input type=\"checkbox\" class=\"form-check-input\" checked=\"@entry.{e.Field}\" @onchange=\"@(ev => _changeTracker.TrackChange(entry, nameof(entry.{e.Field}), entry.{e.Field}, (bool)(ev.Value ?? false)))\" /></td>");
 			break;
 			default:
-				WriteLine($"							<td><input type=\"text\" class=\"form-control\" @bind=entry.{e.Field} /></td>");
+				WriteLine($"							<td><input type=\"text\" class=\"form-control\" value=\"@entry.{e.Field}\" @onchange=\"@(ev => _changeTracker.TrackChange(entry, nameof(entry.{e.Field}), entry.{e.Field}, ev.Value?.ToString() ?? string.Empty))\" /></td>");
 				break;
 		}
 	}
-	WriteLine($"							<td><button type=\"button\" class=\"btn btn-danger w-100\" @onclick=\"() => Remove{entry.Field}Entry(entry.Id)\">@CommonLoc.Delete</button></td>");
+	WriteLine("							<td>");
+	WriteLine("								<IconButton Icon=\"Delete\"");
+	WriteLine("											ButtonClass=\"btn btn-danger\"");
+	WriteLine($"											Execute=\"() => Remove{entry.Field}Entry(entry.Id)\"");
+	WriteLine("											Title=\"@CommonLoc.Delete\" />");
+	WriteLine("							</td>");
 	WriteLine("						</tr>");
 	WriteLine("					}");
 	WriteLine("				</tbody>");
@@ -178,6 +222,8 @@ if (arrays.Any())
 	WriteLine("		</section>");
 }
 #>	</EditForm>
+
+	<DeleteConfirmationDialog @bind-IsVisible="isDeleteRequested" Remove="Remove" />
 }
 
 @code {
@@ -188,12 +234,14 @@ if (arrays.Any())
 	public Guid Id { get; set; }
 
 	private bool isNew = false;
+	private bool isDeleteRequested = false;
 	private <#cs Write(Definition.Name)#>Model? Model;
+	private readonly ChangeTracker _changeTracker = new();
 
 <#cs
 foreach (var entry in Entries.Where(e => e.IsReference))
 {
-	WriteLine($"	private IEnumerable<{entry.ReferenceType}ListItemModel> _users = Array.Empty<{entry.ReferenceType}ListItemModel>();");
+	WriteLine($"	private IEnumerable<{entry.ReferenceType}ListItemModel> _users = [];");
 }
 #>
 	protected override async Task OnInitializedAsync()
@@ -217,6 +265,7 @@ foreach (var entry in Entries.Where(e => e.IsReference))
 }
 #>
 			<#cs Write(Definition.Name)#>Service.ItemUpdated += Handle;
+			_changeTracker.StateChanged += () => InvokeAsync(StateHasChanged);
 
 			await <#cs Write(Definition.Name)#>Service.StartEventListener();
 		}
@@ -228,7 +277,7 @@ foreach (var entry in Entries.Where(e => e.IsReference))
 		catch (Exception ex)
 		{
 			Log.LogError(ex, "Error loading <#cs Write(Definition.Name.ToLower())#>.");
-			ErrorService?.ShowError("Error", "Could not load. Server error.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotLoad);
 		}
 	}
 
@@ -236,7 +285,7 @@ foreach (var entry in Entries.Where(e => e.IsReference))
 	{
 		if (Model is null)
 		{
-			ErrorService?.ShowError("Error", "Model is null. Please reload the page.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorModelIsNullReload);
 			return;
 		}
 
@@ -246,7 +295,7 @@ foreach (var entry in Entries.Where(e => e.IsReference))
 			{
 				await <#cs Write(Definition.Name)#>Service.AddItemAsync(Model);
 				Id = Model.Id;
-				NavigationManager.NavigateTo($"/<#cs 
+				NavigationManager.NavigateTo($"/<#cs
 var name = Definition.Name.ToLower();
 if (name.EndsWith("entry"))
 {
@@ -261,14 +310,7 @@ Write(name);
 				await <#cs Write(Definition.Name)#>Service.UpdateItemAsync(Model);
 			}
 
-			NavigationManager.NavigateTo("/<#cs 
-var name = Definition.Name.ToLower();
-if (name.EndsWith("entry"))
-{
-	name = name[0..^5] + "entrie";
-}
-Write(name);
-#>s");
+			_changeTracker.Clear();
 		}
 		catch (System.Security.Authentication.AuthenticationException)
 		{
@@ -278,7 +320,7 @@ Write(name);
 		catch (Exception ex)
 		{
 			Log.LogError(ex, "Error saving <#cs Write(Definition.Name.ToLower())#>.");
-			ErrorService?.ShowError("Error", "Could not save. Server error.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotSave);
 		}
 	}
 
@@ -286,7 +328,7 @@ Write(name);
 	{
 		if (Model is null)
 		{
-			ErrorService?.ShowError("Error", "Model is null. Please reload the page.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorModelIsNullReload);
 			return;
 		}
 
@@ -297,7 +339,8 @@ Write(name);
 				await <#cs Write(Definition.Name)#>Service.DeleteItemAsync(Model.Id);
 			}
 
-			NavigationManager.NavigateTo("/<#cs 
+			_changeTracker.Clear();
+			NavigationManager.NavigateTo("/<#cs
 var name = Definition.Name.ToLower();
 if (name.EndsWith("entry"))
 {
@@ -313,8 +356,8 @@ Write(name);
 		}
 		catch (Exception ex)
 		{
-			Log.LogError(ex, "Error saving <#cs Write(Definition.Name.ToLower())#>.");
-			ErrorService?.ShowError("Error", "Could not save. Server error.");
+			Log.LogError(ex, "Error deleting <#cs Write(Definition.Name.ToLower())#>.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorDeleting);
 		}
 	}
 
@@ -326,6 +369,7 @@ Write(name);
 		}
 
 		Map.From(message).To(Model);
+		_changeTracker.Clear();
 
 		await InvokeAsync(StateHasChanged);
 	}
@@ -351,6 +395,11 @@ foreach (var entry in arrays)
 	WriteLine($"		var model = new {entry.EntryType}Model() {{ Id = max }};");
 	WriteLine("");
 	WriteLine($"		Model.{entry.Field}.Add(model);");
+	WriteLine("");
+	WriteLine($"		_changeTracker.Track(");
+	WriteLine($"			nameof(Model.{entry.Field}),");
+	WriteLine($"			() => Model.{entry.Field}.Remove(model),");
+	WriteLine($"			() => Model.{entry.Field}.Add(model));");
 	WriteLine("	}");
 	WriteLine("");
 	WriteLine($"	private void Remove{entry.Field}Entry(int id)");
@@ -369,6 +418,11 @@ foreach (var entry in arrays)
 	WriteLine("			if (index != -1)");
 	WriteLine("			{");
 	WriteLine($"				Model.{entry.Field}.RemoveAt(index);");
+	WriteLine("");
+	WriteLine($"				_changeTracker.Track(");
+	WriteLine($"					nameof(Model.{entry.Field}),");
+	WriteLine($"					() => Model.{entry.Field}.Insert(index, oldItem),");
+	WriteLine($"					() => Model.{entry.Field}.Remove(oldItem));");
 	WriteLine("			}");
 	WriteLine("		}");
 	WriteLine("	}");

@@ -39,8 +39,10 @@ internal partial class TodoItemMappings
 			from.Priority,
 			from.Checklist);
 
+	[MapIgnoreProperty(nameof(to.DeletedAt))]
 	public static partial void MapToModel(IMap map, CreateTodoItem from, TodoItemModel to);
 
+	[MapIgnoreProperty(nameof(to.DeletedAt))]
 	[MapIgnoreProperty(nameof(to.Checklist))]
 	private static partial void MapPartialToModel(IMap map, UpdateTodoItem from, TodoItemModel to);
 	public static void MapToModel(IMap map, UpdateTodoItem from, TodoItemModel to)

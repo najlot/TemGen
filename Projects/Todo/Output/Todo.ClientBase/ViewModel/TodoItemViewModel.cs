@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Todo.Client.Data.Models;
 using Todo.Client.Data.Services;
+using Todo.Client.Localisation;
 using Todo.Client.MVVM;
 using Todo.Contracts;
 using Todo.Contracts.Events;
 
 namespace Todo.ClientBase.ViewModel;
 
-public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizable, IAsyncInitializable, IDisposable
+public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizable, IAsyncInitializable, INavigationGuard, IDisposable
 {
 	private readonly ITodoItemService _todoItemService;
 	private readonly IUserService _userService;
@@ -35,6 +38,7 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 	public bool CanRedo => _changeTracker.CanRedo;
 
 	public bool IsBusy { get; private set => Set(ref field, value); }
+	public bool CanEdit { get; private set => Set(ref field, value); } = true;
 
 	public bool IsNew { get; set; }
 
@@ -47,7 +51,7 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 		_userService = userService;
 
 		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
-		SaveCommand = new AsyncCommand(SaveAsync, t => HandleError(t.Exception));
+		SaveCommand = new AsyncCommand(SaveAsync, t => HandleError(t.Exception), () => CanUndo && !HasErrors);
 		DeleteCommand = new AsyncCommand(DeleteAsync, t => HandleError(t.Exception));
 		UndoCommand = new RelayCommand(() => _changeTracker.Undo(), () => _changeTracker.CanUndo);
 		RedoCommand = new RelayCommand(() => _changeTracker.Redo(), () => _changeTracker.CanRedo);
@@ -58,7 +62,10 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 			RaisePropertiesChanged(nameof(CanUndo), nameof(CanRedo));
 			UndoCommand.RaiseCanExecuteChanged();
 			RedoCommand.RaiseCanExecuteChanged();
+			SaveCommand.RaiseCanExecuteChanged();
 		};
+
+		HasErrorsChanged += SaveCommand.RaiseCanExecuteChanged;
 
 		_todoItemService.ItemUpdated += Handle;
 	}
@@ -111,11 +118,12 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 	public AsyncCommand SaveCommand { get; }
 	public RelayCommand UndoCommand { get; }
 	public RelayCommand RedoCommand { get; }
-	public async Task SaveAsync()
+
+	private async Task<bool> SaveAsync()
 	{
 		if (IsBusy)
 		{
-			return;
+			return false;
 		}
 
 		try
@@ -125,7 +133,7 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 			ValidateAll();
 			if (HasErrors)
 			{
-				return;
+				return false;
 			}
 
 			var model = Map.From(this).To<TodoItemModel>();
@@ -141,16 +149,20 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 			}
 
 			_changeTracker.Clear();
+			return true;
 		}
 		catch (Exception ex)
 		{
-			await NotificationService.ShowErrorAsync("Error saving..." + ex.Message);
+			await NotificationService.ShowErrorAsync($"{ErrorLoc.ErrorSaving} {ex.Message}");
+			return false;
 		}
 		finally
 		{
 			IsBusy = false;
 		}
 	}
+
+	public DeleteConfirmationDialogViewModel DeleteDialogViewModel { get; } = new DeleteConfirmationDialogViewModel();
 
 	public AsyncCommand DeleteCommand { get; }
 	public async Task DeleteAsync()
@@ -160,21 +172,79 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 			return;
 		}
 
+		if (DeleteDialogViewModel.IsVisible)
+		{
+			return;
+		}
+
+		CanEdit = false;
+
+		try
+		{
+			var deleteDialogResult = await DeleteDialogViewModel.ShouldDelete();
+			if (deleteDialogResult == DeleteDialogResult.Cancel)
+			{
+				return;
+			}
+		}
+		finally
+		{
+			CanEdit = true;
+		}
+
 		try
 		{
 			IsBusy = true;
 
 			await _todoItemService.DeleteItemAsync(Id);
+			_changeTracker.Clear();
 			await NavigationService.NavigateBack();
 		}
 		catch (Exception ex)
 		{
-			await NotificationService.ShowErrorAsync("Error deleting..." + ex.Message);
+			await NotificationService.ShowErrorAsync($"{ErrorLoc.ErrorDeleting} {ex.Message}");
 		}
 		finally
 		{
 			IsBusy = false;
 		}
+	}
+
+	public SaveConfirmationDialogViewModel SaveDialogViewModel { get; } = new SaveConfirmationDialogViewModel();
+	
+	public async Task<bool> CanNavigateAsync()
+	{
+		if (SaveDialogViewModel.IsVisible || DeleteDialogViewModel.IsVisible)
+		{
+			return false;
+		}
+
+		if (_changeTracker.CanUndo)
+		{
+			CanEdit = false;
+
+			try
+			{
+				SaveDialogViewModel.CanSave = !HasErrors;
+				var saveDialogResult = await SaveDialogViewModel.ShouldSave();
+				switch (saveDialogResult)
+				{
+					case SaveDialogResult.Save:
+						return await SaveAsync();
+					case SaveDialogResult.Discard:
+						// Nothing to do, just continue navigation
+						break;
+					case SaveDialogResult.Cancel:
+						return false;
+				}
+			}
+			finally
+			{
+				CanEdit = true;
+			}
+		}
+
+		return true;
 	}
 
 	protected override IEnumerable<ValidationResult> Validate(string? propertyName)
@@ -184,7 +254,12 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 
 	protected override bool ShouldIgnorePropertyForChangesAndValidation(string? propertyName)
 		=> base.ShouldIgnorePropertyForChangesAndValidation(propertyName)
-			|| propertyName is nameof(IsBusy) or nameof(IsNew) or nameof(Id) or nameof(AvailableUsers) or nameof(AvailableTodoItemStatus);
+			|| propertyName is nameof(IsBusy)
+							or nameof(IsNew)
+							or nameof(CanEdit)
+							or nameof(Id)
+							or nameof(AvailableUsers)
+							or nameof(AvailableTodoItemStatus);
 
 	private bool _disposedValue;
 	protected virtual void Dispose(bool disposing)

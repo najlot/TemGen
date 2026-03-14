@@ -28,7 +28,12 @@ internal sealed partial class NoteViewModelMappings
 		MapPartialToViewModel(map, from, to);
 	}
 
+	[MapIgnoreProperty(nameof(to.ChangeVisitor))]
 	public static partial void MapToViewModel(IMap map, NoteListItemModel from, NoteListItemViewModel to);
+
+	[MapIgnoreProperty(nameof(to.ChangeVisitor))]
 	public static partial void MapToViewModel(IMap map, NoteCreated from, NoteListItemViewModel to);
+
+	[MapIgnoreProperty(nameof(to.ChangeVisitor))]
 	public static partial void MapToViewModel(IMap map, NoteUpdated from, NoteListItemViewModel to);
 }

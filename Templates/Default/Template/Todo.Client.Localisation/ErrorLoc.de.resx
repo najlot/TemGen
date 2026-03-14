@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,13 +117,58 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Local" xml:space="preserve">
-    <value>Local</value>
+  <data name="Error" xml:space="preserve">
+    <value>Fehler</value>
   </data>
-  <data name="REST" xml:space="preserve">
-    <value>ReST</value>
+  <data name="ErrorCouldNotLoad" xml:space="preserve">
+    <value>Konnte nicht laden. Serverfehler.</value>
   </data>
-  <data name="RMQ" xml:space="preserve">
-    <value>Rabbit MQ</value>
+  <data name="ErrorCouldNotLogin" xml:space="preserve">
+    <value>Anmeldung fehlgeschlagen. Serverfehler.</value>
   </data>
-</root>
+  <data name="ErrorCouldNotSave" xml:space="preserve">
+    <value>Konnte nicht speichern. Serverfehler.</value>
+  </data>
+  <data name="ErrorCouldNotUpdateUserData" xml:space="preserve">
+    <value>Benutzerdaten konnten nicht aktualisiert werden. Serverfehler.</value>
+  </data>
+  <data name="ErrorInvalidUsernamePassword" xml:space="preserve">
+    <value>Anmeldung fehlgeschlagen. Benutzername und Passwort stimmen nicht überein.</value>
+  </data>
+  <data name="ErrorAdding" xml:space="preserve">
+    <value>Fehler beim Hinzufügen:</value>
+  </data>
+  <data name="ErrorDeleting" xml:space="preserve">
+    <value>Fehler beim Löschen:</value>
+  </data>
+  <data name="ErrorLoading" xml:space="preserve">
+    <value>Fehler beim Laden:</value>
+  </data>
+  <data name="ErrorLoadingData" xml:space="preserve">
+    <value>Fehler beim Laden der Daten:</value>
+  </data>
+  <data name="ErrorModelIsNullReload" xml:space="preserve">
+    <value>Das Modell ist null. Bitte laden Sie die Seite neu.</value>
+  </data>
+  <data name="ErrorPasswordsDoNotMatch" xml:space="preserve">
+    <value>Passwörter stimmen nicht überein.</value>
+  </data>
+  <data name="ErrorSaving" xml:space="preserve">
+    <value>Fehler beim Speichern:</value>
+  </data>
+  <data name="InvalidEmailAddress" xml:space="preserve">
+    <value>Ungültige E-Mail-Adresse</value>
+  </data>
+  <data name="PasswordTooShort" xml:space="preserve">
+    <value>Passwort ist zu kurz</value>
+  </data>
+  <data name="ParsingErrorMustBeDate" xml:space="preserve">
+    <value>Muss ein Datum sein</value>
+  </data>
+  <data name="ParsingErrorMustBeNumber" xml:space="preserve">
+    <value>Muss eine Zahl sein</value>
+  </data>
+  <data name="UsernameTooShort" xml:space="preserve">
+    <value>Benutzername ist zu kurz</value>
+  </data>
+</root><#cs SetOutputPathAndSkipOtherDefinitions()#>

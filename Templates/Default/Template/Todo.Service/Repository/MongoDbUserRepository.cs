@@ -1,8 +1,8 @@
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Service.Configuration;
 using <#cs Write(Project.Namespace)#>.Service.Model;
 
 namespace <#cs Write(Project.Namespace)#>.Service.Repository;
@@ -15,7 +15,7 @@ public class MongoDbUserRepository : IUserRepository
 	public MongoDbUserRepository(MongoDbContext context)
 	{
 		_context = context;
-		_collection = _context.Database.GetCollection<UserModel>(nameof(UserModel)[0..^5]);
+		_collection = _context.Database.GetCollection<UserModel>("User");
 	}
 
 	public async IAsyncEnumerable<UserModel> GetAll()
@@ -31,6 +31,11 @@ public class MongoDbUserRepository : IUserRepository
 		}
 	}
 
+	public IQueryable<UserModel> GetAllQueryable()
+	{
+		return _collection.AsQueryable();
+	}
+
 	public async Task<UserModel?> Get(Guid id)
 	{
 		var result = await _collection.FindAsync(item => item.Id == id).ConfigureAwait(false);
@@ -39,7 +44,7 @@ public class MongoDbUserRepository : IUserRepository
 
 	public async Task<UserModel?> Get(string username)
 	{
-		var result = await _collection.FindAsync(item => item.Username == username && item.IsActive).ConfigureAwait(false);
+		var result = await _collection.FindAsync(item => item.Username == username && item.DeletedAt == null).ConfigureAwait(false);
 		return await result.FirstOrDefaultAsync().ConfigureAwait(false);
 	}
 

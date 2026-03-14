@@ -5,6 +5,7 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
 			 xmlns:controls="clr-namespace:<#cs Write(Project.Namespace)#>.Wpf.Controls"
+			 xmlns:materialIcons="clr-namespace:Material.Icons.WPF;assembly=Material.Icons.WPF"
 			 mc:Ignorable="d"
 			 d:DesignHeight="450" d:DesignWidth="800">
 	<Grid>
@@ -13,16 +14,11 @@
 			<RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
 
-		<Button Margin="1"
-				Padding="5"
+		<Button Margin="5"
 				HorizontalAlignment="Left"
 				Command="{Binding NavigateBackCommand}">
 			<Button.Content>
-				<Path Width="18"
-					  Height="18"
-					  Data="M11.67 3.87L9.9 2.1 0 12l9.9 9.9 1.77-1.77L3.54 12z"
-					  Fill="{StaticResource ForegroundColor}"
-					  Stretch="Uniform" />
+				<materialIcons:MaterialIcon Kind="ArrowLeft" Width="18" Height="18" />
 			</Button.Content>
 		</Button>
 

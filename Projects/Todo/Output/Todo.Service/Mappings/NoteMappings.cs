@@ -25,8 +25,10 @@ internal partial class NoteMappings
 			from.Content,
 			from.Color);
 
+	[MapIgnoreProperty(nameof(to.DeletedAt))]
 	public static partial void MapToModel(IMap map, CreateNote from, NoteModel to);
 
+	[MapIgnoreProperty(nameof(to.DeletedAt))]
 	private static partial void MapPartialToModel(IMap map, UpdateNote from, NoteModel to);
 	public static void MapToModel(IMap map, UpdateNote from, NoteModel to)
 	{

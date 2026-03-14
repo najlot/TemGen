@@ -38,8 +38,24 @@ else
 	<EditForm Model="@Model" OnValidSubmit="@Save">
 		<section class="w-100 p-4 pb-4">
 			<div class="form-outline align-content-md-end mb-4 float-end">
-				<button type="submit" class="btn btn-success">@CommonLoc.Save</button>
-				<button @onclick="Remove" type="button" class="btn btn-danger">@CommonLoc.Delete</button>
+				<IconButton Icon="Undo"
+							ButtonClass="btn btn-secondary"
+							CanExecute="() => _changeTracker.CanUndo"
+							Execute="_changeTracker.Undo" />
+				<IconButton Icon="Redo"
+							ButtonClass="btn btn-secondary"
+							CanExecute="() => _changeTracker.CanRedo"
+							Execute="_changeTracker.Redo" />
+				<IconButton Icon="Save"
+							ButtonClass="btn btn-success"
+							CanExecute="() => _changeTracker.CanUndo"
+							Execute="Save"
+							Title="@CommonLoc.Save" />
+				<IconButton Icon="Delete"
+							ButtonClass="btn btn-danger"
+							CanExecute="() => !isDeleteRequested"
+							Execute="() => isDeleteRequested = true"
+							Title="@CommonLoc.Delete" />
 			</div>
 			<div class="form-outline mb-4">
 				@if (isNew)
@@ -58,31 +74,46 @@ else
 				<!-- Title input -->
 				<div class="form-outline mb-2">
 					<label class="form-label" for="TitleInput">@TodoItemLoc.Title</label>
-					<InputText type="text" id="TitleInput" class="form-control" @bind-Value="Model.Title" />
+					<InputText type="text" id="TitleInput" class="form-control"
+							   Value="@Model.Title"
+							   ValueChanged="@((string v) => _changeTracker.TrackChange(Model, nameof(Model.Title), Model.Title, v))"
+							   ValueExpression="@(() => Model.Title)" />
 				</div>
 
 				<!-- Content input -->
 				<div class="form-outline mb-2">
 					<label class="form-label" for="ContentInput">@TodoItemLoc.Content</label>
-					<InputText type="text" id="ContentInput" class="form-control" @bind-Value="Model.Content" />
+					<InputText type="text" id="ContentInput" class="form-control"
+							   Value="@Model.Content"
+							   ValueChanged="@((string v) => _changeTracker.TrackChange(Model, nameof(Model.Content), Model.Content, v))"
+							   ValueExpression="@(() => Model.Content)" />
 				</div>
 
 				<!-- CreatedAt input -->
 				<div class="form-outline mb-2">
 					<label class="form-label" for="CreatedAtInput">@TodoItemLoc.CreatedAt</label>
-					<InputDate id="CreatedAtInput" class="form-control" @bind-Value="Model.CreatedAt" ParsingErrorMessage="Must be a date" />
+					<InputDate id="CreatedAtInput" class="form-control"
+							   Value="@Model.CreatedAt"
+							   ValueChanged="@((DateTime v) => _changeTracker.TrackChange(Model, nameof(Model.CreatedAt), Model.CreatedAt, v))"
+							   ValueExpression="@(() => Model.CreatedAt)" ParsingErrorMessage="@ErrorLoc.ParsingErrorMustBeDate" />
 				</div>
 
 				<!-- CreatedBy input -->
 				<div class="form-outline mb-2">
 					<label class="form-label" for="CreatedByInput">@TodoItemLoc.CreatedBy</label>
-					<InputText type="text" id="CreatedByInput" class="form-control" @bind-Value="Model.CreatedBy" />
+					<InputText type="text" id="CreatedByInput" class="form-control"
+							   Value="@Model.CreatedBy"
+							   ValueChanged="@((string v) => _changeTracker.TrackChange(Model, nameof(Model.CreatedBy), Model.CreatedBy, v))"
+							   ValueExpression="@(() => Model.CreatedBy)" />
 				</div>
 
 				<!-- AssignedTo input -->
 				<div class="form-outline mb-2">
 					<label class="form-label" for="AssignedToInput">@TodoItemLoc.AssignedTo</label>
-					<InputSelect id="AssignedToInput" class="form-control" @bind-Value="Model.AssignedToId">
+					<InputSelect id="AssignedToInput" class="form-control"
+								 Value="@Model.AssignedToId"
+								 ValueChanged="@((Guid v) => _changeTracker.TrackChange(Model, nameof(Model.AssignedToId), Model.AssignedToId, v))"
+								 ValueExpression="@(() => Model.AssignedToId)">
 						@foreach (var value in _users)
 						{
 							<option value="@value.Id">@value.Username</option>
@@ -93,7 +124,10 @@ else
 				<!-- Status input -->
 				<div class="form-outline mb-2">
 					<label class="form-label" for="StatusInput">@TodoItemLoc.Status</label>
-					<InputSelect id="StatusInput" class="form-control" @bind-Value="Model.Status" >
+					<InputSelect id="StatusInput" class="form-control"
+								 Value="@Model.Status"
+								 ValueChanged="@((Contracts.TodoItemStatus v) => _changeTracker.TrackChange(Model, nameof(Model.Status), Model.Status, v))"
+								 ValueExpression="@(() => Model.Status)" >
 						@foreach (var value in Enum.GetValues(typeof(Contracts.TodoItemStatus)))
 						{
 							<option value="@value">@TodoItemStatusLocalizer[$"{@value}"]</option>
@@ -104,19 +138,28 @@ else
 				<!-- ChangedAt input -->
 				<div class="form-outline mb-2">
 					<label class="form-label" for="ChangedAtInput">@TodoItemLoc.ChangedAt</label>
-					<InputDate id="ChangedAtInput" class="form-control" @bind-Value="Model.ChangedAt" ParsingErrorMessage="Must be a date" />
+					<InputDate id="ChangedAtInput" class="form-control"
+							   Value="@Model.ChangedAt"
+							   ValueChanged="@((DateTime v) => _changeTracker.TrackChange(Model, nameof(Model.ChangedAt), Model.ChangedAt, v))"
+							   ValueExpression="@(() => Model.ChangedAt)" ParsingErrorMessage="@ErrorLoc.ParsingErrorMustBeDate" />
 				</div>
 
 				<!-- ChangedBy input -->
 				<div class="form-outline mb-2">
 					<label class="form-label" for="ChangedByInput">@TodoItemLoc.ChangedBy</label>
-					<InputText type="text" id="ChangedByInput" class="form-control" @bind-Value="Model.ChangedBy" />
+					<InputText type="text" id="ChangedByInput" class="form-control"
+							   Value="@Model.ChangedBy"
+							   ValueChanged="@((string v) => _changeTracker.TrackChange(Model, nameof(Model.ChangedBy), Model.ChangedBy, v))"
+							   ValueExpression="@(() => Model.ChangedBy)" />
 				</div>
 
 				<!-- Priority input -->
 				<div class="form-outline mb-2">
 					<label class="form-label" for="PriorityInput">@TodoItemLoc.Priority</label>
-					<InputText type="text" id="PriorityInput" class="form-control" @bind-Value="Model.Priority" />
+					<InputText type="text" id="PriorityInput" class="form-control"
+							   Value="@Model.Priority"
+							   ValueChanged="@((string v) => _changeTracker.TrackChange(Model, nameof(Model.Priority), Model.Priority, v))"
+							   ValueExpression="@(() => Model.Priority)" />
 				</div>
 			</div>
 		</section>
@@ -126,22 +169,34 @@ else
 					<tr>
 						<th>@ChecklistTaskLoc.IsDone</th>
 						<th>@ChecklistTaskLoc.Description</th>
-						<th><button type="button" class="btn btn-success w-100" @onclick="AddChecklistEntry">@CommonLoc.New</button></th>
+						<th>
+							<IconButton Icon="Add"
+										ButtonClass="btn btn-success"
+										Execute="AddChecklistEntry"
+										Title="@CommonLoc.New" />
+						</th>
 					</tr>
 				</thead>
 				<tbody>
 					@foreach (var entry in Model.Checklist)
 					{
 						<tr scope="row">
-							<td><input type="checkbox" class="form-check-input" @bind=entry.IsDone /></td>
-							<td><input type="text" class="form-control" @bind=entry.Description /></td>
-							<td><button type="button" class="btn btn-danger w-100" @onclick="() => RemoveChecklistEntry(entry.Id)">@CommonLoc.Delete</button></td>
+							<td><input type="checkbox" class="form-check-input" checked="@entry.IsDone" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.IsDone), entry.IsDone, (bool)(ev.Value ?? false)))" /></td>
+							<td><input type="text" class="form-control" value="@entry.Description" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.Description), entry.Description, ev.Value?.ToString() ?? string.Empty))" /></td>
+							<td>
+								<IconButton Icon="Delete"
+											ButtonClass="btn btn-danger"
+											Execute="() => RemoveChecklistEntry(entry.Id)"
+											Title="@CommonLoc.Delete" />
+							</td>
 						</tr>
 					}
 				</tbody>
 			</table>
 		</section>
 	</EditForm>
+
+	<DeleteConfirmationDialog @bind-IsVisible="isDeleteRequested" Remove="Remove" />
 }
 
 @code {
@@ -152,9 +207,11 @@ else
 	public Guid Id { get; set; }
 
 	private bool isNew = false;
+	private bool isDeleteRequested = false;
 	private TodoItemModel? Model;
+	private readonly ChangeTracker _changeTracker = new();
 
-	private IEnumerable<UserListItemModel> _users = Array.Empty<UserListItemModel>();
+	private IEnumerable<UserListItemModel> _users = [];
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -173,6 +230,7 @@ else
 			_users = await UserService.GetItemsAsync();
 
 			TodoItemService.ItemUpdated += Handle;
+			_changeTracker.StateChanged += () => InvokeAsync(StateHasChanged);
 
 			await TodoItemService.StartEventListener();
 		}
@@ -184,7 +242,7 @@ else
 		catch (Exception ex)
 		{
 			Log.LogError(ex, "Error loading todoitem.");
-			ErrorService?.ShowError("Error", "Could not load. Server error.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotLoad);
 		}
 	}
 
@@ -192,7 +250,7 @@ else
 	{
 		if (Model is null)
 		{
-			ErrorService?.ShowError("Error", "Model is null. Please reload the page.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorModelIsNullReload);
 			return;
 		}
 
@@ -210,7 +268,7 @@ else
 				await TodoItemService.UpdateItemAsync(Model);
 			}
 
-			NavigationManager.NavigateTo("/todoitems");
+			_changeTracker.Clear();
 		}
 		catch (System.Security.Authentication.AuthenticationException)
 		{
@@ -220,7 +278,7 @@ else
 		catch (Exception ex)
 		{
 			Log.LogError(ex, "Error saving todoitem.");
-			ErrorService?.ShowError("Error", "Could not save. Server error.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotSave);
 		}
 	}
 
@@ -228,7 +286,7 @@ else
 	{
 		if (Model is null)
 		{
-			ErrorService?.ShowError("Error", "Model is null. Please reload the page.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorModelIsNullReload);
 			return;
 		}
 
@@ -239,6 +297,7 @@ else
 				await TodoItemService.DeleteItemAsync(Model.Id);
 			}
 
+			_changeTracker.Clear();
 			NavigationManager.NavigateTo("/todoitems");
 		}
 		catch (System.Security.Authentication.AuthenticationException)
@@ -248,8 +307,8 @@ else
 		}
 		catch (Exception ex)
 		{
-			Log.LogError(ex, "Error saving todoitem.");
-			ErrorService?.ShowError("Error", "Could not save. Server error.");
+			Log.LogError(ex, "Error deleting todoitem.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorDeleting);
 		}
 	}
 
@@ -261,6 +320,7 @@ else
 		}
 
 		Map.From(message).To(Model);
+		_changeTracker.Clear();
 
 		await InvokeAsync(StateHasChanged);
 	}
@@ -282,6 +342,11 @@ else
 		var model = new ChecklistTaskModel() { Id = max };
 
 		Model.Checklist.Add(model);
+
+		_changeTracker.Track(
+			nameof(Model.Checklist),
+			() => Model.Checklist.Remove(model),
+			() => Model.Checklist.Add(model));
 	}
 
 	private void RemoveChecklistEntry(int id)
@@ -300,6 +365,11 @@ else
 			if (index != -1)
 			{
 				Model.Checklist.RemoveAt(index);
+
+				_changeTracker.Track(
+					nameof(Model.Checklist),
+					() => Model.Checklist.Insert(index, oldItem),
+					() => Model.Checklist.Remove(oldItem));
 			}
 		}
 	}

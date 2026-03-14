@@ -10,7 +10,7 @@
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
 
-<PageTitle>Login</PageTitle>
+<PageTitle>@CommonLoc.Login</PageTitle>
 
 <EditForm Model="@Input" OnValidSubmit="@TryLogin">
 	<section class="w-100 p-4 d-flex justify-content-center pb-4">
@@ -75,13 +75,13 @@
 		catch (Exception ex)
 		{
 			Logger.LogError(ex, "Error creating token.");
-			ErrorService?.ShowError("Login", "Could not login. Server error.");
+			ErrorService?.ShowError(CommonLoc.Login, ErrorLoc.ErrorCouldNotLogin);
 			return;
 		}
 
 		if (string.IsNullOrWhiteSpace(token))
 		{
-			ErrorService?.ShowError("Login", "Could not login. Username and password does not match.");
+			ErrorService?.ShowError(CommonLoc.Login, ErrorLoc.ErrorInvalidUsernamePassword);
 			Input.Password = "";
 		}
 		else

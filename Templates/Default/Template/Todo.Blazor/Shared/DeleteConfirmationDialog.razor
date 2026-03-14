@@ -1,0 +1,47 @@
+@using <#cs Write(Project.Namespace)#>.Client.Localisation;
+
+@if (IsVisible)
+{
+	<div class="modal d-block" tabindex="-1" role="dialog" style="background-color: rgba(0,0,0,0.5);">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">@Title</h5>
+				</div>
+				<div class="modal-body">
+					<p>@Description</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-danger" @onclick="RemoveExecute">@CommonLoc.Delete</button>
+					<button type="button" class="btn btn-secondary" @onclick="Cancel">@CommonLoc.Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+@code {
+	[Parameter] public string Title { get; set; } = @CommonLoc.DeleteConfirmationTitle;
+	[Parameter] public string Description { get; set; } = @CommonLoc.DeleteConfirmationDescription;
+
+	[Parameter] public bool IsVisible { get; set; }
+	[Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+
+	[Parameter] public EventCallback Remove { get; set; }
+
+	private async Task RemoveExecute()
+	{
+		if (Remove.HasDelegate)
+		{
+			await Remove.InvokeAsync();
+		}
+	}
+
+	private async Task Cancel()
+	{
+		IsVisible = false;
+		await IsVisibleChanged.InvokeAsync(IsVisible);
+		await InvokeAsync(StateHasChanged);
+	}
+}
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

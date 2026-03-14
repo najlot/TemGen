@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using Todo.Client.MVVM;
 using Todo.ClientBase;
 using Todo.ClientBase.ViewModel;
 using Todo.Wpf.View;
@@ -49,6 +50,16 @@ public class ViewManager(IServiceProvider serviceProvider) : IViewManager<Contro
 		}
 
 		throw new NullReferenceException($"The Class {viewType.FullName} is not a Control.");
+	}
+
+	public async Task<bool> CanNavigateAsync(Control? currentView)
+	{
+		if (currentView?.DataContext is INavigationGuard navigationGuard)
+		{
+			return await navigationGuard.CanNavigateAsync().ConfigureAwait(false);
+		}
+
+		return true;
 	}
 
 	public async Task DisposeView(Control? control)

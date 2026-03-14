@@ -7,25 +7,26 @@ using <#cs Write(Project.Namespace)#>.Service.Model;
 
 namespace <#cs Write(Project.Namespace)#>.Service.Repository;
 
-public class MySqlUserRepository : IUserRepository
+public class MySqlUserRepository(MySqlDbContext context) : IUserRepository
 {
-	private readonly MySqlDbContext _context;
-
-	public MySqlUserRepository(MySqlDbContext context)
-	{
-		_context = context;
-	}
-
 	public IAsyncEnumerable<UserModel> GetAll()
 	{
-		return _context.Users
+		return context.Users
 			.AsNoTracking()
 			.AsAsyncEnumerable();
 	}
 
+	public IQueryable<UserModel> GetAllQueryable()
+	{
+		return context
+			.Users
+			.AsNoTracking()
+			.AsQueryable();
+	}
+
 	public async Task<UserModel?> Get(Guid id)
 	{
-		var e = await _context.Users.FirstOrDefaultAsync(i => i.Id == id).ConfigureAwait(false);
+		var e = await context.Users.FirstOrDefaultAsync(i => i.Id == id).ConfigureAwait(false);
 
 		if (e == null)
 		{
@@ -37,7 +38,7 @@ public class MySqlUserRepository : IUserRepository
 
 	public async Task<UserModel?> Get(string username)
 	{
-		var e = await _context.Users.FirstOrDefaultAsync(i => i.Username == username && i.IsActive).ConfigureAwait(false);
+		var e = await context.Users.FirstOrDefaultAsync(i => i.Username == username && i.DeletedAt == null).ConfigureAwait(false);
 
 		if (e == null)
 		{
@@ -49,24 +50,22 @@ public class MySqlUserRepository : IUserRepository
 
 	public async Task Insert(UserModel model)
 	{
-		await _context.Users.AddAsync(model).ConfigureAwait(false);
-		await _context.SaveChangesAsync().ConfigureAwait(false);
+		await context.Users.AddAsync(model).ConfigureAwait(false);
 	}
 
-	public async Task Update(UserModel model)
+	public Task Update(UserModel model)
 	{
-		_context.Users.Update(model);
-		await _context.SaveChangesAsync().ConfigureAwait(false);
+		context.Users.Update(model);
+		return Task.CompletedTask;
 	}
 
 	public async Task Delete(Guid id)
 	{
-		var model = await _context.Users.FirstOrDefaultAsync(i => i.Id == id).ConfigureAwait(false);
+		var model = await context.Users.FirstOrDefaultAsync(i => i.Id == id).ConfigureAwait(false);
 
 		if (model != null)
 		{
-			_context.Users.Remove(model);
-			await _context.SaveChangesAsync().ConfigureAwait(false);
+			context.Users.Remove(model);
 		}
 	}
 }<#cs SetOutputPathAndSkipOtherDefinitions()#>

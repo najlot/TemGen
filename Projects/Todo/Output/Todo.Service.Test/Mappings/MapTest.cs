@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Todo.Service.Mappings;
 
 namespace Todo.Service.Test.Mappings;
 

@@ -2,9 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Service.Configuration;
 using <#cs Write(Project.Namespace)#>.Service.Model;
 
 namespace <#cs Write(Project.Namespace)#>.Service.Repository;
@@ -17,7 +15,7 @@ public class MongoDb<#cs Write(Definition.Name)#>Repository : I<#cs Write(Defini
 	public MongoDb<#cs Write(Definition.Name)#>Repository(MongoDbContext context)
 	{
 		_context = context;
-		_collection = _context.Database.GetCollection<<#cs Write(Definition.Name)#>Model>(nameof(<#cs Write(Definition.Name)#>Model)[0..^5]);
+		_collection = _context.Database.GetCollection<<#cs Write(Definition.Name)#>Model>("<#cs Write(Definition.Name)#>");
 	}
 
 	public async IAsyncEnumerable<<#cs Write(Definition.Name)#>Model> GetAll()

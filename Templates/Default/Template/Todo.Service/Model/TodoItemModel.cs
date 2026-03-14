@@ -10,6 +10,7 @@ public class <#cs Write(Definition.Name)#>Model
 {
 	[BsonId]
 	public Guid Id { get; set; }
+	public DateTime? DeletedAt { get; set; }
 <#cs
 foreach(var entry in Entries)
 {
