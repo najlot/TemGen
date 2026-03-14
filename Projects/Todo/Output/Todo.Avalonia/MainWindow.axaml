@@ -1,0 +1,41 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        x:Class="Todo.Avalonia.MainWindow"
+        Title="Todo"
+        Width="800"
+        Height="600"
+        WindowState="Maximized">
+
+	<Grid RowDefinitions="Auto,Auto,*">
+
+		<Border x:Name="ErrorBorder"
+                Grid.Row="0"
+                Background="#FFDDDD"
+                BorderBrush="#CC0000"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12"
+                Margin="16,8"
+                IsVisible="False">
+			<TextBlock x:Name="ErrorText" Foreground="#CC0000" TextWrapping="Wrap" />
+		</Border>
+
+		<Border x:Name="SuccessBorder"
+                Grid.Row="1"
+                Background="#DDFFDD"
+                BorderBrush="#00CC00"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12"
+                Margin="16,8"
+                IsVisible="False">
+			<TextBlock x:Name="SuccessText" Foreground="#006600" TextWrapping="Wrap" />
+		</Border>
+
+		<ContentControl x:Name="ContentHost" Grid.Row="2" />
+	</Grid>
+</Window>
+

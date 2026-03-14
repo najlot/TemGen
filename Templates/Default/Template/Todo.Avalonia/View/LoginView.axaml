@@ -1,0 +1,55 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
+             mc:Ignorable="d"
+             x:Class="<#cs Write(Project.Namespace)#>.Avalonia.View.LoginView"
+             x:Name="This"
+             d:DesignHeight="450" d:DesignWidth="800">
+	<Grid>
+		<Grid.KeyBindings>
+			<KeyBinding Gesture="Return" Command="{Binding LoginCommand}" />
+		</Grid.KeyBindings>
+		<Border MaxWidth="400"
+				Padding="32"
+				HorizontalAlignment="Center"
+				VerticalAlignment="Center"
+				BorderBrush="{StaticResource BackgroundColor}"
+				BorderThickness="1">
+			<StackPanel>
+				<TextBlock Margin="0,0,0,16"
+						   HorizontalAlignment="Center"
+						   FontSize="24"
+						   FontWeight="Bold"
+						   Foreground="{StaticResource BackgroundColor}"
+						   Text="{x:Static loc:CommonLoc.Login}" />
+
+				<!--  Username  -->
+				<StackPanel Margin="0,0,0,16">
+					<TextBlock Margin="0,0,0,4" Text="{x:Static loc:CommonLoc.Username}" />
+					<TextBox x:Name="UsernameTextBox" Text="{Binding Username, Mode=TwoWay}" />
+				</StackPanel>
+
+				<!--  Password  -->
+				<StackPanel Margin="0,0,0,16">
+					<TextBlock Margin="0,0,0,4" Text="{x:Static loc:CommonLoc.Password}" />
+					<TextBox PasswordChar="•" Text="{Binding Password, Mode=TwoWay}" />
+				</StackPanel>
+
+				<!--  Login Button  -->
+				<Button Margin="0,8,0,0"
+						HorizontalAlignment="Stretch"
+						HorizontalContentAlignment="Center"
+						Command="{Binding LoginCommand}"
+						Content="{x:Static loc:CommonLoc.Login}" />
+
+				<!--  Navigate to Register Link  -->
+				<Button Margin="0,8,0,0" Command="{Binding NavigateToRegisterCommand}">
+					<TextBlock Text="{x:Static loc:CommonLoc.Register}" />
+				</Button>
+			</StackPanel>
+		</Border>
+	</Grid>
+</UserControl>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

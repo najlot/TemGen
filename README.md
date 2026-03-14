@@ -3,7 +3,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-TemGen is a powerful template-based code generator that processes templates with embedded scripts to generate complete application code from simple definitions. It supports multiple scripting languages (C#, JavaScript, Python, Lua) and can generate entire project structures including backend services, WPF clients, and Blazor applications.
+TemGen is a powerful template-based code generator that processes templates with embedded scripts to generate complete application code from simple definitions. It supports multiple scripting languages (C#, JavaScript, Python, Lua) and can generate entire project structures including backend services, WPF clients, AvaloniaUI cross-platform clients, and Blazor applications.
 
 ## Table of Contents
 
@@ -25,6 +25,7 @@ TemGen is a powerful template-based code generator that processes templates with
 - **Full project generation**: Generate complete application structures including:
   - Service backends
   - WPF desktop clients
+  - AvaloniaUI cross-platform clients (Desktop/Mobile)
   - Blazor web applications
   - Contracts, events, and DTOs
   - Tests and localization
@@ -251,7 +252,8 @@ The Todo project defines entities like:
 
 From these simple definitions, TemGen generates:
 - **Service Backend**: ASP.NET Core service with repositories, controllers
-- **WPF Client**: Desktop application with MVVM pattern
+- **AvaloniaUI App**: Cross-platform desktop/mobile application with MVVM pattern
+- **WPF Client**: Windows desktop application with MVVM pattern
 - **Blazor App**: Server-side Blazor web application
 - **Contracts**: Events, DTOs, interfaces
 - **Tests**: Unit tests for services and client data layer
@@ -281,7 +283,7 @@ cd Projects/Todo/Output
 ls -la  # See all generated projects
 ```
 
-Note: The WPF project requires Windows to build. The generated code structure demonstrates TemGen's capabilities.
+Note: The WPF project requires Windows to build. The AvaloniaUI project supports Windows, macOS, Linux, Android, and iOS. The generated code structure demonstrates TemGen's capabilities.
 
 ## License
 

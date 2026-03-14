@@ -1,4 +1,4 @@
-﻿using Todo.Client.MVVM;
+using Todo.Client.MVVM;
 
 namespace Todo.ClientBase.ViewModel;
 
@@ -7,16 +7,16 @@ public class MenuViewModel : ViewModelBase
 	public bool IsDrawerOpen { get; set => Set(ref field, value); }
 	public RelayCommand ToggleDrawerCommand { get; }
 
-	public AsyncCommand NavigateToNotes { get; }
 	public AsyncCommand NavigateToTodoItems { get; }
+	public AsyncCommand NavigateToNotes { get; }
 	public AsyncCommand ManageCommand { get; }
 	public AsyncCommand LogoutCommand { get; }
 
 	public MenuViewModel(ViewModelBaseParameters<MenuViewModel> parameters) : base(parameters)
 	{
 		ToggleDrawerCommand = new RelayCommand(() => IsDrawerOpen = !IsDrawerOpen);
-		NavigateToNotes = CreateNavigationCommand<AllNotesViewModel>();
 		NavigateToTodoItems = CreateNavigationCommand<AllTodoItemsViewModel>();
+		NavigateToNotes = CreateNavigationCommand<AllNotesViewModel>();
 		ManageCommand = CreateNavigationCommand<ManageViewModel>();
 		LogoutCommand = CreateNavigationCommand<LoginViewModel>();
 	}

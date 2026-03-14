@@ -1,0 +1,68 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
+             xmlns:local="clr-namespace:<#cs Write(Project.Namespace)#>.Avalonia.View"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             mc:Ignorable="d"
+             x:Class="<#cs Write(Project.Namespace)#>.Avalonia.View.All<#cs Write(Definition.Name)#>sView"
+             d:DesignHeight="450" d:DesignWidth="800">
+	<DockPanel>
+		<DockPanel DockPanel.Dock="Top">
+			<Button Margin="5" DockPanel.Dock="Left" Command="{Binding NavigateBackCommand}">
+				<materialIcons:MaterialIcon Kind="ArrowLeft" Width="18" Height="18" />
+			</Button>
+
+			<WrapPanel HorizontalAlignment="Right" DockPanel.Dock="Right">
+				<Button Margin="5"
+						Command="{Binding Refresh<#cs Write(Definition.Name)#>sCommand}"
+						ToolTip.Tip="{x:Static loc:CommonLoc.Refresh}">
+					<materialIcons:MaterialIcon Kind="Refresh" Width="18" Height="18" />
+				</Button>
+
+				<Button Margin="5"
+						Command="{Binding Add<#cs Write(Definition.Name)#>Command}"
+						ToolTip.Tip="{x:Static loc:CommonLoc.New}">
+					<materialIcons:MaterialIcon Kind="Add" Width="18" Height="18" />
+				</Button>
+			</WrapPanel>
+
+			<DockPanel DockPanel.Dock="Left">
+				<Label VerticalAlignment="Center" Content="{x:Static loc:CommonLoc.Filter}" />
+				<TextBox Margin="5"
+						 VerticalAlignment="Center"
+						 Text="{Binding Filter}" />
+			</DockPanel>
+		</DockPanel>
+
+		<ScrollViewer>
+			<ItemsControl ItemsSource="{Binding <#cs Write(Definition.Name)#>sView}">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<Button Padding="0"
+								Margin="5"
+								HorizontalAlignment="Stretch"
+								HorizontalContentAlignment="Left"
+								Background="Transparent"
+								BorderThickness="0"
+								Command="{Binding DataContext.Edit<#cs Write(Definition.Name)#>Command, RelativeSource={RelativeSource AncestorType=UserControl}}"
+								CommandParameter="{Binding .}">
+							<StackPanel>
+<#cs
+foreach(var entry in Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2))
+{
+	WriteLine($"								<TextBlock Padding=\"5,5,5,0\" Text=\"{{Binding {entry.Field}}}\" />");
+}
+
+Result = Result.TrimEnd();
+#>
+							</StackPanel>
+						</Button>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</ScrollViewer>
+	</DockPanel>
+</UserControl>
+<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

@@ -1,0 +1,105 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:<#cs Write(Project.Namespace)#>.Avalonia.View"
+             xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
+             xmlns:converter="clr-namespace:<#cs Write(Project.Namespace)#>.Avalonia.Converter"
+             mc:Ignorable="d"
+             x:Class="<#cs Write(Project.Namespace)#>.Avalonia.View.<#cs Write(Definition.Name)#>View"
+             d:DesignHeight="500" d:DesignWidth="600">
+
+	<StackPanel>
+<#cs
+foreach(var entry in Entries)
+{
+	if (!entry.IsArray && !entry.IsOwnedType)
+		WriteLine("			<DockPanel Margin=\"5\">");
+
+	if (entry.EntryType != "bool" && !entry.IsArray && !entry.IsOwnedType)
+	{
+		WriteLine($"				<Label Content=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" MinWidth=\"75\" />");
+	}
+
+	if (entry.EntryType == "DateTime")
+	{
+		WriteLine($"				<CalendarDatePicker SelectedDate=\"{{Binding {entry.Field}}}\" />");
+	}
+	else if (entry.EntryType == "bool")
+	{
+		WriteLine($"				<Label Content=\"\" MinWidth=\"75\" />");
+		WriteLine($"				<CheckBox IsChecked=\"{{Binding {entry.Field}}}\" Content=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" />");
+	}
+	else if (entry.IsOwnedType)
+	{
+		WriteLine($"			<Label Content=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" Foreground=\"{{StaticResource ForegroundColor}}\" Background=\"{{StaticResource BackgroundColor}}\" />");
+		WriteLine($"			<local:{entry.EntryType}View DataContext=\"{{Binding {entry.Field}}}\" />");
+	}
+	else if (entry.IsEnumeration)
+	{
+		WriteLine($"				<ComboBox ItemsSource=\"{{Binding Available{entry.EntryType}s, Converter={{x:Static converter:EnumToTranslationConverter.Instance}}, ConverterParameter={{x:Type loc:{entry.EntryType}Loc}}}}\" ");
+		WriteLine($"						  SelectedItem=\"{{Binding {entry.Field}, Converter={{x:Static converter:EnumToTranslationConverter.Instance}}, ConverterParameter={{x:Type loc:{entry.EntryType}Loc}}}}\" />");
+	}
+	else if (entry.IsArray)
+	{
+		var d = Definitions.First(def => def.Name == entry.EntryType);
+		WriteLine("			<DockPanel>");
+		WriteLine($"				<DockPanel DockPanel.Dock=\"Top\">");
+		WriteLine($"					<Button ToolTip.Tip=\"{{x:Static loc:CommonLoc.New}}\" Command=\"{{Binding Add{entry.EntryType}Command}}\" Margin=\"5\" DockPanel.Dock=\"Right\">");
+		WriteLine($"						<materialIcons:MaterialIcon Kind=\"PlusCircle\" Width=\"18\" Height=\"18\" />");
+		WriteLine($"					</Button>");
+		WriteLine($"");
+		WriteLine($"					<TextBlock Text=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" Foreground=\"{{StaticResource ForegroundColor}}\" Background=\"{{StaticResource BackgroundColor}}\" Padding=\"5\" Margin=\"0,5\"/>");
+		WriteLine($"				</DockPanel>");
+		WriteLine($"");
+		WriteLine($"				<DataGrid");
+		WriteLine($"					Margin=\"0,0,5,0\"");
+		WriteLine($"					ItemsSource=\"{{Binding {entry.Field}}}\"");
+		WriteLine($"					CanUserSortColumns=\"False\"");
+		WriteLine($"					CanUserAddRows=\"False\"");
+		WriteLine($"					AutoGenerateColumns=\"False\"");
+		WriteLine($"					HorizontalGridLinesBrush=\"LightGray\"");
+		WriteLine($"					VerticalGridLinesBrush=\"LightGray\"");
+		WriteLine($"					SelectionMode=\"Single\"");
+		WriteLine($"					BorderBrush=\"LightGray\">");
+		WriteLine($"");
+		WriteLine($"					<DataGrid.Columns>");
+		foreach(var e in d.Entries.Where(ent => !ent.IsEnumeration))
+		{
+			if (e.EntryType == "bool")
+			{
+				WriteLine($"						<DataGridCheckBoxColumn Header=\"{{x:Static loc:{d.Name}Loc.{e.Field}}}\" Binding=\"{{Binding {e.Field}}}\" />");
+			}
+			else
+			{
+				WriteLine($"						<DataGridTextColumn Header=\"{{x:Static loc:{d.Name}Loc.{e.Field}}}\" Binding=\"{{Binding {e.Field}}}\" MinWidth=\"100\" />");
+			}
+			WriteLine($"");
+		}
+
+		WriteLine($"					</DataGrid.Columns>");
+		WriteLine($"				</DataGrid>");
+	}
+	else
+	{
+		WriteLine($"				<TextBox Text=\"{{Binding {entry.Field}}}\" />");
+	}
+
+	if (!entry.IsOwnedType)
+		WriteLine("			</DockPanel>");
+}
+
+Result = Result.TrimEnd();
+#>
+	</StackPanel>
+</UserControl>
+<#cs
+if (!Definition.IsOwnedType)
+{
+	RelativePath = "";
+}
+else
+{
+	RelativePath = RelativePath.Replace("TodoItem_OWNED_", Definition.Name).Replace("Todo", Project.Namespace);
+}
+#>
