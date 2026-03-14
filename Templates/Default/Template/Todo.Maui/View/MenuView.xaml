@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
+			 xmlns:material="clr-namespace:Material.Icons.Maui;assembly=Material.Icons.Maui"
+			 x:Class="<#cs Write(Project.Namespace)#>.Maui.View.MenuView">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+
+		<Grid Grid.Row="0">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="Auto" />
+			</Grid.ColumnDefinitions>
+
+			<Button Grid.Column="0"
+					Command="{Binding ToggleDrawerCommand}"
+					Margin="5">
+				<Button.ImageSource>
+					<FontImageSource Glyph="{x:Static material:MaterialIconsRegular.Menu}"
+									 FontFamily="MaterialIcons"
+									 Size="18" />
+				</Button.ImageSource>
+			</Button>
+
+			<HorizontalStackLayout Grid.Column="2" HorizontalOptions="End">
+				<Button Command="{Binding ManageCommand}"
+						ToolTipProperties.Text="Manage"
+						Margin="5">
+					<Button.ImageSource>
+						<FontImageSource Glyph="{x:Static material:MaterialIconsRegular.Person}"
+										 FontFamily="MaterialIcons"
+										 Size="18" />
+					</Button.ImageSource>
+				</Button>
+				<Button Command="{Binding LogoutCommand}"
+						ToolTipProperties.Text="Logout"
+						Margin="5">
+					<Button.ImageSource>
+						<FontImageSource Glyph="{x:Static material:MaterialIconsRegular.Logout}"
+										 FontFamily="MaterialIcons"
+										 Size="18" />
+					</Button.ImageSource>
+				</Button>
+			</HorizontalStackLayout>
+		</Grid>
+
+		<!--  Off-Canvas Navigation Drawer Overlay  -->
+		<BoxView Grid.Row="1"
+				 Grid.RowSpan="1"
+				 BackgroundColor="#80000000"
+				 IsVisible="{Binding IsDrawerOpen}"
+				 ZIndex="1">
+			<BoxView.GestureRecognizers>
+				<TapGestureRecognizer Command="{Binding ToggleDrawerCommand}" />
+			</BoxView.GestureRecognizers>
+		</BoxView>
+
+		<!--  Off-Canvas Navigation Drawer  -->
+		<Border Grid.Row="1"
+				WidthRequest="200"
+				HorizontalOptions="Start"
+				IsVisible="{Binding IsDrawerOpen}"
+				ZIndex="2">
+			<ScrollView>
+				<VerticalStackLayout Margin="5">
+					<!--  Drawer Header  -->
+					<Label FontSize="20"
+						   FontAttributes="Bold"
+						   Text="{x:Static loc:CommonLoc.Navigation}"
+						   Margin="5,10" />
+
+					<!--  Navigation Items  -->
+<#cs
+foreach(var definition in Definitions.Where(d => !d.IsOwnedType
+&& !d.IsArray
+&& !d.IsEnumeration
+&& !d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
+{
+	WriteLine($"					<Button Command=\"{{Binding NavigateTo{definition.Name}s}}\" Margin=\"5\" HorizontalOptions=\"Start\">");
+	WriteLine($"						<Button.Text>");
+	WriteLine($"							<x:Static Member=\"loc:{definition.Name}Loc.{definition.Name}s\" />");
+	WriteLine($"						</Button.Text>");
+	WriteLine($"					</Button>");
+	WriteLine("");
+}
+
+Result = Result.TrimEnd();
+#>
+				</VerticalStackLayout>
+			</ScrollView>
+		</Border>
+	</Grid>
+</ContentView><#cs SetOutputPathAndSkipOtherDefinitions()#>

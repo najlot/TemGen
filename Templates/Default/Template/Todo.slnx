@@ -7,6 +7,7 @@
 	<Project Path="<#ref Project.Namespace#>.ClientBase.Test/<#ref Project.Namespace#>.ClientBase.Test.csproj" />
 	<Project Path="<#ref Project.Namespace#>.ClientBase/<#ref Project.Namespace#>.ClientBase.csproj" />
 	<Project Path="<#ref Project.Namespace#>.Contracts/<#ref Project.Namespace#>.Contracts.csproj" />
+	<Project Path="<#ref Project.Namespace#>.Maui/<#ref Project.Namespace#>.Maui.csproj" />
 	<Project Path="<#ref Project.Namespace#>.Service.Test/<#ref Project.Namespace#>.Service.Test.csproj" />
 	<Project Path="<#ref Project.Namespace#>.Service/<#ref Project.Namespace#>.Service.csproj" />
 	<Project Path="<#ref Project.Namespace#>.Wpf/<#ref Project.Namespace#>.Wpf.csproj" />

@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
+			 xmlns:material="clr-namespace:Material.Icons.Maui;assembly=Material.Icons.Maui"
+			 xmlns:converter="clr-namespace:<#cs Write(Project.Namespace)#>.Maui.Converter"
+			 xmlns:local="clr-namespace:<#cs Write(Project.Namespace)#>.Maui.View"
+			 x:Class="<#cs Write(Project.Namespace)#>.Maui.View.<#cs Write(Definition.Name)#>View">
+	<Grid>
+		<Grid IsEnabled="{Binding CanEdit}">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="*" />
+			</Grid.RowDefinitions>
+
+			<Grid Grid.Row="0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="Auto" />
+				</Grid.ColumnDefinitions>
+
+				<Button Grid.Column="0"
+						Margin="5"
+						Command="{Binding NavigateBackCommand}">
+					<Button.ImageSource>
+						<FontImageSource Glyph="{x:Static material:MaterialIconsRegular.ArrowBack}"
+										 FontFamily="MaterialIcons"
+										 Size="18" />
+					</Button.ImageSource>
+				</Button>
+
+				<HorizontalStackLayout Grid.Column="2" HorizontalOptions="End">
+					<Button ToolTipProperties.Text="{x:Static loc:CommonLoc.Undo}" Command="{Binding UndoCommand}" Margin="5">
+						<Button.ImageSource>
+							<FontImageSource Glyph="{x:Static material:MaterialIconsRegular.Undo}"
+											 FontFamily="MaterialIcons"
+											 Size="18" />
+						</Button.ImageSource>
+					</Button>
+					<Button ToolTipProperties.Text="{x:Static loc:CommonLoc.Redo}" Command="{Binding RedoCommand}" Margin="5">
+						<Button.ImageSource>
+							<FontImageSource Glyph="{x:Static material:MaterialIconsRegular.Redo}"
+											 FontFamily="MaterialIcons"
+											 Size="18" />
+						</Button.ImageSource>
+					</Button>
+					<Button ToolTipProperties.Text="{x:Static loc:CommonLoc.Save}" Command="{Binding SaveCommand}" Margin="5">
+						<Button.ImageSource>
+							<FontImageSource Glyph="{x:Static material:MaterialIconsRegular.Save}"
+											 FontFamily="MaterialIcons"
+											 Size="18" />
+						</Button.ImageSource>
+					</Button>
+					<Button ToolTipProperties.Text="{x:Static loc:CommonLoc.Delete}" Command="{Binding DeleteCommand}" Margin="5">
+						<Button.ImageSource>
+							<FontImageSource Glyph="{x:Static material:MaterialIconsRegular.Delete}"
+											 FontFamily="MaterialIcons"
+											 Size="18" />
+						</Button.ImageSource>
+					</Button>
+				</HorizontalStackLayout>
+			</Grid>
+
+			<ScrollView Grid.Row="1">
+				<VerticalStackLayout Margin="2,0" MinimumWidthRequest="300"
+									 HorizontalOptions="Center">
+<#cs
+foreach(var entry in Entries)
+{
+	if (entry.EntryType == "DateTime")
+	{
+		WriteLine($"					<Grid Margin=\"5\">");
+		WriteLine($"						<Grid.ColumnDefinitions>");
+		WriteLine($"							<ColumnDefinition Width=\"Auto\" />");
+		WriteLine($"							<ColumnDefinition Width=\"*\" />");
+		WriteLine($"						</Grid.ColumnDefinitions>");
+		WriteLine($"						<Label Grid.Column=\"0\" VerticalOptions=\"Center\" MinimumWidthRequest=\"75\" Text=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" />");
+		WriteLine($"						<DatePicker Grid.Column=\"1\" Date=\"{{Binding {entry.Field}}}\" />");
+		WriteLine($"					</Grid>");
+	}
+	else if (entry.EntryType == "bool")
+	{
+		WriteLine($"					<Grid Margin=\"5\">");
+		WriteLine($"						<Grid.ColumnDefinitions>");
+		WriteLine($"							<ColumnDefinition Width=\"Auto\" />");
+		WriteLine($"							<ColumnDefinition Width=\"*\" />");
+		WriteLine($"						</Grid.ColumnDefinitions>");
+		WriteLine($"						<Label Grid.Column=\"0\" MinimumWidthRequest=\"75\" />");
+		WriteLine($"						<CheckBox Grid.Column=\"1\" IsChecked=\"{{Binding {entry.Field}}}\" />");
+		WriteLine($"						<Label Grid.Column=\"1\" Margin=\"40,0,0,0\" VerticalOptions=\"Center\" Text=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" />");
+		WriteLine($"					</Grid>");
+	}
+	else if (entry.IsReference)
+	{
+		var definition  = Definitions.First(d => d.Name == entry.ReferenceType);
+		var displayField = definition.Entries.First(e => !(e.IsOwnedType || e.IsKey || e.IsArray || e.IsReference || e.IsEnumeration)).Field;
+		WriteLine($"					<Grid Margin=\"5\">");
+		WriteLine($"						<Grid.ColumnDefinitions>");
+		WriteLine($"							<ColumnDefinition Width=\"Auto\" />");
+		WriteLine($"							<ColumnDefinition Width=\"*\" />");
+		WriteLine($"						</Grid.ColumnDefinitions>");
+		WriteLine($"						<Label Grid.Column=\"0\" VerticalOptions=\"Center\" MinimumWidthRequest=\"75\" Text=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" />");
+		WriteLine($"						<Picker Grid.Column=\"1\"");
+		WriteLine($"								ItemsSource=\"{{Binding Available{definition.Name}s}}\"");
+		WriteLine($"								SelectedItem=\"{{Binding {entry.Field}Id}}\"");
+		WriteLine($"								ItemDisplayBinding=\"{{Binding {displayField}}}\" />");
+		WriteLine($"					</Grid>");
+	}
+	else if (entry.IsOwnedType)
+	{
+		WriteLine($"					<Label Text=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" TextColor=\"{{StaticResource ForegroundColor}}\" BackgroundColor=\"{{StaticResource BackgroundColor}}\" />");
+		WriteLine($"					<local:{entry.EntryType}View BindingContext=\"{{Binding {entry.Field}}}\" />");
+	}
+	else if (entry.IsEnumeration)
+	{
+		WriteLine($"					<Grid Margin=\"5\">");
+		WriteLine($"						<Grid.ColumnDefinitions>");
+		WriteLine($"							<ColumnDefinition Width=\"Auto\" />");
+		WriteLine($"							<ColumnDefinition Width=\"*\" />");
+		WriteLine($"						</Grid.ColumnDefinitions>");
+		WriteLine($"						<Label Grid.Column=\"0\" VerticalOptions=\"Center\" MinimumWidthRequest=\"75\" Text=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" />");
+		WriteLine($"						<Picker Grid.Column=\"1\"");
+		WriteLine($"								ItemsSource=\"{{Binding Available{entry.EntryType}s, Converter={{x:Static converter:EnumToTranslationConverter.Instance}}, ConverterParameter={{x:Type loc:{entry.EntryType}Loc}}}}\"");
+		WriteLine($"								SelectedItem=\"{{Binding {entry.Field}, Converter={{x:Static converter:EnumToTranslationConverter.Instance}}, ConverterParameter={{x:Type loc:{entry.EntryType}Loc}}}}\" />");
+		WriteLine($"					</Grid>");
+	}
+	else if (entry.IsArray)
+	{
+		var d = Definitions.First(def => def.Name == entry.EntryType);
+		WriteLine($"					<Grid Margin=\"5\">");
+		WriteLine($"						<Grid.RowDefinitions>");
+		WriteLine($"							<RowDefinition Height=\"Auto\" />");
+		WriteLine($"							<RowDefinition Height=\"Auto\" />");
+		WriteLine($"						</Grid.RowDefinitions>");
+		WriteLine($"						<Grid Grid.Row=\"0\">");
+		WriteLine($"							<Grid.ColumnDefinitions>");
+		WriteLine($"								<ColumnDefinition Width=\"*\" />");
+		WriteLine($"								<ColumnDefinition Width=\"Auto\" />");
+		WriteLine($"							</Grid.ColumnDefinitions>");
+		WriteLine($"							<Label Grid.Column=\"0\" VerticalOptions=\"Center\" Text=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" TextColor=\"{{StaticResource ForegroundColor}}\" BackgroundColor=\"{{StaticResource BackgroundColor}}\" Padding=\"5\" />");
+		WriteLine($"							<Button Grid.Column=\"1\"");
+		WriteLine($"									ToolTipProperties.Text=\"{{x:Static loc:CommonLoc.New}}\"");
+		WriteLine($"									Command=\"{{Binding Add{entry.EntryType}Command}}\"");
+		WriteLine($"									Margin=\"5\">");
+		WriteLine($"								<Button.ImageSource>");
+		WriteLine($"									<FontImageSource Glyph=\"{{x:Static material:MaterialIconsRegular.AddCircleOutline}}\"");
+		WriteLine($"													 FontFamily=\"MaterialIcons\"");
+		WriteLine($"													 Size=\"18\" />");
+		WriteLine($"								</Button.ImageSource>");
+		WriteLine($"							</Button>");
+		WriteLine($"						</Grid>");
+		WriteLine($"						<CollectionView Grid.Row=\"1\" ItemsSource=\"{{Binding {entry.Field}}}\">");
+		WriteLine($"							<CollectionView.ItemTemplate>");
+		WriteLine($"								<DataTemplate>");
+		WriteLine($"									<Grid Margin=\"0,2\" ColumnSpacing=\"5\">");
+		WriteLine($"										<Grid.ColumnDefinitions>");
+		foreach(var e in d.Entries.Where(ent => !ent.IsEnumeration))
+		{
+			WriteLine($"											<ColumnDefinition Width=\"*\" />");
+		}
+		WriteLine($"											<ColumnDefinition Width=\"Auto\" />");
+		WriteLine($"										</Grid.ColumnDefinitions>");
+		int col = 0;
+		foreach(var e in d.Entries.Where(ent => !ent.IsEnumeration))
+		{
+			if (e.EntryType == "bool")
+			{
+				WriteLine($"										<CheckBox Grid.Column=\"{col}\" IsChecked=\"{{Binding {e.Field}}}\" />");
+			}
+			else
+			{
+				WriteLine($"										<Entry Grid.Column=\"{col}\" Text=\"{{Binding {e.Field}, Mode=TwoWay}}\" Placeholder=\"{{x:Static loc:{d.Name}Loc.{e.Field}}}\" />");
+			}
+			col++;
+		}
+		WriteLine($"										<Button Grid.Column=\"{col}\"");
+		WriteLine($"												ToolTipProperties.Text=\"Delete\"");
+		WriteLine($"												Margin=\"2\"");
+		WriteLine($"												Command=\"{{Binding Source={{RelativeSource AncestorType={{x:Type local:{Definition.Name}View}}}}, Path=BindingContext.Delete{entry.EntryType}Command}}\"");
+		WriteLine($"												CommandParameter=\"{{Binding .}}\">");
+		WriteLine($"											<Button.ImageSource>");
+		WriteLine($"												<FontImageSource Glyph=\"{{x:Static material:MaterialIconsRegular.Delete}}\"");
+		WriteLine($"																 FontFamily=\"MaterialIcons\"");
+		WriteLine($"																 Size=\"14\" />");
+		WriteLine($"											</Button.ImageSource>");
+		WriteLine($"										</Button>");
+		WriteLine($"									</Grid>");
+		WriteLine($"								</DataTemplate>");
+		WriteLine($"							</CollectionView.ItemTemplate>");
+		WriteLine($"						</CollectionView>");
+		WriteLine($"					</Grid>");
+	}
+	else
+	{
+		WriteLine($"					<Grid Margin=\"5\">");
+		WriteLine($"						<Grid.ColumnDefinitions>");
+		WriteLine($"							<ColumnDefinition Width=\"Auto\" />");
+		WriteLine($"							<ColumnDefinition Width=\"*\" />");
+		WriteLine($"						</Grid.ColumnDefinitions>");
+		WriteLine($"						<Label Grid.Column=\"0\" VerticalOptions=\"Center\" MinimumWidthRequest=\"75\" Text=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" />");
+		WriteLine($"						<Entry Grid.Column=\"1\" Text=\"{{Binding {entry.Field}}}\" />");
+		WriteLine($"					</Grid>");
+	}
+}
+
+Result = Result.TrimEnd();
+#>
+				</VerticalStackLayout>
+			</ScrollView>
+		</Grid>
+
+		<local:SaveConfirmationDialogView IsVisible="{Binding SaveDialogViewModel.IsVisible}"
+										  BindingContext="{Binding SaveDialogViewModel}" />
+		<local:DeleteConfirmationDialogView IsVisible="{Binding DeleteDialogViewModel.IsVisible}"
+											BindingContext="{Binding DeleteDialogViewModel}" />
+	</Grid>
+</ContentView><#cs SetOutputPath(Definition.IsEnumeration || Definition.IsOwnedType)#>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
+			 x:Class="<#cs Write(Project.Namespace)#>.Maui.View.DeleteConfirmationDialogView">
+	<Border BackgroundColor="#80000000"
+			IsVisible="{Binding IsVisible}">
+		<Border BackgroundColor="{StaticResource ForegroundColor}"
+				Stroke="{StaticResource BackgroundColor}"
+				StrokeThickness="1"
+				Padding="20"
+				HorizontalOptions="Center"
+				VerticalOptions="Center"
+				MinimumWidthRequest="300">
+			<VerticalStackLayout>
+				<Label Text="{Binding Title}"
+					   FontSize="16"
+					   FontAttributes="Bold"
+					   Margin="0,0,0,10" />
+				<Label Text="{Binding Description}"
+					   LineBreakMode="WordWrap"
+					   Margin="0,0,0,20" />
+				<HorizontalStackLayout HorizontalOptions="End">
+					<Button Text="{x:Static loc:CommonLoc.Delete}" Command="{Binding DeleteCommand}" Margin="5" />
+					<Button Text="{x:Static loc:CommonLoc.Cancel}" Command="{Binding CancelCommand}" Margin="5" />
+				</HorizontalStackLayout>
+			</VerticalStackLayout>
+		</Border>
+	</Border>
+</ContentView><#cs SetOutputPathAndSkipOtherDefinitions()#>
