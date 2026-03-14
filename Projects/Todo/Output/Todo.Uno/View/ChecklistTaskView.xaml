@@ -1,0 +1,57 @@
+<UserControl x:Class="Todo.Uno.View.ChecklistTaskView"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:local="using:Todo.Uno.View"
+			 xmlns:loc="using:Todo.Client.Localisation"
+			 xmlns:converter="using:Todo.Uno.Converter"
+			 xmlns:utu="using:Uno.Toolkit.UI"
+			 mc:Ignorable="d"
+			 d:DesignHeight="500" d:DesignWidth="600">
+	<Grid>
+		<utu:DockPanel IsEnabled="{Binding CanEdit}">
+			<utu:DockPanel utu:DockPanel.Dock="Top">
+				<Button Margin="5"
+						utu:DockPanel.Dock="Left"
+						Command="{Binding NavigateBackCommand}">
+					<SymbolIcon Symbol="Back" />
+				</Button>
+
+				<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" utu:DockPanel.Dock="Right">
+					<Button ToolTipService.ToolTip="{x:Static loc:CommonLoc.Undo}" Command="{Binding UndoCommand}" Margin="5">
+						<SymbolIcon Symbol="Undo" />
+					</Button>
+					<Button ToolTipService.ToolTip="{x:Static loc:CommonLoc.Redo}" Command="{Binding RedoCommand}" Margin="5">
+						<SymbolIcon Symbol="Redo" />
+					</Button>
+					<Button ToolTipService.ToolTip="{x:Static loc:CommonLoc.Save}" Command="{Binding SaveCommand}" Margin="5">
+						<SymbolIcon Symbol="Save" />
+					</Button>
+					<Button ToolTipService.ToolTip="{x:Static loc:CommonLoc.Delete}" Command="{Binding DeleteCommand}" Margin="5">
+						<SymbolIcon Symbol="Delete" />
+					</Button>
+				</StackPanel>
+			</utu:DockPanel>
+			<ScrollViewer>
+				<StackPanel Margin="2,0" MinWidth="400" MinHeight="200"
+						HorizontalAlignment="Center" VerticalAlignment="Center">
+					<StackPanel Orientation="Horizontal" Margin="5">
+						<TextBlock Text="" MinWidth="75" VerticalAlignment="Center" />
+						<CheckBox IsChecked="{Binding IsDone, Mode=TwoWay}" Content="{x:Static loc:ChecklistTaskLoc.IsDone}" />
+					</StackPanel>
+					<StackPanel Orientation="Horizontal" Margin="5">
+						<TextBlock Text="{x:Static loc:ChecklistTaskLoc.Description}" MinWidth="75" VerticalAlignment="Center" />
+						<TextBox Text="{Binding Description, Mode=TwoWay}" MinWidth="200" />
+					</StackPanel>
+				</StackPanel>
+			</ScrollViewer>
+		</utu:DockPanel>
+
+		<local:SaveConfirmationDialogView Visibility="{Binding SaveDialogViewModel.IsVisible, Converter={x:Static converter:BooleanToVisibilityConverter.Instance}}"
+							  DataContext="{Binding SaveDialogViewModel}" />
+		<local:DeleteConfirmationDialogView Visibility="{Binding DeleteDialogViewModel.IsVisible, Converter={x:Static converter:BooleanToVisibilityConverter.Instance}}"
+							  DataContext="{Binding DeleteDialogViewModel}" />
+	</Grid>
+</UserControl>
+

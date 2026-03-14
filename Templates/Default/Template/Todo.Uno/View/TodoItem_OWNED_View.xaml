@@ -1,0 +1,113 @@
+<UserControl x:Class="<#cs Write(Project.Namespace)#>.Uno.View.<#cs Write(Definition.Name)#>View"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:local="using:<#cs Write(Project.Namespace)#>.Uno.View"
+			 xmlns:loc="using:<#cs Write(Project.Namespace)#>.Client.Localisation"
+			 xmlns:converter="using:<#cs Write(Project.Namespace)#>.Uno.Converter"
+			 xmlns:utu="using:Uno.Toolkit.UI"
+			 mc:Ignorable="d"
+			 d:DesignHeight="500" d:DesignWidth="600">
+
+	<StackPanel>
+<#cs
+foreach(var entry in Entries)
+{
+	if (!entry.IsArray && !entry.IsOwnedType)
+		WriteLine("		<StackPanel Orientation=\"Horizontal\" Margin=\"5\">");
+
+	if (entry.EntryType != "bool" && !entry.IsArray && !entry.IsOwnedType)
+	{
+		WriteLine($"			<TextBlock Text=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" MinWidth=\"75\" VerticalAlignment=\"Center\" />");
+	}
+	
+	if (entry.EntryType == "DateTime")
+	{
+		WriteLine($"			<DatePicker Date=\"{{Binding {entry.Field}, Mode=TwoWay}}\" />");
+	}
+	else if (entry.EntryType == "bool")
+	{
+		WriteLine($"			<TextBlock Text=\"\" MinWidth=\"75\" VerticalAlignment=\"Center\" />");
+		WriteLine($"			<CheckBox IsChecked=\"{{Binding {entry.Field}, Mode=TwoWay}}\" Content=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" />");
+	}
+	else if (entry.IsOwnedType)
+	{
+		WriteLine($"		<TextBlock Text=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" Foreground=\"{{StaticResource AppForegroundColor}}\" Background=\"{{StaticResource AppBackgroundColor}}\" />");
+		WriteLine($"		<local:{entry.EntryType}View DataContext=\"{{Binding {entry.Field}}}\" />");
+	}
+	else if (entry.IsEnumeration)
+	{
+		WriteLine($"			<ComboBox ItemsSource=\"{{Binding Available{entry.EntryType}s, Converter={{x:Static converter:EnumToTranslationConverter.Instance}}, ConverterParameter={{x:Type loc:{entry.EntryType}Loc}}}}\"");
+		WriteLine($"					  SelectedItem=\"{{Binding {entry.Field}, Mode=TwoWay, Converter={{x:Static converter:EnumToTranslationConverter.Instance}}, ConverterParameter={{x:Type loc:{entry.EntryType}Loc}}}}\" />");
+	}
+	else if (entry.IsArray)
+	{
+		WriteLine("		<StackPanel>");
+		WriteLine($"			<utu:DockPanel>");
+		WriteLine($"				<Button ToolTipService.ToolTip=\"{{x:Static loc:CommonLoc.New}}\" Command=\"{{Binding Add{entry.EntryType}Command}}\" Margin=\"5\" utu:DockPanel.Dock=\"Right\">");
+		WriteLine($"					<SymbolIcon Symbol=\"Add\" />");
+		WriteLine($"				</Button>");
+		WriteLine($"				<TextBlock Text=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" Foreground=\"{{StaticResource AppForegroundColor}}\" Background=\"{{StaticResource AppBackgroundColor}}\" Padding=\"5\" Margin=\"0,5\" VerticalAlignment=\"Center\"/>");
+		WriteLine($"			</utu:DockPanel>");
+		WriteLine($"");
+		WriteLine($"			<ListView");
+		WriteLine($"				Margin=\"0,0,5,0\"");
+		WriteLine($"				ItemsSource=\"{{Binding {entry.Field}}}\"");
+		WriteLine($"				SelectionMode=\"None\">");
+		WriteLine($"");
+		WriteLine($"				<ListView.ItemTemplate>");
+		WriteLine($"					<DataTemplate>");
+		WriteLine($"						<StackPanel>");
+
+		var d = Definitions.First(d => d.Name == entry.EntryType);
+		foreach(var e in d.Entries.Where(ent => !ent.IsEnumeration))
+		{
+			WriteLine($"							<StackPanel Orientation=\"Horizontal\" Margin=\"2\">");
+			WriteLine($"								<TextBlock Text=\"{{x:Static loc:{d.Name}Loc.{e.Field}}}\" MinWidth=\"100\" VerticalAlignment=\"Center\" />");
+			if(e.EntryType == "bool")
+			{
+				WriteLine($"								<CheckBox IsChecked=\"{{Binding {e.Field}, Mode=TwoWay}}\" />");
+			}
+			else
+			{
+				WriteLine($"								<TextBox Text=\"{{Binding {e.Field}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}}\" MinWidth=\"150\" />");
+			}
+			WriteLine($"							</StackPanel>");
+		}
+
+		WriteLine($"							<Button ToolTipService.ToolTip=\"Edit\" Command=\"{{Binding Edit{entry.EntryType}Command}}\" Padding=\"2\">");
+		WriteLine($"								<SymbolIcon Symbol=\"Edit\" />");
+		WriteLine($"							</Button>");
+		WriteLine($"							<Button ToolTipService.ToolTip=\"Delete\" Command=\"{{Binding DeleteCommand}}\" Padding=\"2\">");
+		WriteLine($"								<SymbolIcon Symbol=\"Delete\" />");
+		WriteLine($"							</Button>");
+		WriteLine($"						</StackPanel>");
+		WriteLine($"					</DataTemplate>");
+		WriteLine($"				</ListView.ItemTemplate>");
+		WriteLine($"			</ListView>");
+		WriteLine($"		</StackPanel>");
+	}
+	else
+	{
+		WriteLine($"			<TextBox Text=\"{{Binding {entry.Field}, Mode=TwoWay}}\" MinWidth=\"200\" />");
+	}
+	
+	if (!entry.IsOwnedType && !entry.IsArray)
+		WriteLine("		</StackPanel>");
+}
+
+Result = Result.TrimEnd();
+#>
+	</StackPanel>
+</UserControl>
+<#cs
+if (!Definition.IsOwnedType)
+{
+	RelativePath = "";
+}
+else
+{
+	RelativePath = RelativePath.Replace("TodoItem_OWNED_", Definition.Name).Replace("Todo", Project.Namespace);
+}
+#>
