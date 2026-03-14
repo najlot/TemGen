@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using <#cs Write(Project.Namespace)#>.Client.Data.Models;
+using <#cs Write(Project.Namespace)#>.Client.Localisation;
 using <#cs Write(Project.Namespace)#>.Client.MVVM;
 
 namespace <#cs Write(Project.Namespace)#>.ClientBase.ViewModel;
@@ -85,7 +86,7 @@ public partial class <#cs Write(Definition.Name)#>ViewModel
 		}
 		catch (Exception ex)
 		{
-			await NotificationService.ShowErrorAsync("Error deleting..." + ex.Message);
+			await NotificationService.ShowErrorAsync($"{ErrorLoc.ErrorDeleting} {ex.Message}");
 		}
 		finally
 		{

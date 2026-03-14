@@ -18,6 +18,6 @@ public abstract class ViewModelBase(IViewModelBaseParameters parameters) : Abstr
 	protected virtual async Task HandleError(Exception? ex)
 	{
 		Logger.LogError(ex, "An error occurred");
-		await DispatcherHelper.InvokeOnUIThread(() => NotificationService.ShowErrorAsync(ex?.Message ?? CommonLoc.ErrorCouldNotLoad));
+		await DispatcherHelper.InvokeOnUIThread(() => NotificationService.ShowErrorAsync(ex?.Message ?? ErrorLoc.ErrorCouldNotLoad));
 	}
 }

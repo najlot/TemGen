@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Todo.Client.Data.Models;
+using Todo.Client.Localisation;
 using Todo.Client.MVVM;
 
 namespace Todo.ClientBase.ViewModel;
@@ -85,7 +86,7 @@ public partial class TodoItemViewModel
 		}
 		catch (Exception ex)
 		{
-			await NotificationService.ShowErrorAsync("Error deleting..." + ex.Message);
+			await NotificationService.ShowErrorAsync($"{ErrorLoc.ErrorDeleting} {ex.Message}");
 		}
 		finally
 		{

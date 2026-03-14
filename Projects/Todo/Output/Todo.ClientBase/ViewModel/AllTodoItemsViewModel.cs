@@ -115,7 +115,7 @@ public class AllTodoItemsViewModel : ViewModelBase, IAsyncInitializable, IDispos
 		}
 		catch (Exception ex)
 		{
-			await NotificationService.ShowErrorAsync("Error loading..." + ex.Message);
+			await NotificationService.ShowErrorAsync($"{ErrorLoc.ErrorLoading} {ex.Message}");
 		}
 		finally
 		{
@@ -138,7 +138,7 @@ public class AllTodoItemsViewModel : ViewModelBase, IAsyncInitializable, IDispos
 		}
 		catch (Exception ex)
 		{
-			await NotificationService.ShowErrorAsync("Error adding..." + ex.Message);
+			await NotificationService.ShowErrorAsync($"{ErrorLoc.ErrorAdding} {ex.Message}");
 		}
 		finally
 		{
@@ -173,7 +173,7 @@ public class AllTodoItemsViewModel : ViewModelBase, IAsyncInitializable, IDispos
 		}
 		catch (Exception ex)
 		{
-			await NotificationService.ShowErrorAsync("Error loading data..." + ex.Message);
+			await NotificationService.ShowErrorAsync($"{ErrorLoc.ErrorLoadingData} {ex.Message}");
 		}
 		finally
 		{

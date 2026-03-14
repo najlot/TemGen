@@ -75,7 +75,7 @@ public class ManageViewModel : AbstractValidationViewModel
 		catch (System.Exception ex)
 		{
 			_logger.LogError(ex, "Error updating user password");
-			await _notificationService.ShowErrorAsync(ex.Message ?? CommonLoc.ErrorCouldNotLoad);
+			await _notificationService.ShowErrorAsync(ex.Message ?? ErrorLoc.ErrorCouldNotLoad);
 		}
 		finally
 		{
@@ -89,7 +89,7 @@ public class ManageViewModel : AbstractValidationViewModel
 		_logger.LogError(ex, "An error occurred during password change");
 
 		IsSubmitting = false;
-		await _notificationService.ShowErrorAsync(ex?.Message ?? CommonLoc.ErrorCouldNotLoad);
+		await _notificationService.ShowErrorAsync(ex?.Message ?? ErrorLoc.ErrorCouldNotLoad);
 	}
 
 	protected override IEnumerable<ValidationResult> Validate(string? propertyName)
@@ -97,9 +97,9 @@ public class ManageViewModel : AbstractValidationViewModel
 		yield return Result(
 			nameof(Password),
 			!string.IsNullOrWhiteSpace(Password) && Password.Length >= 6,
-			"Password too short");
+			ErrorLoc.PasswordTooShort);
 
-		yield return Result(nameof(PasswordConfirm), Password == PasswordConfirm, "Passwords do not match");
+		yield return Result(nameof(PasswordConfirm), Password == PasswordConfirm, ErrorLoc.ErrorPasswordsDoNotMatch);
 	}
 }
 <#cs SetOutputPathAndSkipOtherDefinitions()#>

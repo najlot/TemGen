@@ -10,7 +10,7 @@ foreach(var entry in Entries)
 {
     if (entry.IsReference)
     {
-        WriteLine($"		public Guid? {entry.Field}Id {{ get; set; }}");
+        WriteLine($"	public Guid? {entry.Field}Id {{ get; set; }}");
     }
     else if (entry.EntryType == "long"
         || entry.EntryType == "short"

@@ -21,10 +21,12 @@ internal partial class <#cs Write(Definition.Name)#>Mappings
 		new(from.Id,
 <#cs WriteCtorMapping("", "", MapArrayStrategy.LeaveAsIs)#>);
 
+	[MapIgnoreProperty(nameof(to.DeletedAt))]
 	public static partial void MapToModel(IMap map, Create<#cs Write(Definition.Name)#> from, <#cs Write(Definition.Name)#>Model to);
-<#cs 
+<#cs
 	bool hasArray = Entries.Any(e => e.IsArray);
 	WriteLine("");
+	WriteLine($"	[MapIgnoreProperty(nameof(to.DeletedAt))]");
 	foreach(var entry in Entries.Where(e => e.IsArray))
 	{
 		WriteLine($"	[MapIgnoreProperty(nameof(to.{entry.Field}))]");

@@ -25,6 +25,12 @@ public sealed class ViewStackNavigator<TView>(ServiceProvider serviceProvider)
 			return;
 		}
 
+		bool canNavigate = await _viewManager.CanNavigateAsync(CurrentView);
+		if (!canNavigate)
+		{
+			return;
+		}
+
 		await _dispatcherHelper.InvokeOnUIThread(async () =>
 		{
 			if (!CanNavigateBack())
@@ -39,6 +45,12 @@ public sealed class ViewStackNavigator<TView>(ServiceProvider serviceProvider)
 
 	public async Task NavigateForward<TViewModel>(Dictionary<string, object> parameters) where TViewModel : notnull
 	{
+		bool canNavigate = await _viewManager.CanNavigateAsync(CurrentView);
+		if (!canNavigate)
+		{
+			return;
+		}
+
 		bool isSessionStart = typeof(TViewModel).IsAssignableTo(typeof(ISessionStart));
 		if (isSessionStart)
 		{

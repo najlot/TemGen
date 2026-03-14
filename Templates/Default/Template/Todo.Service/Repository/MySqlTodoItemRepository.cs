@@ -7,18 +7,11 @@ using <#cs Write(Project.Namespace)#>.Service.Model;
 
 namespace <#cs Write(Project.Namespace)#>.Service.Repository;
 
-public class MySql<#cs Write(Definition.Name)#>Repository : I<#cs Write(Definition.Name)#>Repository
+public class MySql<#cs Write(Definition.Name)#>Repository(MySqlDbContext context) : I<#cs Write(Definition.Name)#>Repository
 {
-	private readonly MySqlDbContext _context;
-
-	public MySql<#cs Write(Definition.Name)#>Repository(MySqlDbContext context)
-	{
-		_context = context;
-	}
-
 	public IAsyncEnumerable<<#cs Write(Definition.Name)#>Model> GetAll()
 	{
-		return _context
+		return context
 			.<#cs Write(Definition.Name)#>s
 			.AsNoTracking()
 			.AsAsyncEnumerable();
@@ -26,7 +19,7 @@ public class MySql<#cs Write(Definition.Name)#>Repository : I<#cs Write(Definiti
 
 	public IQueryable<<#cs Write(Definition.Name)#>Model> GetAllQueryable()
 	{
-		return _context
+		return context
 			.<#cs Write(Definition.Name)#>s
 			.AsNoTracking()
 			.AsQueryable();
@@ -34,7 +27,7 @@ public class MySql<#cs Write(Definition.Name)#>Repository : I<#cs Write(Definiti
 
 	public async Task<<#cs Write(Definition.Name)#>Model?> Get(Guid id)
 	{
-		var e = await _context.<#cs Write(Definition.Name)#>s.FirstOrDefaultAsync(i => i.Id == id).ConfigureAwait(false);
+		var e = await context.<#cs Write(Definition.Name)#>s.FirstOrDefaultAsync(i => i.Id == id).ConfigureAwait(false);
 
 		if (e == null)
 		{
@@ -47,7 +40,7 @@ foreach(var entry in Entries)
 	if (entry.IsReference)
 	{
 		// Owned types are loaded automatically
-		// WriteLine($"		await _context.Entry(e).Reference(r => r.{entry.Field}).LoadAsync().ConfigureAwait(false);");
+		// WriteLine($"		await context.Entry(e).Reference(r => r.{entry.Field}).LoadAsync().ConfigureAwait(false);");
 	}
 }
 
@@ -71,26 +64,22 @@ foreach(var entry in Entries.Where(e => e.IsArray))
 Result = Result.TrimEnd();
 if(Entries.Where(e => e.IsArray).Any()) WriteLine("");
 #>
-		await _context.<#cs Write(Definition.Name)#>s.AddAsync(model).ConfigureAwait(false);
-
-		await _context.SaveChangesAsync().ConfigureAwait(false);
+		await context.<#cs Write(Definition.Name)#>s.AddAsync(model).ConfigureAwait(false);
 	}
 
-	public async Task Update(<#cs Write(Definition.Name)#>Model model)
+	public Task Update(<#cs Write(Definition.Name)#>Model model)
 	{
-		_context.<#cs Write(Definition.Name)#>s.Update(model);
-
-		await _context.SaveChangesAsync().ConfigureAwait(false);
+		context.<#cs Write(Definition.Name)#>s.Update(model);
+		return Task.CompletedTask;
 	}
 
 	public async Task Delete(Guid id)
 	{
-		var model = await _context.<#cs Write(Definition.Name)#>s.FirstOrDefaultAsync(i => i.Id == id).ConfigureAwait(false);
+		var model = await context.<#cs Write(Definition.Name)#>s.FirstOrDefaultAsync(i => i.Id == id).ConfigureAwait(false);
 
 		if (model != null)
 		{
-			_context.<#cs Write(Definition.Name)#>s.Remove(model);
-			await _context.SaveChangesAsync().ConfigureAwait(false);
+			context.<#cs Write(Definition.Name)#>s.Remove(model);
 		}
 	}
 }<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

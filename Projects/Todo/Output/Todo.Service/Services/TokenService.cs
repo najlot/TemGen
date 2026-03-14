@@ -10,19 +10,10 @@ using System.Threading.Tasks;
 
 namespace Todo.Service.Services;
 
-public class TokenService
+public class TokenService(
+	IUserService userService,
+	ServiceConfiguration serviceConfiguration)
 {
-	private readonly IUserService _userService;
-	private readonly ServiceConfiguration _serviceConfiguration;
-
-	public TokenService(
-		IUserService userService,
-		ServiceConfiguration serviceConfiguration)
-	{
-		_userService = userService;
-		_serviceConfiguration = serviceConfiguration;
-	}
-
 	public static TokenValidationParameters GetValidationParameters(string secret)
 	{
 		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
@@ -44,7 +35,7 @@ public class TokenService
 
 	public TokenValidationParameters GetValidationParameters()
 	{
-		return GetValidationParameters(_serviceConfiguration.Secret);
+		return GetValidationParameters(serviceConfiguration.Secret);
 	}
 
 	public string GetRefreshToken(string username, Guid userId)
@@ -55,7 +46,7 @@ public class TokenService
 			new Claim(ClaimTypes.NameIdentifier, userId.ToString())
 		};
 
-		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_serviceConfiguration.Secret));
+		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(serviceConfiguration.Secret));
 		var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
 		var jwtToken = new JwtSecurityToken(
@@ -72,7 +63,7 @@ public class TokenService
 
 	public async Task<string?> GetToken(string username, string password)
 	{
-		var user = await _userService.GetUserModelFromName(username).ConfigureAwait(false);
+		var user = await userService.GetUserModelFromName(username).ConfigureAwait(false);
 
 		if (user == null)
 		{
@@ -93,7 +84,7 @@ public class TokenService
 			new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
 		};
 
-		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_serviceConfiguration.Secret));
+		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(serviceConfiguration.Secret));
 		var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
 		var jwtToken = new JwtSecurityToken(

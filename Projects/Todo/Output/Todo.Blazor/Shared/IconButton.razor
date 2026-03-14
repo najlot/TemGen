@@ -1,0 +1,52 @@
+﻿<button class="@ButtonClass material-symbols-sharp @(CanHandleClick() ? string.Empty : "disabled")"
+        type="@ButtonType"
+        @onclick="HandleClick" 
+        title="@Title"
+        aria-label="@Title">
+    @if (IsExecuting)
+    {
+        <div class="spin">@ExecutingIcon</div>
+    }
+    else
+    {
+        @Icon
+    }
+</button>
+
+@code {
+    [Parameter] public string Icon { get; set; } = string.Empty;
+    [Parameter] public string ExecutingIcon { get; set; } = "progress_activity";
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string ButtonType { get; set; } = "button";
+    [Parameter] public string ButtonClass { get; set; } = "btn btn-outline-secondary";
+
+    [Parameter] public EventCallback Execute { get; set; }
+    [Parameter] public Func<bool> CanExecute { get; set; } = () => true;
+
+    public bool IsExecuting { get; set; } = false;
+
+    private bool CanHandleClick() => !IsExecuting && CanExecute();
+
+    private async Task HandleClick()
+    {
+        if (!Execute.HasDelegate)
+        {
+            return;
+        }
+        else if (CanHandleClick())
+        {
+            IsExecuting = true;
+            await InvokeAsync(StateHasChanged);
+
+            try
+            {
+                await Execute.InvokeAsync();
+            }
+            finally
+            {
+                IsExecuting = false;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+}

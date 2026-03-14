@@ -1,7 +1,7 @@
-﻿using System.IO;
+﻿using Microsoft.Extensions.Configuration;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Text.Json;
-using Microsoft.Extensions.Configuration;
-using Najlot.Log;
 
 namespace Todo.Service.Configuration;
 
@@ -13,27 +13,28 @@ public static class ConfigurationReader
 		PropertyNameCaseInsensitive = true,
 	};
 
-	public static T? ReadConfiguration<T>(this IConfiguration configuration) where T : class, new()
+	public static bool TryReadConfiguration<T>(this IConfiguration configuration, [NotNullWhen(true)] out T? config) where T : class, new()
 	{
 		var key = typeof(T).Name;
-		return ReadConfiguration<T>(configuration, key);
+		return TryReadConfiguration<T>(configuration, key, out config);
 	}
 
-	public static T? ReadConfiguration<T>(this IConfiguration configuration, string key) where T : class, new()
+	public static bool TryReadConfiguration<T>(this IConfiguration configuration, string key, [NotNullWhen(true)] out T? config) where T : class, new()
 	{
 		var section = configuration.GetSection(key);
 
 		if (!section.Exists())
 		{
-			return ReadConfiguration<T>(key);
+			return TryReadConfiguration<T>(key, out config);
 		}
 
 		var t = new T();
 		section.Bind(t);
-		return t;
+		config = t;
+		return true;
 	}
 
-	public static T? ReadConfiguration<T>(string fileName) where T : class, new()
+	public static bool TryReadConfiguration<T>(string fileName, [NotNullWhen(true)] out T? config) where T : class, new()
 	{
 		var configDir = "config";
 		var configPath = Path.Combine(configDir, fileName);
@@ -45,21 +46,39 @@ public static class ConfigurationReader
 
 			if (!File.Exists(configPath))
 			{
-				if (!File.Exists(configPath + ".example"))
+				if (!Directory.Exists(configDir))
 				{
-					if (!Directory.Exists(configDir))
-					{
-						Directory.CreateDirectory(configDir);
-					}
-
-					File.WriteAllText(configPath + ".example", JsonSerializer.Serialize(new T(), _options));
+					Directory.CreateDirectory(configDir);
 				}
 
-				return null;
+				config = null;
+				return false;
 			}
 		}
 
 		var configContent = File.ReadAllText(configPath);
-		return JsonSerializer.Deserialize<T>(configContent, _options);
+		config = JsonSerializer.Deserialize<T>(configContent, _options) ?? new T();
+		return true;
+	}
+
+	public static void WriteConfigurationExample<T>() where T : class, new()
+	{
+		var key = typeof(T).Name;
+		WriteConfigurationExample<T>(key);
+	}
+
+	public static void WriteConfigurationExample<T>(string key) where T : class, new()
+	{
+		var fileName = key + ".json";
+		var configDir = "config";
+		var configPath = Path.Combine(configDir, fileName);
+		configPath = Path.GetFullPath(configPath);
+
+		if (!Directory.Exists(configDir))
+		{
+			Directory.CreateDirectory(configDir);
+		}
+
+		File.WriteAllText(configPath + ".example", JsonSerializer.Serialize(new T(), _options));
 	}
 }

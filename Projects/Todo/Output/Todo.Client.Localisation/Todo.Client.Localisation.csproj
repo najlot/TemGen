@@ -10,15 +10,10 @@
 			<AutoGen>True</AutoGen>
 			<DependentUpon>CommonLoc.resx</DependentUpon>
 		</Compile>
-		<Compile Update="ProfileLoc.Designer.cs">
+		<Compile Update="ErrorLoc.Designer.cs">
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>
-			<DependentUpon>ProfileLoc.resx</DependentUpon>
-		</Compile>
-		<Compile Update="SourceLoc.Designer.cs">
-			<DesignTime>True</DesignTime>
-			<AutoGen>True</AutoGen>
-			<DependentUpon>SourceLoc.resx</DependentUpon>
+			<DependentUpon>ErrorLoc.resx</DependentUpon>
 		</Compile>
 		<Compile Update="UserLoc.Designer.cs">
 			<DesignTime>True</DesignTime>
@@ -53,23 +48,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Update="CommonLoc.de.resx">
-			<Generator></Generator>
-		</EmbeddedResource>
 		<EmbeddedResource Update="CommonLoc.resx">
 			<Generator>PublicResXFileCodeGenerator</Generator>
 			<LastGenOutput>CommonLoc.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
-		<EmbeddedResource Update="ProfileLoc.de.resx">
-			<Generator></Generator>
-		</EmbeddedResource>
-		<EmbeddedResource Update="ProfileLoc.resx">
+		<EmbeddedResource Update="ErrorLoc.resx">
 			<Generator>PublicResXFileCodeGenerator</Generator>
-			<LastGenOutput>ProfileLoc.Designer.cs</LastGenOutput>
-		</EmbeddedResource>
-		<EmbeddedResource Update="SourceLoc.resx">
-			<Generator>PublicResXFileCodeGenerator</Generator>
-			<LastGenOutput>SourceLoc.Designer.cs</LastGenOutput>
+			<LastGenOutput>ErrorLoc.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
 		<EmbeddedResource Update="UserLoc.resx">
 			<Generator>PublicResXFileCodeGenerator</Generator>

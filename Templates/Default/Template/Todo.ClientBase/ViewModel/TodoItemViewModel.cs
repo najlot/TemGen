@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Client.Data.Models;
+<#cs if(Entries.Where(e => e.IsArray).Any()) { WriteLine("using System.Threading;"); } #>using System.Threading.Tasks;
+<#cs if(Entries.Where(e => e.IsArray).Any()) { WriteLine("using System.Windows.Input;"); } #>using <#cs Write(Project.Namespace)#>.Client.Data.Models;
 using <#cs Write(Project.Namespace)#>.Client.Data.Services;
+using <#cs Write(Project.Namespace)#>.Client.Localisation;
 using <#cs Write(Project.Namespace)#>.Client.MVVM;
 using <#cs Write(Project.Namespace)#>.Contracts;
 using <#cs Write(Project.Namespace)#>.Contracts.Events;
 
 namespace <#cs Write(Project.Namespace)#>.ClientBase.ViewModel;
 
-public <#cs if(Entries.Where(e => e.IsArray).Any()) Write("partial ");#>class <#cs Write(Definition.Name)#>ViewModel : ValidationViewModelBase, IParameterizable, IAsyncInitializable, IDisposable
+public <#cs if(Entries.Where(e => e.IsArray).Any()) Write("partial ");#>class <#cs Write(Definition.Name)#>ViewModel : ValidationViewModelBase, IParameterizable, IAsyncInitializable, INavigationGuard, IDisposable
 {
 	private readonly I<#cs Write(Definition.Name)#>Service _<#cs Write(Definition.NameLow)#>Service;
 <#cs
@@ -82,6 +83,7 @@ foreach (var entry in Entries.Where(e => !e.IsArray))
 	public bool CanRedo => _changeTracker.CanRedo;
 
 	public bool IsBusy { get; private set => Set(ref field, value); }
+	public bool CanEdit { get; private set => Set(ref field, value); } = true;
 
 	public bool IsNew { get; set; }
 
@@ -116,7 +118,7 @@ foreach (var definition in references)
 }
 #>
 		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
-		SaveCommand = new AsyncCommand(SaveAsync, t => HandleError(t.Exception));
+		SaveCommand = new AsyncCommand(SaveAsync, t => HandleError(t.Exception)<#cs if(Entries.Where(e => e.IsArray).Any()) Write(", () => CanUndo && !HasErrors"); else Write(", () => CanUndo"); #>);
 		DeleteCommand = new AsyncCommand(DeleteAsync, t => HandleError(t.Exception));
 		UndoCommand = new RelayCommand(() => _changeTracker.Undo(), () => _changeTracker.CanUndo);
 		RedoCommand = new RelayCommand(() => _changeTracker.Redo(), () => _changeTracker.CanRedo);
@@ -127,8 +129,9 @@ foreach (var definition in references)
 			RaisePropertiesChanged(nameof(CanUndo), nameof(CanRedo));
 			UndoCommand.RaiseCanExecuteChanged();
 			RedoCommand.RaiseCanExecuteChanged();
+			SaveCommand.RaiseCanExecuteChanged();
 		};
-
+<#cs if(Entries.Where(e => e.IsArray).Any()) { WriteLine("");  WriteLine("\t\tHasErrorsChanged += SaveCommand.RaiseCanExecuteChanged;"); } #>
 		_<#cs Write(Definition.NameLow)#>Service.ItemUpdated += Handle;
 	}
 
@@ -200,11 +203,12 @@ foreach (var entry in Entries.Where(e => e.IsArray))
 	public AsyncCommand SaveCommand { get; }
 	public RelayCommand UndoCommand { get; }
 	public RelayCommand RedoCommand { get; }
-	public async Task SaveAsync()
+
+	private async Task<bool> SaveAsync()
 	{
 		if (IsBusy)
 		{
-			return;
+			return false;
 		}
 
 		try
@@ -214,7 +218,7 @@ foreach (var entry in Entries.Where(e => e.IsArray))
 			ValidateAll();
 			if (HasErrors)
 			{
-				return;
+				return false;
 			}
 
 			var model = Map.From(this).To<<#cs Write(Definition.Name)#>Model>();
@@ -230,16 +234,20 @@ foreach (var entry in Entries.Where(e => e.IsArray))
 			}
 
 			_changeTracker.Clear();
+			return true;
 		}
 		catch (Exception ex)
 		{
-			await NotificationService.ShowErrorAsync("Error saving..." + ex.Message);
+			await NotificationService.ShowErrorAsync($"{ErrorLoc.ErrorSaving} {ex.Message}");
+			return false;
 		}
 		finally
 		{
 			IsBusy = false;
 		}
 	}
+
+	public DeleteConfirmationDialogViewModel DeleteDialogViewModel { get; } = new DeleteConfirmationDialogViewModel();
 
 	public AsyncCommand DeleteCommand { get; }
 	public async Task DeleteAsync()
@@ -249,21 +257,79 @@ foreach (var entry in Entries.Where(e => e.IsArray))
 			return;
 		}
 
+		if (DeleteDialogViewModel.IsVisible)
+		{
+			return;
+		}
+
+		CanEdit = false;
+
+		try
+		{
+			var deleteDialogResult = await DeleteDialogViewModel.ShouldDelete();
+			if (deleteDialogResult == DeleteDialogResult.Cancel)
+			{
+				return;
+			}
+		}
+		finally
+		{
+			CanEdit = true;
+		}
+
 		try
 		{
 			IsBusy = true;
 
 			await _<#cs Write(Definition.NameLow)#>Service.DeleteItemAsync(Id);
+			_changeTracker.Clear();
 			await NavigationService.NavigateBack();
 		}
 		catch (Exception ex)
 		{
-			await NotificationService.ShowErrorAsync("Error deleting..." + ex.Message);
+			await NotificationService.ShowErrorAsync($"{ErrorLoc.ErrorDeleting} {ex.Message}");
 		}
 		finally
 		{
 			IsBusy = false;
 		}
+	}
+
+	public SaveConfirmationDialogViewModel SaveDialogViewModel { get; } = new SaveConfirmationDialogViewModel();
+	
+	public async Task<bool> CanNavigateAsync()
+	{
+		if (SaveDialogViewModel.IsVisible || DeleteDialogViewModel.IsVisible)
+		{
+			return false;
+		}
+
+		if (_changeTracker.CanUndo)
+		{
+			CanEdit = false;
+
+			try
+			{
+				SaveDialogViewModel.CanSave = !HasErrors;
+				var saveDialogResult = await SaveDialogViewModel.ShouldSave();
+				switch (saveDialogResult)
+				{
+					case SaveDialogResult.Save:
+						return await SaveAsync();
+					case SaveDialogResult.Discard:
+						// Nothing to do, just continue navigation
+						break;
+					case SaveDialogResult.Cancel:
+						return false;
+				}
+			}
+			finally
+			{
+				CanEdit = true;
+			}
+		}
+
+		return true;
 	}
 
 	protected override IEnumerable<ValidationResult> Validate(string? propertyName)
@@ -273,7 +339,10 @@ foreach (var entry in Entries.Where(e => e.IsArray))
 
 	protected override bool ShouldIgnorePropertyForChangesAndValidation(string? propertyName)
 		=> base.ShouldIgnorePropertyForChangesAndValidation(propertyName)
-			|| propertyName is nameof(IsBusy) or nameof(IsNew) or nameof(Id)<#cs
+			|| propertyName is nameof(IsBusy)
+							or nameof(IsNew)
+							or nameof(CanEdit)
+							or nameof(Id)<#cs
 var ignoreReferences = Entries
 	.Where(e => e.IsReference)
 	.Select(e => e.ReferenceType)
@@ -283,12 +352,12 @@ var ignoreReferences = Entries
 
 foreach (var definition in ignoreReferences)
 {
-	Write($" or nameof(Available{definition.Name}s)");
+	Write($"\r\n\t\t\t\t\t\t\tor nameof(Available{definition.Name}s)");
 }
 
 foreach (var entry in Entries.Where(e => e.IsEnumeration))
 {
-	Write($" or nameof(Available{entry.EntryType}s)");
+	Write($"\r\n\t\t\t\t\t\t\tor nameof(Available{entry.EntryType}s)");
 }
 #>;
 

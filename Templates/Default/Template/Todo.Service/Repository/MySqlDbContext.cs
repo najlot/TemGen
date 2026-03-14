@@ -1,28 +1,33 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 using <#cs Write(Project.Namespace)#>.Service.Configuration;
 using <#cs Write(Project.Namespace)#>.Service.Model;
 
 namespace <#cs Write(Project.Namespace)#>.Service.Repository;
 
-public class MySqlDbContext : DbContext
+public class MySqlDbContext(
+	MySqlConfiguration configuration,
+	ILoggerFactory loggerFactory) : DbContext
 {
-	private readonly MySqlConfiguration _configuration;
-
-	public MySqlDbContext(MySqlConfiguration configuration)
-	{
-		_configuration = configuration;
-	}
+	private static readonly ConcurrentDictionary<string, ServerVersion> _knownVersions = new();
 
 	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 	{
-		var connectionString = $"server={_configuration.Host};" +
-			$"port={_configuration.Port};" +
-			$"database={_configuration.Database};" +
-			$"uid={_configuration.User};" +
-			$"password={_configuration.Password}";
+		var connectionString = $"server={configuration.Host};" +
+			$"port={configuration.Port};" +
+			$"database={configuration.Database};" +
+			$"uid={configuration.User};" +
+			$"password={configuration.Password}";
 
-		var serverVersion = ServerVersion.AutoDetect(connectionString);
-		optionsBuilder.UseMySql(connectionString, serverVersion);
+		if (!_knownVersions.TryGetValue(connectionString, out var version))
+		{
+			version = ServerVersion.AutoDetect(connectionString);
+			_knownVersions[connectionString] = version;
+		}
+
+		optionsBuilder.UseMySql(connectionString, version);
+		optionsBuilder.UseLoggerFactory(loggerFactory);
 	}
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -32,6 +37,7 @@ public class MySqlDbContext : DbContext
 		modelBuilder.Entity<UserModel>(entity =>
 		{
 			entity.HasKey(e => e.Id);
+			entity.HasIndex(e => e.DeletedAt).IsUnique(false);
 		});
 <#cs
 foreach	(var definition in Definitions.Where(d => !(d.IsEnumeration
@@ -42,6 +48,7 @@ foreach	(var definition in Definitions.Where(d => !(d.IsEnumeration
 	WriteLine($"		modelBuilder.Entity<{definition.Name}Model>(entity =>");
 	WriteLine("		{");
 	WriteLine("			entity.HasKey(e => e.Id);");
+	WriteLine("			entity.HasIndex(e => e.DeletedAt).IsUnique(false);");
 	
 	foreach	(var e in definition.Entries)
 	{

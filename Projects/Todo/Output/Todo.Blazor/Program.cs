@@ -21,12 +21,9 @@ public class Program
 
 	public static void Main(string[] args)
 	{
-		var configFolderPath = Path.GetFullPath("config");
-		var configPath = Path.Combine(configFolderPath, "Log.config");
-		configPath = Path.GetFullPath(configPath);
-		Directory.CreateDirectory(configFolderPath);
-
 		LogErrorHandler.Instance.ErrorOccured += LogErrorOccured;
+
+		var builder = WebApplication.CreateBuilder(args);
 
 		LogAdministrator.Instance
 			.SetLogLevel(Najlot.Log.LogLevel.Debug)
@@ -38,9 +35,8 @@ public class Program
 				30,
 				Path.Combine("logs", ".logs"),
 				true)
-			.ReadConfigurationFromXmlFile(configPath, true, true);
+			/*.ReadConfiguration(builder.Configuration)*/;
 
-		var builder = WebApplication.CreateBuilder(args);
 		var map = new Najlot.Map.Map();
 		builder.Services.AddSingleton(map.RegisterTodoClientDataMappings());
 

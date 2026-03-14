@@ -75,14 +75,14 @@ public class LoginViewModel : AbstractValidationViewModel, IAsyncInitializable, 
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Failed to create token for user {Username}", Username);
-				await _notificationService.ShowErrorAsync(ex.Message ?? CommonLoc.ErrorCouldNotLoad);
+				await _notificationService.ShowErrorAsync(ex.Message ?? ErrorLoc.ErrorCouldNotLoad);
 				return;
 			}
 
 			if (string.IsNullOrWhiteSpace(token))
 			{
 				_logger.LogWarning("Login failed for user {Username}: invalid credentials", Username);
-				await _notificationService.ShowErrorAsync(CommonLoc.ErrorCouldNotLoad);
+				await _notificationService.ShowErrorAsync(ErrorLoc.ErrorInvalidUsernamePassword);
 			}
 			else
 			{
@@ -106,7 +106,7 @@ public class LoginViewModel : AbstractValidationViewModel, IAsyncInitializable, 
 		_logger.LogError(ex, "An error occurred during login operation");
 
 		IsSubmitting = false;
-		await _notificationService.ShowErrorAsync(ex?.Message ?? CommonLoc.ErrorCouldNotLoad);
+		await _notificationService.ShowErrorAsync(ex?.Message ?? ErrorLoc.ErrorCouldNotLoad);
 	}
 
 	protected override IEnumerable<ValidationResult> Validate(string? propertyName)
@@ -114,11 +114,11 @@ public class LoginViewModel : AbstractValidationViewModel, IAsyncInitializable, 
 		yield return Result(
 			nameof(Username),
 			!string.IsNullOrWhiteSpace(Username) && Username.Length >= 3,
-			"Username too short");
+			ErrorLoc.UsernameTooShort);
 
 		yield return Result(
 			nameof(Password),
 			!string.IsNullOrWhiteSpace(Password) && Password.Length >= 6,
-			"Password too short");
+			ErrorLoc.PasswordTooShort);
 	}
 }<#cs SetOutputPathAndSkipOtherDefinitions()#>

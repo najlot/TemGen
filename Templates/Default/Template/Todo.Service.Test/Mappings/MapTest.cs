@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using <#cs Write(Project.Namespace)#>.Service.Mappings;
 
 namespace <#cs Write(Project.Namespace)#>.Service.Test.Mappings;
 

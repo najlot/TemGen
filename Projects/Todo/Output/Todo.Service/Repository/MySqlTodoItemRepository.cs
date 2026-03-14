@@ -7,18 +7,11 @@ using Todo.Service.Model;
 
 namespace Todo.Service.Repository;
 
-public class MySqlTodoItemRepository : ITodoItemRepository
+public class MySqlTodoItemRepository(MySqlDbContext context) : ITodoItemRepository
 {
-	private readonly MySqlDbContext _context;
-
-	public MySqlTodoItemRepository(MySqlDbContext context)
-	{
-		_context = context;
-	}
-
 	public IAsyncEnumerable<TodoItemModel> GetAll()
 	{
-		return _context
+		return context
 			.TodoItems
 			.AsNoTracking()
 			.AsAsyncEnumerable();
@@ -26,7 +19,7 @@ public class MySqlTodoItemRepository : ITodoItemRepository
 
 	public IQueryable<TodoItemModel> GetAllQueryable()
 	{
-		return _context
+		return context
 			.TodoItems
 			.AsNoTracking()
 			.AsQueryable();
@@ -34,7 +27,7 @@ public class MySqlTodoItemRepository : ITodoItemRepository
 
 	public async Task<TodoItemModel?> Get(Guid id)
 	{
-		var e = await _context.TodoItems.FirstOrDefaultAsync(i => i.Id == id).ConfigureAwait(false);
+		var e = await context.TodoItems.FirstOrDefaultAsync(i => i.Id == id).ConfigureAwait(false);
 
 		if (e == null)
 		{
@@ -53,26 +46,22 @@ public class MySqlTodoItemRepository : ITodoItemRepository
 			entry.Id = 0;
 		}
 
-		await _context.TodoItems.AddAsync(model).ConfigureAwait(false);
-
-		await _context.SaveChangesAsync().ConfigureAwait(false);
+		await context.TodoItems.AddAsync(model).ConfigureAwait(false);
 	}
 
-	public async Task Update(TodoItemModel model)
+	public Task Update(TodoItemModel model)
 	{
-		_context.TodoItems.Update(model);
-
-		await _context.SaveChangesAsync().ConfigureAwait(false);
+		context.TodoItems.Update(model);
+		return Task.CompletedTask;
 	}
 
 	public async Task Delete(Guid id)
 	{
-		var model = await _context.TodoItems.FirstOrDefaultAsync(i => i.Id == id).ConfigureAwait(false);
+		var model = await context.TodoItems.FirstOrDefaultAsync(i => i.Id == id).ConfigureAwait(false);
 
 		if (model != null)
 		{
-			_context.TodoItems.Remove(model);
-			await _context.SaveChangesAsync().ConfigureAwait(false);
+			context.TodoItems.Remove(model);
 		}
 	}
 }

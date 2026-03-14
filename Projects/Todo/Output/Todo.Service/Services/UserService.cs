@@ -14,27 +14,16 @@ using Todo.Contracts.ListItems;
 
 namespace Todo.Service.Services;
 
-public class UserService : IUserService
+public class UserService(
+	IUserRepository userRepository,
+	IPublisher publisher,
+	IMap map) : IUserService
 {
-	private readonly IUserRepository _userRepository;
-	private readonly IPublisher _publisher;
-	private readonly IMap _map;
-
-	public UserService(
-		IUserRepository userRepository,
-		IPublisher publisher,
-		IMap map)
-	{
-		_userRepository = userRepository;
-		_publisher = publisher;
-		_map = map;
-	}
-
 	public async Task CreateUser(CreateUser command, Guid userId)
 	{
 		var username = command.Username.Normalize().ToLower();
 
-		var user = await _userRepository.Get(username).ConfigureAwait(false);
+		var user = await userRepository.Get(username).ConfigureAwait(false);
 		if (user != null)
 		{
 			throw new InvalidOperationException("User already exists!");
@@ -48,22 +37,20 @@ public class UserService : IUserService
 		var passwordBytes = Encoding.UTF8.GetBytes(command.Password);
 		var passwordHash = SHA256.HashData(passwordBytes);
 
-		var item = _map.From(command).To<UserModel>();
+		var item = map.From(command).To<UserModel>();
 		item.Username = username;
 		item.PasswordHash = passwordHash;
-		item.IsActive = true;
+		await userRepository.Insert(item).ConfigureAwait(false);
 
-		await _userRepository.Insert(item).ConfigureAwait(false);
-
-		var message = _map.From(item).To<UserCreated>();
-		await _publisher.PublishAsync(message).ConfigureAwait(false);
+		var message = map.From(item).To<UserCreated>();
+		await publisher.PublishAsync(message).ConfigureAwait(false);
 	}
 
 	public async Task UpdateUser(UpdateUser command, Guid userId)
 	{
 		var username = command.Username.Normalize().ToLower();
 
-		var item = await _userRepository.Get(command.Id).ConfigureAwait(false);
+		var item = await userRepository.Get(command.Id).ConfigureAwait(false);
 
 		if (item == null)
 		{
@@ -93,15 +80,15 @@ public class UserService : IUserService
 			item.PasswordHash = SHA256.HashData(passwordBytes);
 		}
 
-		await _userRepository.Update(item).ConfigureAwait(false);
+		await userRepository.Update(item).ConfigureAwait(false);
 
-		var message = _map.From(item).To<UserUpdated>();
-		await _publisher.PublishAsync(message).ConfigureAwait(false);
+		var message = map.From(item).To<UserUpdated>();
+		await publisher.PublishAsync(message).ConfigureAwait(false);
 	}
 
 	public async Task DeleteUser(Guid id, Guid userId)
 	{
-		var item = await _userRepository.Get(id).ConfigureAwait(false);
+		var item = await userRepository.Get(id).ConfigureAwait(false);
 
 		if (item == null)
 		{
@@ -113,30 +100,39 @@ public class UserService : IUserService
 			throw new InvalidOperationException("You must not delete other user!");
 		}
 
-		item.IsActive = false;
-
-		await _userRepository.Update(item).ConfigureAwait(false);
+		if (item.DeletedAt == null)
+		{
+			item.DeletedAt = DateTime.UtcNow;
+			await userRepository.Update(item).ConfigureAwait(false);
+		}
+		else
+		{
+			await userRepository.Delete(id).ConfigureAwait(false);
+		}
 
 		var message = new UserDeleted(id);
-		await _publisher.PublishAsync(message).ConfigureAwait(false);
+		await publisher.PublishAsync(message).ConfigureAwait(false);
 	}
 
 	public async Task<User?> GetItem(Guid id)
 	{
-		var item = await _userRepository.Get(id).ConfigureAwait(false);
-		return _map.FromNullable(item)?.To<User>();
+		var item = await userRepository.Get(id).ConfigureAwait(false);
+		return map.FromNullable(item)?.To<User>();
 	}
 
 	public IAsyncEnumerable<UserListItem> GetItemsForUser(Guid userId)
 	{
-		var items = _userRepository.GetAll().Where(u => u.IsActive);
-		return _map.From(items).To<UserListItem>();
+		var query = userRepository.GetAllQueryable();
+
+		query = query.Where(e => e.DeletedAt == null);
+
+		return map.From(query).To<UserListItem>().ToAsyncEnumerable();
 	}
 
 	public async Task<UserModel?> GetUserModelFromName(string username)
 	{
 		username = username.Normalize().ToLower();
-		var user = await _userRepository.Get(username).ConfigureAwait(false);
+		var user = await userRepository.Get(username).ConfigureAwait(false);
 		return user;
 	}
 }

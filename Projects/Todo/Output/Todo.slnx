@@ -1,0 +1,13 @@
+<Solution>
+	<Project Path="Todo.Blazor/Todo.Blazor.csproj" />
+	<Project Path="Todo.Client.Data.Test/Todo.Client.Data.Test.csproj" />
+	<Project Path="Todo.Client.Data/Todo.Client.Data.csproj" />
+	<Project Path="Todo.Client.Localisation/Todo.Client.Localisation.csproj" />
+	<Project Path="Todo.Client.MVVM/Todo.Client.MVVM.csproj" />
+	<Project Path="Todo.ClientBase.Test/Todo.ClientBase.Test.csproj" />
+	<Project Path="Todo.ClientBase/Todo.ClientBase.csproj" />
+	<Project Path="Todo.Contracts/Todo.Contracts.csproj" />
+	<Project Path="Todo.Service.Test/Todo.Service.Test.csproj" />
+	<Project Path="Todo.Service/Todo.Service.csproj" />
+	<Project Path="Todo.Wpf/Todo.Wpf.csproj" />
+</Solution>

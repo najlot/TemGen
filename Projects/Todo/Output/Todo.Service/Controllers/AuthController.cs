@@ -5,24 +5,16 @@ using System.Threading.Tasks;
 using Todo.Contracts;
 using Todo.Contracts.Commands;
 using Todo.Service.Services;
+using Todo.Service.Repository;
 
 namespace Todo.Service.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AuthController : ControllerBase
+public class AuthController(
+	IUserService userService,
+	TokenService tokenService) : ControllerBase
 {
-	private readonly IUserService _userService;
-	private readonly TokenService _tokenService;
-
-	public AuthController(
-		IUserService userService,
-		TokenService tokenService)
-	{
-		_userService = userService;
-		_tokenService = tokenService;
-	}
-
 	[Authorize]
 	[HttpGet("Refresh")]
 	public ActionResult<string> Refresh()
@@ -40,7 +32,7 @@ public class AuthController : ControllerBase
 			return BadRequest();
 		}
 
-		var token = _tokenService.GetRefreshToken(userName, userId);
+		var token = tokenService.GetRefreshToken(userName, userId);
 
 		return Ok(token);
 	}
@@ -54,7 +46,7 @@ public class AuthController : ControllerBase
 			return BadRequest();
 		}
 
-		var token = await _tokenService.GetToken(request.Username, request.Password).ConfigureAwait(false);
+		var token = await tokenService.GetToken(request.Username, request.Password).ConfigureAwait(false);
 
 		if (token == null)
 		{
@@ -66,14 +58,17 @@ public class AuthController : ControllerBase
 
 	[AllowAnonymous]
 	[HttpPost("Register")]
-	public async Task<ActionResult> Register([FromBody] CreateUser command)
+	public async Task<ActionResult> Register(
+		[FromBody] CreateUser command,
+		[FromServices] IUnitOfWork unitOfWork)
 	{
 		if (!ModelState.IsValid)
 		{
 			return BadRequest();
 		}
 
-		await _userService.CreateUser(command, Guid.Empty).ConfigureAwait(false);
+		await userService.CreateUser(command, Guid.Empty).ConfigureAwait(false);
+		await unitOfWork.CommitAsync().ConfigureAwait(false);
 
 		return Ok();
 	}

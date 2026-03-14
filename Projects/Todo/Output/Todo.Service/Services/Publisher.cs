@@ -4,6 +4,10 @@ using System.Threading.Tasks;
 
 namespace Todo.Service.Services;
 
+public class MessageHub : Hub
+{
+}
+
 public interface IPublisher
 {
 	Task PublishAsync<T>(T message) where T : notnull;

@@ -137,7 +137,7 @@ foreach (var entry in Entries
 		}
 		catch (Exception ex)
 		{
-			await NotificationService.ShowErrorAsync("Error loading..." + ex.Message);
+			await NotificationService.ShowErrorAsync($"{ErrorLoc.ErrorLoading} {ex.Message}");
 		}
 		finally
 		{
@@ -160,7 +160,7 @@ foreach (var entry in Entries
 		}
 		catch (Exception ex)
 		{
-			await NotificationService.ShowErrorAsync("Error adding..." + ex.Message);
+			await NotificationService.ShowErrorAsync($"{ErrorLoc.ErrorAdding} {ex.Message}");
 		}
 		finally
 		{
@@ -199,7 +199,7 @@ foreach (var definition in Entries.Where(e => e.IsReference).Select(e => e.Refer
 		}
 		catch (Exception ex)
 		{
-			await NotificationService.ShowErrorAsync("Error loading data..." + ex.Message);
+			await NotificationService.ShowErrorAsync($"{ErrorLoc.ErrorLoadingData} {ex.Message}");
 		}
 		finally
 		{

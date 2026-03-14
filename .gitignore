@@ -353,3 +353,5 @@ MigrationBackup/
 *.bak
 /Projects/Todo/Output/Todo.Blazor/config
 /Projects/Todo/Output/Todo.Service/Data
+**/appsettings.development.json
+/.vscode

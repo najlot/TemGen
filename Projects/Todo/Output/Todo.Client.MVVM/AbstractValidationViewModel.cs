@@ -11,14 +11,20 @@ public abstract class AbstractValidationViewModel : AbstractViewModel, INotifyDa
 {
 	public record ValidationResult(string PropertyName, string Text);
 
-	public bool HasErrors { get; private set => base.Set(ref field, value); }
+	public bool HasErrors { get; private set => base.Set(ref field, value, RaiseHasErrorsChanged); }
 
+	public event Action? HasErrorsChanged;
 	public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
 
 	private readonly List<ValidationResult> _errors = [];
 	public IEnumerable GetErrors(string? propertyName) => _errors
 		.Where(e => propertyName == null || e.PropertyName == propertyName)
 		.Select(e => e.Text);
+
+	private void RaiseHasErrorsChanged()
+	{
+		HasErrorsChanged?.Invoke();
+	}
 
 	protected void RaiseErrorsChanged(string? propertyName)
 	{

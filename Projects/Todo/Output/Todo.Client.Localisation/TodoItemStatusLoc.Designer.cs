@@ -61,15 +61,6 @@ namespace Todo.Client.Localisation {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Deleted:.
-        /// </summary>
-        public static string Deleted {
-            get {
-                return ResourceManager.GetString("Deleted", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Done:.
         /// </summary>
         public static string Done {

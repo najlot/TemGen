@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,58 +117,58 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="CouldNotLoadProfiles" xml:space="preserve">
-    <value>Could not load profiles</value>
+  <data name="Error" xml:space="preserve">
+    <value>Fehler</value>
   </data>
-  <data name="CouldNotLogin" xml:space="preserve">
-    <value>Could not login</value>
+  <data name="ErrorCouldNotLoad" xml:space="preserve">
+    <value>Konnte nicht laden. Serverfehler.</value>
   </data>
-  <data name="Delete" xml:space="preserve">
-    <value>Delete</value>
+  <data name="ErrorCouldNotLogin" xml:space="preserve">
+    <value>Anmeldung fehlgeschlagen. Serverfehler.</value>
   </data>
-  <data name="DeleteProfile" xml:space="preserve">
-    <value>Do you really want to delete profile '{0}'?</value>
+  <data name="ErrorCouldNotSave" xml:space="preserve">
+    <value>Konnte nicht speichern. Serverfehler.</value>
   </data>
-  <data name="DeleteQ" xml:space="preserve">
-    <value>Delete?</value>
+  <data name="ErrorCouldNotUpdateUserData" xml:space="preserve">
+    <value>Benutzerdaten konnten nicht aktualisiert werden. Serverfehler.</value>
   </data>
-  <data name="Edit" xml:space="preserve">
-    <value>Edit</value>
+  <data name="ErrorInvalidUsernamePassword" xml:space="preserve">
+    <value>Anmeldung fehlgeschlagen. Benutzername und Passwort stimmen nicht überein.</value>
   </data>
-  <data name="ErrorCreatingProfile" xml:space="preserve">
-    <value>Error creating profile</value>
+  <data name="ErrorAdding" xml:space="preserve">
+    <value>Fehler beim Hinzufügen:</value>
   </data>
-  <data name="Foldername" xml:space="preserve">
-    <value>Foldername:</value>
+  <data name="ErrorDeleting" xml:space="preserve">
+    <value>Fehler beim Löschen:</value>
   </data>
-  <data name="NewProfile" xml:space="preserve">
-    <value>New profile</value>
+  <data name="ErrorLoading" xml:space="preserve">
+    <value>Fehler beim Laden:</value>
   </data>
-  <data name="Password" xml:space="preserve">
-    <value>Password:</value>
+  <data name="ErrorLoadingData" xml:space="preserve">
+    <value>Fehler beim Laden der Daten:</value>
   </data>
-  <data name="ProfileName" xml:space="preserve">
-    <value>Profile name:</value>
+  <data name="ErrorModelIsNullReload" xml:space="preserve">
+    <value>Das Modell ist null. Bitte laden Sie die Seite neu.</value>
   </data>
-  <data name="ProfileType" xml:space="preserve">
-    <value>Profile type:</value>
+  <data name="ErrorPasswordsDoNotMatch" xml:space="preserve">
+    <value>Passwörter stimmen nicht überein.</value>
   </data>
-  <data name="RmqHost" xml:space="preserve">
-    <value>RabbitMQ host:</value>
+  <data name="ErrorSaving" xml:space="preserve">
+    <value>Fehler beim Speichern:</value>
   </data>
-  <data name="RmqPassword" xml:space="preserve">
-    <value>RabbitMQ password:</value>
+  <data name="InvalidEmailAddress" xml:space="preserve">
+    <value>Ungültige E-Mail-Adresse</value>
   </data>
-  <data name="RmqUser" xml:space="preserve">
-    <value>RabbitMQ user:</value>
+  <data name="PasswordTooShort" xml:space="preserve">
+    <value>Passwort ist zu kurz</value>
   </data>
-  <data name="RmqVirtualHost" xml:space="preserve">
-    <value>RabbitMQ virtual host:</value>
+  <data name="ParsingErrorMustBeDate" xml:space="preserve">
+    <value>Muss ein Datum sein</value>
   </data>
-  <data name="ServerName" xml:space="preserve">
-    <value>Server name:</value>
+  <data name="ParsingErrorMustBeNumber" xml:space="preserve">
+    <value>Muss eine Zahl sein</value>
   </data>
-  <data name="User" xml:space="preserve">
-    <value>User:</value>
+  <data name="UsernameTooShort" xml:space="preserve">
+    <value>Benutzername ist zu kurz</value>
   </data>
 </root>

@@ -50,7 +50,12 @@ foreach(var entry in Entries.Where(e => e.IsArray))
 }
 #>	}
 
+	[MapIgnoreProperty(nameof(to.ChangeVisitor))]
 	public static partial void MapToViewModel(IMap map, <#cs Write(Definition.Name)#>ListItemModel from, <#cs Write(Definition.Name)#>ListItemViewModel to);
+
+	[MapIgnoreProperty(nameof(to.ChangeVisitor))]
 	public static partial void MapToViewModel(IMap map, <#cs Write(Definition.Name)#>Created from, <#cs Write(Definition.Name)#>ListItemViewModel to);
+
+	[MapIgnoreProperty(nameof(to.ChangeVisitor))]
 	public static partial void MapToViewModel(IMap map, <#cs Write(Definition.Name)#>Updated from, <#cs Write(Definition.Name)#>ListItemViewModel to);
 }<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>
