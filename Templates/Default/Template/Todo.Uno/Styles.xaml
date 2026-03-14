@@ -1,0 +1,16 @@
+<ResourceDictionary
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<SolidColorBrush x:Key="AppBackgroundColor" Color="<#cs Write(Project.PrimaryColor)#>" />
+	<SolidColorBrush x:Key="AppForegroundColor" Color="<#cs Write(Project.ForegroundColor)#>" />
+
+	<Style TargetType="Button">
+		<Setter Property="Foreground" Value="{StaticResource AppForegroundColor}" />
+		<Setter Property="Background" Value="{StaticResource AppBackgroundColor}" />
+		<Setter Property="BorderThickness" Value="0" />
+		<Setter Property="Padding" Value="10,5" />
+	</Style>
+
+</ResourceDictionary>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>
