@@ -1,0 +1,124 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:Todo.Avalonia.View"
+             xmlns:loc="clr-namespace:Todo.Client.Localisation;assembly=Todo.Client.Localisation"
+             xmlns:converter="clr-namespace:Todo.Avalonia.Converter"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             mc:Ignorable="d"
+             x:Class="Todo.Avalonia.View.TodoItemView"
+             d:DesignHeight="500" d:DesignWidth="600">
+	<Grid>
+		<DockPanel IsEnabled="{Binding CanEdit}">
+			<DockPanel DockPanel.Dock="Top">
+				<Button Margin="5"
+						DockPanel.Dock="Left"
+						Command="{Binding NavigateBackCommand}">
+					<materialIcons:MaterialIcon Kind="ArrowLeft" Width="18" Height="18" />
+				</Button>
+
+				<WrapPanel HorizontalAlignment="Right" DockPanel.Dock="Right">
+					<Button ToolTip.Tip="{x:Static loc:CommonLoc.Undo}" Command="{Binding UndoCommand}" Margin="5">
+						<materialIcons:MaterialIcon Kind="Undo" Width="18" Height="18" />
+					</Button>
+					<Button ToolTip.Tip="{x:Static loc:CommonLoc.Redo}" Command="{Binding RedoCommand}" Margin="5">
+						<materialIcons:MaterialIcon Kind="Redo" Width="18" Height="18" />
+					</Button>
+					<Button ToolTip.Tip="{x:Static loc:CommonLoc.Save}" Command="{Binding SaveCommand}" Margin="5">
+						<materialIcons:MaterialIcon Kind="ContentSave" Width="18" Height="18" />
+					</Button>
+					<Button ToolTip.Tip="{x:Static loc:CommonLoc.Delete}" Command="{Binding DeleteCommand}" Margin="5">
+						<materialIcons:MaterialIcon Kind="Delete" Width="18" Height="18" />
+					</Button>
+				</WrapPanel>
+			</DockPanel>
+			<ScrollViewer>
+				<StackPanel Margin="2,0" MinWidth="400" MinHeight="200"
+						HorizontalAlignment="Center" VerticalAlignment="Center">
+					<DockPanel Margin="5">
+						<Label Content="{x:Static loc:TodoItemLoc.Title}" MinWidth="75" />
+						<TextBox Text="{Binding Title}" />
+					</DockPanel>
+					<DockPanel Margin="5">
+						<Label Content="{x:Static loc:TodoItemLoc.Content}" MinWidth="75" />
+						<TextBox Text="{Binding Content}" />
+					</DockPanel>
+					<DockPanel Margin="5">
+						<Label Content="{x:Static loc:TodoItemLoc.CreatedAt}" MinWidth="75" />
+						<CalendarDatePicker SelectedDate="{Binding CreatedAt}" />
+					</DockPanel>
+					<DockPanel Margin="5">
+						<Label Content="{x:Static loc:TodoItemLoc.CreatedBy}" MinWidth="75" />
+						<TextBox Text="{Binding CreatedBy}" />
+					</DockPanel>
+					<DockPanel Margin="5">
+						<Label Content="{x:Static loc:TodoItemLoc.AssignedTo}" MinWidth="75" />
+						<ComboBox ItemsSource="{Binding AvailableUsers}" SelectedValue="{Binding AssignedToId}" SelectedValueBinding="{Binding Id}" DisplayMemberBinding="{Binding Username}" IsEditable="True" />
+					</DockPanel>
+					<DockPanel Margin="5">
+						<Label Content="{x:Static loc:TodoItemLoc.Status}" MinWidth="75" />
+						<ComboBox ItemsSource="{Binding AvailableTodoItemStatus, Converter={x:Static converter:EnumToTranslationConverter.Instance}, ConverterParameter={x:Type loc:TodoItemStatusLoc}}" 
+							  SelectedItem="{Binding Status, Converter={x:Static converter:EnumToTranslationConverter.Instance}, ConverterParameter={x:Type loc:TodoItemStatusLoc}}" />
+					</DockPanel>
+					<DockPanel Margin="5">
+						<Label Content="{x:Static loc:TodoItemLoc.ChangedAt}" MinWidth="75" />
+						<CalendarDatePicker SelectedDate="{Binding ChangedAt}" />
+					</DockPanel>
+					<DockPanel Margin="5">
+						<Label Content="{x:Static loc:TodoItemLoc.ChangedBy}" MinWidth="75" />
+						<TextBox Text="{Binding ChangedBy}" />
+					</DockPanel>
+					<DockPanel Margin="5">
+						<Label Content="{x:Static loc:TodoItemLoc.Priority}" MinWidth="75" />
+						<TextBox Text="{Binding Priority}" />
+					</DockPanel>
+					<DockPanel>
+						<DockPanel DockPanel.Dock="Top">
+							<Button ToolTip.Tip="{x:Static loc:CommonLoc.New}" Command="{Binding AddChecklistTaskCommand}" Margin="5" DockPanel.Dock="Right">
+								<materialIcons:MaterialIcon Kind="PlusCircle" Width="18" Height="18" />
+							</Button>
+
+							<TextBlock Text="{x:Static loc:TodoItemLoc.Checklist}" Foreground="{StaticResource ForegroundColor}" Background="{StaticResource BackgroundColor}" Padding="5" Margin="0,5"/>
+						</DockPanel>
+
+						<DataGrid
+							Margin="0,0,5,0"
+							ItemsSource="{Binding Checklist}"
+							CanUserSortColumns="False"
+							CanUserAddRows="False"
+							AutoGenerateColumns="False"
+							HorizontalGridLinesBrush="LightGray"
+							VerticalGridLinesBrush="LightGray"
+							SelectionMode="Single"
+							BorderBrush="LightGray">
+
+							<DataGrid.Columns>
+								<DataGridCheckBoxColumn Header="{x:Static loc:ChecklistTaskLoc.IsDone}" Binding="{Binding IsDone}" />
+
+								<DataGridTextColumn Header="{x:Static loc:ChecklistTaskLoc.Description}" Binding="{Binding Description}" MinWidth="100" />
+
+								<DataGridTemplateColumn Header="Delete" Width="SizeToCells">
+									<DataGridTemplateColumn.CellTemplate>
+										<DataTemplate>
+											<Button ToolTip.Tip="Delete" Padding="2"
+												Command="{Binding DataContext.DeleteChecklistTaskCommand, RelativeSource={RelativeSource AncestorType=local:TodoItemView}}" CommandParameter="{Binding .}">
+												<materialIcons:MaterialIcon Kind="Delete" Width="14" Height="14" />
+											</Button>
+										</DataTemplate>
+									</DataGridTemplateColumn.CellTemplate>
+								</DataGridTemplateColumn>
+							</DataGrid.Columns>
+						</DataGrid>
+					</DockPanel>
+				</StackPanel>
+			</ScrollViewer>
+		</DockPanel>
+
+		<local:SaveConfirmationDialogView IsVisible="{Binding SaveDialogViewModel.IsVisible}"
+		                                  DataContext="{Binding SaveDialogViewModel}" />
+		<local:DeleteConfirmationDialogView IsVisible="{Binding DeleteDialogViewModel.IsVisible}"
+		                                    DataContext="{Binding DeleteDialogViewModel}" />
+	</Grid>
+</UserControl>
+

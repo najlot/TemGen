@@ -27,15 +27,15 @@ public static class ServiceCollectionExtensions
 
 		public void RegisterClientDataRepositories()
 		{
-			serviceCollection.AddScoped<INoteRepository, NoteRepository>();
 			serviceCollection.AddScoped<ITodoItemRepository, TodoItemRepository>();
+			serviceCollection.AddScoped<INoteRepository, NoteRepository>();
 			serviceCollection.AddScoped<IUserRepository, UserRepository>();
 		}
 
 		public void RegisterClientDataServices()
 		{
-			serviceCollection.AddScoped<INoteService, NoteService>();
 			serviceCollection.AddScoped<ITodoItemService, TodoItemService>();
+			serviceCollection.AddScoped<INoteService, NoteService>();
 			serviceCollection.AddScoped<IUserService, UserService>();
 		}
 	}

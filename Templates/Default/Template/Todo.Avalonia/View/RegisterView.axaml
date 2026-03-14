@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
+             mc:Ignorable="d"
+             x:Class="<#cs Write(Project.Namespace)#>.Avalonia.View.RegisterView"
+             d:DesignHeight="450" d:DesignWidth="800">
+	<Grid>
+		<Border MaxWidth="400"
+				Padding="32"
+				HorizontalAlignment="Center"
+				VerticalAlignment="Center"
+				BorderBrush="{StaticResource BackgroundColor}"
+				BorderThickness="1">
+			<StackPanel>
+				<TextBlock Margin="0,0,0,16"
+						   HorizontalAlignment="Center"
+						   FontSize="24"
+						   FontWeight="Bold"
+						   Foreground="{StaticResource BackgroundColor}"
+						   Text="{x:Static loc:CommonLoc.Register}" />
+
+				<!--  Username  -->
+				<StackPanel Margin="0,0,0,16">
+					<TextBlock Margin="0,0,0,4" Text="{x:Static loc:CommonLoc.Username}" />
+					<TextBox Text="{Binding Username, Mode=TwoWay}" />
+				</StackPanel>
+
+				<!--  Email  -->
+				<StackPanel Margin="0,0,0,16">
+					<TextBlock Margin="0,0,0,4" Text="{x:Static loc:CommonLoc.EmailAddress}" />
+					<TextBox Text="{Binding EMail, Mode=TwoWay}" />
+				</StackPanel>
+
+				<!--  Password  -->
+				<StackPanel Margin="0,0,0,16">
+					<TextBlock Margin="0,0,0,4" Text="{x:Static loc:CommonLoc.Password}" />
+					<TextBox PasswordChar="•" Text="{Binding Password, Mode=TwoWay}" />
+				</StackPanel>
+
+				<!--  Register Button  -->
+				<Button Margin="0,8,0,0"
+						HorizontalAlignment="Stretch"
+						HorizontalContentAlignment="Center"
+						Command="{Binding RegisterCommand}"
+						Content="{x:Static loc:CommonLoc.Register}" />
+
+				<!--  Navigate to Login Link  -->
+				<Button Margin="0,8,0,0" Command="{Binding NavigateToLoginCommand}">
+					<TextBlock Text="{x:Static loc:CommonLoc.Login}" />
+				</Button>
+			</StackPanel>
+		</Border>
+	</Grid>
+</UserControl>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:Todo.Avalonia.View"
+             xmlns:loc="clr-namespace:Todo.Client.Localisation;assembly=Todo.Client.Localisation"
+             xmlns:converter="clr-namespace:Todo.Avalonia.Converter"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             mc:Ignorable="d"
+             x:Class="Todo.Avalonia.View.ChecklistTaskView"
+             d:DesignHeight="500" d:DesignWidth="600">
+	<Grid>
+		<DockPanel IsEnabled="{Binding CanEdit}">
+			<DockPanel DockPanel.Dock="Top">
+				<Button Margin="5"
+						DockPanel.Dock="Left"
+						Command="{Binding NavigateBackCommand}">
+					<materialIcons:MaterialIcon Kind="ArrowLeft" Width="18" Height="18" />
+				</Button>
+
+				<WrapPanel HorizontalAlignment="Right" DockPanel.Dock="Right">
+					<Button ToolTip.Tip="{x:Static loc:CommonLoc.Undo}" Command="{Binding UndoCommand}" Margin="5">
+						<materialIcons:MaterialIcon Kind="Undo" Width="18" Height="18" />
+					</Button>
+					<Button ToolTip.Tip="{x:Static loc:CommonLoc.Redo}" Command="{Binding RedoCommand}" Margin="5">
+						<materialIcons:MaterialIcon Kind="Redo" Width="18" Height="18" />
+					</Button>
+					<Button ToolTip.Tip="{x:Static loc:CommonLoc.Save}" Command="{Binding SaveCommand}" Margin="5">
+						<materialIcons:MaterialIcon Kind="ContentSave" Width="18" Height="18" />
+					</Button>
+					<Button ToolTip.Tip="{x:Static loc:CommonLoc.Delete}" Command="{Binding DeleteCommand}" Margin="5">
+						<materialIcons:MaterialIcon Kind="Delete" Width="18" Height="18" />
+					</Button>
+				</WrapPanel>
+			</DockPanel>
+			<ScrollViewer>
+				<StackPanel Margin="2,0" MinWidth="400" MinHeight="200"
+						HorizontalAlignment="Center" VerticalAlignment="Center">
+					<DockPanel Margin="5">
+						<Label Content="" MinWidth="75" />
+						<CheckBox IsChecked="{Binding IsDone}" Content="{x:Static loc:ChecklistTaskLoc.IsDone}" />
+					</DockPanel>
+					<DockPanel Margin="5">
+						<Label Content="{x:Static loc:ChecklistTaskLoc.Description}" MinWidth="75" />
+						<TextBox Text="{Binding Description}" />
+					</DockPanel>
+				</StackPanel>
+			</ScrollViewer>
+		</DockPanel>
+
+		<local:SaveConfirmationDialogView IsVisible="{Binding SaveDialogViewModel.IsVisible}"
+		                                  DataContext="{Binding SaveDialogViewModel}" />
+		<local:DeleteConfirmationDialogView IsVisible="{Binding DeleteDialogViewModel.IsVisible}"
+		                                    DataContext="{Binding DeleteDialogViewModel}" />
+	</Grid>
+</UserControl>
+

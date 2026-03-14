@@ -1,0 +1,32 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<Styles.Resources>
+		<SolidColorBrush x:Key="BackgroundColor" Color="#004d40" />
+		<SolidColorBrush x:Key="ForegroundColor" Color="#ffffff" />
+	</Styles.Resources>
+
+	<Style Selector="Button">
+		<Setter Property="Foreground" Value="{StaticResource ForegroundColor}" />
+		<Setter Property="Background" Value="{StaticResource BackgroundColor}" />
+		<Setter Property="BorderThickness" Value="0" />
+		<Setter Property="Padding" Value="10,5" />
+	</Style>
+
+	<Style Selector="Button:pointerover /template/ ContentPresenter">
+		<Setter Property="Foreground" Value="{StaticResource BackgroundColor}" />
+	</Style>
+
+	<Style Selector="DataGridColumnHeader">
+		<Setter Property="Background" Value="{StaticResource BackgroundColor}" />
+		<Setter Property="Padding" Value="5,2" />
+		<Setter Property="Foreground" Value="{StaticResource ForegroundColor}" />
+	</Style>
+
+	<Style Selector="DataGridCell">
+		<Setter Property="Foreground" Value="{StaticResource BackgroundColor}" />
+		<Setter Property="BorderThickness" Value="0" />
+	</Style>
+
+</Styles>
+
