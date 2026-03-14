@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
+			 xmlns:material="clr-namespace:Material.Icons.Maui;assembly=Material.Icons.Maui"
+			 x:Class="<#cs Write(Project.Namespace)#>.Maui.View.ManageView">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+
+		<Button Grid.Row="0"
+				Margin="5"
+				HorizontalOptions="Start"
+				Command="{Binding NavigateBackCommand}">
+			<Button.ImageSource>
+				<FontImageSource Glyph="{x:Static material:MaterialIconsRegular.ArrowBack}"
+								 FontFamily="MaterialIcons"
+								 Size="18" />
+			</Button.ImageSource>
+		</Button>
+
+		<Border Grid.Row="1"
+				MaxWidth="400"
+				Padding="32"
+				HorizontalOptions="Center"
+				VerticalOptions="Center"
+				Stroke="{StaticResource BackgroundColor}"
+				StrokeThickness="1">
+			<VerticalStackLayout>
+				<Label Margin="0,0,0,16"
+					   HorizontalTextAlignment="Center"
+					   FontSize="24"
+					   FontAttributes="Bold"
+					   TextColor="{StaticResource BackgroundColor}"
+					   Text="{x:Static loc:CommonLoc.UserNamagement}" />
+
+				<!--  New Password  -->
+				<VerticalStackLayout Margin="0,0,0,16">
+					<Label Margin="0,0,0,4" Text="{x:Static loc:CommonLoc.NewPassword}" />
+					<Entry IsPassword="True"
+						   Text="{Binding Password, Mode=TwoWay}"
+						   ReturnType="Next" />
+				</VerticalStackLayout>
+
+				<!--  Confirm New Password  -->
+				<VerticalStackLayout Margin="0,0,0,16">
+					<Label Margin="0,0,0,4" Text="{x:Static loc:CommonLoc.ConfirmNewPassword}" />
+					<Entry IsPassword="True"
+						   Text="{Binding PasswordConfirm, Mode=TwoWay}"
+						   ReturnCommand="{Binding SaveCommand}" />
+				</VerticalStackLayout>
+
+				<!--  Save Button  -->
+				<Button Margin="0,8,0,0"
+						HorizontalOptions="Fill"
+						Command="{Binding SaveCommand}"
+						Text="{x:Static loc:CommonLoc.ChangePassword}" />
+			</VerticalStackLayout>
+		</Border>
+	</Grid>
+</ContentView><#cs SetOutputPathAndSkipOtherDefinitions()#>

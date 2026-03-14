@@ -2,17 +2,16 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Windows.Controls;
 using Todo.Client.MVVM;
 using Todo.ClientBase;
 using Todo.ClientBase.ViewModel;
-using Todo.Wpf.View;
+using Todo.Maui.View;
 
-namespace Todo.Wpf;
+namespace Todo.Maui;
 
-public class ViewManager(IServiceProvider serviceProvider) : IViewManager<Control>
+public class ViewManager(IServiceProvider serviceProvider) : IViewManager<View>
 {
-	private readonly Dictionary<Type, Type> _knownControls = new()
+	private readonly Dictionary<Type, Type> _knownViews = new()
 	{
 		[typeof(LoginViewModel)] = typeof(LoginView),
 		[typeof(RegisterViewModel)] = typeof(RegisterView),
@@ -25,36 +24,36 @@ public class ViewManager(IServiceProvider serviceProvider) : IViewManager<Contro
 		[typeof(NoteViewModel)] = typeof(NoteView),
 	};
 
-	public Control GetView<TViewModel>(TViewModel viewModel) where TViewModel : notnull
+	public View GetView<TViewModel>(TViewModel viewModel) where TViewModel : notnull
 	{
-		if (!_knownControls.TryGetValue(typeof(TViewModel), out var viewType))
+		if (!_knownViews.TryGetValue(typeof(TViewModel), out var viewType))
 		{
 			throw new InvalidOperationException(
 				$"No view is registered for view model type '{typeof(TViewModel).FullName}'. " +
-				$"Ensure that this view model type is added to the '{nameof(ViewManager)}' {_knownControls.GetType().Name} mapping.");
+				$"Ensure that this view model type is added to the '{nameof(ViewManager)}' {_knownViews.GetType().Name} mapping.");
 		}
 
 		if (viewType.GetConstructor(Type.EmptyTypes) is not null)
 		{
-			if (Activator.CreateInstance(viewType) is Control control)
+			if (Activator.CreateInstance(viewType) is View view)
 			{
-				control.DataContext = viewModel;
-				return control;
+				view.BindingContext = viewModel;
+				return view;
 			}
 		}
 
-		if (serviceProvider.GetRequiredService(viewType) is Control instance)
+		if (serviceProvider.GetRequiredService(viewType) is View instance)
 		{
-			instance.DataContext = viewModel;
+			instance.BindingContext = viewModel;
 			return instance;
 		}
 
-		throw new NullReferenceException($"The Class {viewType.FullName} is not a Control.");
+		throw new NullReferenceException($"The Class {viewType.FullName} is not a View.");
 	}
 
-	public async Task<bool> CanNavigateAsync(Control? currentView)
+	public async Task<bool> CanNavigateAsync(View? currentView)
 	{
-		if (currentView?.DataContext is INavigationGuard navigationGuard)
+		if (currentView?.BindingContext is INavigationGuard navigationGuard)
 		{
 			return await navigationGuard.CanNavigateAsync().ConfigureAwait(false);
 		}
@@ -62,10 +61,10 @@ public class ViewManager(IServiceProvider serviceProvider) : IViewManager<Contro
 		return true;
 	}
 
-	public async Task DisposeView(Control? control)
+	public async Task DisposeView(View? view)
 	{
-		await DisposeObject(control);
-		await DisposeObject(control?.DataContext);
+		await DisposeObject(view);
+		await DisposeObject(view?.BindingContext);
 	}
 
 	private static async Task DisposeObject(object? obj)

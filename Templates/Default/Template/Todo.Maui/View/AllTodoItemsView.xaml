@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
+			 xmlns:material="clr-namespace:Material.Icons.Maui;assembly=Material.Icons.Maui"
+			 xmlns:local="clr-namespace:<#cs Write(Project.Namespace)#>.Maui.View"
+			 x:Class="<#cs Write(Project.Namespace)#>.Maui.View.All<#cs Write(Definition.Name)#>sView"
+			 x:Name="This">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+
+		<Grid Grid.Row="0">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="Auto" />
+			</Grid.ColumnDefinitions>
+
+			<Button Grid.Column="0"
+					Margin="5"
+					Command="{Binding NavigateBackCommand}">
+				<Button.ImageSource>
+					<FontImageSource Glyph="{x:Static material:MaterialIconsRegular.ArrowBack}"
+									 FontFamily="MaterialIcons"
+									 Size="18" />
+				</Button.ImageSource>
+			</Button>
+
+			<HorizontalStackLayout Grid.Column="1" VerticalOptions="Center">
+				<Label Margin="5" VerticalOptions="Center" Text="{x:Static loc:CommonLoc.Filter}" />
+				<Entry Margin="5"
+					   VerticalOptions="Center"
+					   Text="{Binding Filter, Mode=TwoWay}" />
+			</HorizontalStackLayout>
+
+			<HorizontalStackLayout Grid.Column="2" HorizontalOptions="End">
+				<Button Margin="5"
+						Command="{Binding Refresh<#cs Write(Definition.Name)#>sCommand}"
+						ToolTipProperties.Text="{x:Static loc:CommonLoc.Refresh}">
+					<Button.ImageSource>
+						<FontImageSource Glyph="{x:Static material:MaterialIconsRegular.Refresh}"
+										 FontFamily="MaterialIcons"
+										 Size="18" />
+					</Button.ImageSource>
+				</Button>
+
+				<Button Margin="5"
+						Command="{Binding Add<#cs Write(Definition.Name)#>Command}"
+						ToolTipProperties.Text="{x:Static loc:CommonLoc.New}">
+					<Button.ImageSource>
+						<FontImageSource Glyph="{x:Static material:MaterialIconsRegular.Add}"
+										 FontFamily="MaterialIcons"
+										 Size="18" />
+					</Button.ImageSource>
+				</Button>
+			</HorizontalStackLayout>
+		</Grid>
+
+		<CollectionView Grid.Row="1" ItemsSource="{Binding <#cs Write(Definition.Name)#>sView}">
+			<CollectionView.ItemTemplate>
+				<DataTemplate>
+					<VerticalStackLayout Margin="5">
+<#cs
+foreach(var entry in Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2))
+{
+	WriteLine($"						<Label Padding=\"5,5,5,0\" Text=\"{{Binding {entry.Field}}}\">");
+	WriteLine($"							<Label.GestureRecognizers>");
+	WriteLine($"								<TapGestureRecognizer");
+	WriteLine($"									Command=\"{{Binding Source={{RelativeSource AncestorType={{x:Type local:All{Definition.Name}sView}}}}, Path=BindingContext.Edit{Definition.Name}Command}}\"");
+	WriteLine($"									CommandParameter=\"{{Binding .}}\" />");
+	WriteLine($"							</Label.GestureRecognizers>");
+	WriteLine($"						</Label>");
+}
+
+Result = Result.TrimEnd();
+#>
+					</VerticalStackLayout>
+				</DataTemplate>
+			</CollectionView.ItemTemplate>
+		</CollectionView>
+	</Grid>
+</ContentView><#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

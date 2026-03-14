@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:loc="clr-namespace:Todo.Client.Localisation;assembly=Todo.Client.Localisation"
+			 x:Class="Todo.Maui.View.RegisterView">
+	<Grid>
+		<Border MaxWidth="400"
+				Padding="32"
+				HorizontalOptions="Center"
+				VerticalOptions="Center"
+				Stroke="{StaticResource BackgroundColor}"
+				StrokeThickness="1">
+			<VerticalStackLayout>
+				<Label Margin="0,0,0,16"
+					   HorizontalTextAlignment="Center"
+					   FontSize="24"
+					   FontAttributes="Bold"
+					   TextColor="{StaticResource BackgroundColor}"
+					   Text="{x:Static loc:CommonLoc.Register}" />
+
+				<!--  Username  -->
+				<VerticalStackLayout Margin="0,0,0,16">
+					<Label Margin="0,0,0,4" Text="{x:Static loc:CommonLoc.Username}" />
+					<Entry Text="{Binding Username, Mode=TwoWay}" ReturnType="Next" />
+				</VerticalStackLayout>
+
+				<!--  Email  -->
+				<VerticalStackLayout Margin="0,0,0,16">
+					<Label Margin="0,0,0,4" Text="{x:Static loc:CommonLoc.EmailAddress}" />
+					<Entry Text="{Binding EMail, Mode=TwoWay}" ReturnType="Next" />
+				</VerticalStackLayout>
+
+				<!--  Password  -->
+				<VerticalStackLayout Margin="0,0,0,16">
+					<Label Margin="0,0,0,4" Text="{x:Static loc:CommonLoc.Password}" />
+					<Entry IsPassword="True"
+						   Text="{Binding Password, Mode=TwoWay}"
+						   ReturnCommand="{Binding RegisterCommand}" />
+				</VerticalStackLayout>
+
+				<!--  Register Button  -->
+				<Button Margin="0,8,0,0"
+						HorizontalOptions="Fill"
+						Command="{Binding RegisterCommand}"
+						Text="{x:Static loc:CommonLoc.Register}" />
+
+				<!--  Navigate to Login Link  -->
+				<Button Margin="0,8,0,0"
+						Command="{Binding NavigateToLoginCommand}"
+						Text="{x:Static loc:CommonLoc.Login}" />
+			</VerticalStackLayout>
+		</Border>
+	</Grid>
+</ContentView>

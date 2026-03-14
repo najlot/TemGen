@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:loc="clr-namespace:Todo.Client.Localisation;assembly=Todo.Client.Localisation"
+			 xmlns:material="clr-namespace:Material.Icons.Maui;assembly=Material.Icons.Maui"
+			 xmlns:local="clr-namespace:Todo.Maui.View"
+			 x:Class="Todo.Maui.View.AllTodoItemsView"
+			 x:Name="This">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+
+		<Grid Grid.Row="0">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="Auto" />
+			</Grid.ColumnDefinitions>
+
+			<Button Grid.Column="0"
+					Margin="5"
+					Command="{Binding NavigateBackCommand}">
+				<Button.ImageSource>
+					<FontImageSource Glyph="{x:Static material:MaterialIconsRegular.ArrowBack}"
+									 FontFamily="MaterialIcons"
+									 Size="18" />
+				</Button.ImageSource>
+			</Button>
+
+			<HorizontalStackLayout Grid.Column="1" VerticalOptions="Center">
+				<Label Margin="5" VerticalOptions="Center" Text="{x:Static loc:CommonLoc.Filter}" />
+				<Entry Margin="5"
+					   VerticalOptions="Center"
+					   Text="{Binding Filter, Mode=TwoWay}" />
+			</HorizontalStackLayout>
+
+			<HorizontalStackLayout Grid.Column="2" HorizontalOptions="End">
+				<Button Margin="5"
+						Command="{Binding RefreshTodoItemsCommand}"
+						ToolTipProperties.Text="{x:Static loc:CommonLoc.Refresh}">
+					<Button.ImageSource>
+						<FontImageSource Glyph="{x:Static material:MaterialIconsRegular.Refresh}"
+										 FontFamily="MaterialIcons"
+										 Size="18" />
+					</Button.ImageSource>
+				</Button>
+
+				<Button Margin="5"
+						Command="{Binding AddTodoItemCommand}"
+						ToolTipProperties.Text="{x:Static loc:CommonLoc.New}">
+					<Button.ImageSource>
+						<FontImageSource Glyph="{x:Static material:MaterialIconsRegular.Add}"
+										 FontFamily="MaterialIcons"
+										 Size="18" />
+					</Button.ImageSource>
+				</Button>
+			</HorizontalStackLayout>
+		</Grid>
+
+		<CollectionView Grid.Row="1" ItemsSource="{Binding TodoItemsView}">
+			<CollectionView.ItemTemplate>
+				<DataTemplate>
+					<VerticalStackLayout Margin="5">
+						<Label Padding="5,5,5,0" Text="{Binding Title}">
+							<Label.GestureRecognizers>
+								<TapGestureRecognizer
+									Command="{Binding Source={RelativeSource AncestorType={x:Type local:AllTodoItemsView}}, Path=BindingContext.EditTodoItemCommand}"
+									CommandParameter="{Binding .}" />
+							</Label.GestureRecognizers>
+						</Label>
+						<Label Padding="5,5,5,0" Text="{Binding Content}">
+							<Label.GestureRecognizers>
+								<TapGestureRecognizer
+									Command="{Binding Source={RelativeSource AncestorType={x:Type local:AllTodoItemsView}}, Path=BindingContext.EditTodoItemCommand}"
+									CommandParameter="{Binding .}" />
+							</Label.GestureRecognizers>
+						</Label>
+					</VerticalStackLayout>
+				</DataTemplate>
+			</CollectionView.ItemTemplate>
+		</CollectionView>
+	</Grid>
+</ContentView>

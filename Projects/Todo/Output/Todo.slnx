@@ -7,6 +7,7 @@
 	<Project Path="Todo.ClientBase.Test/Todo.ClientBase.Test.csproj" />
 	<Project Path="Todo.ClientBase/Todo.ClientBase.csproj" />
 	<Project Path="Todo.Contracts/Todo.Contracts.csproj" />
+	<Project Path="Todo.Maui/Todo.Maui.csproj" />
 	<Project Path="Todo.Service.Test/Todo.Service.Test.csproj" />
 	<Project Path="Todo.Service/Todo.Service.csproj" />
 	<Project Path="Todo.Wpf/Todo.Wpf.csproj" />
