@@ -13,6 +13,7 @@ public class JintHandlerTests
 		{
 			Namespace = "TestNamespace",
 		};
+		project.SetSetting("UserSecretsId", "aspnet-TestNamespace.Blazor-js");
 
 		var definition = new Definition()
 		{
@@ -49,7 +50,8 @@ public class JintHandlerTests
 			new TemplateSection()
 			{
 				Handler = TemplateHandler.JavaScript,
-				Content = "w(definition.name + ':'); \n" +
+				Content = "w(project.GetSetting('UserSecretsId') + '|'); \n" +
+						"w(definition.name + ':'); \n" +
 							"for(i in entries) write(entries[i].field + ','); \n" +
 							"result = getResult(); \n" +
 							"result = result.substring(0, result.length - 1); \n" +
@@ -59,7 +61,7 @@ public class JintHandlerTests
 
 		Assert.Equal("IsTest.cs", globals.RelativePath);
 		Assert.False(globals.SkipOtherDefinitions);
-		Assert.Equal("Test:Entry_1,Entry_2", globals.Result);
+		Assert.Equal("aspnet-TestNamespace.Blazor-js|Test:Entry_1,Entry_2", globals.Result);
 
 		await handler.TryHandle(
 			globals,

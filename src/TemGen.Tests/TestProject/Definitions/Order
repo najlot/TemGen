@@ -1,0 +1,7 @@
+Guid Id
+CustomerId Client
+DateTime CreatedAt
+DateTime? ModifiedAt
+OrderInfo MoreInfo
+OrderStatus Status
+Position[] Positions

@@ -133,6 +133,8 @@ TemGen/
 5. **Write Output**: Saves generated files to the output directory
 6. **Incremental Updates**: Only writes files that have changed
 
+You can add arbitrary project settings directly in `ProjectDefinition` or `ProjectDefinition.json` and access them from templates. For example, `UserSecretsId: aspnet-MyApp.Blazor-...` is available through `Project.GetSetting("UserSecretsId")`, and setting names like `PrimaryColor` are also exposed through the same settings collection.
+
 ## Definition Files
 
 Definition files use a simple format to describe data models:

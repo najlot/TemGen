@@ -21,4 +21,8 @@
 	<ItemGroup>
 		<ProjectReference Include="..\TemGen\TemGen.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Remove="TestProject\Templates\**\*.cs" />
+	</ItemGroup>
 </Project>
