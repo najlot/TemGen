@@ -3,16 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using static Community.CsharpSqlite.Sqlite3;
 
 namespace TemGen;
 
 public static class TemplatesReader
 {
-	private static List<TemplateSection> GetSections(string contentoz)
+	private static List<TemplateSection> GetSections(string content)
 	{
 		var sections = new List<TemplateSection>();
-		Span<char> buffer = contentoz.ToCharArray();
+		Span<char> buffer = content.ToCharArray();
 
 		while (true)
 		{

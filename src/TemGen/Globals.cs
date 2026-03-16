@@ -29,18 +29,44 @@ public class Globals
 
 	public void Write(object obj)
 	{
-		if (obj is null)
+		switch (obj)
 		{
-			return;
+			case string str:
+				_resultSb.Append(str);
+				break;
+			case not null:
+				_resultSb.Append(obj.ToString());
+				break;
 		}
-
-		_resultSb.Append(obj.ToString());
 	}
 
 	public void WriteLine(object obj)
 	{
-		Write(obj);
-		Write(Environment.NewLine);
+		switch (obj)
+		{
+			case string str:
+				_resultSb.AppendLine(str);
+				break;
+			case null:
+				_resultSb.AppendLine();
+				break;
+			default:
+				_resultSb.AppendLine(obj.ToString());
+				break;
+		}
+	}
+
+	private readonly Dictionary<string, object> _variables = [];
+
+	public void SetVariable(string name, object value)
+	{
+		_variables[name] = value;
+	}
+
+	public object GetVariable(string name)
+	{
+		_variables.TryGetValue(name, out var value);
+		return value;
 	}
 
 	internal void ReplaceInResult(string from, string to)
