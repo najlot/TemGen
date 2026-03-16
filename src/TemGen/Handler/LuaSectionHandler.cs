@@ -88,6 +88,9 @@ public sealed class LuaSectionHandler(string[] initialScripts) : AbstractSection
 		script.Globals["write"] = (Action<object>)(o => globals.Write(o));
 		script.Globals["write_line"] = (Action<object>)(o => globals.WriteLine(o));
 
+		script.Globals["set_variable"] = (Action<string, object>)((name, value) => globals.SetVariable(name, value));
+		script.Globals["get_variable"] = (Func<string, object>)(name => globals.GetVariable(name));
+
 		foreach (var subScript in initialScripts)
 		{
 			script.DoString(subScript);
