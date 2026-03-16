@@ -113,7 +113,6 @@ public static class ProjectReader
 	private static Project ReadLegacyProject(string path)
 	{
 		var project = new Project();
-		var projectDirectory = Path.GetDirectoryName(path);
 		var lines = File.ReadAllLines(path).Where(p => !string.IsNullOrWhiteSpace(p) && !p.StartsWith('#'));
 
 		foreach (var line in lines)
