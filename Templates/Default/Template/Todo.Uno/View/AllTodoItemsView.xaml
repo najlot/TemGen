@@ -4,65 +4,73 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:local="using:<#cs Write(Project.Namespace)#>.Uno.View"
-			 xmlns:loc="using:<#cs Write(Project.Namespace)#>.Client.Localisation"
-			 xmlns:utu="using:Uno.Toolkit.UI"
-			 xmlns:i="using:Microsoft.Xaml.Interactivity"
-			 xmlns:core="using:Microsoft.Xaml.Interactions.Core"
 			 mc:Ignorable="d"
+			 x:Name="Root"
 			 d:DesignHeight="450"
 			 d:DesignWidth="800">
-	<utu:DockPanel>
-		<utu:DockPanel utu:DockPanel.Dock="Top">
-			<Button Margin="5" utu:DockPanel.Dock="Left" Command="{Binding NavigateBackCommand}">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+
+		<Grid Grid.Row="0" Margin="5">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="Auto" />
+			</Grid.ColumnDefinitions>
+
+			<Button Grid.Column="0" Margin="5" Command="{Binding NavigateBackCommand}">
 				<SymbolIcon Symbol="Back" />
 			</Button>
 
-			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" utu:DockPanel.Dock="Right">
+			<StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+				<TextBlock VerticalAlignment="Center" Text="Filter" Margin="5" />
+				<TextBox Margin="5"
+						 VerticalAlignment="Center"
+						 Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+			</StackPanel>
+
+			<StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
 				<Button Margin="5"
 						Command="{Binding Refresh<#cs Write(Definition.Name)#>sCommand}"
-						ToolTipService.ToolTip="{x:Static loc:CommonLoc.Refresh}">
+						ToolTipService.ToolTip="Refresh">
 					<SymbolIcon Symbol="Refresh" />
 				</Button>
 
 				<Button Margin="5"
 						Command="{Binding Add<#cs Write(Definition.Name)#>Command}"
-						ToolTipService.ToolTip="{x:Static loc:CommonLoc.New}">
+						ToolTipService.ToolTip="New">
 					<SymbolIcon Symbol="Add" />
 				</Button>
 			</StackPanel>
+		</Grid>
 
-			<utu:DockPanel utu:DockPanel.Dock="Left">
-				<TextBlock VerticalAlignment="Center" Text="{x:Static loc:CommonLoc.Filter}" Margin="5" />
-				<TextBox Margin="5"
-						 VerticalAlignment="Center"
-						 Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
-			</utu:DockPanel>
-		</utu:DockPanel>
-
-		<ScrollViewer>
+		<ScrollViewer Grid.Row="1">
 			<ItemsControl ItemsSource="{Binding <#cs Write(Definition.Name)#>sView}">
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
-						<StackPanel Margin="5">
+						<Button Margin="5"
+								Padding="0"
+								HorizontalContentAlignment="Stretch"
+								Command="{Binding ElementName=Root, Path=DataContext.Edit<#cs Write(Definition.Name)#>Command}"
+								CommandParameter="{Binding .}">
+							<StackPanel Margin="5">
 <#cs
 foreach(var entry in Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2))
 {
-	WriteLine($"							<TextBlock Padding=\"5,5,5,0\" Text=\"{{Binding {entry.Field}}}\">");
-	WriteLine("								<i:Interaction.Triggers>");
-	WriteLine("									<i:EventTrigger EventName=\"Tapped\">");
-	WriteLine($"										<i:InvokeCommandAction Command=\"{{Binding DataContext.Edit{Definition.Name}Command, RelativeSource={{RelativeSource AncestorType=local:All{Definition.Name}sView}}}}\" CommandParameter=\"{{Binding .}}\" />");
-	WriteLine("									</i:EventTrigger>");
-	WriteLine("								</i:Interaction.Triggers>");
-	WriteLine("							</TextBlock>");
+	WriteLine($"\t\t\t\t\t\t\t\t<TextBlock Padding=\"5,5,5,0\" Text=\"{{Binding {entry.Field}}}\" />");
 }
 
 Result = Result.TrimEnd();
 #>
-						</StackPanel>
+							</StackPanel>
+						</Button>
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>
 		</ScrollViewer>
-	</utu:DockPanel>
+	</Grid>
 </UserControl>
 <#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

@@ -39,20 +39,20 @@ public class MySqlDbContext(
 			entity.HasKey(e => e.Id);
 			entity.HasIndex(e => e.DeletedAt).IsUnique(false);
 		});
+		modelBuilder.Entity<NoteModel>(entity =>
+		{
+			entity.HasKey(e => e.Id);
+			entity.HasIndex(e => e.DeletedAt).IsUnique(false);
+		});
 		modelBuilder.Entity<TodoItemModel>(entity =>
 		{
 			entity.HasKey(e => e.Id);
 			entity.HasIndex(e => e.DeletedAt).IsUnique(false);
 			entity.OwnsMany(e => e.Checklist, e => { e.HasKey(e => e.Id); e.ToTable("TodoItem_Checklist"); });
 		});
-		modelBuilder.Entity<NoteModel>(entity =>
-		{
-			entity.HasKey(e => e.Id);
-			entity.HasIndex(e => e.DeletedAt).IsUnique(false);
-		});
 	}
 
 	public DbSet<UserModel> Users { get; set; }
-	public DbSet<TodoItemModel> TodoItems { get; set; }
 	public DbSet<NoteModel> Notes { get; set; }
+	public DbSet<TodoItemModel> TodoItems { get; set; }
 }

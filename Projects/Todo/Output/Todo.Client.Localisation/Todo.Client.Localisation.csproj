@@ -20,11 +20,6 @@
 			<AutoGen>True</AutoGen>
 			<DependentUpon>UserLoc.resx</DependentUpon>
 		</Compile>
-		<Compile Update="TodoItemLoc.Designer.cs">
-			<DesignTime>True</DesignTime>
-			<AutoGen>True</AutoGen>
-			<DependentUpon>TodoItemLoc.resx</DependentUpon>
-		</Compile>
 		<Compile Update="ChecklistTaskLoc.Designer.cs">
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>
@@ -35,15 +30,20 @@
 			<AutoGen>True</AutoGen>
 			<DependentUpon>NoteLoc.resx</DependentUpon>
 		</Compile>
-		<Compile Update="TodoItemStatusLoc.Designer.cs">
-			<DesignTime>True</DesignTime>
-			<AutoGen>True</AutoGen>
-			<DependentUpon>TodoItemStatusLoc.resx</DependentUpon>
-		</Compile>
 		<Compile Update="PredefinedColorLoc.Designer.cs">
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>
 			<DependentUpon>PredefinedColorLoc.resx</DependentUpon>
+		</Compile>
+		<Compile Update="TodoItemLoc.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>TodoItemLoc.resx</DependentUpon>
+		</Compile>
+		<Compile Update="TodoItemStatusLoc.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>TodoItemStatusLoc.resx</DependentUpon>
 		</Compile>
 	</ItemGroup>
 
@@ -60,10 +60,6 @@
 			<Generator>PublicResXFileCodeGenerator</Generator>
 			<LastGenOutput>UserLoc.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
-		<EmbeddedResource Update="TodoItemLoc.resx">
-			<Generator>PublicResXFileCodeGenerator</Generator>
-			<LastGenOutput>TodoItemLoc.Designer.cs</LastGenOutput>
-		</EmbeddedResource>
 		<EmbeddedResource Update="ChecklistTaskLoc.resx">
 			<Generator>PublicResXFileCodeGenerator</Generator>
 			<LastGenOutput>ChecklistTaskLoc.Designer.cs</LastGenOutput>
@@ -72,13 +68,17 @@
 			<Generator>PublicResXFileCodeGenerator</Generator>
 			<LastGenOutput>NoteLoc.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
-		<EmbeddedResource Update="TodoItemStatusLoc.resx">
-			<Generator>PublicResXFileCodeGenerator</Generator>
-			<LastGenOutput>TodoItemStatusLoc.Designer.cs</LastGenOutput>
-		</EmbeddedResource>
 		<EmbeddedResource Update="PredefinedColorLoc.resx">
 			<Generator>PublicResXFileCodeGenerator</Generator>
 			<LastGenOutput>PredefinedColorLoc.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="TodoItemLoc.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>TodoItemLoc.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="TodoItemStatusLoc.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>TodoItemStatusLoc.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
 	</ItemGroup>
 

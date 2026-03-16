@@ -3,11 +3,9 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-			 xmlns:loc="using:Todo.Client.Localisation"
-			 xmlns:converter="using:Todo.Uno.Converter"
 			 mc:Ignorable="d">
 	<Border Background="#80000000"
-			Visibility="{Binding IsVisible, Converter={x:Static converter:BooleanToVisibilityConverter.Instance}}">
+			Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
 		<Border Background="{StaticResource AppForegroundColor}"
 				BorderBrush="{StaticResource AppBackgroundColor}"
 				BorderThickness="1"
@@ -25,9 +23,9 @@
 						   Margin="0,0,0,20" />
 				<StackPanel Orientation="Horizontal"
 							HorizontalAlignment="Right">
-					<Button Content="{x:Static loc:CommonLoc.Save}" Command="{Binding SaveCommand}" Margin="5" />
-					<Button Content="{x:Static loc:CommonLoc.Discard}" Command="{Binding DiscardCommand}" Margin="5" />
-					<Button Content="{x:Static loc:CommonLoc.Cancel}" Command="{Binding CancelCommand}" Margin="5" />
+					<Button Content="Save" Command="{Binding SaveCommand}" Margin="5" />
+					<Button Content="Discard" Command="{Binding DiscardCommand}" Margin="5" />
+					<Button Content="Cancel" Command="{Binding CancelCommand}" Margin="5" />
 				</StackPanel>
 			</StackPanel>
 		</Border>

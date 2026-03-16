@@ -10,6 +10,8 @@
 	<Project Path="<#ref Project.Namespace#>.Service.Test/<#ref Project.Namespace#>.Service.Test.csproj" />
 	<Project Path="<#ref Project.Namespace#>.Service/<#ref Project.Namespace#>.Service.csproj" />
 	<Project Path="<#ref Project.Namespace#>.Wpf/<#ref Project.Namespace#>.Wpf.csproj" />
-	<Project Path="<#ref Project.Namespace#>.Uno/<#ref Project.Namespace#>.Uno.csproj" />
+	<Project Path="<#ref Project.Namespace#>.Uno/<#ref Project.Namespace#>.Uno.csproj">
+		<Deploy Solution="Debug|*" />
+	</Project>
 </Solution>
 <#cs SetOutputPathAndSkipOtherDefinitions()#>

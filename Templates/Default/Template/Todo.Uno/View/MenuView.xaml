@@ -3,12 +3,8 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-			 xmlns:loc="using:<#cs Write(Project.Namespace)#>.Client.Localisation"
-			 xmlns:converter="using:<#cs Write(Project.Namespace)#>.Uno.Converter"
-			 xmlns:utu="using:Uno.Toolkit.UI"
-			 xmlns:i="using:Microsoft.Xaml.Interactivity"
-			 xmlns:core="using:Microsoft.Xaml.Interactions.Core"
 			 mc:Ignorable="d"
+			 x:Name="Root"
 			 d:DesignHeight="450" d:DesignWidth="800">
 	<Grid>
 		<Grid.RowDefinitions>
@@ -16,58 +12,63 @@
 			<RowDefinition Height="*" />
 		</Grid.RowDefinitions>
 
-		<StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-			<Button Command="{Binding ToggleDrawerCommand}" Margin="5">
+		<Grid Grid.Row="0" Margin="8">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="Auto" />
+			</Grid.ColumnDefinitions>
+
+			<Button Grid.Column="0" Command="{Binding ToggleDrawerCommand}" Margin="0,0,8,0">
 				<SymbolIcon Symbol="GlobalNavigationButton" />
 			</Button>
-		</StackPanel>
 
-		<StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-			<Button Command="{Binding ManageCommand}" ToolTipService.ToolTip="Manage" Margin="5">
-				<SymbolIcon Symbol="People" />
-			</Button>
-			<Button Command="{Binding LogoutCommand}" ToolTipService.ToolTip="Logout" Margin="5">
-				<SymbolIcon Symbol="LeaveChat" />
-			</Button>
-		</StackPanel>
+			<TextBlock Grid.Column="1"
+					   VerticalAlignment="Center"
+					   FontSize="18"
+					   FontWeight="SemiBold"
+					   Text="Navigation" />
 
-		<!--  Overlay (visible when drawer is open)  -->
-		<Border Background="#80000000"
+			<StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+				<Button Command="{Binding ManageCommand}" ToolTipService.ToolTip="Manage" Margin="5">
+					<SymbolIcon Symbol="People" />
+				</Button>
+				<Button Command="{Binding LogoutCommand}" ToolTipService.ToolTip="Logout" Margin="5">
+					<SymbolIcon Symbol="LeaveChat" />
+				</Button>
+			</StackPanel>
+		</Grid>
+
+		<Button Background="#80000000"
+				BorderThickness="0"
+				Padding="0"
 				Grid.RowSpan="2"
-				Visibility="{Binding IsDrawerOpen, Converter={x:Static converter:BooleanToVisibilityConverter.Instance}}"
-				Canvas.ZIndex="1">
-			<i:Interaction.Behaviors>
-				<core:EventTriggerBehavior EventName="Tapped">
-					<core:InvokeCommandAction Command="{Binding ToggleDrawerCommand}" />
-				</core:EventTriggerBehavior>
-			</i:Interaction.Behaviors>
-		</Border>
+				Visibility="{Binding IsDrawerOpen, Converter={StaticResource BooleanToVisibilityConverter}}"
+				Canvas.ZIndex="1"
+				Command="{Binding ToggleDrawerCommand}" />
 
-		<!--  Off-Canvas Navigation Drawer  -->
 		<Border Width="200"
 				Background="White"
 				HorizontalAlignment="Left"
 				Grid.RowSpan="2"
-				Visibility="{Binding IsDrawerOpen, Converter={x:Static converter:BooleanToVisibilityConverter.Instance}}"
+				Visibility="{Binding IsDrawerOpen, Converter={StaticResource BooleanToVisibilityConverter}}"
 				Canvas.ZIndex="2">
 			<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
 				<StackPanel Margin="5">
-					<!--  Drawer Header  -->
-					<TextBlock FontSize="20" FontWeight="SemiBold" Text="{x:Static loc:CommonLoc.Navigation}" Margin="5,10" />
+					<TextBlock FontSize="20" FontWeight="SemiBold" Text="Navigation" Margin="5,10" />
 
-					<!--  Navigation Items  -->
 <#cs
 foreach(var definition in Definitions.Where(d => !d.IsOwnedType
 && !d.IsArray
 && !d.IsEnumeration
 && !d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
 {
-	WriteLine($"					<Button Command=\"{{Binding NavigateTo{definition.Name}s}}\" Margin=\"5\" HorizontalContentAlignment=\"Left\">");
-	WriteLine($"						<StackPanel Orientation=\"Horizontal\">");
-	WriteLine($"							<SymbolIcon Symbol=\"Note\" Margin=\"0,0,10,0\" />");
-	WriteLine($"							<TextBlock VerticalAlignment=\"Center\" Text=\"{{x:Static loc:{definition.Name}Loc.{definition.Name}s}}\" />");
-	WriteLine($"						</StackPanel>");
-	WriteLine($"					</Button>");
+	WriteLine($"\t\t\t\t\t<Button Command=\"{{Binding NavigateTo{definition.Name}s}}\" Margin=\"5\" HorizontalContentAlignment=\"Left\">");
+	WriteLine($"\t\t\t\t\t\t<StackPanel Orientation=\"Horizontal\">");
+	WriteLine($"\t\t\t\t\t\t\t<SymbolIcon Symbol=\"Document\" Margin=\"0,0,10,0\" />");
+	WriteLine($"\t\t\t\t\t\t\t<TextBlock VerticalAlignment=\"Center\" Text=\"{definition.Name}s\" />");
+	WriteLine($"\t\t\t\t\t\t</StackPanel>");
+	WriteLine($"\t\t\t\t\t</Button>");
 	WriteLine("");
 }
 

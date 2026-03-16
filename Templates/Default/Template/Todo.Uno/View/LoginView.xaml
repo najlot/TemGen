@@ -4,7 +4,6 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-			 xmlns:loc="using:<#cs Write(Project.Namespace)#>.Client.Localisation"
 			 mc:Ignorable="d"
 			 d:DesignHeight="450" d:DesignWidth="800">
 	<Grid>
@@ -20,31 +19,27 @@
 						   FontSize="24"
 						   FontWeight="Bold"
 						   Foreground="{StaticResource AppBackgroundColor}"
-						   Text="{x:Static loc:CommonLoc.Login}" />
+						   Text="Login" />
 
-				<!--  Username  -->
 				<StackPanel Margin="0,0,0,16">
-					<TextBlock Margin="0,0,0,4" Text="{x:Static loc:CommonLoc.Username}" />
+					<TextBlock Margin="0,0,0,4" Text="Username" />
 					<TextBox x:Name="UsernameTextBox" Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 				</StackPanel>
 
-				<!--  Password  -->
 				<StackPanel Margin="0,0,0,16">
-					<TextBlock Margin="0,0,0,4" Text="{x:Static loc:CommonLoc.Password}" />
+					<TextBlock Margin="0,0,0,4" Text="Password" />
 					<PasswordBox x:Name="PasswordBox"
 								 PasswordChanged="PasswordBox_PasswordChanged" />
 				</StackPanel>
 
-				<!--  Login Button  -->
 				<Button Margin="0,8,0,0"
 						HorizontalAlignment="Stretch"
 						HorizontalContentAlignment="Center"
 						Command="{Binding LoginCommand}"
-						Content="{x:Static loc:CommonLoc.Login}" />
+						Content="Login" />
 
-				<!--  Navigate to Register Link  -->
 				<Button Margin="0,8,0,0" Command="{Binding NavigateToRegisterCommand}">
-					<TextBlock Text="{x:Static loc:CommonLoc.Register}" />
+					<TextBlock Text="Register" />
 				</Button>
 			</StackPanel>
 		</Border>

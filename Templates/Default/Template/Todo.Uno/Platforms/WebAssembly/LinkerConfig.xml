@@ -1,0 +1,4 @@
+<linker>
+	<assembly fullname="<#cs Write(Project.Namespace)#>.Uno" />
+</linker>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

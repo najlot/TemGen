@@ -10,5 +10,7 @@
 	<Project Path="Todo.Service.Test/Todo.Service.Test.csproj" />
 	<Project Path="Todo.Service/Todo.Service.csproj" />
 	<Project Path="Todo.Wpf/Todo.Wpf.csproj" />
-	<Project Path="Todo.Uno/Todo.Uno.csproj" />
+	<Project Path="Todo.Uno/Todo.Uno.csproj">
+		<Deploy Solution="Debug|*" />
+	</Project>
 </Solution>

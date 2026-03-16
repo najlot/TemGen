@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using Todo.Client.Localisation;
 
 namespace Todo.Uno.Converter;
 
@@ -17,7 +18,9 @@ public class EnumToTranslationConverter : IValueConverter
 			return string.Empty;
 		}
 
-		if (parameter is not Type type)
+		var type = GetResourceType(parameter);
+
+		if (type is null)
 		{
 			return string.Empty;
 		}
@@ -56,7 +59,9 @@ public class EnumToTranslationConverter : IValueConverter
 			return null;
 		}
 
-		if (parameter is not Type type)
+		var type = GetResourceType(parameter);
+
+		if (type is null)
 		{
 			return null;
 		}
@@ -81,6 +86,27 @@ public class EnumToTranslationConverter : IValueConverter
 		}
 
 		return TranslateBack(value.ToString(), resourceManager, targetType);
+	}
+
+	private static Type? GetResourceType(object? parameter)
+	{
+		if (parameter is Type type)
+		{
+			return type;
+		}
+
+		if (parameter is string typeName && !string.IsNullOrWhiteSpace(typeName))
+		{
+			return typeName switch
+			{
+				"PredefinedColorLoc" => typeof(PredefinedColorLoc),
+				"TodoItemStatusLoc" => typeof(TodoItemStatusLoc),
+
+				_ => null,
+			};
+		}
+
+		return null;
 	}
 
 	private static object? TranslateBack(string? value, System.Resources.ResourceManager resourceManager, Type targetType)

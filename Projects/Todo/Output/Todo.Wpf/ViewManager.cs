@@ -18,11 +18,11 @@ public class ViewManager(IServiceProvider serviceProvider) : IViewManager<Contro
 		[typeof(RegisterViewModel)] = typeof(RegisterView),
 		[typeof(MenuViewModel)] = typeof(MenuView),
 		[typeof(ManageViewModel)] = typeof(ManageView),
-		[typeof(AllTodoItemsViewModel)] = typeof(AllTodoItemsView),
 		[typeof(AllNotesViewModel)] = typeof(AllNotesView),
-		[typeof(TodoItemViewModel)] = typeof(TodoItemView),
+		[typeof(AllTodoItemsViewModel)] = typeof(AllTodoItemsView),
 		[typeof(ChecklistTaskViewModel)] = typeof(ChecklistTaskView),
 		[typeof(NoteViewModel)] = typeof(NoteView),
+		[typeof(TodoItemViewModel)] = typeof(TodoItemView),
 	};
 
 	public Control GetView<TViewModel>(TViewModel viewModel) where TViewModel : notnull

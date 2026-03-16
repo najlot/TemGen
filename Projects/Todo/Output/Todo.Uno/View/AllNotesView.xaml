@@ -4,65 +4,67 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:local="using:Todo.Uno.View"
-			 xmlns:loc="using:Todo.Client.Localisation"
-			 xmlns:utu="using:Uno.Toolkit.UI"
-			 xmlns:i="using:Microsoft.Xaml.Interactivity"
-			 xmlns:core="using:Microsoft.Xaml.Interactions.Core"
 			 mc:Ignorable="d"
+			 x:Name="Root"
 			 d:DesignHeight="450"
 			 d:DesignWidth="800">
-	<utu:DockPanel>
-		<utu:DockPanel utu:DockPanel.Dock="Top">
-			<Button Margin="5" utu:DockPanel.Dock="Left" Command="{Binding NavigateBackCommand}">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+
+		<Grid Grid.Row="0" Margin="5">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="Auto" />
+			</Grid.ColumnDefinitions>
+
+			<Button Grid.Column="0" Margin="5" Command="{Binding NavigateBackCommand}">
 				<SymbolIcon Symbol="Back" />
 			</Button>
 
-			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" utu:DockPanel.Dock="Right">
+			<StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+				<TextBlock VerticalAlignment="Center" Text="Filter" Margin="5" />
+				<TextBox Margin="5"
+						 VerticalAlignment="Center"
+						 Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+			</StackPanel>
+
+			<StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
 				<Button Margin="5"
 						Command="{Binding RefreshNotesCommand}"
-						ToolTipService.ToolTip="{x:Static loc:CommonLoc.Refresh}">
+						ToolTipService.ToolTip="Refresh">
 					<SymbolIcon Symbol="Refresh" />
 				</Button>
 
 				<Button Margin="5"
 						Command="{Binding AddNoteCommand}"
-						ToolTipService.ToolTip="{x:Static loc:CommonLoc.New}">
+						ToolTipService.ToolTip="New">
 					<SymbolIcon Symbol="Add" />
 				</Button>
 			</StackPanel>
+		</Grid>
 
-			<utu:DockPanel utu:DockPanel.Dock="Left">
-				<TextBlock VerticalAlignment="Center" Text="{x:Static loc:CommonLoc.Filter}" Margin="5" />
-				<TextBox Margin="5"
-						 VerticalAlignment="Center"
-						 Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
-			</utu:DockPanel>
-		</utu:DockPanel>
-
-		<ScrollViewer>
+		<ScrollViewer Grid.Row="1">
 			<ItemsControl ItemsSource="{Binding NotesView}">
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
-						<StackPanel Margin="5">
-							<TextBlock Padding="5,5,5,0" Text="{Binding Title}">
-								<i:Interaction.Triggers>
-									<i:EventTrigger EventName="Tapped">
-										<i:InvokeCommandAction Command="{Binding DataContext.EditNoteCommand, RelativeSource={RelativeSource AncestorType=local:AllNotesView}}" CommandParameter="{Binding .}" />
-									</i:EventTrigger>
-								</i:Interaction.Triggers>
-							</TextBlock>
-							<TextBlock Padding="5,5,5,0" Text="{Binding Content}">
-								<i:Interaction.Triggers>
-									<i:EventTrigger EventName="Tapped">
-										<i:InvokeCommandAction Command="{Binding DataContext.EditNoteCommand, RelativeSource={RelativeSource AncestorType=local:AllNotesView}}" CommandParameter="{Binding .}" />
-									</i:EventTrigger>
-								</i:Interaction.Triggers>
-							</TextBlock>
-						</StackPanel>
+						<Button Margin="5"
+								Padding="0"
+								HorizontalContentAlignment="Stretch"
+								Command="{Binding ElementName=Root, Path=DataContext.EditNoteCommand}"
+								CommandParameter="{Binding .}">
+							<StackPanel Margin="5">
+								<TextBlock Padding="5,5,5,0" Text="{Binding Title}" />
+								<TextBlock Padding="5,5,5,0" Text="{Binding Content}" />
+							</StackPanel>
+						</Button>
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>
 		</ScrollViewer>
-	</utu:DockPanel>
+	</Grid>
 </UserControl>
 

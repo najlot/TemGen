@@ -4,59 +4,64 @@
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:local="using:Todo.Uno.View"
-			 xmlns:loc="using:Todo.Client.Localisation"
-			 xmlns:converter="using:Todo.Uno.Converter"
-			 xmlns:utu="using:Uno.Toolkit.UI"
 			 mc:Ignorable="d"
+			 x:Name="Root"
 			 d:DesignHeight="500" d:DesignWidth="600">
-	<Grid>
-		<utu:DockPanel IsEnabled="{Binding CanEdit}">
-			<utu:DockPanel utu:DockPanel.Dock="Top">
-				<Button Margin="5"
-						utu:DockPanel.Dock="Left"
-						Command="{Binding NavigateBackCommand}">
-					<SymbolIcon Symbol="Back" />
-				</Button>
+	<Grid IsEnabled="{Binding CanEdit}">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
 
-				<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" utu:DockPanel.Dock="Right">
-					<Button ToolTipService.ToolTip="{x:Static loc:CommonLoc.Undo}" Command="{Binding UndoCommand}" Margin="5">
-						<SymbolIcon Symbol="Undo" />
-					</Button>
-					<Button ToolTipService.ToolTip="{x:Static loc:CommonLoc.Redo}" Command="{Binding RedoCommand}" Margin="5">
-						<SymbolIcon Symbol="Redo" />
-					</Button>
-					<Button ToolTipService.ToolTip="{x:Static loc:CommonLoc.Save}" Command="{Binding SaveCommand}" Margin="5">
-						<SymbolIcon Symbol="Save" />
-					</Button>
-					<Button ToolTipService.ToolTip="{x:Static loc:CommonLoc.Delete}" Command="{Binding DeleteCommand}" Margin="5">
-						<SymbolIcon Symbol="Delete" />
-					</Button>
-				</StackPanel>
-			</utu:DockPanel>
-			<ScrollViewer>
-				<StackPanel Margin="2,0" MinWidth="400" MinHeight="200"
+		<Grid Grid.Row="0" Margin="5">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="Auto" />
+			</Grid.ColumnDefinitions>
+
+			<Button Grid.Column="0" Margin="5" Command="{Binding NavigateBackCommand}">
+				<SymbolIcon Symbol="Back" />
+			</Button>
+
+			<StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+				<Button ToolTipService.ToolTip="Undo" Command="{Binding UndoCommand}" Margin="5">
+					<SymbolIcon Symbol="Undo" />
+				</Button>
+				<Button ToolTipService.ToolTip="Redo" Command="{Binding RedoCommand}" Margin="5">
+					<SymbolIcon Symbol="Redo" />
+				</Button>
+				<Button ToolTipService.ToolTip="Save" Command="{Binding SaveCommand}" Margin="5">
+					<SymbolIcon Symbol="Save" />
+				</Button>
+				<Button ToolTipService.ToolTip="Delete" Command="{Binding DeleteCommand}" Margin="5">
+					<SymbolIcon Symbol="Delete" />
+				</Button>
+			</StackPanel>
+		</Grid>
+
+		<ScrollViewer Grid.Row="1">
+			<StackPanel Margin="2,0" MinWidth="400" MinHeight="200"
 						HorizontalAlignment="Center" VerticalAlignment="Center">
 					<StackPanel Orientation="Horizontal" Margin="5">
-						<TextBlock Text="{x:Static loc:NoteLoc.Title}" MinWidth="75" VerticalAlignment="Center" />
+						<TextBlock Text="Title" MinWidth="75" VerticalAlignment="Center" />
 						<TextBox Text="{Binding Title, Mode=TwoWay}" MinWidth="200" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal" Margin="5">
-						<TextBlock Text="{x:Static loc:NoteLoc.Content}" MinWidth="75" VerticalAlignment="Center" />
+						<TextBlock Text="Content" MinWidth="75" VerticalAlignment="Center" />
 						<TextBox Text="{Binding Content, Mode=TwoWay}" MinWidth="200" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal" Margin="5">
-						<TextBlock Text="{x:Static loc:NoteLoc.Color}" MinWidth="75" VerticalAlignment="Center" />
-						<ComboBox ItemsSource="{Binding AvailablePredefinedColors, Converter={x:Static converter:EnumToTranslationConverter.Instance}, ConverterParameter={x:Type loc:PredefinedColorLoc}}"
-							  SelectedItem="{Binding Color, Mode=TwoWay, Converter={x:Static converter:EnumToTranslationConverter.Instance}, ConverterParameter={x:Type loc:PredefinedColorLoc}}" />
+						<TextBlock Text="Color" MinWidth="75" VerticalAlignment="Center" />
+						<ComboBox ItemsSource="{Binding AvailablePredefinedColors}" SelectedItem="{Binding Color, Mode=TwoWay}" />
 					</StackPanel>
-				</StackPanel>
-			</ScrollViewer>
-		</utu:DockPanel>
+			</StackPanel>
+		</ScrollViewer>
 
-		<local:SaveConfirmationDialogView Visibility="{Binding SaveDialogViewModel.IsVisible, Converter={x:Static converter:BooleanToVisibilityConverter.Instance}}"
-							  DataContext="{Binding SaveDialogViewModel}" />
-		<local:DeleteConfirmationDialogView Visibility="{Binding DeleteDialogViewModel.IsVisible, Converter={x:Static converter:BooleanToVisibilityConverter.Instance}}"
-							  DataContext="{Binding DeleteDialogViewModel}" />
+		<local:SaveConfirmationDialogView Visibility="{Binding SaveDialogViewModel.IsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+									  DataContext="{Binding SaveDialogViewModel}" />
+		<local:DeleteConfirmationDialogView Visibility="{Binding DeleteDialogViewModel.IsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+									  DataContext="{Binding DeleteDialogViewModel}" />
 	</Grid>
 </UserControl>
 

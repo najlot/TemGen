@@ -57,17 +57,17 @@
 					<TextBlock FontSize="20" FontWeight="SemiBold" Text="{x:Static loc:CommonLoc.Navigation}" Margin="5,10" />
 
 					<!--  Navigation Items  -->
-					<Button Command="{Binding NavigateToTodoItems}" Margin="5" HorizontalContentAlignment="Left">
-						<Grid ColumnDefinitions="Auto,*">
-							<materialIcons:MaterialIcon Width="18" Height="18" Margin="0,0,10,0" Kind="Note" />
-							<TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.TodoItems}" />
-						</Grid>
-					</Button>
-
 					<Button Command="{Binding NavigateToNotes}" Margin="5" HorizontalContentAlignment="Left">
 						<Grid ColumnDefinitions="Auto,*">
 							<materialIcons:MaterialIcon Width="18" Height="18" Margin="0,0,10,0" Kind="Note" />
 							<TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Static loc:NoteLoc.Notes}" />
+						</Grid>
+					</Button>
+
+					<Button Command="{Binding NavigateToTodoItems}" Margin="5" HorizontalContentAlignment="Left">
+						<Grid ColumnDefinitions="Auto,*">
+							<materialIcons:MaterialIcon Width="18" Height="18" Margin="0,0,10,0" Kind="Note" />
+							<TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.TodoItems}" />
 						</Grid>
 					</Button>
 				</StackPanel>

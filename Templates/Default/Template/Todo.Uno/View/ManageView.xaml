@@ -3,7 +3,6 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-			 xmlns:loc="using:<#cs Write(Project.Namespace)#>.Client.Localisation"
 			 mc:Ignorable="d"
 			 d:DesignHeight="450" d:DesignWidth="800">
 	<Grid>
@@ -31,28 +30,25 @@
 						   FontSize="24"
 						   FontWeight="Bold"
 						   Foreground="{StaticResource AppBackgroundColor}"
-						   Text="{x:Static loc:CommonLoc.UserNamagement}" />
+						   Text="Manage Account" />
 
-				<!--  New Password  -->
 				<StackPanel Margin="0,0,0,16">
-					<TextBlock Margin="0,0,0,4" Text="{x:Static loc:CommonLoc.NewPassword}" />
+					<TextBlock Margin="0,0,0,4" Text="New Password" />
 					<PasswordBox x:Name="NewPasswordBox"
 								 PasswordChanged="NewPasswordBox_PasswordChanged" />
 				</StackPanel>
 
-				<!--  Confirm New Password  -->
 				<StackPanel Margin="0,0,0,16">
-					<TextBlock Margin="0,0,0,4" Text="{x:Static loc:CommonLoc.ConfirmNewPassword}" />
+					<TextBlock Margin="0,0,0,4" Text="Confirm Password" />
 					<PasswordBox x:Name="ConfirmPasswordBox"
 								 PasswordChanged="ConfirmPasswordBox_PasswordChanged" />
 				</StackPanel>
 
-				<!--  Save Button  -->
 				<Button Margin="0,8,0,0"
 						HorizontalAlignment="Stretch"
 						HorizontalContentAlignment="Center"
 						Command="{Binding SaveCommand}"
-						Content="{x:Static loc:CommonLoc.ChangePassword}" />
+						Content="Change Password" />
 			</StackPanel>
 		</Border>
 	</Grid>

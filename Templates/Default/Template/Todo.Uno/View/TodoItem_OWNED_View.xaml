@@ -4,9 +4,6 @@
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:local="using:<#cs Write(Project.Namespace)#>.Uno.View"
-			 xmlns:loc="using:<#cs Write(Project.Namespace)#>.Client.Localisation"
-			 xmlns:converter="using:<#cs Write(Project.Namespace)#>.Uno.Converter"
-			 xmlns:utu="using:Uno.Toolkit.UI"
 			 mc:Ignorable="d"
 			 d:DesignHeight="500" d:DesignWidth="600">
 
@@ -15,86 +12,89 @@
 foreach(var entry in Entries)
 {
 	if (!entry.IsArray && !entry.IsOwnedType)
-		WriteLine("		<StackPanel Orientation=\"Horizontal\" Margin=\"5\">");
+		WriteLine("\t\t<StackPanel Orientation=\"Horizontal\" Margin=\"5\">");
 
 	if (entry.EntryType != "bool" && !entry.IsArray && !entry.IsOwnedType)
 	{
-		WriteLine($"			<TextBlock Text=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" MinWidth=\"75\" VerticalAlignment=\"Center\" />");
+		WriteLine($"\t\t\t<TextBlock Text=\"{entry.Field}\" MinWidth=\"75\" VerticalAlignment=\"Center\" />");
 	}
 	
 	if (entry.EntryType == "DateTime")
 	{
-		WriteLine($"			<DatePicker Date=\"{{Binding {entry.Field}, Mode=TwoWay}}\" />");
+		WriteLine($"\t\t\t<DatePicker Date=\"{{Binding {entry.Field}, Mode=TwoWay}}\" />");
 	}
 	else if (entry.EntryType == "bool")
 	{
-		WriteLine($"			<TextBlock Text=\"\" MinWidth=\"75\" VerticalAlignment=\"Center\" />");
-		WriteLine($"			<CheckBox IsChecked=\"{{Binding {entry.Field}, Mode=TwoWay}}\" Content=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" />");
+		WriteLine($"\t\t\t<TextBlock Text=\"\" MinWidth=\"75\" VerticalAlignment=\"Center\" />");
+		WriteLine($"\t\t\t<CheckBox IsChecked=\"{{Binding {entry.Field}, Mode=TwoWay}}\" Content=\"{entry.Field}\" />");
 	}
 	else if (entry.IsOwnedType)
 	{
-		WriteLine($"		<TextBlock Text=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" Foreground=\"{{StaticResource AppForegroundColor}}\" Background=\"{{StaticResource AppBackgroundColor}}\" />");
-		WriteLine($"		<local:{entry.EntryType}View DataContext=\"{{Binding {entry.Field}}}\" />");
+		WriteLine($"\t\t<TextBlock Text=\"{entry.Field}\" Foreground=\"{{StaticResource AppForegroundColor}}\" Background=\"{{StaticResource AppBackgroundColor}}\" />");
+		WriteLine($"\t\t<local:{entry.EntryType}View DataContext=\"{{Binding {entry.Field}}}\" />");
 	}
 	else if (entry.IsEnumeration)
 	{
-		WriteLine($"			<ComboBox ItemsSource=\"{{Binding Available{entry.EntryType}s, Converter={{x:Static converter:EnumToTranslationConverter.Instance}}, ConverterParameter={{x:Type loc:{entry.EntryType}Loc}}}}\"");
-		WriteLine($"					  SelectedItem=\"{{Binding {entry.Field}, Mode=TwoWay, Converter={{x:Static converter:EnumToTranslationConverter.Instance}}, ConverterParameter={{x:Type loc:{entry.EntryType}Loc}}}}\" />");
+		WriteLine($"\t\t\t<ComboBox ItemsSource=\"{{Binding Available{entry.EntryType}s}}\" SelectedItem=\"{{Binding {entry.Field}, Mode=TwoWay}}\" />");
 	}
 	else if (entry.IsArray)
 	{
-		WriteLine("		<StackPanel>");
-		WriteLine($"			<utu:DockPanel>");
-		WriteLine($"				<Button ToolTipService.ToolTip=\"{{x:Static loc:CommonLoc.New}}\" Command=\"{{Binding Add{entry.EntryType}Command}}\" Margin=\"5\" utu:DockPanel.Dock=\"Right\">");
-		WriteLine($"					<SymbolIcon Symbol=\"Add\" />");
-		WriteLine($"				</Button>");
-		WriteLine($"				<TextBlock Text=\"{{x:Static loc:{Definition.Name}Loc.{entry.Field}}}\" Foreground=\"{{StaticResource AppForegroundColor}}\" Background=\"{{StaticResource AppBackgroundColor}}\" Padding=\"5\" Margin=\"0,5\" VerticalAlignment=\"Center\"/>");
-		WriteLine($"			</utu:DockPanel>");
-		WriteLine($"");
-		WriteLine($"			<ListView");
-		WriteLine($"				Margin=\"0,0,5,0\"");
-		WriteLine($"				ItemsSource=\"{{Binding {entry.Field}}}\"");
-		WriteLine($"				SelectionMode=\"None\">");
-		WriteLine($"");
-		WriteLine($"				<ListView.ItemTemplate>");
-		WriteLine($"					<DataTemplate>");
-		WriteLine($"						<StackPanel>");
+		WriteLine("\t\t<StackPanel>");
+		WriteLine("\t\t\t<Grid>");
+		WriteLine("\t\t\t\t<Grid.ColumnDefinitions>");
+		WriteLine("\t\t\t\t\t<ColumnDefinition Width=\"*\" />");
+		WriteLine("\t\t\t\t\t<ColumnDefinition Width=\"Auto\" />");
+		WriteLine("\t\t\t\t</Grid.ColumnDefinitions>");
+		WriteLine($"\t\t\t\t<Button Grid.Column=\"1\" ToolTipService.ToolTip=\"New\" Command=\"{{Binding Add{entry.EntryType}Command}}\" Margin=\"5\">");
+		WriteLine("\t\t\t\t\t<SymbolIcon Symbol=\"Add\" />");
+		WriteLine("\t\t\t\t</Button>");
+		WriteLine($"\t\t\t\t<TextBlock Grid.Column=\"0\" Text=\"{entry.Field}\" Foreground=\"{{StaticResource AppForegroundColor}}\" Background=\"{{StaticResource AppBackgroundColor}}\" Padding=\"5\" Margin=\"0,5\" VerticalAlignment=\"Center\"/>");
+		WriteLine("\t\t\t</Grid>");
+		WriteLine("");
+		WriteLine("\t\t\t<ListView");
+		WriteLine("\t\t\t\tMargin=\"0,0,5,0\"");
+		WriteLine($"\t\t\t\tItemsSource=\"{{Binding {entry.Field}}}\"");
+		WriteLine("\t\t\t\tSelectionMode=\"None\">");
+		WriteLine("");
+		WriteLine("\t\t\t\t<ListView.ItemTemplate>");
+		WriteLine("\t\t\t\t\t<DataTemplate>");
+		WriteLine("\t\t\t\t\t\t<StackPanel>");
 
 		var d = Definitions.First(d => d.Name == entry.EntryType);
 		foreach(var e in d.Entries.Where(ent => !ent.IsEnumeration))
 		{
-			WriteLine($"							<StackPanel Orientation=\"Horizontal\" Margin=\"2\">");
-			WriteLine($"								<TextBlock Text=\"{{x:Static loc:{d.Name}Loc.{e.Field}}}\" MinWidth=\"100\" VerticalAlignment=\"Center\" />");
+			WriteLine("\t\t\t\t\t\t\t<StackPanel Orientation=\"Horizontal\" Margin=\"2\">");
+			WriteLine($"\t\t\t\t\t\t\t\t<TextBlock Text=\"{e.Field}\" MinWidth=\"100\" VerticalAlignment=\"Center\" />");
 			if(e.EntryType == "bool")
 			{
-				WriteLine($"								<CheckBox IsChecked=\"{{Binding {e.Field}, Mode=TwoWay}}\" />");
+				WriteLine($"\t\t\t\t\t\t\t\t<CheckBox IsChecked=\"{{Binding {e.Field}, Mode=TwoWay}}\" />");
 			}
 			else
 			{
-				WriteLine($"								<TextBox Text=\"{{Binding {e.Field}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}}\" MinWidth=\"150\" />");
+				WriteLine($"\t\t\t\t\t\t\t\t<TextBox Text=\"{{Binding {e.Field}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}}\" MinWidth=\"150\" />");
 			}
-			WriteLine($"							</StackPanel>");
+			WriteLine("\t\t\t\t\t\t\t</StackPanel>");
 		}
 
-		WriteLine($"							<Button ToolTipService.ToolTip=\"Edit\" Command=\"{{Binding Edit{entry.EntryType}Command}}\" Padding=\"2\">");
-		WriteLine($"								<SymbolIcon Symbol=\"Edit\" />");
-		WriteLine($"							</Button>");
-		WriteLine($"							<Button ToolTipService.ToolTip=\"Delete\" Command=\"{{Binding DeleteCommand}}\" Padding=\"2\">");
-		WriteLine($"								<SymbolIcon Symbol=\"Delete\" />");
-		WriteLine($"							</Button>");
-		WriteLine($"						</StackPanel>");
-		WriteLine($"					</DataTemplate>");
-		WriteLine($"				</ListView.ItemTemplate>");
-		WriteLine($"			</ListView>");
-		WriteLine($"		</StackPanel>");
+		WriteLine($"\t\t\t\t\t\t\t<Button ToolTipService.ToolTip=\"Edit\" Command=\"{{Binding Edit{entry.EntryType}Command}}\" Padding=\"2\">");
+		WriteLine("\t\t\t\t\t\t\t\t<SymbolIcon Symbol=\"Edit\" />");
+		WriteLine("\t\t\t\t\t\t\t</Button>");
+		WriteLine($"\t\t\t\t\t\t\t<Button ToolTipService.ToolTip=\"Delete\" Command=\"{{Binding DeleteCommand}}\" Padding=\"2\">");
+		WriteLine("\t\t\t\t\t\t\t\t<SymbolIcon Symbol=\"Delete\" />");
+		WriteLine("\t\t\t\t\t\t\t</Button>");
+		WriteLine("\t\t\t\t\t\t</StackPanel>");
+		WriteLine("\t\t\t\t\t</DataTemplate>");
+		WriteLine("\t\t\t\t</ListView.ItemTemplate>");
+		WriteLine("\t\t\t</ListView>");
+		WriteLine("\t\t</StackPanel>");
 	}
 	else
 	{
-		WriteLine($"			<TextBox Text=\"{{Binding {entry.Field}, Mode=TwoWay}}\" MinWidth=\"200\" />");
+		WriteLine($"\t\t\t<TextBox Text=\"{{Binding {entry.Field}, Mode=TwoWay}}\" MinWidth=\"200\" />");
 	}
 	
 	if (!entry.IsOwnedType && !entry.IsArray)
-		WriteLine("		</StackPanel>");
+		WriteLine("\t\t</StackPanel>");
 }
 
 Result = Result.TrimEnd();

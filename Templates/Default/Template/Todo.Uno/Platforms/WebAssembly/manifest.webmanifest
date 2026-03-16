@@ -1,0 +1,11 @@
+{
+	"background_color": "#ffffff",
+	"description": "<#cs Write(Project.Namespace)#>",
+	"display": "standalone",
+	"name": "<#cs Write(Project.Namespace)#>",
+	"short_name": "<#cs Write(Project.Namespace)#>",
+	"start_url": "/index.html",
+	"theme_color": "#ffffff",
+	"scope": "/"
+}
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

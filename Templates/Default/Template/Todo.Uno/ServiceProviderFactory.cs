@@ -36,7 +36,7 @@ public static class ServiceProviderFactory
 
 		var configuration = configBuilder.Build();
 
-		var dataServiceUrl = configuration.GetSection("DataServiceUrl")?.Get<string>() ?? throw new InvalidOperationException("DataServiceUrl not found.");
+		var dataServiceUrl = configuration["DataServiceUrl"] ?? throw new InvalidOperationException("DataServiceUrl not found.");
 
 		var serviceCollection = new ServiceCollection();
 		var map = new Najlot.Map.Map()

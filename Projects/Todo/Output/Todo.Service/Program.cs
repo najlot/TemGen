@@ -73,8 +73,8 @@ internal static class Program
 			services.AddSingleton<MongoDbContext>();
 			services.AddScoped<IUnitOfWork, MongoDbUnitOfWork>();
 			services.AddScoped<IUserRepository, MongoDbUserRepository>();
-			services.AddScoped<ITodoItemRepository, MongoDbTodoItemRepository>();
 			services.AddScoped<INoteRepository, MongoDbNoteRepository>();
+			services.AddScoped<ITodoItemRepository, MongoDbTodoItemRepository>();
 		}
 		else if (mysqlConfig != null)
 		{
@@ -82,24 +82,24 @@ internal static class Program
 			services.AddScoped<MySqlDbContext>();
 			services.AddScoped<IUnitOfWork, MySqlUnitOfWork>();
 			services.AddScoped<IUserRepository, MySqlUserRepository>();
-			services.AddScoped<ITodoItemRepository, MySqlTodoItemRepository>();
 			services.AddScoped<INoteRepository, MySqlNoteRepository>();
+			services.AddScoped<ITodoItemRepository, MySqlTodoItemRepository>();
 		}
 		else
 		{
 			services.AddSingleton(fileConfig ?? new FileConfiguration());
 			services.AddScoped<IUnitOfWork, FileUnitOfWork>();
 			services.AddScoped<IUserRepository, FileUserRepository>();
-			services.AddScoped<ITodoItemRepository, FileTodoItemRepository>();
 			services.AddScoped<INoteRepository, FileNoteRepository>();
+			services.AddScoped<ITodoItemRepository, FileTodoItemRepository>();
 		}
 
 		var map = new Najlot.Map.Map().RegisterTodoServiceMappings();
 		services.AddSingleton(map);
 
 		services.AddScoped<IUserService, UserService>();
-		services.AddScoped<TodoItemService>();
 		services.AddScoped<NoteService>();
+		services.AddScoped<TodoItemService>();
 		services.AddScoped<TokenService>();
 
 		services.AddSignalR();
