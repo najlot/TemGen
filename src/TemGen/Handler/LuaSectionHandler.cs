@@ -63,10 +63,23 @@ public sealed class LuaSectionHandler(string[] initialScripts) : AbstractSection
 		projectTable["definitions_path"] = globals.Project.DefinitionsPath;
 		projectTable["templates_path"] = globals.Project.TemplatesPath;
 		projectTable["output_path"] = globals.Project.OutputPath;
+		projectTable["resources_path"] = globals.Project.ResourcesPath;
+		projectTable["resources_script_path"] = globals.Project.ResourcesScriptPath;
+		projectTable["scripts_path"] = globals.Project.ScriptsPath;
 		projectTable["primary_color"] = globals.Project.PrimaryColor;
 		projectTable["primary_dark_color"] = globals.Project.PrimaryDarkColor;
 		projectTable["accent_color"] = globals.Project.AccentColor;
 		projectTable["foreground_color"] = globals.Project.ForegroundColor;
+
+		var settingsTable = new Table(script);
+
+		foreach (var setting in globals.Project.Settings)
+		{
+			settingsTable[setting.Key] = setting.Value;
+			projectTable[setting.Key] = setting.Value;
+		}
+
+		projectTable["settings"] = settingsTable;
 		script.Globals["project"] = projectTable;
 
 		script.Globals["get_result"] = () => globals.Result;

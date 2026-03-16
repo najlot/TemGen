@@ -4,7 +4,7 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<UserSecretsId>aspnet-<#cs Write(Project.Namespace)#>.Blazor-4ea02e08-91a1-464f-b410-a492610d37b0</UserSecretsId>
+		<UserSecretsId><#cs Write(Project.GetSetting("UserSecretsId", $"aspnet-{Project.Namespace}.Blazor-4ea02e08-91a1-464f-b410-a492610d37b0"))#></UserSecretsId>
 	</PropertyGroup>
 
 	<ItemGroup>

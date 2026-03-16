@@ -21,8 +21,7 @@ internal class Program
 
 		var project = ProjectReader.ReadProject(path);
 		var definitions = DefinitionsReader.ReadDefinitions(project.DefinitionsPath);
-		var templates = TemplatesReader.ReadTemplates(project.TemplatesPath);
-
+		
 		var csScripts = Array.Empty<string>();
 		var jsScripts = Array.Empty<string>();
 		var pyScripts = Array.Empty<string>();
@@ -61,37 +60,42 @@ internal class Program
 			}
 		}
 
-		await Parallel.ForEachAsync(templates, async (template, tkn) =>
+		foreach (var templatesPath in project.TemplatePaths)
 		{
-			try
-			{
-				var results = await processor.Handle(template, definitions).ConfigureAwait(false);
+			var templates = TemplatesReader.ReadTemplates(templatesPath);
 
-				foreach (var result in results)
+			await Parallel.ForEachAsync(templates, async (template, tkn) =>
+			{
+				try
 				{
-					var destPath = Path.Combine(project.OutputPath, result.Key);
-					var dirPath = Path.GetDirectoryName(destPath);
-					Directory.CreateDirectory(dirPath);
+					var results = await processor.Handle(template, definitions).ConfigureAwait(false);
 
-					if (File.Exists(destPath))
+					foreach (var result in results)
 					{
-						var currentContent = await File.ReadAllTextAsync(destPath, tkn).ConfigureAwait(false);
+						var destPath = Path.Combine(project.OutputPath, result.Key);
+						var dirPath = Path.GetDirectoryName(destPath);
+						Directory.CreateDirectory(dirPath);
 
-						if (currentContent == result.Value)
+						if (File.Exists(destPath))
 						{
-							continue;
+							var currentContent = await File.ReadAllTextAsync(destPath, tkn).ConfigureAwait(false);
+
+							if (currentContent == result.Value)
+							{
+								continue;
+							}
 						}
+
+						await File.WriteAllTextAsync(destPath, result.Value, template.Encoding, tkn).ConfigureAwait(false);
 					}
-
-					await File.WriteAllTextAsync(destPath, result.Value, template.Encoding, tkn).ConfigureAwait(false);
 				}
-			}
-			catch (Exception ex)
-			{
-				log.Error(ex, "Error processing {TemplatePath}: ", template.RelativePath);
-			}
-		}).ConfigureAwait(false);
-
+				catch (Exception ex)
+				{
+					log.Error(ex, "Error processing {TemplatePath}: ", template.RelativePath);
+				}
+			}).ConfigureAwait(false);
+		}
+		
 		log.Info("Done after {Elapsed}.", sw.Elapsed);
 	}
 
@@ -109,7 +113,7 @@ internal class Program
 
 		var pathOption = new Option<string>("--path", "-p")
 		{
-			Description = "Path to a project definition file or a folder containing a ProjectDefinition file.",
+			Description = "Path to a project definition file or a folder containing ProjectDefinition.json or ProjectDefinition.",
 			DefaultValueFactory = (r) => "."
 		};
 		rootCommand.Add(pathOption);

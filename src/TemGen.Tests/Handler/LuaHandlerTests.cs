@@ -13,6 +13,7 @@ public class LuaHandlerTests
 		{
 			Namespace = "TestNamespace",
 		};
+		project.SetSetting("UserSecretsId", "aspnet-TestNamespace.Blazor-lua");
 
 		var definition = new Definition()
 		{
@@ -50,7 +51,8 @@ public class LuaHandlerTests
 			new TemplateSection()
 			{
 				Handler = TemplateHandler.Lua,
-				Content = "w(definition.name .. \":\"); \n" +
+				Content = "w(project.settings['UserSecretsId'] .. '|'); \n" +
+						"w(definition.name .. \":\"); \n" +
 							"for key, value in ipairs(entries) do write(value.field .. ',') end \n" +
 							"set_result(string.sub(get_result(), 1, -2)); \n" +
 							"relative_path = \"Is\" .. relative_path;"
@@ -58,7 +60,7 @@ public class LuaHandlerTests
 
 		Assert.Equal("IsTest.cs", globals.RelativePath);
 		Assert.False(globals.SkipOtherDefinitions);
-		Assert.Equal("Test:Entry_1,Entry_2", globals.Result);
+		Assert.Equal("aspnet-TestNamespace.Blazor-lua|Test:Entry_1,Entry_2", globals.Result);
 
 		await handler.TryHandle(
 			globals,
