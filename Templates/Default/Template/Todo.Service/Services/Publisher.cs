@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.SignalR;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace <#cs Write(Project.Namespace)#>.Service.Services;
+namespace <# Project.Namespace#>.Service.Services;
 
 public class MessageHub : Hub
 {

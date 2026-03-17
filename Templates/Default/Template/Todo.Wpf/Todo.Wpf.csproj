@@ -26,7 +26,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\<#cs Write(Project.Namespace)#>.ClientBase\<#cs Write(Project.Namespace)#>.ClientBase.csproj" />
+		<ProjectReference Include="..\<# Project.Namespace#>.ClientBase\<# Project.Namespace#>.ClientBase.csproj" />
 	</ItemGroup>
 
 </Project>

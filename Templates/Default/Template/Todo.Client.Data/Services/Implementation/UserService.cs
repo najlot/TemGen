@@ -4,12 +4,12 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Client.Data.Identity;
-using <#cs Write(Project.Namespace)#>.Client.Data.Models;
-using <#cs Write(Project.Namespace)#>.Client.Data.Repositories;
-using <#cs Write(Project.Namespace)#>.Contracts.Events;
+using <# Project.Namespace#>.Client.Data.Identity;
+using <# Project.Namespace#>.Client.Data.Models;
+using <# Project.Namespace#>.Client.Data.Repositories;
+using <# Project.Namespace#>.Contracts.Events;
 
-namespace <#cs Write(Project.Namespace)#>.Client.Data.Services.Implementation;
+namespace <# Project.Namespace#>.Client.Data.Services.Implementation;
 
 public sealed class UserService(
 	ITokenProvider tokenProvider,

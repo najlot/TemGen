@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Windows;
-using <#cs Write(Project.Namespace)#>.Client.MVVM;
+using <# Project.Namespace#>.Client.MVVM;
 
-namespace <#cs Write(Project.Namespace)#>.Wpf;
+namespace <# Project.Namespace#>.Wpf;
 
 public class DispatcherHelper : IDispatcherHelper
 {

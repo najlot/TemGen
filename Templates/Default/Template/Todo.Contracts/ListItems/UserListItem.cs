@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace <#cs Write(Project.Namespace)#>.Contracts.ListItems;
+namespace <# Project.Namespace#>.Contracts.ListItems;
 
 public sealed class UserListItem
 {

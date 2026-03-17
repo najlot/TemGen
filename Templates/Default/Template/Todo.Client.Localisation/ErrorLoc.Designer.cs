@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
+namespace <# Project.Namespace#>.Client.Localisation {
     using System;
     
     

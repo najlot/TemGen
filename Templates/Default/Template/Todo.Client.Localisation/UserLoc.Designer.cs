@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
+namespace <# Project.Namespace#>.Client.Localisation {
     using System;
 
 
@@ -39,7 +39,7 @@ namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("<#cs Write(Project.Namespace)#>.Client.Localisation.UserLoc", typeof(UserLoc).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("<# Project.Namespace#>.Client.Localisation.UserLoc", typeof(UserLoc).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

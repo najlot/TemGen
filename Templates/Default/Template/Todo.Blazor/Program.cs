@@ -6,11 +6,11 @@ using Najlot.Log.Extensions.Logging;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Options;
-using <#cs Write(Project.Namespace)#>.Blazor.Identity;
-using <#cs Write(Project.Namespace)#>.Client.Data;
-using <#cs Write(Project.Namespace)#>.Client.Data.Identity;
+using <# Project.Namespace#>.Blazor.Identity;
+using <# Project.Namespace#>.Client.Data;
+using <# Project.Namespace#>.Client.Data.Identity;
 
-namespace <#cs Write(Project.Namespace)#>.Blazor;
+namespace <# Project.Namespace#>.Blazor;
 
 public class Program
 {

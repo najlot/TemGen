@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Client.Data.Models;
-using <#cs Write(Project.Namespace)#>.Client.Localisation;
-using <#cs Write(Project.Namespace)#>.Client.MVVM;
+using <# Project.Namespace#>.Client.Data.Models;
+using <# Project.Namespace#>.Client.Localisation;
+using <# Project.Namespace#>.Client.MVVM;
 
-namespace <#cs Write(Project.Namespace)#>.ClientBase.ViewModel;
+namespace <# Project.Namespace#>.ClientBase.ViewModel;
 
-public partial class <#cs Write(Definition.Name)#>ViewModel
+public partial class <# Definition.Name#>ViewModel
 {
 	public ObservableCollection<<#cs Write(DefinitionEntry?.EntryType)#>ViewModel> <#cs Write(DefinitionEntry?.Field)#> { get; set => Set(ref field, value); } = [];
 

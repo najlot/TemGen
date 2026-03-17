@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace <#cs Write(Project.Namespace)#>.Client.MVVM;
+namespace <# Project.Namespace#>.Client.MVVM;
 
 public record PropertyChange(string PropertyName, Action Undo, Action Redo);
 

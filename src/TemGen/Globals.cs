@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace TemGen;
@@ -56,17 +57,54 @@ public class Globals
 		}
 	}
 
-	private readonly Dictionary<string, object> _variables = [];
+	private readonly List<Dictionary<string, object>> _variableScopes = [[]];
 
 	public void SetVariable(string name, object value)
 	{
-		_variables[name] = value;
+		_variableScopes[^1][name] = value;
 	}
 
 	public object GetVariable(string name)
 	{
-		_variables.TryGetValue(name, out var value);
-		return value;
+		for (var index = _variableScopes.Count - 1; index >= 0; index--)
+		{
+			if (_variableScopes[index].TryGetValue(name, out var value))
+			{
+				return value;
+			}
+		}
+
+		return null;
+	}
+
+	public IReadOnlyList<string> GetVisibleVariableNames()
+	{
+		var names = new HashSet<string>(StringComparer.Ordinal);
+
+		foreach (var scope in _variableScopes)
+		{
+			foreach (var key in scope.Keys)
+			{
+				names.Add(key);
+			}
+		}
+
+		return names.OrderBy(name => name, StringComparer.Ordinal).ToArray();
+	}
+
+	public void PushVariableScope()
+	{
+		_variableScopes.Add([]);
+	}
+
+	public void PopVariableScope()
+	{
+		if (_variableScopes.Count == 1)
+		{
+			throw new InvalidOperationException("Cannot remove the root variable scope.");
+		}
+
+		_variableScopes.RemoveAt(_variableScopes.Count - 1);
 	}
 
 	internal void ReplaceInResult(string from, string to)

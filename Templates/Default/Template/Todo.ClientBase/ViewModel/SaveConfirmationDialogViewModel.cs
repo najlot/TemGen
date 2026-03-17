@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Client.Localisation;
-using <#cs Write(Project.Namespace)#>.Client.MVVM;
+using <# Project.Namespace#>.Client.Localisation;
+using <# Project.Namespace#>.Client.MVVM;
 
-namespace <#cs Write(Project.Namespace)#>.ClientBase.ViewModel;
+namespace <# Project.Namespace#>.ClientBase.ViewModel;
 
 public enum SaveDialogResult
 {

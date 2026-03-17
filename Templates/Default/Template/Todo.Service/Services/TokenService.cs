@@ -3,12 +3,12 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using <#cs Write(Project.Namespace)#>.Service.Configuration;
+using <# Project.Namespace#>.Service.Configuration;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
-namespace <#cs Write(Project.Namespace)#>.Service.Services;
+namespace <# Project.Namespace#>.Service.Services;
 
 public class TokenService(
 	IUserService userService,
@@ -50,8 +50,8 @@ public class TokenService(
 		var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
 		var jwtToken = new JwtSecurityToken(
-			issuer: "<#cs Write(Project.Namespace)#>.Service",
-			audience: "<#cs Write(Project.Namespace)#>.Service",
+			issuer: "<# Project.Namespace#>.Service",
+			audience: "<# Project.Namespace#>.Service",
 			claims: claim,
 			expires: DateTime.UtcNow.AddDays(7),
 			signingCredentials: credentials
@@ -88,8 +88,8 @@ public class TokenService(
 		var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
 		var jwtToken = new JwtSecurityToken(
-			issuer: "<#cs Write(Project.Namespace)#>.Service",
-			audience: "<#cs Write(Project.Namespace)#>.Service",
+			issuer: "<# Project.Namespace#>.Service",
+			audience: "<# Project.Namespace#>.Service",
 			claims: claim,
 			expires: DateTime.UtcNow.AddDays(7),
 			signingCredentials: credentials

@@ -1,7 +1,7 @@
 using System;
 using System.Security.Claims;
 
-namespace <#cs Write(Project.Namespace)#>.Service.Controllers;
+namespace <# Project.Namespace#>.Service.Controllers;
 
 public static class ClaimsPrincipalExtensions
 {

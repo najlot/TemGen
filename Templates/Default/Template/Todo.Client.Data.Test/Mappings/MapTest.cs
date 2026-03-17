@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace <#cs Write(Project.Namespace)#>.Client.Data.Test.Mappings;
+namespace <# Project.Namespace#>.Client.Data.Test.Mappings;
 
 public class MapTest
 {

@@ -3,13 +3,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
 using System.Windows.Controls;
-using <#cs Write(Project.Namespace)#>.Client.Data;
-using <#cs Write(Project.Namespace)#>.Client.Data.Identity;
-using <#cs Write(Project.Namespace)#>.Client.MVVM;
-using <#cs Write(Project.Namespace)#>.ClientBase;
-using <#cs Write(Project.Namespace)#>.Wpf.Identity;
+using <# Project.Namespace#>.Client.Data;
+using <# Project.Namespace#>.Client.Data.Identity;
+using <# Project.Namespace#>.Client.MVVM;
+using <# Project.Namespace#>.ClientBase;
+using <# Project.Namespace#>.Wpf.Identity;
 
-namespace <#cs Write(Project.Namespace)#>.Wpf;
+namespace <# Project.Namespace#>.Wpf;
 
 public static class ServiceProviderFactory
 {

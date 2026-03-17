@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.WebUtilities;
 
-namespace <#cs Write(Project.Namespace)#>.Blazor.Pages;
+namespace <# Project.Namespace#>.Blazor.Pages;
 
 public static class NavigationManagerExtensions
 {

@@ -1,7 +1,7 @@
 using MongoDB.Driver;
-using <#cs Write(Project.Namespace)#>.Service.Configuration;
+using <# Project.Namespace#>.Service.Configuration;
 
-namespace <#cs Write(Project.Namespace)#>.Service.Repository;
+namespace <# Project.Namespace#>.Service.Repository;
 
 public class MongoDbContext
 {

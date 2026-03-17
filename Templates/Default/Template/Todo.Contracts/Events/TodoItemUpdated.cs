@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace <#cs Write(Project.Namespace)#>.Contracts.Events;
+namespace <# Project.Namespace#>.Contracts.Events;
 
-public class <#cs Write(Definition.Name)#>Updated(
+public class <# Definition.Name#>Updated(
 	Guid id,
 <#cs WriteContractParameter()#>)
 {

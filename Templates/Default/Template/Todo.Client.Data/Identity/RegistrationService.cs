@@ -3,9 +3,9 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Contracts.Commands;
+using <# Project.Namespace#>.Contracts.Commands;
 
-namespace <#cs Write(Project.Namespace)#>.Client.Data.Identity;
+namespace <# Project.Namespace#>.Client.Data.Identity;
 
 public class RegistrationService(IHttpClientFactory httpClientFactory, ILogger<RegistrationService> log)
 	: IRegistrationService

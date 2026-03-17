@@ -2,10 +2,10 @@ using Microsoft.Extensions.Logging;
 using Najlot.Map;
 using System;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Client.Localisation;
-using <#cs Write(Project.Namespace)#>.Client.MVVM;
+using <# Project.Namespace#>.Client.Localisation;
+using <# Project.Namespace#>.Client.MVVM;
 
-namespace <#cs Write(Project.Namespace)#>.ClientBase;
+namespace <# Project.Namespace#>.ClientBase;
 
 public abstract class ViewModelBase(IViewModelBaseParameters parameters) : AbstractViewModel
 {

@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Security.Authentication;
 using System.Threading.Tasks;
 
-namespace <#cs Write(Project.Namespace)#>.Client.Data.Identity;
+namespace <# Project.Namespace#>.Client.Data.Identity;
 
 public class RefreshingTokenProvider(IHttpClientFactory httpClientFactory, IUserDataStore userDataStore)
 	: ITokenProvider

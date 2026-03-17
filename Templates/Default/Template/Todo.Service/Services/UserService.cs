@@ -5,14 +5,14 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Najlot.Map;
-using <#cs Write(Project.Namespace)#>.Contracts;
-using <#cs Write(Project.Namespace)#>.Service.Model;
-using <#cs Write(Project.Namespace)#>.Service.Repository;
-using <#cs Write(Project.Namespace)#>.Contracts.Commands;
-using <#cs Write(Project.Namespace)#>.Contracts.Events;
-using <#cs Write(Project.Namespace)#>.Contracts.ListItems;
+using <# Project.Namespace#>.Contracts;
+using <# Project.Namespace#>.Service.Model;
+using <# Project.Namespace#>.Service.Repository;
+using <# Project.Namespace#>.Contracts.Commands;
+using <# Project.Namespace#>.Contracts.Events;
+using <# Project.Namespace#>.Contracts.ListItems;
 
-namespace <#cs Write(Project.Namespace)#>.Service.Services;
+namespace <# Project.Namespace#>.Service.Services;
 
 public class UserService(
 	IUserRepository userRepository,

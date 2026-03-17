@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace <#cs Write(Project.Namespace)#>.Contracts.Commands;
+namespace <# Project.Namespace#>.Contracts.Commands;
 
-public class Create<#cs Write(Definition.Name)#>(
+public class Create<# Definition.Name#>(
 	Guid id,
 <#cs WriteContractParameter()#>)
 {

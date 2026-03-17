@@ -2,21 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Service.Model;
+using <# Project.Namespace#>.Service.Model;
 
-namespace <#cs Write(Project.Namespace)#>.Service.Repository;
+namespace <# Project.Namespace#>.Service.Repository;
 
-public interface I<#cs Write(Definition.Name)#>Repository
+public interface I<# Definition.Name#>Repository
 {
-	IAsyncEnumerable<<#cs Write(Definition.Name)#>Model> GetAll();
+	IAsyncEnumerable<<# Definition.Name#>Model> GetAll();
 
-	IQueryable<<#cs Write(Definition.Name)#>Model> GetAllQueryable();
+	IQueryable<<# Definition.Name#>Model> GetAllQueryable();
 
-	Task<<#cs Write(Definition.Name)#>Model?> Get(Guid id);
+	Task<<# Definition.Name#>Model?> Get(Guid id);
 
-	Task Insert(<#cs Write(Definition.Name)#>Model model);
+	Task Insert(<# Definition.Name#>Model model);
 
-	Task Update(<#cs Write(Definition.Name)#>Model model);
+	Task Update(<# Definition.Name#>Model model);
 
 	Task Delete(Guid id);
 }<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

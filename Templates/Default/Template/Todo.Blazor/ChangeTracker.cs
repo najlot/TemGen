@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace <#cs Write(Project.Namespace)#>.Blazor;
+namespace <# Project.Namespace#>.Blazor;
 
 public record PropertyChange(string PropertyName, Action Undo, Action Redo);
 

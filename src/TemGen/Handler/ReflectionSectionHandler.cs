@@ -31,6 +31,16 @@ public sealed class ReflectionSectionHandler() : AbstractSectionHandler(Template
 
 		if (property is null)
 		{
+			if (obj is Globals globals)
+			{
+				var variableValue = globals.GetVariable(propertyName);
+
+				if (variableValue is not null)
+				{
+					return GetValue(parts.Skip(1), variableValue);
+				}
+			}
+
 			if (obj is Project project
 				&& project.TryGetSetting(propertyName, out var projectSettingValue))
 			{
@@ -59,6 +69,11 @@ public sealed class ReflectionSectionHandler() : AbstractSectionHandler(Template
 
 	protected override Task Handle(Globals globals, string content)
 	{
+		if (string.IsNullOrWhiteSpace(content))
+		{
+			return Task.CompletedTask;
+		}
+
 		var parts = content.Trim().Split('.');
 		var value = GetValue(parts, globals);
 

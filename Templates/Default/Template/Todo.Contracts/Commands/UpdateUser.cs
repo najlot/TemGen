@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace <#cs Write(Project.Namespace)#>.Contracts.Commands;
+namespace <# Project.Namespace#>.Contracts.Commands;
 
 public class UpdateUser(
 	Guid id,

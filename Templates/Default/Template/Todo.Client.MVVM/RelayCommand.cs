@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Input;
 
-namespace <#cs Write(Project.Namespace)#>.Client.MVVM;
+namespace <# Project.Namespace#>.Client.MVVM;
 
 public class RelayCommand : RelayCommand<object>
 {

@@ -1,9 +1,9 @@
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Contracts;
+using <# Project.Namespace#>.Contracts;
 
-namespace <#cs Write(Project.Namespace)#>.Client.Data.Identity;
+namespace <# Project.Namespace#>.Client.Data.Identity;
 
 public class TokenService(IHttpClientFactory httpClientFactory) : ITokenService
 {

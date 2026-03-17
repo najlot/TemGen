@@ -1,5 +1,6 @@
 ﻿using Najlot.Log;
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.Diagnostics;
 using System.IO;
@@ -11,6 +12,10 @@ namespace TemGen;
 
 internal class Program
 {
+	private static bool IsTemplateReadFailure(Exception ex)
+		=> ex is TemplateReadException
+			|| ex is AggregateException aggregate && aggregate.InnerExceptions.All(e => IsTemplateReadFailure(e));
+
 	private static async Task Generate(LogAdministrator admin, string path)
 	{
 		var sw = Stopwatch.StartNew();
@@ -61,7 +66,21 @@ internal class Program
 
 		foreach (var templatesPath in project.TemplatePaths)
 		{
-			var templates = TemplatesReader.ReadTemplates(templatesPath);
+			List<Template> templates;
+
+			try
+			{
+				templates = TemplatesReader.ReadTemplates(templatesPath);
+			}
+			catch (AggregateException ex) when (ex.InnerExceptions.All(e => e is TemplateReadException))
+			{
+				foreach (var error in ex.InnerExceptions.Cast<TemplateReadException>())
+				{
+					log.Error("Error reading template {TemplatePath}: {Message}", error.TemplatePath, error.InnerException?.Message ?? error.Message);
+				}
+
+				throw;
+			}
 
 			await Parallel.ForEachAsync(templates, async (template, tkn) =>
 			{
@@ -138,24 +157,52 @@ internal class Program
 
 			admin.SetLogLevel(logLevel);
 
-			do
+			try
 			{
-				await Generate(admin, path).ConfigureAwait(false);
-				admin.Flush();
-
-				if (repeat)
+				do
 				{
-					Console.WriteLine("Press any key to run or ESC to cancel...");
-					var key = Console.ReadKey();
-					if (key.Key == ConsoleKey.Escape)
+					await Generate(admin, path).ConfigureAwait(false);
+					admin.Flush();
+
+					if (repeat)
 					{
-						return;
+						Console.WriteLine("Press any key to run or ESC to cancel...");
+						var key = Console.ReadKey();
+						if (key.Key == ConsoleKey.Escape)
+						{
+							return;
+						}
 					}
 				}
+				while (repeat);
 			}
-			while (repeat);
+			catch (Exception ex) when (IsTemplateReadFailure(ex))
+			{
+				Environment.ExitCode = 1;
+				admin.Flush();
+			}
+			catch (Exception ex)
+			{
+				Environment.ExitCode = 1;
+				admin.GetLogger("Main").Error(ex, "Execution failed.");
+				admin.Flush();
+			}
 		});
 
-		return await rootCommand.Parse(args).InvokeAsync().ConfigureAwait(false);
+		try
+		{
+			return await rootCommand.Parse(args).InvokeAsync().ConfigureAwait(false);
+		}
+		catch (Exception ex) when (IsTemplateReadFailure(ex))
+		{
+			admin.Flush();
+			return 1;
+		}
+		catch (Exception ex)
+		{
+			admin.GetLogger("Main").Error(ex, "Execution failed.");
+			admin.Flush();
+			return 1;
+		}
 	}
 }

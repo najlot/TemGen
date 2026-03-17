@@ -4,25 +4,25 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Client.Data.Identity;
-using <#cs Write(Project.Namespace)#>.Client.Data.Models;
-using <#cs Write(Project.Namespace)#>.Client.Data.Repositories;
-using <#cs Write(Project.Namespace)#>.Contracts.Events;
-using <#cs Write(Project.Namespace)#>.Contracts.Filters;
+using <# Project.Namespace#>.Client.Data.Identity;
+using <# Project.Namespace#>.Client.Data.Models;
+using <# Project.Namespace#>.Client.Data.Repositories;
+using <# Project.Namespace#>.Contracts.Events;
+using <# Project.Namespace#>.Contracts.Filters;
 
-namespace <#cs Write(Project.Namespace)#>.Client.Data.Services.Implementation;
+namespace <# Project.Namespace#>.Client.Data.Services.Implementation;
 
-public sealed class <#cs Write(Definition.Name)#>Service(
+public sealed class <# Definition.Name#>Service(
 	ITokenProvider tokenProvider,
 	IHttpClientFactory httpClientFactory,
-	I<#cs Write(Definition.Name)#>Repository repository)
-	: I<#cs Write(Definition.Name)#>Service, IAsyncDisposable
+	I<# Definition.Name#>Repository repository)
+	: I<# Definition.Name#>Service, IAsyncDisposable
 {
 	private HubConnection? _connection;
 
-	public event AsyncEventHandler<<#cs Write(Definition.Name)#>Created>? ItemCreated;
-	public event AsyncEventHandler<<#cs Write(Definition.Name)#>Updated>? ItemUpdated;
-	public event AsyncEventHandler<<#cs Write(Definition.Name)#>Deleted>? ItemDeleted;
+	public event AsyncEventHandler<<# Definition.Name#>Created>? ItemCreated;
+	public event AsyncEventHandler<<# Definition.Name#>Updated>? ItemUpdated;
+	public event AsyncEventHandler<<# Definition.Name#>Deleted>? ItemDeleted;
 
 	public async Task StartEventListener()
 	{
@@ -43,33 +43,33 @@ public sealed class <#cs Write(Definition.Name)#>Service(
 			.WithAutomaticReconnect()
 			.Build();
 
-		_connection.On<string>(typeof(<#cs Write(Definition.Name)#>Created).Name, async param =>
+		_connection.On<string>(typeof(<# Definition.Name#>Created).Name, async param =>
 		{
-			if (ItemCreated is { } handler && JsonSerializer.Deserialize<<#cs Write(Definition.Name)#>Created>(param) is { } message)
+			if (ItemCreated is { } handler && JsonSerializer.Deserialize<<# Definition.Name#>Created>(param) is { } message)
 			{
-				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<<#cs Write(Definition.Name)#>Created>>())
+				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<<# Definition.Name#>Created>>())
 				{
 					await invocation(this, message).ConfigureAwait(false);
 				}
 			}
 		});
 
-		_connection.On<string>(typeof(<#cs Write(Definition.Name)#>Updated).Name, async param =>
+		_connection.On<string>(typeof(<# Definition.Name#>Updated).Name, async param =>
 		{
-			if (ItemUpdated is { } handler && JsonSerializer.Deserialize<<#cs Write(Definition.Name)#>Updated>(param) is { } message)
+			if (ItemUpdated is { } handler && JsonSerializer.Deserialize<<# Definition.Name#>Updated>(param) is { } message)
 			{
-				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<<#cs Write(Definition.Name)#>Updated>>())
+				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<<# Definition.Name#>Updated>>())
 				{
 					await invocation(this, message).ConfigureAwait(false);
 				}
 			}
 		});
 
-		_connection.On<string>(typeof(<#cs Write(Definition.Name)#>Deleted).Name, async param =>
+		_connection.On<string>(typeof(<# Definition.Name#>Deleted).Name, async param =>
 		{
-			if (ItemDeleted is { } handler && JsonSerializer.Deserialize<<#cs Write(Definition.Name)#>Deleted>(param) is { } message)
+			if (ItemDeleted is { } handler && JsonSerializer.Deserialize<<# Definition.Name#>Deleted>(param) is { } message)
 			{
-				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<<#cs Write(Definition.Name)#>Deleted>>())
+				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<<# Definition.Name#>Deleted>>())
 				{
 					await invocation(this, message).ConfigureAwait(false);
 				}
@@ -79,35 +79,23 @@ public sealed class <#cs Write(Definition.Name)#>Service(
 		await _connection.StartAsync().ConfigureAwait(false);
 	}
 
-	public <#cs Write(Definition.Name)#>Model Create<#cs Write(Definition.Name)#>()
+	public <# Definition.Name#>Model Create<# Definition.Name#>()
 	{
-		return new <#cs Write(Definition.Name)#>Model()
+		return new <# Definition.Name#>Model()
 		{
 			Id = Guid.NewGuid(),
-<#cs
-foreach(var entry in Entries)
-{
-	if (entry.IsOwnedType)
-	{
-		WriteLine($"			{entry.Field} = new (),");
-	}
-	else if(entry.EntryType.ToLower() == "string")
-	{
-		WriteLine($"			{entry.Field} = \"\",");
-	}
-	else if(entry.IsArray)
-	{
-		WriteLine($"			{entry.Field} = [],");
-	}
-	
-}
-
-Result = Result.TrimEnd(' ', '\r', '\n', ',');
-#>
+<#for entry in Entries
+#><#if entry.IsOwnedType
+#>			<# entry.Field#> = new (),
+<#elseif entry.EntryType.ToLower() == "string"
+#>			<# entry.Field#> = "",
+<#elseif entry.IsArray
+#>			<# entry.Field#> = [],
+<#end#><#end#>
 		};
 	}
 
-	public async Task AddItemAsync(<#cs Write(Definition.Name)#>Model item)
+	public async Task AddItemAsync(<# Definition.Name#>Model item)
 	{
 		await repository.AddItemAsync(item);
 	}
@@ -117,22 +105,22 @@ Result = Result.TrimEnd(' ', '\r', '\n', ',');
 		await repository.DeleteItemAsync(id);
 	}
 
-	public async Task<<#cs Write(Definition.Name)#>Model> GetItemAsync(Guid id)
+	public async Task<<# Definition.Name#>Model> GetItemAsync(Guid id)
 	{
 		return await repository.GetItemAsync(id);
 	}
 
-	public async Task<<#cs Write(Definition.Name)#>ListItemModel[]> GetItemsAsync()
+	public async Task<<# Definition.Name#>ListItemModel[]> GetItemsAsync()
 	{
 		return await repository.GetItemsAsync();
 	}
 
-	public async Task<<#cs Write(Definition.Name)#>ListItemModel[]> GetItemsAsync(<#cs Write(Definition.Name)#>Filter filter)
+	public async Task<<# Definition.Name#>ListItemModel[]> GetItemsAsync(<# Definition.Name#>Filter filter)
 	{
 		return await repository.GetItemsAsync(filter);
 	}
 
-	public async Task UpdateItemAsync(<#cs Write(Definition.Name)#>Model item)
+	public async Task UpdateItemAsync(<# Definition.Name#>Model item)
 	{
 		await repository.UpdateItemAsync(item);
 	}

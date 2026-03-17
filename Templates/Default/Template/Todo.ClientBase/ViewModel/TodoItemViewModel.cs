@@ -1,82 +1,59 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-<#cs if(Entries.Where(e => e.IsArray).Any()) { WriteLine("using System.Threading;"); } #>using System.Threading.Tasks;
-<#cs if(Entries.Where(e => e.IsArray).Any()) { WriteLine("using System.Windows.Input;"); } #>using <#cs Write(Project.Namespace)#>.Client.Data.Models;
-using <#cs Write(Project.Namespace)#>.Client.Data.Services;
-using <#cs Write(Project.Namespace)#>.Client.Localisation;
-using <#cs Write(Project.Namespace)#>.Client.MVVM;
-using <#cs Write(Project.Namespace)#>.Contracts;
-using <#cs Write(Project.Namespace)#>.Contracts.Events;
+<#if Entries.Where(e => e.IsArray).Any()
+#>using System.Threading;
+using System.Windows.Input;
+<#end#>using System.Threading.Tasks;
+using <# Project.Namespace#>.Client.Data.Models;
+using <# Project.Namespace#>.Client.Data.Services;
+using <# Project.Namespace#>.Client.Localisation;
+using <# Project.Namespace#>.Client.MVVM;
+using <# Project.Namespace#>.Contracts;
+using <# Project.Namespace#>.Contracts.Events;
 
-namespace <#cs Write(Project.Namespace)#>.ClientBase.ViewModel;
+namespace <# Project.Namespace#>.ClientBase.ViewModel;
 
-public <#cs if(Entries.Where(e => e.IsArray).Any()) Write("partial ");#>class <#cs Write(Definition.Name)#>ViewModel : ValidationViewModelBase, IParameterizable, IAsyncInitializable, INavigationGuard, IDisposable
+public <#if Entries.Where(e => e.IsArray).Any()
+#>partial <#end#>class <# Definition.Name#>ViewModel : ValidationViewModelBase, IParameterizable, IAsyncInitializable, INavigationGuard, IDisposable
 {
-	private readonly I<#cs Write(Definition.Name)#>Service _<#cs Write(Definition.NameLow)#>Service;
-<#cs
-var references = Entries
+	private readonly I<# Definition.Name#>Service _<# Definition.NameLow#>Service;
+<#for definition in Entries
 	.Where(e => e.IsReference)
 	.Select(e => e.ReferenceType)
 	.Distinct()
 	.Select(n => Definitions.First(d => d.Name == n))
-	.ToArray();
-
-foreach (var definition in references)
-{
-	WriteLine($"	private readonly I{definition.Name}Service _{definition.NameLow}Service;");
-}
-
-WriteLine("");
-
-foreach (var definition in references)
-{
-	WriteLine($"	public IEnumerable<{definition.Name}ListItemModel> Available{definition.Name}s {{ get; set => Set(ref field, value); }} = [];");
-}
-
-foreach(var entry in Entries.Where(e => e.IsEnumeration))
-{
-	if (entry.IsNullable)
+#>	private readonly I<# definition.Name#>Service _<# definition.NameLow#>Service;
+<#end#>
+<#for definition in Entries
+	.Where(e => e.IsReference)
+	.Select(e => e.ReferenceType)
+	.Distinct()
+	.Select(n => Definitions.First(d => d.Name == n))
+#>	public IEnumerable<<# definition.Name#>ListItemModel> Available<# definition.Name#>s { get; set => Set(ref field, value); } = [];
+<#end#>
+<#for entry in Entries.Where(e => e.IsEnumeration)
+#><#if entry.IsNullable
+#>	private static IEnumerable<<# entry.EntryType#>?> GetAvailable<# entry.EntryType#>s()
 	{
-		WriteLine("");
-		WriteLine($"	private static IEnumerable<{entry.EntryType}?> GetAvailable{entry.EntryType}s()");
-		WriteLine("	{");
-		WriteLine("		yield return null;");
-		WriteLine("");
-		WriteLine($"		foreach (var entry in Enum.GetValues(typeof({entry.EntryType})) as {entry.EntryType}[])");
-		WriteLine("		{");
-		WriteLine("			yield return entry;");
-		WriteLine("		}");
-		WriteLine("	}");
-		WriteLine("");
-		WriteLine($"	public List<{entry.EntryType}?> Available{entry.EntryType}s {{ get; }} = GetAvailable{entry.EntryType}s().ToList();");
+		yield return null;
+
+		foreach (var entry in Enum.GetValues(typeof(<# entry.EntryType#>)) as <# entry.EntryType#>[])
+		{
+			yield return entry;
+		}
 	}
-	else
-	{
-		WriteLine($"	public {entry.EntryType}[] Available{entry.EntryType}s {{ get; }} = Enum.GetValues<{entry.EntryType}>();");
-	}
-}
-#>
+
+	public List<<# entry.EntryType#>?> Available<# entry.EntryType#>s { get; } = GetAvailable<# entry.EntryType#>s().ToList();
+<#else
+#>	public <# entry.EntryType#>[] Available<# entry.EntryType#>s { get; } = Enum.GetValues<<# entry.EntryType#>>();
+<#end#><#end#>
 	public Guid Id { get; set => Set(ref field, value); }
-<#cs
-foreach (var entry in Entries.Where(e => !e.IsArray))
-{
-	var defaultValue = "";
-	if (!entry.IsNullable && entry.EntryType.ToLower() == "string")
-	{
-		defaultValue = " = string.Empty;";
-	}
-
-	var suffix = "";
-
-	if (entry.IsReference)
-	{
-		suffix = "Id";
-	}
-
-	WriteLine($"	public {entry.EntryType} {entry.Field}{suffix} {{ get; set => Set(ref field, value); }}{defaultValue}");
-}
-#>
+<#for entry in Entries.Where(e => !e.IsArray)
+#>	public <# entry.EntryType#> <# entry.Field#><#if entry.IsReference
+#>Id<#end#> { get; set => Set(ref field, value); }<#if !entry.IsNullable && entry.EntryType.ToLower() == "string"
+#> = string.Empty;<#end#>
+<#end#>
 	private readonly ChangeTracker _changeTracker = new();
 
 	public bool CanUndo => _changeTracker.CanUndo;
@@ -87,38 +64,28 @@ foreach (var entry in Entries.Where(e => !e.IsArray))
 
 	public bool IsNew { get; set; }
 
-	public <#cs Write(Definition.Name)#>ViewModel(
-		I<#cs Write(Definition.Name)#>Service <#cs Write(Definition.NameLow)#>Service,
-<#cs
-var references = Entries
+	public <# Definition.Name#>ViewModel(
+		I<# Definition.Name#>Service <# Definition.NameLow#>Service,
+<#for definition in Entries
 	.Where(e => e.IsReference)
 	.Select(e => e.ReferenceType)
 	.Distinct()
 	.Select(n => Definitions.First(d => d.Name == n))
-	.ToArray();
-
-foreach (var definition in references)
-{
-	WriteLine($"		I{definition.Name}Service {definition.NameLow}Service,");
-}
-#>		ViewModelBaseParameters<<#cs Write(Definition.Name)#>ViewModel> parameters) : base(parameters)
+#>		I<# definition.Name#>Service <# definition.NameLow#>Service,
+<#end#>		ViewModelBaseParameters<<# Definition.Name#>ViewModel> parameters) : base(parameters)
 	{
-		_<#cs Write(Definition.NameLow)#>Service = <#cs Write(Definition.NameLow)#>Service;
-<#cs
-var references = Entries
+		_<# Definition.NameLow#>Service = <# Definition.NameLow#>Service;
+<#for definition in Entries
 	.Where(e => e.IsReference)
 	.Select(e => e.ReferenceType)
 	.Distinct()
 	.Select(n => Definitions.First(d => d.Name == n))
-	.ToArray();
-
-foreach (var definition in references)
-{
-	WriteLine($"		_{definition.NameLow}Service = {definition.NameLow}Service;");
-}
-#>
+#>		_<# definition.NameLow#>Service = <# definition.NameLow#>Service;
+<#end#>
 		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
-		SaveCommand = new AsyncCommand(SaveAsync, t => HandleError(t.Exception)<#cs if(Entries.Where(e => e.IsArray).Any()) Write(", () => CanUndo && !HasErrors"); else Write(", () => CanUndo"); #>);
+		SaveCommand = new AsyncCommand(SaveAsync, t => HandleError(t.Exception)<#if Entries.Where(e => e.IsArray).Any()
+#>, () => CanUndo && !HasErrors<#else
+#>, () => CanUndo<#end#>);
 		DeleteCommand = new AsyncCommand(DeleteAsync, t => HandleError(t.Exception));
 		UndoCommand = new RelayCommand(() => _changeTracker.Undo(), () => _changeTracker.CanUndo);
 		RedoCommand = new RelayCommand(() => _changeTracker.Redo(), () => _changeTracker.CanRedo);
@@ -131,8 +98,11 @@ foreach (var definition in references)
 			RedoCommand.RaiseCanExecuteChanged();
 			SaveCommand.RaiseCanExecuteChanged();
 		};
-<#cs if(Entries.Where(e => e.IsArray).Any()) { WriteLine("");  WriteLine("\t\tHasErrorsChanged += SaveCommand.RaiseCanExecuteChanged;"); } #>
-		_<#cs Write(Definition.NameLow)#>Service.ItemUpdated += Handle;
+<#if Entries.Where(e => e.IsArray).Any()
+#>
+		HasErrorsChanged += SaveCommand.RaiseCanExecuteChanged;
+<#end#>
+		_<# Definition.NameLow#>Service.ItemUpdated += Handle;
 	}
 
 	public void SetParameters(IReadOnlyDictionary<string, object> parameters)
@@ -147,42 +117,31 @@ foreach (var definition in references)
 	{
 		if (Id == Guid.Empty)
 		{
-			var model = _<#cs Write(Definition.NameLow)#>Service.Create<#cs Write(Definition.Name)#>();
+			var model = _<# Definition.NameLow#>Service.Create<# Definition.Name#>();
 			Map.From(model).To(this);
 			IsNew = true;
 		}
 		else
 		{
-			var model = await _<#cs Write(Definition.NameLow)#>Service.GetItemAsync(Id);
+			var model = await _<# Definition.NameLow#>Service.GetItemAsync(Id);
 			Map.From(model).To(this);
 			IsNew = false;
 		}
 
-<#cs
-var references = Entries
+<#for definition in Entries
 	.Where(e => e.IsReference)
 	.Select(e => e.ReferenceType)
 	.Distinct()
 	.Select(n => Definitions.First(d => d.Name == n))
-	.ToArray();
-
-foreach (var definition in references)
-{
-	WriteLine($"		Available{definition.Name}s = await _{definition.NameLow}Service.GetItemsAsync();");
-}
-
-if (references.Length > 0) WriteLine("");
-#>		await _<#cs Write(Definition.NameLow)#>Service.StartEventListener();
+#>		Available<# definition.Name#>s = await _<# definition.NameLow#>Service.GetItemsAsync();
+<#end#>		await _<# Definition.NameLow#>Service.StartEventListener();
 
 		_changeTracker.Clear();
-<#cs
-foreach (var entry in Entries.Where(e => e.IsArray))
-{
-	WriteLine($"		Initialize{entry.Field}Tracking();");
-}
-#>	}
+<#for entry in Entries.Where(e => e.IsArray)
+#>		Initialize<# entry.Field#>Tracking();
+<#end#>	}
 
-	private async Task Handle(object? sender, <#cs Write(Definition.Name)#>Updated obj)
+	private async Task Handle(object? sender, <# Definition.Name#>Updated obj)
 		=> await DispatcherHelper.InvokeOnUIThread(() =>
 		{
 			if (Id != obj.Id)
@@ -192,12 +151,9 @@ foreach (var entry in Entries.Where(e => e.IsArray))
 
 			Map.From(obj).To(this);
 			_changeTracker.Clear();
-<#cs
-foreach (var entry in Entries.Where(e => e.IsArray))
-{
-	WriteLine($"			Initialize{entry.Field}Tracking();");
-}
-#>		});
+<#for entry in Entries.Where(e => e.IsArray)
+#>			Initialize<# entry.Field#>Tracking();
+<#end#>		});
 
 	public AsyncCommand NavigateBackCommand { get; }
 	public AsyncCommand SaveCommand { get; }
@@ -221,16 +177,16 @@ foreach (var entry in Entries.Where(e => e.IsArray))
 				return false;
 			}
 
-			var model = Map.From(this).To<<#cs Write(Definition.Name)#>Model>();
+			var model = Map.From(this).To<<# Definition.Name#>Model>();
 
 			if (IsNew)
 			{
-				await _<#cs Write(Definition.NameLow)#>Service.AddItemAsync(model);
+				await _<# Definition.NameLow#>Service.AddItemAsync(model);
 				IsNew = false;
 			}
 			else
 			{
-				await _<#cs Write(Definition.NameLow)#>Service.UpdateItemAsync(model);
+				await _<# Definition.NameLow#>Service.UpdateItemAsync(model);
 			}
 
 			_changeTracker.Clear();
@@ -281,7 +237,7 @@ foreach (var entry in Entries.Where(e => e.IsArray))
 		{
 			IsBusy = true;
 
-			await _<#cs Write(Definition.NameLow)#>Service.DeleteItemAsync(Id);
+			await _<# Definition.NameLow#>Service.DeleteItemAsync(Id);
 			_changeTracker.Clear();
 			await NavigationService.NavigateBack();
 		}
@@ -342,24 +298,16 @@ foreach (var entry in Entries.Where(e => e.IsArray))
 			|| propertyName is nameof(IsBusy)
 							or nameof(IsNew)
 							or nameof(CanEdit)
-							or nameof(Id)<#cs
-var ignoreReferences = Entries
+							or nameof(Id)
+<#for definition in Entries
 	.Where(e => e.IsReference)
 	.Select(e => e.ReferenceType)
 	.Distinct()
 	.Select(n => Definitions.First(d => d.Name == n))
-	.ToArray();
-
-foreach (var definition in ignoreReferences)
-{
-	Write($"\r\n\t\t\t\t\t\t\tor nameof(Available{definition.Name}s)");
-}
-
-foreach (var entry in Entries.Where(e => e.IsEnumeration))
-{
-	Write($"\r\n\t\t\t\t\t\t\tor nameof(Available{entry.EntryType}s)");
-}
-#>;
+#>							or nameof(Available<# definition.Name#>s)
+<#end#><#for entry in Entries.Where(e => e.IsEnumeration)
+#>							or nameof(Available<# entry.EntryType#>s)
+<#end#>;
 
 	private bool _disposedValue;
 	protected virtual void Dispose(bool disposing)
@@ -368,7 +316,7 @@ foreach (var entry in Entries.Where(e => e.IsEnumeration))
 		{
 			if (disposing)
 			{
-				_<#cs Write(Definition.NameLow)#>Service.ItemUpdated -= Handle;
+				_<# Definition.NameLow#>Service.ItemUpdated -= Handle;
 			}
 
 			_disposedValue = true;

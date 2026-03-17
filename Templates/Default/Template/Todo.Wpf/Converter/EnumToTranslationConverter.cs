@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Data;
 
-namespace <#cs Write(Project.Namespace)#>.Wpf.Converter;
+namespace <# Project.Namespace#>.Wpf.Converter;
 
 public class EnumToTranslationConverter : IValueConverter
 {

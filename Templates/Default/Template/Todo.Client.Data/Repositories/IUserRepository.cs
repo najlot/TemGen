@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Client.Data.Models;
+using <# Project.Namespace#>.Client.Data.Models;
 
-namespace <#cs Write(Project.Namespace)#>.Client.Data.Repositories;
+namespace <# Project.Namespace#>.Client.Data.Repositories;
 
 public interface IUserRepository
 {

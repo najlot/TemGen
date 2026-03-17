@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.Scripting.Hosting;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace TemGen.Handler;
@@ -27,7 +28,8 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 		typeof(System.IO.FileInfo).Assembly,
 		typeof(System.Linq.IQueryable).Assembly,
 		typeof(System.Dynamic.DynamicObject).Assembly,
-		typeof(System.Text.RegularExpressions.Regex).Assembly
+		typeof(System.Text.RegularExpressions.Regex).Assembly,
+		typeof(Microsoft.CSharp.RuntimeBinder.Binder).Assembly
 	];
 
 	private static InteractiveAssemblyLoader GetLoader()
@@ -58,6 +60,7 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 	#endregion Static Initialization
 
 	private static readonly ConcurrentDictionary<(int ScriptsKey, string Content), ScriptRunner<object>> _cache = new();
+	private static readonly ConcurrentDictionary<(int ScriptsKey, string Content), ScriptRunner<object>> _expressionCache = new();
 
 	private readonly Script<object> _initialScript = null;
 	private readonly int _initialScriptsKey;
@@ -74,9 +77,43 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 		_initialScriptsKey = string.Join('\n', initialScripts).GetHashCode();
 	}
 
+	public async Task<object> EvaluateExpression(Globals globals, string expression)
+	{
+		var content = WrapWithVisibleVariables(globals, $"return (object)({expression});");
+		var script = _expressionCache.GetOrAdd((_initialScriptsKey, content), c => _initialScript.ContinueWith(c.Content, _options).CreateDelegate());
+		return await script(globals).ConfigureAwait(false);
+	}
+
 	protected override async Task Handle(Globals globals, string content)
 	{
+		content = EnsureStatementTermination(content);
+		content = WrapWithVisibleVariables(globals, content + System.Environment.NewLine + "return null;");
 		var script = _cache.GetOrAdd((_initialScriptsKey, content), c => _initialScript.ContinueWith(c.Content, _options).CreateDelegate());
 		await script(globals).ConfigureAwait(false);
+	}
+
+	private static string WrapWithVisibleVariables(Globals globals, string content)
+	{
+		var variableNames = globals.GetVisibleVariableNames();
+
+		if (variableNames.Count == 0)
+		{
+			return content;
+		}
+
+		var declarations = string.Join(System.Environment.NewLine, variableNames.Select(name => $"dynamic {name} = GetVariable(\"{name}\");"));
+		return declarations + System.Environment.NewLine + content;
+	}
+
+	private static string EnsureStatementTermination(string content)
+	{
+		var trimmedContent = content.TrimEnd();
+
+		if (trimmedContent.EndsWith(';') || trimmedContent.EndsWith('}'))
+		{
+			return content;
+		}
+
+		return content + ";";
 	}
 }

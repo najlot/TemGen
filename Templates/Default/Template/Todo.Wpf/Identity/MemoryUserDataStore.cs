@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Client.Data.Identity;
+using <# Project.Namespace#>.Client.Data.Identity;
 
-namespace <#cs Write(Project.Namespace)#>.Wpf.Identity;
+namespace <# Project.Namespace#>.Wpf.Identity;
 
 public class MemoryUserDataStore : IUserDataStore
 {

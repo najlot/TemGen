@@ -1,10 +1,10 @@
 ﻿using System.Windows.Controls;
 
-namespace <#cs Write(Project.Namespace)#>.Wpf.View;
+namespace <# Project.Namespace#>.Wpf.View;
 
-public partial class All<#cs Write(Definition.Name)#>sView : UserControl
+public partial class All<# Definition.Name#>sView : UserControl
 {
-	public All<#cs Write(Definition.Name)#>sView()
+	public All<# Definition.Name#>sView()
 	{
 		InitializeComponent();
 	}

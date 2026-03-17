@@ -1,6 +1,6 @@
 using System;
 
-namespace <#cs Write(Project.Namespace)#>.Client.Data.Models;
+namespace <# Project.Namespace#>.Client.Data.Models;
 
 public class UserListItemModel
 {

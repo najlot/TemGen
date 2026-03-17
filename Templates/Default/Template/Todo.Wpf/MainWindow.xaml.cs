@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using <#cs Write(Project.Namespace)#>.Client.MVVM;
-using <#cs Write(Project.Namespace)#>.ClientBase;
-using <#cs Write(Project.Namespace)#>.ClientBase.ViewModel;
+using <# Project.Namespace#>.Client.MVVM;
+using <# Project.Namespace#>.ClientBase;
+using <# Project.Namespace#>.ClientBase.ViewModel;
 
-namespace <#cs Write(Project.Namespace)#>.Wpf;
+namespace <# Project.Namespace#>.Wpf;
 
 public partial class MainWindow : Window, INavigationService, INotificationService
 {

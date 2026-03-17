@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace <#cs Write(Project.Namespace)#>.Contracts.Events;
+namespace <# Project.Namespace#>.Contracts.Events;
 
 public class UserUpdated(
 	Guid id,

@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace <#cs Write(Project.Namespace)#>.Client.Data.Identity;
+namespace <# Project.Namespace#>.Client.Data.Identity;
 
 public interface IRegistrationService
 {

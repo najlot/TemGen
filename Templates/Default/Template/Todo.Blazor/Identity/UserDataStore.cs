@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using <#cs Write(Project.Namespace)#>.Client.Data.Identity;
+using <# Project.Namespace#>.Client.Data.Identity;
 
-namespace <#cs Write(Project.Namespace)#>.Blazor.Identity;
+namespace <# Project.Namespace#>.Blazor.Identity;
 
 public class UserDataStore : IUserDataStore
 {

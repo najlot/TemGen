@@ -1,6 +1,6 @@
 {
     "profiles": {
-        "<#cs Write(Project.Namespace)#>.Blazor": {
+        "<# Project.Namespace#>.Blazor": {
             "commandName": "Project",
             "launchBrowser": true,
             "environmentVariables": {

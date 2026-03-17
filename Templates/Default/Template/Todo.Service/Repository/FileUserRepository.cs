@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Service.Configuration;
-using <#cs Write(Project.Namespace)#>.Service.Model;
+using <# Project.Namespace#>.Service.Configuration;
+using <# Project.Namespace#>.Service.Model;
 
-namespace <#cs Write(Project.Namespace)#>.Service.Repository;
+namespace <# Project.Namespace#>.Service.Repository;
 
 public class FileUserRepository : IUserRepository
 {

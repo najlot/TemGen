@@ -10,11 +10,11 @@ using Najlot.Log.Middleware;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Service.Configuration;
-using <#cs Write(Project.Namespace)#>.Service.Repository;
-using <#cs Write(Project.Namespace)#>.Service.Services;
+using <# Project.Namespace#>.Service.Configuration;
+using <# Project.Namespace#>.Service.Repository;
+using <# Project.Namespace#>.Service.Services;
 
-namespace <#cs Write(Project.Namespace)#>.Service;
+namespace <# Project.Namespace#>.Service;
 
 internal static class Program
 {
@@ -73,17 +73,12 @@ internal static class Program
 			services.AddSingleton<MongoDbContext>();
 			services.AddScoped<IUnitOfWork, MongoDbUnitOfWork>();
 			services.AddScoped<IUserRepository, MongoDbUserRepository>();
-<#cs
-foreach(var definition in Definitions.Where(d => !(d.IsEnumeration
+<#for definition in Definitions.Where(d => !(d.IsEnumeration
 	|| d.IsArray
 	|| d.IsOwnedType
-	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))))
-{
-	WriteLine($"			services.AddScoped<I{definition.Name}Repository, MongoDb{definition.Name}Repository>();");
-}
-
-Result = Result.TrimEnd();
-#>
+	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
+#>			services.AddScoped<I<# definition.Name#>Repository, MongoDb<# definition.Name#>Repository>();
+<#end#>
 		}
 		else if (mysqlConfig != null)
 		{
@@ -91,49 +86,36 @@ Result = Result.TrimEnd();
 			services.AddScoped<MySqlDbContext>();
 			services.AddScoped<IUnitOfWork, MySqlUnitOfWork>();
 			services.AddScoped<IUserRepository, MySqlUserRepository>();
-<#cs
-foreach(var definition in Definitions.Where(d => !(d.IsEnumeration
+<#for definition in Definitions.Where(d => !(d.IsEnumeration
 	|| d.IsArray
 	|| d.IsOwnedType
-	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))))
-{
-	WriteLine($"			services.AddScoped<I{definition.Name}Repository, MySql{definition.Name}Repository>();");
-}
-
-Result = Result.TrimEnd();
-#>
+	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
+#>			services.AddScoped<I<# definition.Name#>Repository, MySql<# definition.Name#>Repository>();
+<#end#>
 		}
 		else
 		{
 			services.AddSingleton(fileConfig ?? new FileConfiguration());
 			services.AddScoped<IUnitOfWork, FileUnitOfWork>();
 			services.AddScoped<IUserRepository, FileUserRepository>();
-<#cs
-foreach(var definition in Definitions.Where(d => !(d.IsEnumeration
+<#for definition in Definitions.Where(d => !(d.IsEnumeration
 	|| d.IsArray
 	|| d.IsOwnedType
-	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))))
-{
-	WriteLine($"			services.AddScoped<I{definition.Name}Repository, File{definition.Name}Repository>();");
-}
-
-Result = Result.TrimEnd();
-#>
+	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
+#>			services.AddScoped<I<# definition.Name#>Repository, File<# definition.Name#>Repository>();
+<#end#>
 		}
 
-		var map = new Najlot.Map.Map().Register<#cs Write(Project.Namespace)#>ServiceMappings();
+		var map = new Najlot.Map.Map().Register<# Project.Namespace#>ServiceMappings();
 		services.AddSingleton(map);
 
 		services.AddScoped<IUserService, UserService>();
-<#cs
-foreach(var definition in Definitions.Where(d => !(d.IsEnumeration
+<#for definition in Definitions.Where(d => !(d.IsEnumeration
 	|| d.IsArray
 	|| d.IsOwnedType
-	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))))
-{
-	WriteLine($"		services.AddScoped<{definition.Name}Service>();");
-}
-#>		services.AddScoped<TokenService>();
+	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
+#>		services.AddScoped<<# definition.Name#>Service>();
+<#end#>		services.AddScoped<TokenService>();
 
 		services.AddSignalR();
 		services.AddSingleton<IPublisher, Publisher>();

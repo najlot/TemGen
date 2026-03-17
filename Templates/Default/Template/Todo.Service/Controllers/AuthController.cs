@@ -2,12 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Contracts;
-using <#cs Write(Project.Namespace)#>.Contracts.Commands;
-using <#cs Write(Project.Namespace)#>.Service.Services;
-using <#cs Write(Project.Namespace)#>.Service.Repository;
+using <# Project.Namespace#>.Contracts;
+using <# Project.Namespace#>.Contracts.Commands;
+using <# Project.Namespace#>.Service.Services;
+using <# Project.Namespace#>.Service.Repository;
 
-namespace <#cs Write(Project.Namespace)#>.Service.Controllers;
+namespace <# Project.Namespace#>.Service.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]

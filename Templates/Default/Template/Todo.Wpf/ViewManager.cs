@@ -3,12 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Controls;
-using <#cs Write(Project.Namespace)#>.Client.MVVM;
-using <#cs Write(Project.Namespace)#>.ClientBase;
-using <#cs Write(Project.Namespace)#>.ClientBase.ViewModel;
-using <#cs Write(Project.Namespace)#>.Wpf.View;
+using <# Project.Namespace#>.Client.MVVM;
+using <# Project.Namespace#>.ClientBase;
+using <# Project.Namespace#>.ClientBase.ViewModel;
+using <# Project.Namespace#>.Wpf.View;
 
-namespace <#cs Write(Project.Namespace)#>.Wpf;
+namespace <# Project.Namespace#>.Wpf;
 
 public class ViewManager(IServiceProvider serviceProvider) : IViewManager<Control>
 {
@@ -18,23 +18,18 @@ public class ViewManager(IServiceProvider serviceProvider) : IViewManager<Contro
 		[typeof(RegisterViewModel)] = typeof(RegisterView),
 		[typeof(MenuViewModel)] = typeof(MenuView),
 		[typeof(ManageViewModel)] = typeof(ManageView),
-<#cs
-foreach(var definition in Definitions.Where(d => !(d.IsArray
+<#for definition in Definitions.Where(d => !(d.IsArray
 	|| d.IsEnumeration
 	|| d.IsOwnedType
-	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))))
-{
-	WriteLine($"\t\t[typeof(All{definition.Name}sViewModel)] = typeof(All{definition.Name}sView),");
-}
-
-foreach(var definition in Definitions.Where(d => !(
+	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
+#>		[typeof(All<# definition.Name#>sViewModel)] = typeof(All<# definition.Name#>sView),
+<#end#>
+<#for definition in Definitions.Where(d => !(
 	   d.IsEnumeration
 	|| d.IsOwnedType
-	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))))
-{
-	WriteLine($"\t\t[typeof({definition.Name}ViewModel)] = typeof({definition.Name}View),");
-}
-#>	};
+	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
+#>		[typeof(<# definition.Name#>ViewModel)] = typeof(<# definition.Name#>View),
+<#end#>	};
 
 	public Control GetView<TViewModel>(TViewModel viewModel) where TViewModel : notnull
 	{

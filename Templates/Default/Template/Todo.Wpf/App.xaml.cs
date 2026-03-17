@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Markup;
 
-namespace <#cs Write(Project.Namespace)#>.Wpf;
+namespace <# Project.Namespace#>.Wpf;
 
 public partial class App : Application
 {

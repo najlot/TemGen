@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using <#cs Write(Project.Namespace)#>.ClientBase.ViewModel;
+using <# Project.Namespace#>.ClientBase.ViewModel;
 
-namespace <#cs Write(Project.Namespace)#>.ClientBase;
+namespace <# Project.Namespace#>.ClientBase;
 
 public static class ServiceCollectionExtensions
 {
@@ -22,25 +22,16 @@ public static class ServiceCollectionExtensions
 			serviceCollection.AddTransient<MenuViewModel>();
 			serviceCollection.AddTransient<ManageViewModel>();
 
-<#cs
-foreach(var definition in Definitions.Where(d => !(d.IsArray
+<#for definition in Definitions.Where(d => !(d.IsArray
 	|| d.IsEnumeration
 	|| d.IsOwnedType
-	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))))
-{
-	WriteLine($"			serviceCollection.AddTransient<All{definition.Name}sViewModel>();");
-}
-
-WriteLine("");
-
-foreach(var definition in Definitions.Where(d => !(d.IsEnumeration
-	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))))
-{
-	WriteLine($"			serviceCollection.AddTransient<{definition.Name}ViewModel>();");
-}
-
-Result = Result.TrimEnd();
-#>
+	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
+#>			serviceCollection.AddTransient<All<# definition.Name#>sViewModel>();
+<#end#>
+<#for definition in Definitions.Where(d => !(d.IsEnumeration
+	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
+#>			serviceCollection.AddTransient<<# definition.Name#>ViewModel>();
+<#end#>
 		}
 	}
 }<#cs SetOutputPathAndSkipOtherDefinitions()#>

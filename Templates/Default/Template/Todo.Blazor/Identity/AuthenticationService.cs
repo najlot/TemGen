@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using <#cs Write(Project.Namespace)#>.Client.Data.Identity;
+using <# Project.Namespace#>.Client.Data.Identity;
 
-namespace <#cs Write(Project.Namespace)#>.Blazor.Identity;
+namespace <# Project.Namespace#>.Blazor.Identity;
 
 public class AuthenticationService : AuthenticationStateProvider, IAuthenticationService
 {

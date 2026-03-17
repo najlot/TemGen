@@ -3,24 +3,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Service.Model;
+using <# Project.Namespace#>.Service.Model;
 
-namespace <#cs Write(Project.Namespace)#>.Service.Repository;
+namespace <# Project.Namespace#>.Service.Repository;
 
-public class MongoDb<#cs Write(Definition.Name)#>Repository : I<#cs Write(Definition.Name)#>Repository
+public class MongoDb<# Definition.Name#>Repository : I<# Definition.Name#>Repository
 {
-	private readonly IMongoCollection<<#cs Write(Definition.Name)#>Model> _collection;
+	private readonly IMongoCollection<<# Definition.Name#>Model> _collection;
 	private readonly MongoDbContext _context;
 
-	public MongoDb<#cs Write(Definition.Name)#>Repository(MongoDbContext context)
+	public MongoDb<# Definition.Name#>Repository(MongoDbContext context)
 	{
 		_context = context;
-		_collection = _context.Database.GetCollection<<#cs Write(Definition.Name)#>Model>("<#cs Write(Definition.Name)#>");
+		_collection = _context.Database.GetCollection<<# Definition.Name#>Model>("<# Definition.Name#>");
 	}
 
-	public async IAsyncEnumerable<<#cs Write(Definition.Name)#>Model> GetAll()
+	public async IAsyncEnumerable<<# Definition.Name#>Model> GetAll()
 	{
-		var items = await _collection.FindAsync(FilterDefinition<<#cs Write(Definition.Name)#>Model>.Empty).ConfigureAwait(false);
+		var items = await _collection.FindAsync(FilterDefinition<<# Definition.Name#>Model>.Empty).ConfigureAwait(false);
 
 		while (await items.MoveNextAsync().ConfigureAwait(false))
 		{
@@ -31,23 +31,23 @@ public class MongoDb<#cs Write(Definition.Name)#>Repository : I<#cs Write(Defini
 		}
 	}
 
-	public IQueryable<<#cs Write(Definition.Name)#>Model> GetAllQueryable()
+	public IQueryable<<# Definition.Name#>Model> GetAllQueryable()
 	{
 		return _collection.AsQueryable();
 	}
 
-	public async Task<<#cs Write(Definition.Name)#>Model?> Get(Guid id)
+	public async Task<<# Definition.Name#>Model?> Get(Guid id)
 	{
 		var result = await _collection.FindAsync(item => item.Id == id).ConfigureAwait(false);
 		return await result.FirstOrDefaultAsync().ConfigureAwait(false);
 	}
 
-	public async Task Insert(<#cs Write(Definition.Name)#>Model model)
+	public async Task Insert(<# Definition.Name#>Model model)
 	{
 		await _collection.InsertOneAsync(model).ConfigureAwait(false);
 	}
 
-	public async Task Update(<#cs Write(Definition.Name)#>Model model)
+	public async Task Update(<# Definition.Name#>Model model)
 	{
 		await _collection.FindOneAndReplaceAsync(item => item.Id == model.Id, model).ConfigureAwait(false);
 	}

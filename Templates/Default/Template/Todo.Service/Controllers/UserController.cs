@@ -4,13 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Contracts;
-using <#cs Write(Project.Namespace)#>.Service.Services;
-using <#cs Write(Project.Namespace)#>.Contracts.Commands;
-using <#cs Write(Project.Namespace)#>.Contracts.ListItems;
-using <#cs Write(Project.Namespace)#>.Service.Repository;
+using <# Project.Namespace#>.Contracts;
+using <# Project.Namespace#>.Service.Services;
+using <# Project.Namespace#>.Contracts.Commands;
+using <# Project.Namespace#>.Contracts.ListItems;
+using <# Project.Namespace#>.Service.Repository;
 
-namespace <#cs Write(Project.Namespace)#>.Service.Controllers;
+namespace <# Project.Namespace#>.Service.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]

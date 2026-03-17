@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
+namespace <# Project.Namespace#>.Client.Localisation {
     using System;
     
     
@@ -22,14 +22,14 @@ namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class <#cs Write(Definition.Name)#>Loc {
+    public class <# Definition.Name#>Loc {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal <#cs Write(Definition.Name)#>Loc() {
+        internal <# Definition.Name#>Loc() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("<#cs Write(Project.Namespace)#>.Client.Localisation.<#cs Write(Definition.Name)#>Loc", typeof(<#cs Write(Definition.Name)#>Loc).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("<# Project.Namespace#>.Client.Localisation.<# Definition.Name#>Loc", typeof(<# Definition.Name#>Loc).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -60,31 +60,17 @@ namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
             }
         }
         
-<#cs
-var entries = Entries.Select(e => e.Field).ToList();
+<#for entry in Entries.Select(e => e.Field).Concat(Definition.IsArray || Definition.IsEnumeration ? new string[] { } : new[] { "Create" + Definition.Name, "Edit" + Definition.Name, Definition.Name + "s" }).OrderBy(e => e)
+#>        /// <summary>
+        ///   Looks up a localized string similar to <# entry#>:.
+        /// </summary>
+        public static string <# entry#> {
+            get {
+                return ResourceManager.GetString("<# entry#>", resourceCulture);
+            }
+        }
 
-if (!(Definition.IsArray || Definition.IsEnumeration))
-{
-  entries.Add("Create" + Definition.Name);
-  entries.Add("Edit"  + Definition.Name);
-  entries.Add(Definition.Name + "s");
-}
-
-foreach(var entry in entries.OrderBy(e => e))
-{
-	WriteLine("        /// <summary>");
-	WriteLine($"        ///   Looks up a localized string similar to {entry}:.");
-	WriteLine("        /// </summary>");
-	WriteLine($"        public static string {entry} {{");
-	WriteLine("            get {");
-	WriteLine($"                return ResourceManager.GetString(\"{entry}\", resourceCulture);");
-	WriteLine("            }");
-	WriteLine("        }");
-	WriteLine("        ");
-}
-
-Result = Result.TrimEnd();
-#>
+<#end#>
     }
 }
 <#cs SetOutputPath(false)#>

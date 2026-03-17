@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Service.Model;
+using <# Project.Namespace#>.Service.Model;
 
-namespace <#cs Write(Project.Namespace)#>.Service.Repository;
+namespace <# Project.Namespace#>.Service.Repository;
 
 public interface IUserRepository
 {

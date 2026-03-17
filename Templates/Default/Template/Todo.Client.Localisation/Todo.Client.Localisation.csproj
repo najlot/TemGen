@@ -20,18 +20,14 @@
 			<AutoGen>True</AutoGen>
 			<DependentUpon>UserLoc.resx</DependentUpon>
 		</Compile>
-<#cs
-foreach(var definition in Definitions)
-{
-	if (definition.Name.Equals("user", StringComparison.OrdinalIgnoreCase)) continue;
-	
-	WriteLine($"		<Compile Update=\"{definition.Name}Loc.Designer.cs\">");
-	WriteLine("			<DesignTime>True</DesignTime>");
-	WriteLine("			<AutoGen>True</AutoGen>");
-	WriteLine($"			<DependentUpon>{definition.Name}Loc.resx</DependentUpon>");
-	WriteLine("		</Compile>");
-}
-#>	</ItemGroup>
+<#csfor definition in Definitions
+#><#csif !definition.Name.Equals("user", StringComparison.OrdinalIgnoreCase)
+#>		<Compile Update="<#cs Write(definition.Name)#>Loc.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon><#cs Write(definition.Name)#>Loc.resx</DependentUpon>
+		</Compile>
+<#end#><#end#>	</ItemGroup>
 
 	<ItemGroup>
 		<EmbeddedResource Update="CommonLoc.resx">
@@ -46,17 +42,13 @@ foreach(var definition in Definitions)
 			<Generator>PublicResXFileCodeGenerator</Generator>
 			<LastGenOutput>UserLoc.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
-<#cs
-foreach(var definition in Definitions)
-{
-	if (definition.Name.Equals("user", StringComparison.OrdinalIgnoreCase)) continue;
-
-	WriteLine($"		<EmbeddedResource Update=\"{definition.Name}Loc.resx\">");
-		WriteLine("			<Generator>PublicResXFileCodeGenerator</Generator>");
-		WriteLine($"			<LastGenOutput>{definition.Name}Loc.Designer.cs</LastGenOutput>");
-		WriteLine("		</EmbeddedResource>");
-}
-#>	</ItemGroup>
+<#csfor definition in Definitions
+#><#csif !definition.Name.Equals("user", StringComparison.OrdinalIgnoreCase)
+#>		<EmbeddedResource Update="<#cs Write(definition.Name)#>Loc.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput><#cs Write(definition.Name)#>Loc.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+<#end#><#end#>	</ItemGroup>
 
 </Project>
 <#cs SetOutputPathAndSkipOtherDefinitions()#>

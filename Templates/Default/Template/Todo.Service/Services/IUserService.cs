@@ -1,12 +1,12 @@
-using <#cs Write(Project.Namespace)#>.Contracts;
-using <#cs Write(Project.Namespace)#>.Contracts.Commands;
-using <#cs Write(Project.Namespace)#>.Contracts.ListItems;
-using <#cs Write(Project.Namespace)#>.Service.Model;
+using <# Project.Namespace#>.Contracts;
+using <# Project.Namespace#>.Contracts.Commands;
+using <# Project.Namespace#>.Contracts.ListItems;
+using <# Project.Namespace#>.Service.Model;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace <#cs Write(Project.Namespace)#>.Service.Services;
+namespace <# Project.Namespace#>.Service.Services;
 
 public interface IUserService
 {
