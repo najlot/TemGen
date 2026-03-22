@@ -3,12 +3,12 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Client.MVVM;
-using <#cs Write(Project.Namespace)#>.ClientBase;
-using <#cs Write(Project.Namespace)#>.ClientBase.ViewModel;
-using <#cs Write(Project.Namespace)#>.Avalonia.View;
+using <# Project.Namespace#>.Client.MVVM;
+using <# Project.Namespace#>.ClientBase;
+using <# Project.Namespace#>.ClientBase.ViewModel;
+using <# Project.Namespace#>.Avalonia.Views;
 
-namespace <#cs Write(Project.Namespace)#>.Avalonia;
+namespace <# Project.Namespace#>.Avalonia;
 
 public class ViewManager(IServiceProvider serviceProvider) : IViewManager<Control>
 {
@@ -18,23 +18,20 @@ public class ViewManager(IServiceProvider serviceProvider) : IViewManager<Contro
 		[typeof(RegisterViewModel)] = typeof(RegisterView),
 		[typeof(MenuViewModel)] = typeof(MenuView),
 		[typeof(ManageViewModel)] = typeof(ManageView),
-<#cs
-foreach(var definition in Definitions.Where(d => !(d.IsArray
+		[typeof(GlobalSearchViewModel)] = typeof(GlobalSearchView),
+		[typeof(TrashViewModel)] = typeof(TrashView),
+<#for definition in Definitions.Where(d => !(d.IsArray
 	|| d.IsEnumeration
 	|| d.IsOwnedType
-	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))))
-{
-	WriteLine($"\t\t[typeof(All{definition.Name}sViewModel)] = typeof(All{definition.Name}sView),");
-}
-
-foreach(var definition in Definitions.Where(d => !(
+	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
+#>		[typeof(All<# definition.Name#>sViewModel)] = typeof(All<# definition.Name#>sView),
+<#end
+#><#for definition in Definitions.Where(d => !(
 	   d.IsEnumeration
 	|| d.IsOwnedType
-	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))))
-{
-	WriteLine($"\t\t[typeof({definition.Name}ViewModel)] = typeof({definition.Name}View),");
-}
-#>	};
+	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
+#>		[typeof(<# definition.Name#>ViewModel)] = typeof(<# definition.Name#>View),
+<#end#>	};
 
 	public Control GetView<TViewModel>(TViewModel viewModel) where TViewModel : notnull
 	{
@@ -45,13 +42,10 @@ foreach(var definition in Definitions.Where(d => !(
 				$"Ensure that this view model type is added to the '{nameof(ViewManager)}' {_knownControls.GetType().Name} mapping.");
 		}
 
-		if (viewType.GetConstructor(Type.EmptyTypes) is not null)
+		if (viewType.GetConstructor(Type.EmptyTypes) is not null && Activator.CreateInstance(viewType) is Control control)
 		{
-			if (Activator.CreateInstance(viewType) is Control control)
-			{
-				control.DataContext = viewModel;
-				return control;
-			}
+			control.DataContext = viewModel;
+			return control;
 		}
 
 		if (serviceProvider.GetRequiredService(viewType) is Control instance)

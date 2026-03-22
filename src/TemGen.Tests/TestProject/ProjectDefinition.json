@@ -1,0 +1,11 @@
+{
+  "Namespace": "TestProject",
+  "DefinitionsPath": "Definitions",
+  "TemplatesPath": "Templates",
+  "OutputPath": "Output",
+  "PrimaryColor": "#306090",
+  "PrimaryDarkColor": "#003762",
+  "AccentColor": "#638dc1",
+  "ForegroundColor": "#ffffff",
+  "UserSecretsId": "aspnet-TestProject.Blazor-4ea02e08-91a1-464f-b410-a492610d37b0"
+}

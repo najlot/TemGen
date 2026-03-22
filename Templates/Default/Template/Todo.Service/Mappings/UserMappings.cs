@@ -1,26 +1,19 @@
 using Najlot.Map.Attributes;
-using System;
 using System.Linq.Expressions;
-using <#cs Write(Project.Namespace)#>.Contracts;
-using <#cs Write(Project.Namespace)#>.Contracts.Commands;
-using <#cs Write(Project.Namespace)#>.Contracts.Events;
-using <#cs Write(Project.Namespace)#>.Contracts.ListItems;
-using <#cs Write(Project.Namespace)#>.Service.Model;
+using <# Project.Namespace#>.Contracts;
+using <# Project.Namespace#>.Contracts.Commands;
+using <# Project.Namespace#>.Contracts.Events;
+using <# Project.Namespace#>.Contracts.ListItems;
+using <# Project.Namespace#>.Service.Model;
 
-namespace <#cs Write(Project.Namespace)#>.Service.Mappings;
+namespace <# Project.Namespace#>.Service.Mappings;
 
 [Mapping]
 internal partial class UserMappings
 {
-	public static UserCreated MapToCreated(UserModel from) =>
-		new(from.Id,
-		from.Username,
-		from.EMail);
+	public static partial void MapToCreated(UserModel from, UserCreated to);
 
-	public static UserUpdated MapToUpdated(UserModel from) =>
-		new(from.Id,
-		from.Username,
-		from.EMail);
+	public static partial void MapToUpdated(UserModel from, UserUpdated to);
 
 	[MapIgnoreProperty(nameof(to.PasswordHash))]
 	[MapIgnoreProperty(nameof(to.DeletedAt))]

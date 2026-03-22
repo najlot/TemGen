@@ -1,16 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Contracts;
-using <#cs Write(Project.Namespace)#>.Service.Services;
-using <#cs Write(Project.Namespace)#>.Contracts.Commands;
-using <#cs Write(Project.Namespace)#>.Contracts.ListItems;
-using <#cs Write(Project.Namespace)#>.Service.Repository;
+using <# Project.Namespace#>.Contracts;
+using <# Project.Namespace#>.Service.Services;
+using <# Project.Namespace#>.Contracts.Commands;
+using <# Project.Namespace#>.Contracts.ListItems;
+using <# Project.Namespace#>.Service.Repository;
 
-namespace <#cs Write(Project.Namespace)#>.Service.Controllers;
+namespace <# Project.Namespace#>.Service.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -20,8 +16,7 @@ public class UserController(IUserService userService) : ControllerBase
 	[HttpGet]
 	public async Task<ActionResult<List<UserListItem>>> List()
 	{
-		var userId = User.GetUserId();
-		var query = userService.GetItemsForUser(userId);
+		var query = userService.GetItemsForUser();
 		var items = await query.ToListAsync().ConfigureAwait(false);
 		return Ok(items);
 	}
@@ -29,26 +24,15 @@ public class UserController(IUserService userService) : ControllerBase
 	[HttpGet("Current")]
 	public async Task<ActionResult<User>> GetCurrentUser()
 	{
-		var userId = User.GetUserId();
-		var item = await userService.GetItem(userId).ConfigureAwait(false);
-		if (item == null)
-		{
-			return NotFound();
-		}
-
-		return Ok(item);
+		var result = await userService.GetCurrentUser().ConfigureAwait(false);
+		return this.ToActionResult(result);
 	}
 
 	[HttpGet("{id}")]
 	public async Task<ActionResult<User>> GetItem(Guid id)
 	{
-		var item = await userService.GetItem(id).ConfigureAwait(false);
-		if (item == null)
-		{
-			return NotFound();
-		}
-
-		return Ok(item);
+		var result = await userService.GetItem(id).ConfigureAwait(false);
+		return this.ToActionResult(result);
 	}
 
 	[HttpPost]
@@ -56,8 +40,12 @@ public class UserController(IUserService userService) : ControllerBase
 		[FromBody] CreateUser command,
 		[FromServices] IUnitOfWork unitOfWork)
 	{
-		var userId = User.GetUserId();
-		await userService.CreateUser(command, userId).ConfigureAwait(false);
+		var result = await userService.CreateUser(command).ConfigureAwait(false);
+		if (result.IsFailure)
+		{
+			return this.ToActionResult(result);
+		}
+
 		await unitOfWork.CommitAsync().ConfigureAwait(false);
 		return Ok();
 	}
@@ -67,8 +55,12 @@ public class UserController(IUserService userService) : ControllerBase
 		[FromBody] UpdateUser command,
 		[FromServices] IUnitOfWork unitOfWork)
 	{
-		var userId = User.GetUserId();
-		await userService.UpdateUser(command, userId).ConfigureAwait(false);
+		var result = await userService.UpdateUser(command).ConfigureAwait(false);
+		if (result.IsFailure)
+		{
+			return this.ToActionResult(result);
+		}
+
 		await unitOfWork.CommitAsync().ConfigureAwait(false);
 		return Ok();
 	}
@@ -76,8 +68,12 @@ public class UserController(IUserService userService) : ControllerBase
 	[HttpDelete("{id}")]
 	public async Task<ActionResult> Delete(Guid id, [FromServices] IUnitOfWork unitOfWork)
 	{
-		var userId = User.GetUserId();
-		await userService.DeleteUser(id, userId).ConfigureAwait(false);
+		var result = await userService.DeleteUser(id).ConfigureAwait(false);
+		if (result.IsFailure)
+		{
+			return this.ToActionResult(result);
+		}
+
 		await unitOfWork.CommitAsync().ConfigureAwait(false);
 		return Ok();
 	}

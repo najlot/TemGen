@@ -24,7 +24,9 @@ public sealed class JintSectionHandler(string[] initialScripts) : AbstractSectio
 			.SetValue("getResult", () => globals.Result)
 			.SetValue("setResult", (Action<object>)(o => globals.Result = o.ToString()))
 			.SetValue("write", (Action<object>)(o => globals.Write(o)))
-			.SetValue("writeLine", (Action<object>)(o => globals.WriteLine(o)));
+			.SetValue("writeLine", (Action<object>)(o => globals.WriteLine(o)))
+			.SetValue("setVariable", (Action<string, object>)((name, value) => globals.SetVariable(name, value)))
+			.SetValue("getVariable", (Func<string, object>)(name => globals.GetVariable(name)));
 
 		foreach (var script in initialScripts)
 		{

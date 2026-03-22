@@ -2,14 +2,10 @@
 
 namespace Todo.Contracts.Commands;
 
-public class CreateUser(
-	Guid id,
-	string username,
-	string eMail,
-	string password)
+public class CreateUser
 {
-	public Guid Id { get; } = id;
-	public string Username { get; } = username;
-	public string EMail { get; } = eMail;
-	public string Password { get; } = password;
+	public Guid Id { get; set; }
+	public string Username { get; set; } = string.Empty;
+	public string EMail { get; set; } = string.Empty;
+	public string Password { get; set; } = string.Empty;
 }

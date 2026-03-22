@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Text.Json;
 
 namespace Todo.Service.Configuration;

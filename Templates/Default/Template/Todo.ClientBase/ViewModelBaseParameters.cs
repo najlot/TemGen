@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
 using Najlot.Map;
-using <#cs Write(Project.Namespace)#>.Client.MVVM;
+using <# Project.Namespace#>.Client.MVVM;
 
-namespace <#cs Write(Project.Namespace)#>.ClientBase;
+namespace <# Project.Namespace#>.ClientBase;
 
 public interface IViewModelBaseParameters
 {

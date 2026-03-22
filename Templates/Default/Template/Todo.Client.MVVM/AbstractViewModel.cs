@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace <#cs Write(Project.Namespace)#>.Client.MVVM;
+namespace <# Project.Namespace#>.Client.MVVM;
 
 public abstract class AbstractViewModel : INotifyPropertyChanged
 {

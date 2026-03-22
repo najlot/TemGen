@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Client.Data.Identity;
-using <#cs Write(Project.Namespace)#>.Client.Data.Services;
-using <#cs Write(Project.Namespace)#>.Client.Localisation;
-using <#cs Write(Project.Namespace)#>.Client.MVVM;
+using <# Project.Namespace#>.Client.Data.Identity;
+using <# Project.Namespace#>.Client.Data.Services;
+using <# Project.Namespace#>.Client.Localisation;
+using <# Project.Namespace#>.Client.MVVM;
 
-namespace <#cs Write(Project.Namespace)#>.ClientBase.ViewModel;
+namespace <# Project.Namespace#>.ClientBase.ViewModel;
 
 public class ManageViewModel : AbstractValidationViewModel
 {
@@ -70,7 +70,7 @@ public class ManageViewModel : AbstractValidationViewModel
 			Password = string.Empty;
 			PasswordConfirm = string.Empty;
 
-			await _notificationService.ShowSuccessAsync(CommonLoc.ChangePassword);
+			await _notificationService.ShowSuccessAsync(UserLoc.ChangePassword);
 		}
 		catch (System.Exception ex)
 		{

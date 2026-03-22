@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace <#cs Write(Project.Namespace)#>.Wpf.Converter;
+namespace <# Project.Namespace#>.Wpf.Converter;
 
 public class BooleanToVisibilityConverter : IValueConverter
 {

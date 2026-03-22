@@ -1,9 +1,7 @@
-using Microsoft.Extensions.Configuration;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Text.Json;
 
-namespace <#cs Write(Project.Namespace)#>.Service.Configuration;
+namespace <# Project.Namespace#>.Service.Configuration;
 
 public static class ConfigurationReader
 {

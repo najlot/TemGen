@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
+namespace <# Project.Namespace#>.Client.Localisation {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("<#cs Write(Project.Namespace)#>.Client.Localisation.CommonLoc", typeof(CommonLoc).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("<# Project.Namespace#>.Client.Localisation.CommonLoc", typeof(CommonLoc).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -70,24 +70,6 @@ namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Change password.
-        /// </summary>
-        public static string ChangePassword {
-            get {
-                return ResourceManager.GetString("ChangePassword", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Confirm new password.
-        /// </summary>
-        public static string ConfirmNewPassword {
-            get {
-                return ResourceManager.GetString("ConfirmNewPassword", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Delete.
         /// </summary>
         public static string Delete {
@@ -113,7 +95,7 @@ namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
                 return ResourceManager.GetString("DeleteConfirmationTitle", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Discard.
         /// </summary>
@@ -129,15 +111,6 @@ namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
         public static string Edit {
             get {
                 return ResourceManager.GetString("Edit", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to EMail address.
-        /// </summary>
-        public static string EmailAddress {
-            get {
-                return ResourceManager.GetString("EmailAddress", resourceCulture);
             }
         }
         
@@ -178,24 +151,6 @@ namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Log in.
-        /// </summary>
-        public static string Login {
-            get {
-                return ResourceManager.GetString("Login", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Log out.
-        /// </summary>
-        public static string Logout {
-            get {
-                return ResourceManager.GetString("Logout", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Navigation.
         /// </summary>
         public static string Navigation {
@@ -210,15 +165,6 @@ namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
         public static string New {
             get {
                 return ResourceManager.GetString("New", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to New password.
-        /// </summary>
-        public static string NewPassword {
-            get {
-                return ResourceManager.GetString("NewPassword", resourceCulture);
             }
         }
         
@@ -250,15 +196,6 @@ namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Password.
-        /// </summary>
-        public static string Password {
-            get {
-                return ResourceManager.GetString("Password", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Redo.
         /// </summary>
         public static string Redo {
@@ -273,15 +210,6 @@ namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
         public static string Refresh {
             get {
                 return ResourceManager.GetString("Refresh", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Register.
-        /// </summary>
-        public static string Register {
-            get {
-                return ResourceManager.GetString("Register", resourceCulture);
             }
         }
         
@@ -329,22 +257,13 @@ namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
                 return ResourceManager.GetString("Undo", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   Looks up a localized string similar to User management.
+        ///   Looks up a localized string similar to Untitled.
         /// </summary>
-        public static string UserNamagement {
+        public static string Untitled {
             get {
-                return ResourceManager.GetString("UserNamagement", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Username.
-        /// </summary>
-        public static string Username {
-            get {
-                return ResourceManager.GetString("Username", resourceCulture);
+                return ResourceManager.GetString("Untitled", resourceCulture);
             }
         }
         

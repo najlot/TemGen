@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace <#cs Write(Project.Namespace)#>.Wpf.Controls;
+namespace <# Project.Namespace#>.Wpf.Controls;
 
 public static class PasswordBoxHelper
 {

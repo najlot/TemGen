@@ -15,15 +15,25 @@ public partial class TodoItemViewModel
 
 	private void InitializeChecklistTracking()
 	{
+		if (ChangeVisitor is not ChangeTracker changeTracker)
+		{
+			return;
+		}
+
 		foreach (var item in Checklist)
 		{
-			item.ChangeVisitor = _changeTracker;
+			item.InitializeTracking(changeTracker);
 		}
 	}
 
 	public RelayCommand AddChecklistTaskCommand => new(AddChecklistTask);
 	private void AddChecklistTask()
 	{
+		if (ChangeVisitor is not ChangeTracker changeTracker)
+		{
+			return;
+		}
+
 		var max = 0;
 
 		if (Checklist.Count > 0)
@@ -35,16 +45,16 @@ public partial class TodoItemViewModel
 		var viewModel = Map.From(model).To<ChecklistTaskViewModel>();
 		viewModel.Id = max;
 		viewModel.ParentId = Id;
-		viewModel.ChangeVisitor = _changeTracker;
+		viewModel.InitializeTracking(changeTracker);
 
 		Checklist.Add(viewModel);
 
-		_changeTracker.Track(
+		changeTracker.Track(
 			nameof(Checklist),
 			() => Checklist.Remove(viewModel),
 			() =>
 			{
-				viewModel.ChangeVisitor = _changeTracker;
+				viewModel.InitializeTracking(changeTracker);
 				Checklist.Add(viewModel);
 			});
 	}
@@ -53,6 +63,11 @@ public partial class TodoItemViewModel
 	private async Task<bool> DeleteChecklistTaskAsync(ChecklistTaskViewModel? viewModel)
 	{
 		if (IsBusy || viewModel is null)
+		{
+			return false;
+		}
+
+		if (ChangeVisitor is not ChangeTracker changeTracker)
 		{
 			return false;
 		}
@@ -71,11 +86,11 @@ public partial class TodoItemViewModel
 				{
 					Checklist.RemoveAt(index);
 
-					_changeTracker.Track(
+					changeTracker.Track(
 						nameof(Checklist),
 						() =>
 						{
-							oldItem.ChangeVisitor = _changeTracker;
+							oldItem.InitializeTracking(changeTracker);
 							Checklist.Insert(index, oldItem);
 						},
 						() => Checklist.Remove(oldItem));

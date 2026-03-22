@@ -27,6 +27,8 @@ public sealed class PySectionHandler(string[] initialScripts) : AbstractSectionH
 			["set_result"] = (Action<object>)(o => globals.Result = o.ToString()),
 			["write"] = (Action<object>)globals.Write,
 			["write_line"] = (Action<object>)globals.WriteLine,
+			["set_variable"] = (Action<string, object>)((name, value) => globals.SetVariable(name, value)),
+			["get_variable"] = (Func<string, object>)(name => globals.GetVariable(name))
 		};
 
 		var scope = _engine.CreateScope(scriptGlobals);

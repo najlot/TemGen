@@ -35,15 +35,25 @@ else
 }
 else
 {
-	<EditForm Model="@Model" OnValidSubmit="@Save">
-		<section class="w-100 p-4 pb-4">
-			<div class="form-outline align-content-md-end mb-4 float-end">
+	<section class="d-grid gap-4">
+		<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
+			<div>
+				@if (isNew)
+				{
+					<h1 class="mb-1">@TodoItemLoc.CreateTodoItem</h1>
+				}
+				else
+				{
+					<h1 class="mb-1">@TodoItemLoc.EditTodoItem</h1>
+				}
+			</div>
+			<div class="d-flex flex-wrap gap-2">
 				<IconButton Icon="Undo"
-							ButtonClass="btn btn-secondary"
+							ButtonClass="btn btn-outline-secondary"
 							CanExecute="() => _changeTracker.CanUndo"
 							Execute="_changeTracker.Undo" />
 				<IconButton Icon="Redo"
-							ButtonClass="btn btn-secondary"
+							ButtonClass="btn btn-outline-secondary"
 							CanExecute="() => _changeTracker.CanRedo"
 							Execute="_changeTracker.Redo" />
 				<IconButton Icon="Save"
@@ -57,60 +67,55 @@ else
 							Execute="() => isDeleteRequested = true"
 							Title="@CommonLoc.Delete" />
 			</div>
-			<div class="form-outline mb-4">
-				@if (isNew)
-				{
-					<h1>@TodoItemLoc.CreateTodoItem</h1>
-				}
-				else
-				{
-					<h1>@TodoItemLoc.EditTodoItem</h1>
-				}
-			</div>
-			<div class="w-auto h-auto">
-				<DataAnnotationsValidator />
-				<ValidationSummary />
+		</div>
 
-				<!-- Title input -->
-				<div class="form-outline mb-2">
-					<label class="form-label" for="TitleInput">@TodoItemLoc.Title</label>
-					<InputText type="text" id="TitleInput" class="form-control"
+		<EditForm Model="@Model" OnValidSubmit="@Save">
+			<div class="card shadow-sm border-0">
+				<div class="card-body">
+					<DataAnnotationsValidator />
+					<ValidationSummary class="alert alert-danger mb-4" />
+					<div class="row g-3">
+
+						<!-- Title input -->
+						<div class="col-12 col-md-6">
+							<label class="form-label" for="TitleInput">@TodoItemLoc.Title</label>
+							<InputText type="text" id="TitleInput" class="form-control"
 							   Value="@Model.Title"
 							   ValueChanged="@((string v) => _changeTracker.TrackChange(Model, nameof(Model.Title), Model.Title, v))"
 							   ValueExpression="@(() => Model.Title)" />
-				</div>
+						</div>
 
-				<!-- Content input -->
-				<div class="form-outline mb-2">
-					<label class="form-label" for="ContentInput">@TodoItemLoc.Content</label>
-					<InputText type="text" id="ContentInput" class="form-control"
+						<!-- Content input -->
+						<div class="col-12 col-md-6">
+							<label class="form-label" for="ContentInput">@TodoItemLoc.Content</label>
+							<InputText type="text" id="ContentInput" class="form-control"
 							   Value="@Model.Content"
 							   ValueChanged="@((string v) => _changeTracker.TrackChange(Model, nameof(Model.Content), Model.Content, v))"
 							   ValueExpression="@(() => Model.Content)" />
-				</div>
+						</div>
 
-				<!-- CreatedAt input -->
-				<div class="form-outline mb-2">
-					<label class="form-label" for="CreatedAtInput">@TodoItemLoc.CreatedAt</label>
-					<InputDate id="CreatedAtInput" class="form-control"
+						<!-- CreatedAt input -->
+						<div class="col-12 col-md-6">
+							<label class="form-label" for="CreatedAtInput">@TodoItemLoc.CreatedAt</label>
+							<InputDate id="CreatedAtInput" class="form-control"
 							   Value="@Model.CreatedAt"
 							   ValueChanged="@((DateTime v) => _changeTracker.TrackChange(Model, nameof(Model.CreatedAt), Model.CreatedAt, v))"
 							   ValueExpression="@(() => Model.CreatedAt)" ParsingErrorMessage="@ErrorLoc.ParsingErrorMustBeDate" />
-				</div>
+						</div>
 
-				<!-- CreatedBy input -->
-				<div class="form-outline mb-2">
-					<label class="form-label" for="CreatedByInput">@TodoItemLoc.CreatedBy</label>
-					<InputText type="text" id="CreatedByInput" class="form-control"
+						<!-- CreatedBy input -->
+						<div class="col-12 col-md-6">
+							<label class="form-label" for="CreatedByInput">@TodoItemLoc.CreatedBy</label>
+							<InputText type="text" id="CreatedByInput" class="form-control"
 							   Value="@Model.CreatedBy"
 							   ValueChanged="@((string v) => _changeTracker.TrackChange(Model, nameof(Model.CreatedBy), Model.CreatedBy, v))"
 							   ValueExpression="@(() => Model.CreatedBy)" />
-				</div>
+						</div>
 
-				<!-- AssignedTo input -->
-				<div class="form-outline mb-2">
-					<label class="form-label" for="AssignedToInput">@TodoItemLoc.AssignedTo</label>
-					<InputSelect id="AssignedToInput" class="form-control"
+						<!-- AssignedTo input -->
+						<div class="col-12 col-md-6">
+							<label class="form-label" for="AssignedToInput">@TodoItemLoc.AssignedTo</label>
+							<InputSelect id="AssignedToInput" class="form-select"
 								 Value="@Model.AssignedToId"
 								 ValueChanged="@((Guid v) => _changeTracker.TrackChange(Model, nameof(Model.AssignedToId), Model.AssignedToId, v))"
 								 ValueExpression="@(() => Model.AssignedToId)">
@@ -119,12 +124,12 @@ else
 							<option value="@value.Id">@value.Username</option>
 						}
 					</InputSelect>
-				</div>
+						</div>
 
-				<!-- Status input -->
-				<div class="form-outline mb-2">
-					<label class="form-label" for="StatusInput">@TodoItemLoc.Status</label>
-					<InputSelect id="StatusInput" class="form-control"
+						<!-- Status input -->
+						<div class="col-12 col-md-6">
+							<label class="form-label" for="StatusInput">@TodoItemLoc.Status</label>
+							<InputSelect id="StatusInput" class="form-select"
 								 Value="@Model.Status"
 								 ValueChanged="@((Contracts.TodoItemStatus v) => _changeTracker.TrackChange(Model, nameof(Model.Status), Model.Status, v))"
 								 ValueExpression="@(() => Model.Status)" >
@@ -133,68 +138,74 @@ else
 							<option value="@value">@TodoItemStatusLocalizer[$"{@value}"]</option>
 						}
 					</InputSelect>
-				</div>
+						</div>
 
-				<!-- ChangedAt input -->
-				<div class="form-outline mb-2">
-					<label class="form-label" for="ChangedAtInput">@TodoItemLoc.ChangedAt</label>
-					<InputDate id="ChangedAtInput" class="form-control"
+						<!-- ChangedAt input -->
+						<div class="col-12 col-md-6">
+							<label class="form-label" for="ChangedAtInput">@TodoItemLoc.ChangedAt</label>
+							<InputDate id="ChangedAtInput" class="form-control"
 							   Value="@Model.ChangedAt"
 							   ValueChanged="@((DateTime v) => _changeTracker.TrackChange(Model, nameof(Model.ChangedAt), Model.ChangedAt, v))"
 							   ValueExpression="@(() => Model.ChangedAt)" ParsingErrorMessage="@ErrorLoc.ParsingErrorMustBeDate" />
-				</div>
+						</div>
 
-				<!-- ChangedBy input -->
-				<div class="form-outline mb-2">
-					<label class="form-label" for="ChangedByInput">@TodoItemLoc.ChangedBy</label>
-					<InputText type="text" id="ChangedByInput" class="form-control"
+						<!-- ChangedBy input -->
+						<div class="col-12 col-md-6">
+							<label class="form-label" for="ChangedByInput">@TodoItemLoc.ChangedBy</label>
+							<InputText type="text" id="ChangedByInput" class="form-control"
 							   Value="@Model.ChangedBy"
 							   ValueChanged="@((string v) => _changeTracker.TrackChange(Model, nameof(Model.ChangedBy), Model.ChangedBy, v))"
 							   ValueExpression="@(() => Model.ChangedBy)" />
-				</div>
+						</div>
 
-				<!-- Priority input -->
-				<div class="form-outline mb-2">
-					<label class="form-label" for="PriorityInput">@TodoItemLoc.Priority</label>
-					<InputText type="text" id="PriorityInput" class="form-control"
+						<!-- Priority input -->
+						<div class="col-12 col-md-6">
+							<label class="form-label" for="PriorityInput">@TodoItemLoc.Priority</label>
+							<InputText type="text" id="PriorityInput" class="form-control"
 							   Value="@Model.Priority"
 							   ValueChanged="@((string v) => _changeTracker.TrackChange(Model, nameof(Model.Priority), Model.Priority, v))"
 							   ValueExpression="@(() => Model.Priority)" />
+						</div>
+					</div>
 				</div>
 			</div>
-		</section>
-		<section>
-			<table class="table table-striped">
-				<thead>
-					<tr>
-						<th>@ChecklistTaskLoc.IsDone</th>
-						<th>@ChecklistTaskLoc.Description</th>
-						<th>
-							<IconButton Icon="Add"
-										ButtonClass="btn btn-success"
-										Execute="AddChecklistEntry"
-										Title="@CommonLoc.New" />
-						</th>
-					</tr>
-				</thead>
-				<tbody>
-					@foreach (var entry in Model.Checklist)
-					{
-						<tr scope="row">
-							<td><input type="checkbox" class="form-check-input" checked="@entry.IsDone" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.IsDone), entry.IsDone, (bool)(ev.Value ?? false)))" /></td>
-							<td><input type="text" class="form-control" value="@entry.Description" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.Description), entry.Description, ev.Value?.ToString() ?? string.Empty))" /></td>
-							<td>
+			<div class="card shadow-sm border-0">
+				<div class="card-header bg-body-tertiary d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+					<h2 class="h5 mb-0">@TodoItemLoc.Checklist</h2>
+					<IconButton Icon="Add"
+								ButtonClass="btn btn-success"
+								Execute="AddChecklistEntry"
+								Title="@CommonLoc.New" />
+				</div>
+				<div class="table-responsive">
+					<table class="table table-striped align-middle mb-0">
+						<thead class="table-light">
+							<tr>
+								<th>@ChecklistTaskLoc.IsDone</th>
+								<th>@ChecklistTaskLoc.Description</th>
+								<th class="text-end">@CommonLoc.Delete</th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var entry in Model.Checklist)
+							{
+								<tr scope="row">
+									<td><input type="checkbox" class="form-check-input" checked="@entry.IsDone" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.IsDone), entry.IsDone, (bool)(ev.Value ?? false)))" /></td>
+									<td><input type="text" class="form-control" value="@entry.Description" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.Description), entry.Description, ev.Value?.ToString() ?? string.Empty))" /></td>
+									<td class="text-end">
 								<IconButton Icon="Delete"
 											ButtonClass="btn btn-danger"
 											Execute="() => RemoveChecklistEntry(entry.Id)"
 											Title="@CommonLoc.Delete" />
 							</td>
-						</tr>
-					}
-				</tbody>
-			</table>
-		</section>
-	</EditForm>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</EditForm>
+	</section>
 
 	<DeleteConfirmationDialog @bind-IsVisible="isDeleteRequested" Remove="Remove" />
 }
@@ -241,7 +252,7 @@ else
 		}
 		catch (Exception ex)
 		{
-			Log.LogError(ex, "Error loading todoitem.");
+			Log.LogError(ex, "Error loading TodoItem.");
 			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotLoad);
 		}
 	}
@@ -277,7 +288,7 @@ else
 		}
 		catch (Exception ex)
 		{
-			Log.LogError(ex, "Error saving todoitem.");
+			Log.LogError(ex, "Error saving TodoItem.");
 			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotSave);
 		}
 	}
@@ -307,7 +318,7 @@ else
 		}
 		catch (Exception ex)
 		{
-			Log.LogError(ex, "Error deleting todoitem.");
+			Log.LogError(ex, "Error deleting TodoItem.");
 			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorDeleting);
 		}
 	}

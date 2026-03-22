@@ -1,137 +1,138 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Najlot.Map;
-using <#cs Write(Project.Namespace)#>.Contracts;
-using <#cs Write(Project.Namespace)#>.Service.Model;
-using <#cs Write(Project.Namespace)#>.Service.Repository;
-using <#cs Write(Project.Namespace)#>.Contracts.Commands;
-using <#cs Write(Project.Namespace)#>.Contracts.Events;
-using <#cs Write(Project.Namespace)#>.Contracts.ListItems;
-using <#cs Write(Project.Namespace)#>.Contracts.Filters;
+using <# Project.Namespace#>.Contracts;
+using <# Project.Namespace#>.Service.Model;
+using <# Project.Namespace#>.Service.Repository;
+using <# Project.Namespace#>.Contracts.Commands;
+using <# Project.Namespace#>.Contracts.Events;
+using <# Project.Namespace#>.Contracts.ListItems;
+using <# Project.Namespace#>.Contracts.Filters;
 
-namespace <#cs Write(Project.Namespace)#>.Service.Services;
+namespace <# Project.Namespace#>.Service.Services;
 
-public class <#cs Write(Definition.Name)#>Service(
-	I<#cs Write(Definition.Name)#>Repository <#cs Write(Definition.NameLow)#>Repository,
-<#cs
-foreach (var definition in Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n)))
+public class <# Definition.Name#>Service(
+	I<# Definition.Name#>Repository <# Definition.NameLow#>Repository,
+	IPublisher publisher,
+	IMap map,
+	IPermissionQueryFilter permissionQueryFilter)
 {
-WriteLine($"	I{definition.Name}Repository {definition.NameLow}Repository,");
-}
-#>	IPublisher publisher,
-	IMap map)
-{
-	public async Task Create<#cs Write(Definition.Name)#>(Create<#cs Write(Definition.Name)#> command, Guid userId)
+	public async Task<Result> Create<# Definition.Name#>(Create<# Definition.Name#> command)
 	{
-		var item = map.From(command).To<<#cs Write(Definition.Name)#>Model>();
+		var item = map.From(command).To<<# Definition.Name#>Model>();
 
-		await <#cs Write(Definition.NameLow)#>Repository.Insert(item).ConfigureAwait(false);
+		await <# Definition.NameLow#>Repository.Insert(item).ConfigureAwait(false);
 
-		var message = map.From(item).To<<#cs Write(Definition.Name)#>Created>();
+		var message = map.From(item).To<<# Definition.Name#>Created>();
 		await publisher.PublishAsync(message).ConfigureAwait(false);
+		return Result.Success();
 	}
 
-	public async Task Update<#cs Write(Definition.Name)#>(Update<#cs Write(Definition.Name)#> command, Guid userId)
+	public async Task<Result> Update<# Definition.Name#>(Update<# Definition.Name#> command)
 	{
-		var item = await <#cs Write(Definition.NameLow)#>Repository.Get(command.Id).ConfigureAwait(false);
+		var item = await <# Definition.NameLow#>Repository.Get(command.Id).ConfigureAwait(false);
 
 		if (item == null)
 		{
-			throw new InvalidOperationException("<#cs Write(Definition.Name)#> not found!");
+			return Result.NotFound("<# Definition.Name#> not found!");
 		}
 
 		map.From(command).To(item);
 
-		await <#cs Write(Definition.NameLow)#>Repository.Update(item).ConfigureAwait(false);
+		await <# Definition.NameLow#>Repository.Update(item).ConfigureAwait(false);
 
-		var message = map.From(item).To<<#cs Write(Definition.Name)#>Updated>();
+		var message = map.From(item).To<<# Definition.Name#>Updated>();
 		await publisher.PublishAsync(message).ConfigureAwait(false);
+
+		if (item.DeletedAt != null)
+		{
+			var trashItemUpdated = map.From(item).To<TrashItemUpdated>();
+			await publisher.PublishAsync(trashItemUpdated).ConfigureAwait(false);
+		}
+
+		return Result.Success();
 	}
 
-	public async Task Delete<#cs Write(Definition.Name)#>(Guid id, Guid userId)
+	public async Task<Result> Delete<# Definition.Name#>(Guid id)
 	{
-		var item = await <#cs Write(Definition.NameLow)#>Repository.Get(id).ConfigureAwait(false);
+		var item = await <# Definition.NameLow#>Repository.Get(id).ConfigureAwait(false);
 
 		if (item == null)
 		{
-			throw new InvalidOperationException("<#cs Write(Definition.Name)#> not found!");
+			return Result.NotFound("<# Definition.Name#> not found!");
 		}
 
 		if (item.DeletedAt == null)
 		{
 			item.DeletedAt = DateTime.UtcNow;
-			await <#cs Write(Definition.NameLow)#>Repository.Update(item).ConfigureAwait(false);
+			await <# Definition.NameLow#>Repository.Update(item).ConfigureAwait(false);
+
+			var trashItemCreated = map.From(item).To<TrashItemCreated>();
+			await publisher.PublishAsync(trashItemCreated).ConfigureAwait(false);
+
+			var message = new <# Definition.Name#>Deleted(id);
+			await publisher.PublishAsync(message).ConfigureAwait(false);
 		}
 		else
 		{
-			await <#cs Write(Definition.NameLow)#>Repository.Delete(id).ConfigureAwait(false);
+			await <# Definition.NameLow#>Repository.Delete(id).ConfigureAwait(false);
+			var trashItemDeleted = new TrashItemDeleted(item.Id, ItemType.<# Definition.Name#>);
+			await publisher.PublishAsync(trashItemDeleted).ConfigureAwait(false);
 		}
 
-		var message = new <#cs Write(Definition.Name)#>Deleted(id);
-		await publisher.PublishAsync(message).ConfigureAwait(false);
+		return Result.Success();
 	}
 
-	public async Task<<#cs Write(Definition.Name)#>?> GetItemAsync(Guid id, Guid userId)
+	public async Task<Result<<# Definition.Name#>>> GetItemAsync(Guid id)
 	{
-		var item = await <#cs Write(Definition.NameLow)#>Repository.Get(id).ConfigureAwait(false);
-		return map.FromNullable(item)?.To<<#cs Write(Definition.Name)#>>();
+		var item = await <# Definition.NameLow#>Repository.Get(id).ConfigureAwait(false);
+
+		if (item == null)
+		{
+			return Result<<# Definition.Name#>>.NotFound("<# Definition.Name#> not found!");
+		}
+
+		return Result<<# Definition.Name#>>.Success(map.From(item).To<<# Definition.Name#>>());
 	}
 
-	public IAsyncEnumerable<<#cs Write(Definition.Name)#>ListItem> GetItemsForUserAsync(<#cs Write(Definition.Name)#>Filter filter, Guid userId)
+	public IAsyncEnumerable<<# Definition.Name#>ListItem> GetItemsForUserAsync(<# Definition.Name#>Filter filter)
 	{
-		var query = <#cs Write(Definition.NameLow)#>Repository.GetAllQueryable();
+		var query = <# Definition.NameLow#>Repository.GetAllQueryable();
 
 		query = query.Where(e => e.DeletedAt == null);
+		query = permissionQueryFilter.ApplyReadFilter(query);
 
-<#cs
-foreach(var entry in Entries)
-{
-    if (entry.IsReference)
-    {
-        WriteLine($"		if (filter.{entry.Field}Id != null)");
-		WriteLine($"			query = query.Where(e => e.{entry.Field}Id == filter.{entry.Field}Id);");
-    }
-    else if (entry.EntryType == "long"
-        || entry.EntryType == "short"
-        || entry.EntryType == "int"
-        || entry.EntryType == "ulong"
-        || entry.EntryType == "ushort"
-        || entry.EntryType == "uint"
-        || entry.EntryType == "DateTime"
-        )
-    {
-        WriteLine($"		if (filter.{entry.Field}From != null)");
-		WriteLine($"			query = query.Where(e => e.{entry.Field} >= filter.{entry.Field}From);");
-
-		WriteLine($"		if (filter.{entry.Field}To != null)");
-		WriteLine($"			query = query.Where(e => e.{entry.Field} <= filter.{entry.Field}To);");
-    }
-	else if (entry.EntryType.ToLower() == "string")
-    {
-        WriteLine($"		if (!string.IsNullOrEmpty(filter.{entry.Field}))");
-		WriteLine($"			query = query.Where(e => e.{entry.Field}.Contains(filter.{entry.Field}));");
-    }
-    else if (!(entry.IsArray || entry.IsOwnedType))
-    {
-        WriteLine($"		if (filter.{entry.Field} != null)");
-		WriteLine($"			query = query.Where(e => e.{entry.Field} == filter.{entry.Field});");
-    }
-}
-
-Result = Result.TrimEnd();
-#>
-
-		return map.From(query).To<<#cs Write(Definition.Name)#>ListItem>().ToAsyncEnumerable();
+<#for entry in Entries
+#><#if entry.IsReference
+#>		if (filter.<# entry.Field#>Id != null)
+			query = query.Where(e => e.<# entry.Field#>Id == filter.<# entry.Field#>Id);
+<#elseif entry.EntryType == "long"
+		|| entry.EntryType == "short"
+		|| entry.EntryType == "int"
+		|| entry.EntryType == "ulong"
+		|| entry.EntryType == "ushort"
+		|| entry.EntryType == "uint"
+		|| entry.EntryType == "DateTime"
+        
+#>		if (filter.<# entry.Field#>From != null)
+			query = query.Where(e => e.<# entry.Field#> >= filter.<# entry.Field#>From);
+		if (filter.<# entry.Field#>To != null)
+			query = query.Where(e => e.<# entry.Field#> <= filter.<# entry.Field#>To);
+<#elseif entry.EntryType.ToLower() == "string"
+#>		if (!string.IsNullOrEmpty(filter.<# entry.Field#>))
+			query = query.Where(e => e.<# entry.Field#>.Contains(filter.<# entry.Field#>));
+<#elseif !(entry.IsArray || entry.IsOwnedType)
+#>		if (filter.<# entry.Field#> != null)
+			query = query.Where(e => e.<# entry.Field#> == filter.<# entry.Field#>);
+<#end#><#end#>
+		return map.From(query).To<<# Definition.Name#>ListItem>().ToAsyncEnumerable();
 	}
 
-	public IAsyncEnumerable<<#cs Write(Definition.Name)#>ListItem> GetItemsForUserAsync(Guid userId)
+	public IAsyncEnumerable<<# Definition.Name#>ListItem> GetItemsForUserAsync()
 	{
-		var query = <#cs Write(Definition.NameLow)#>Repository.GetAllQueryable();
+		var query = <# Definition.NameLow#>Repository.GetAllQueryable();
 
 		query = query.Where(e => e.DeletedAt == null);
+		query = permissionQueryFilter.ApplyReadFilter(query);
 
-		return map.From(query).To<<#cs Write(Definition.Name)#>ListItem>().ToAsyncEnumerable();
+		return map.From(query).To<<# Definition.Name#>ListItem>().ToAsyncEnumerable();
 	}
 }<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

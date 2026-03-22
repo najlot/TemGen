@@ -26,27 +26,25 @@
 				MaxWidth="400"
 				Padding="32"
 				HorizontalAlignment="Center"
-				VerticalAlignment="Center"
-				BorderBrush="{StaticResource BackgroundColor}"
-				BorderThickness="1">
+				VerticalAlignment="Center">
 			<StackPanel>
 				<TextBlock Margin="0,0,0,16"
 						   HorizontalAlignment="Center"
 						   FontSize="24"
 						   FontWeight="Bold"
 						   Foreground="{StaticResource BackgroundColor}"
-						   Text="{x:Static loc:CommonLoc.UserNamagement}" />
+						   Text="{x:Static loc:UserLoc.UserManagement}" />
 
 				<!--  New Password  -->
 				<StackPanel Margin="0,0,0,16">
-					<TextBlock Margin="0,0,0,4" Text="{x:Static loc:CommonLoc.NewPassword}" />
+					<TextBlock Margin="0,0,0,4" Text="{x:Static loc:UserLoc.NewPassword}" />
 					<PasswordBox controls:PasswordBoxHelper.BindPassword="True"
 								 controls:PasswordBoxHelper.BoundPassword="{Binding Password, Mode=TwoWay, ValidatesOnNotifyDataErrors=True}" />
 				</StackPanel>
 
 				<!--  Confirm New Password  -->
 				<StackPanel Margin="0,0,0,16">
-					<TextBlock Margin="0,0,0,4" Text="{x:Static loc:CommonLoc.ConfirmNewPassword}" />
+					<TextBlock Margin="0,0,0,4" Text="{x:Static loc:UserLoc.ConfirmNewPassword}" />
 					<PasswordBox controls:PasswordBoxHelper.BindPassword="True"
 								 controls:PasswordBoxHelper.BoundPassword="{Binding PasswordConfirm, Mode=TwoWay, ValidatesOnNotifyDataErrors=True}" />
 				</StackPanel>
@@ -56,7 +54,7 @@
 						HorizontalAlignment="Stretch"
 						HorizontalContentAlignment="Center"
 						Command="{Binding SaveCommand}"
-						Content="{x:Static loc:CommonLoc.ChangePassword}" />
+						Content="{x:Static loc:UserLoc.ChangePassword}" />
 			</StackPanel>
 		</Border>
 	</Grid>

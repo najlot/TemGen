@@ -13,12 +13,21 @@ public class ChecklistTaskViewModel : ValidationViewModelBase
 	public string Description { get; set => Set(ref field, value); } = string.Empty;
 
 	public Guid ParentId { get; set => Set( ref field, value); }
+	public bool IsBusy { get; set => Set(ref field, value); }
 
 	public ChecklistTaskViewModel(ViewModelBaseParameters<ChecklistTaskViewModel> parameters) : base(parameters)
 	{
 		SaveCommand = new AsyncCommand(RequestSave, t => HandleError(t.Exception));
 		DeleteCommand = new AsyncCommand(RequestDelete, t => HandleError(t.Exception));
 	}
+
+	public void InitializeTracking(ChangeTracker changeTracker)
+	{
+		ChangeVisitor = changeTracker;
+
+	}
+
+
 
 	private readonly List<Func<ChecklistTaskViewModel, Task>> _onSaveRequested = [];
 	public void OnSaveRequested(Func<ChecklistTaskViewModel, Task> func) => _onSaveRequested.Add(func);
@@ -61,5 +70,5 @@ public class ChecklistTaskViewModel : ValidationViewModelBase
 
 	protected override bool ShouldIgnorePropertyForChangesAndValidation(string? propertyName)
 		=> base.ShouldIgnorePropertyForChangesAndValidation(propertyName)
-			|| propertyName is nameof(Id) or nameof(ParentId);
+			|| propertyName is nameof(Id) or nameof(ParentId) or nameof(IsBusy);
 }

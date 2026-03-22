@@ -31,6 +31,34 @@ public sealed class ReflectionSectionHandler() : AbstractSectionHandler(Template
 
 		if (property is null)
 		{
+			if (obj is Globals globals)
+			{
+				var variableValue = globals.GetVariable(propertyName);
+
+				if (variableValue is not null)
+				{
+					return GetValue(parts.Skip(1), variableValue);
+				}
+			}
+
+			if (obj is Project project
+				&& project.TryGetSetting(propertyName, out var projectSettingValue))
+			{
+				return GetValue(parts.Skip(1), projectSettingValue);
+			}
+
+			if (obj is IReadOnlyDictionary<string, string> readOnlyStringDictionary
+				&& readOnlyStringDictionary.TryGetValue(propertyName, out var readOnlyDictionaryValue))
+			{
+				return GetValue(parts.Skip(1), readOnlyDictionaryValue);
+			}
+
+			if (obj is IDictionary<string, string> stringDictionary
+				&& stringDictionary.TryGetValue(propertyName, out var dictionaryValue))
+			{
+				return GetValue(parts.Skip(1), dictionaryValue);
+			}
+
 			throw new Exception("Property '" + propertyName + "' not found.");
 		}
 
@@ -41,6 +69,11 @@ public sealed class ReflectionSectionHandler() : AbstractSectionHandler(Template
 
 	protected override Task Handle(Globals globals, string content)
 	{
+		if (string.IsNullOrWhiteSpace(content))
+		{
+			return Task.CompletedTask;
+		}
+
 		var parts = content.Trim().Split('.');
 		var value = GetValue(parts, globals);
 

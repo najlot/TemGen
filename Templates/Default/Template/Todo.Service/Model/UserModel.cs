@@ -1,10 +1,9 @@
 using MongoDB.Bson.Serialization.Attributes;
-using System;
 
-namespace <#cs Write(Project.Namespace)#>.Service.Model;
+namespace <# Project.Namespace#>.Service.Model;
 
 [BsonIgnoreExtraElements]
-public class UserModel
+public class UserModel : IEntityModel
 {
 	[BsonId]
 	public Guid Id { get; set; }

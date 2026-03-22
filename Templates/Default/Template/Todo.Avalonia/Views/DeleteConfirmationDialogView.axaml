@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="<#cs Write(Project.Namespace)#>.Avalonia.Views.DeleteConfirmationDialogView">
+  <Grid Background="#80000000" IsVisible="{Binding IsVisible}">
+    <Border Background="White"
+            BorderBrush="#FFD6D3D1"
+            BorderThickness="1"
+            Padding="20"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            MinWidth="320"
+            CornerRadius="12">
+      <StackPanel>
+        <TextBlock Margin="0,0,0,10" FontSize="18" FontWeight="Bold" Text="{Binding Title}" />
+        <TextBlock Margin="0,0,0,20" Text="{Binding Description}" TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+          <Button Command="{Binding DeleteCommand}" Content="Delete" />
+          <Button Command="{Binding CancelCommand}" Content="Cancel" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

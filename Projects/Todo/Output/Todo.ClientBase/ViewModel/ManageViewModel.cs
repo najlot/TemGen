@@ -70,7 +70,7 @@ public class ManageViewModel : AbstractValidationViewModel
 			Password = string.Empty;
 			PasswordConfirm = string.Empty;
 
-			await _notificationService.ShowSuccessAsync(CommonLoc.ChangePassword);
+			await _notificationService.ShowSuccessAsync(UserLoc.ChangePassword);
 		}
 		catch (System.Exception ex)
 		{

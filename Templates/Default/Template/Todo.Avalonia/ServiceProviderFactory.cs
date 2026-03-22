@@ -3,13 +3,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
-using <#cs Write(Project.Namespace)#>.Client.Data;
-using <#cs Write(Project.Namespace)#>.Client.Data.Identity;
-using <#cs Write(Project.Namespace)#>.Client.MVVM;
-using <#cs Write(Project.Namespace)#>.ClientBase;
-using <#cs Write(Project.Namespace)#>.Avalonia.Identity;
+using <# Project.Namespace#>.Client.Data;
+using <# Project.Namespace#>.Client.Data.Identity;
+using <# Project.Namespace#>.Client.MVVM;
+using <# Project.Namespace#>.ClientBase;
+using <# Project.Namespace#>.Avalonia.Identity;
 
-namespace <#cs Write(Project.Namespace)#>.Avalonia;
+namespace <# Project.Namespace#>.Avalonia;
 
 public static class ServiceProviderFactory
 {
@@ -37,7 +37,7 @@ public static class ServiceProviderFactory
 		serviceCollection.AddSingleton(navigationService);
 		serviceCollection.AddSingleton(notificationService);
 
-		serviceCollection.AddHttpClient(Options.DefaultName, c => { c.BaseAddress = new Uri(dataServiceUrl); });
+		serviceCollection.AddHttpClient(Options.DefaultName, c => c.BaseAddress = new Uri(dataServiceUrl));
 
 		serviceCollection.RegisterClientData();
 		serviceCollection.RegisterClientBase();

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace <#cs Write(Project.Namespace)#>.Client.MVVM;
+namespace <# Project.Namespace#>.Client.MVVM;
 
 public class ObservableCollectionView<T> : IEnumerable<T>, INotifyCollectionChanged
 {

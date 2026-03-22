@@ -1,7 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Najlot.Map;
 using Todo.Contracts;
 using Todo.Service.Model;
@@ -15,11 +11,11 @@ namespace Todo.Service.Services;
 
 public class TodoItemService(
 	ITodoItemRepository todoItemRepository,
-	IUserRepository userRepository,
 	IPublisher publisher,
-	IMap map)
+	IMap map,
+	IPermissionQueryFilter permissionQueryFilter)
 {
-	public async Task CreateTodoItem(CreateTodoItem command, Guid userId)
+	public async Task<Result> CreateTodoItem(CreateTodoItem command)
 	{
 		var item = map.From(command).To<TodoItemModel>();
 
@@ -27,15 +23,16 @@ public class TodoItemService(
 
 		var message = map.From(item).To<TodoItemCreated>();
 		await publisher.PublishAsync(message).ConfigureAwait(false);
+		return Result.Success();
 	}
 
-	public async Task UpdateTodoItem(UpdateTodoItem command, Guid userId)
+	public async Task<Result> UpdateTodoItem(UpdateTodoItem command)
 	{
 		var item = await todoItemRepository.Get(command.Id).ConfigureAwait(false);
 
 		if (item == null)
 		{
-			throw new InvalidOperationException("TodoItem not found!");
+			return Result.NotFound("TodoItem not found!");
 		}
 
 		map.From(command).To(item);
@@ -44,42 +41,64 @@ public class TodoItemService(
 
 		var message = map.From(item).To<TodoItemUpdated>();
 		await publisher.PublishAsync(message).ConfigureAwait(false);
+
+		if (item.DeletedAt != null)
+		{
+			var trashItemUpdated = map.From(item).To<TrashItemUpdated>();
+			await publisher.PublishAsync(trashItemUpdated).ConfigureAwait(false);
+		}
+
+		return Result.Success();
 	}
 
-	public async Task DeleteTodoItem(Guid id, Guid userId)
+	public async Task<Result> DeleteTodoItem(Guid id)
 	{
 		var item = await todoItemRepository.Get(id).ConfigureAwait(false);
 
 		if (item == null)
 		{
-			throw new InvalidOperationException("TodoItem not found!");
+			return Result.NotFound("TodoItem not found!");
 		}
 
 		if (item.DeletedAt == null)
 		{
 			item.DeletedAt = DateTime.UtcNow;
 			await todoItemRepository.Update(item).ConfigureAwait(false);
+
+			var trashItemCreated = map.From(item).To<TrashItemCreated>();
+			await publisher.PublishAsync(trashItemCreated).ConfigureAwait(false);
+
+			var message = new TodoItemDeleted(id);
+			await publisher.PublishAsync(message).ConfigureAwait(false);
 		}
 		else
 		{
 			await todoItemRepository.Delete(id).ConfigureAwait(false);
+			var trashItemDeleted = new TrashItemDeleted(item.Id, ItemType.TodoItem);
+			await publisher.PublishAsync(trashItemDeleted).ConfigureAwait(false);
 		}
 
-		var message = new TodoItemDeleted(id);
-		await publisher.PublishAsync(message).ConfigureAwait(false);
+		return Result.Success();
 	}
 
-	public async Task<TodoItem?> GetItemAsync(Guid id, Guid userId)
+	public async Task<Result<TodoItem>> GetItemAsync(Guid id)
 	{
 		var item = await todoItemRepository.Get(id).ConfigureAwait(false);
-		return map.FromNullable(item)?.To<TodoItem>();
+
+		if (item == null)
+		{
+			return Result<TodoItem>.NotFound("TodoItem not found!");
+		}
+
+		return Result<TodoItem>.Success(map.From(item).To<TodoItem>());
 	}
 
-	public IAsyncEnumerable<TodoItemListItem> GetItemsForUserAsync(TodoItemFilter filter, Guid userId)
+	public IAsyncEnumerable<TodoItemListItem> GetItemsForUserAsync(TodoItemFilter filter)
 	{
 		var query = todoItemRepository.GetAllQueryable();
 
 		query = query.Where(e => e.DeletedAt == null);
+		query = permissionQueryFilter.ApplyReadFilter(query);
 
 		if (!string.IsNullOrEmpty(filter.Title))
 			query = query.Where(e => e.Title.Contains(filter.Title));
@@ -107,11 +126,12 @@ public class TodoItemService(
 		return map.From(query).To<TodoItemListItem>().ToAsyncEnumerable();
 	}
 
-	public IAsyncEnumerable<TodoItemListItem> GetItemsForUserAsync(Guid userId)
+	public IAsyncEnumerable<TodoItemListItem> GetItemsForUserAsync()
 	{
 		var query = todoItemRepository.GetAllQueryable();
 
 		query = query.Where(e => e.DeletedAt == null);
+		query = permissionQueryFilter.ApplyReadFilter(query);
 
 		return map.From(query).To<TodoItemListItem>().ToAsyncEnumerable();
 	}

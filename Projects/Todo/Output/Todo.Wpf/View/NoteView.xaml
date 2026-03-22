@@ -56,8 +56,8 @@
 					</DockPanel>
 					<DockPanel Margin="5">
 						<Label Content="{x:Static loc:NoteLoc.Color}" MinWidth="75" />
-						<ComboBox ItemsSource="{Binding AvailablePredefinedColors, Converter={x:Static converter:EnumToTranslationConverter.Instance}, ConverterParameter={x:Type loc:PredefinedColorLoc}}" 
-							  SelectedItem="{Binding Color, Converter={x:Static converter:EnumToTranslationConverter.Instance}, ConverterParameter={x:Type loc:PredefinedColorLoc}}" />
+						<ComboBox ItemsSource="{Binding AvailablePredefinedColors, Converter={x:Static converter:EnumToTranslationConverter.Instance}, ConverterParameter={x:Type loc:PredefinedColorLoc}}"
+								  SelectedItem="{Binding Color, Converter={x:Static converter:EnumToTranslationConverter.Instance}, ConverterParameter={x:Type loc:PredefinedColorLoc}}" />
 					</DockPanel>
 				</StackPanel>
 			</ScrollViewer>

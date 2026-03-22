@@ -1,0 +1,50 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignWidth="1000"
+             d:DesignHeight="700"
+             x:Class="Todo.Avalonia.Views.MenuView">
+  <Grid RowDefinitions="Auto,*" ColumnDefinitions="Auto,*">
+    <Border Grid.RowSpan="2"
+            Width="240"
+            Background="#FFF5F5F4"
+            BorderBrush="#FFE7E5E4"
+            BorderThickness="0,0,1,0"
+            IsVisible="{Binding IsDrawerOpen}">
+      <ScrollViewer>
+        <StackPanel Margin="12">
+          <TextBlock Margin="4,8,4,12" FontSize="20" FontWeight="SemiBold" Text="Navigation" />
+          <Button Margin="4" HorizontalAlignment="Stretch" Command="{Binding NavigateToNotes}" Content="Notes" />
+          <Button Margin="4" HorizontalAlignment="Stretch" Command="{Binding NavigateToTodoItems}" Content="TodoItems" />
+          <Button Margin="4,16,4,4" HorizontalAlignment="Stretch" Command="{Binding NavigateToGlobalSearch}" Content="Global Search" />
+          <Button Margin="4" HorizontalAlignment="Stretch" Command="{Binding NavigateToTrash}" Content="Trash" />
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+
+    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="12,12,12,0" Spacing="8">
+      <Button Command="{Binding ToggleDrawerCommand}" Content="Menu" />
+      <Button Command="{Binding NavigateToGlobalSearch}" Content="Search" />
+      <Button Command="{Binding ManageCommand}" Content="Manage" />
+      <Button Command="{Binding LogoutCommand}" Content="Logout" />
+    </StackPanel>
+
+    <Border Grid.Row="1"
+            Grid.Column="1"
+            Margin="12"
+            Padding="24"
+            Background="#FFFFFBF5"
+            BorderBrush="#FFE7E5E4"
+            BorderThickness="1"
+            CornerRadius="12">
+      <StackPanel>
+        <TextBlock FontSize="28" FontWeight="Bold" Text="Todo" />
+        <TextBlock Margin="0,8,0,0"
+                   Foreground="#FF57534E"
+                   Text="Use the menu to browse records, search globally, manage your account, and review deleted items." />
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>

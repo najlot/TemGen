@@ -1,9 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Todo.Contracts;
 using Todo.Service.Services;
 using Todo.Contracts.Commands;
@@ -21,8 +17,7 @@ public class TodoItemController(TodoItemService todoItemService) : ControllerBas
 	[HttpGet]
 	public async Task<ActionResult<List<TodoItemListItem>>> List()
 	{
-		var userId = User.GetUserId();
-		var query = todoItemService.GetItemsForUserAsync(userId);
+		var query = todoItemService.GetItemsForUserAsync();
 		var items = await query.ToListAsync().ConfigureAwait(false);
 		return Ok(items);
 	}
@@ -30,8 +25,7 @@ public class TodoItemController(TodoItemService todoItemService) : ControllerBas
 	[HttpPost("[action]")]
 	public async Task<ActionResult<List<TodoItemListItem>>> ListFiltered(TodoItemFilter filter)
 	{
-		var userId = User.GetUserId();
-		var query = todoItemService.GetItemsForUserAsync(filter, userId);
+		var query = todoItemService.GetItemsForUserAsync(filter);
 		var items = await query.ToListAsync().ConfigureAwait(false);
 		return Ok(items);
 	}
@@ -39,14 +33,8 @@ public class TodoItemController(TodoItemService todoItemService) : ControllerBas
 	[HttpGet("{id}")]
 	public async Task<ActionResult<TodoItem>> GetItem(Guid id)
 	{
-		var userId = User.GetUserId();
-		var item = await todoItemService.GetItemAsync(id, userId).ConfigureAwait(false);
-		if (item == null)
-		{
-			return NotFound();
-		}
-
-		return Ok(item);
+		var result = await todoItemService.GetItemAsync(id).ConfigureAwait(false);
+		return this.ToActionResult(result);
 	}
 
 	[HttpPost]
@@ -54,8 +42,12 @@ public class TodoItemController(TodoItemService todoItemService) : ControllerBas
 		[FromBody] CreateTodoItem command,
 		[FromServices] IUnitOfWork unitOfWork)
 	{
-		var userId = User.GetUserId();
-		await todoItemService.CreateTodoItem(command, userId).ConfigureAwait(false);
+		var result = await todoItemService.CreateTodoItem(command).ConfigureAwait(false);
+		if (result.IsFailure)
+		{
+			return this.ToActionResult(result);
+		}
+
 		await unitOfWork.CommitAsync().ConfigureAwait(false);
 		return Ok();
 	}
@@ -65,8 +57,12 @@ public class TodoItemController(TodoItemService todoItemService) : ControllerBas
 		[FromBody] UpdateTodoItem command,
 		[FromServices] IUnitOfWork unitOfWork)
 	{
-		var userId = User.GetUserId();
-		await todoItemService.UpdateTodoItem(command, userId).ConfigureAwait(false);
+		var result = await todoItemService.UpdateTodoItem(command).ConfigureAwait(false);
+		if (result.IsFailure)
+		{
+			return this.ToActionResult(result);
+		}
+
 		await unitOfWork.CommitAsync().ConfigureAwait(false);
 		return Ok();
 	}
@@ -74,8 +70,12 @@ public class TodoItemController(TodoItemService todoItemService) : ControllerBas
 	[HttpDelete("{id}")]
 	public async Task<ActionResult> Delete(Guid id, [FromServices] IUnitOfWork unitOfWork)
 	{
-		var userId = User.GetUserId();
-		await todoItemService.DeleteTodoItem(id, userId).ConfigureAwait(false);
+		var result = await todoItemService.DeleteTodoItem(id).ConfigureAwait(false);
+		if (result.IsFailure)
+		{
+			return this.ToActionResult(result);
+		}
+
 		await unitOfWork.CommitAsync().ConfigureAwait(false);
 		return Ok();
 	}

@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace <#cs Write(Project.Namespace)#>.Contracts.Commands;
+namespace <# Project.Namespace#>.Contracts.Commands;
 
-public class Create<#cs Write(Definition.Name)#>(
-	Guid id,
-<#cs WriteContractParameter()#>)
+public class Create<# Definition.Name#>
 {
-	public Guid Id { get; } = id;
+	public Guid Id { get; set; }
 <#cs WriteContractProperties()#>
 }<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

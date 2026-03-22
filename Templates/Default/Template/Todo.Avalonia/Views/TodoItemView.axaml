@@ -1,0 +1,99 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="using:<#cs Write(Project.Namespace)#>.Avalonia.Views"
+             mc:Ignorable="d"
+             d:DesignWidth="1000"
+             d:DesignHeight="750"
+             x:Class="<#cs Write(Project.Namespace)#>.Avalonia.Views.<#cs Write(Definition.Name)#>View">
+  <Grid>
+    <DockPanel IsEnabled="{Binding CanEdit}">
+      <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" Margin="12">
+        <Button Grid.Column="0" Margin="0,0,8,0" Command="{Binding NavigateBackCommand}" Content="Back" />
+        <Border Grid.Column="1" />
+        <Button Grid.Column="2" Margin="8,0,0,0" Command="{Binding UndoCommand}" Content="Undo" />
+        <Button Grid.Column="3" Margin="8,0,0,0" Command="{Binding RedoCommand}" Content="Redo" />
+        <Button Grid.Column="4" Margin="8,0,0,0" Command="{Binding SaveCommand}" Content="Save" />
+        <Button Grid.Column="5" Margin="8,0,0,0" Command="{Binding DeleteCommand}" Content="Delete" />
+      </Grid>
+
+      <ScrollViewer Margin="12,0,12,12">
+        <StackPanel Spacing="10" MinWidth="420">
+<#for entry in Entries
+#><#if !entry.IsOwnedType
+#>          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
+            <StackPanel Spacing="8">
+<#end#><#if entry.EntryType != "bool" && !entry.IsArray && !entry.IsOwnedType
+#>              <TextBlock FontWeight="SemiBold" Text="<#cs Write(entry.Field)#>" />
+<#end#><#if entry.EntryType == "DateTime"
+#>              <DatePicker SelectedDate="{Binding <#cs Write(entry.Field)#>}" />
+<#elseif entry.EntryType == "bool"
+#>              <CheckBox IsChecked="{Binding <#cs Write(entry.Field)#>}" Content="<#cs Write(entry.Field)#>" />
+<#elseif entry.IsReference
+#>              <TextBlock FontWeight="SemiBold" Text="<#cs Write(entry.Field)#>" />
+              <ComboBox ItemsSource="{Binding Available<#cs Write(Definitions.First(d => d.Name == entry.ReferenceType).Name)#>s}"
+                        SelectedValue="{Binding <#cs Write(entry.Field)#>Id}"
+                        SelectedValueBinding="{Binding Id}"
+                        PlaceholderText="Select <#cs Write(entry.ReferenceType)#>">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding <#cs Write(Definitions.First(d => d.Name == entry.ReferenceType).Entries.First(e => !(e.IsOwnedType || e.IsKey || e.IsArray || e.IsReference || e.IsEnumeration)).Field)#>}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+<#elseif entry.IsOwnedType
+#>          <TextBlock Margin="0,4,0,0" FontSize="16" FontWeight="SemiBold" Text="<#cs Write(entry.Field)#>" />
+          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
+            <local:<#cs Write(entry.EntryType)#>View DataContext="{Binding <#cs Write(entry.Field)#>}" />
+          </Border>
+<#elseif entry.IsEnumeration
+#>              <ComboBox ItemsSource="{Binding Available<#cs Write(entry.EntryType)#>s}" SelectedItem="{Binding <#cs Write(entry.Field)#>}" />
+<#elseif entry.IsArray
+#>              <DockPanel>
+                <TextBlock DockPanel.Dock="Left" Margin="0,0,0,8" FontSize="16" FontWeight="SemiBold" Text="<#cs Write(entry.Field)#>" />
+                <Button DockPanel.Dock="Right" Command="{Binding Add<#cs Write(entry.EntryType)#>Command}" Content="Add" />
+              </DockPanel>
+              <ItemsControl ItemsSource="{Binding <#cs Write(entry.Field)#>}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Margin="0,0,0,8" Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
+                      <StackPanel Spacing="8">
+<#for e in Definitions.First(d => d.Name == entry.EntryType).Entries
+#><#if e.EntryType != "bool" && !e.IsArray && !e.IsOwnedType
+#>                        <TextBlock FontWeight="SemiBold" Text="<#cs Write(e.Field)#>" />
+<#end#><#if e.EntryType == "DateTime"
+#>                        <DatePicker SelectedDate="{Binding <#cs Write(e.Field)#>}" />
+<#elseif e.EntryType == "bool"
+#>                        <CheckBox IsChecked="{Binding <#cs Write(e.Field)#>}" Content="<#cs Write(e.Field)#>" />
+<#elseif e.IsOwnedType
+#>                        <Border Padding="12" Background="White" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
+                          <local:<#cs Write(e.EntryType)#>View DataContext="{Binding <#cs Write(e.Field)#>}" />
+                        </Border>
+<#elseif e.IsEnumeration
+#>                        <ComboBox ItemsSource="{Binding Available<#cs Write(e.EntryType)#>s}" SelectedItem="{Binding <#cs Write(e.Field)#>}" />
+<#else
+#>                        <TextBox Text="{Binding <#cs Write(e.Field)#>, Mode=TwoWay}" />
+<#end#><#end#>                        <Button HorizontalAlignment="Right"
+                                Command="{Binding DataContext.Delete<#cs Write(entry.EntryType)#>Command, RelativeSource={RelativeSource AncestorType=local:<#cs Write(Definition.Name)#>View}}"
+                                CommandParameter="{Binding .}"
+                                Content="Delete" />
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+<#else
+#>              <TextBox Text="{Binding <#cs Write(entry.Field)#>, Mode=TwoWay}" />
+<#end#><#if !entry.IsOwnedType
+#>            </StackPanel>
+          </Border>
+<#end#><#end#>        </StackPanel>
+      </ScrollViewer>
+    </DockPanel>
+
+    <local:SaveConfirmationDialogView IsVisible="{Binding SaveDialogViewModel.IsVisible}" DataContext="{Binding SaveDialogViewModel}" />
+    <local:DeleteConfirmationDialogView IsVisible="{Binding DeleteDialogViewModel.IsVisible}" DataContext="{Binding DeleteDialogViewModel}" />
+  </Grid>
+</UserControl>
+<#cs SetOutputPath(Definition.IsEnumeration || Definition.IsOwnedType)#>

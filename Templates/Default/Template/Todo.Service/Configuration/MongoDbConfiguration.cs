@@ -1,4 +1,4 @@
-﻿namespace <#cs Write(Project.Namespace)#>.Service.Configuration;
+﻿namespace <# Project.Namespace#>.Service.Configuration;
 
 public class MongoDbConfiguration
 {

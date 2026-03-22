@@ -117,20 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-<#cs
-var entries = Entries.Select(e => e.Field).ToList();
-
-if (!(Definition.IsArray || Definition.IsEnumeration))
-{
-  entries.Add("Create" + Definition.Name);
-  entries.Add("Edit"  + Definition.Name);
-  entries.Add(Definition.Name + "s");
-}
-
-foreach(var entry in entries)
-{
-	WriteLine($"  <data name=\"{entry}\" xml:space=\"preserve\">");
-	WriteLine($"    <value>{entry}</value>");
-	WriteLine("  </data>");
-}
-#></root><#cs SetOutputPath(false)#>
+<#for entry in Entries
+  .Select(e => e.Field)
+  .Concat(Definition.IsArray || Definition.IsEnumeration
+    ? []
+    : ["Create" + Definition.Name, "Edit" + Definition.Name, Definition.Name + "s"])
+#>  <data name="<#cs Write(entry)#>" xml:space="preserve">
+    <value><#cs Write(entry)#></value>
+  </data>
+<#end#></root><#cs SetOutputPath(false)#>

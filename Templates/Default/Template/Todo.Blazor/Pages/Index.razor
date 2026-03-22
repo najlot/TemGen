@@ -1,6 +1,6 @@
 @page "/"
-@using <#cs Write(Project.Namespace)#>.Blazor.Services
-@using <#cs Write(Project.Namespace)#>.Client.Localisation
+@using <# Project.Namespace#>.Blazor.Services
+@using <# Project.Namespace#>.Client.Localisation
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
@@ -22,10 +22,10 @@
 					<p>@CommonLoc.RegisterOrLogin</p>
 				</div>
 				<div class="form-outline mb-4">
-					<a href="/login" class="btn btn-primary w-100">@CommonLoc.Login</a>
+					<a href="/login" class="btn btn-primary w-100">@UserLoc.Login</a>
 				</div>
 				<div class="form-outline mb-4">
-					<a href="/register" class="btn btn-primary w-100">@CommonLoc.Register</a>
+					<a href="/register" class="btn btn-primary w-100">@UserLoc.Register</a>
 				</div>
 		</NotAuthorized>
 	</AuthorizeView>

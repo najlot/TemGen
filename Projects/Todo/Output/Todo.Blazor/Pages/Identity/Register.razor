@@ -12,36 +12,36 @@
 @inject NavigationManager NavigationManager
 @inject ILogger<Register> Logger
 
-<PageTitle>@CommonLoc.Register</PageTitle>
+<PageTitle>@UserLoc.Register</PageTitle>
 
 <EditForm Model="@Input" OnValidSubmit="@TryRegister">
 	<section class="w-100 p-4 d-flex justify-content-center pb-4">
 		<div>
-			<h1>@CommonLoc.Register</h1>
+			<h1>@UserLoc.Register</h1>
 			<br />
 			<DataAnnotationsValidator />
 			<ValidationSummary />
 
 			<!-- Username input -->
 			<div class="form-outline mb-4">
-				<label class="form-label" for="UsernameInput">@CommonLoc.Username</label>
+				<label class="form-label" for="UsernameInput">@UserLoc.Username</label>
 				<InputText type="text" id="UsernameInput" class="form-control" @bind-Value="Input.Username" />
 			</div>
 
 			<!-- Email input -->
 			<div class="form-outline mb-4">
-				<label class="form-label" for="EmailInput">@CommonLoc.EmailAddress</label>
+				<label class="form-label" for="EmailInput">@UserLoc.EmailAddress</label>
 				<InputText type="email" id="EmailInput" class="form-control" @bind-Value="Input.EMail" />
 			</div>
 
 			<!-- Password input -->
 			<div class="form-outline mb-4">
-				<label class="form-label" for="PasswordInput">@CommonLoc.Password</label>
+				<label class="form-label" for="PasswordInput">@UserLoc.Password</label>
 				<InputText type="password" id="PasswordInput" class="form-control" @bind-Value="Input.Password" />
 			</div>
 
 			<div class="form-outline mb-4">
-				<button type="submit" class="btn btn-primary w-100">@CommonLoc.Register</button>
+				<button type="submit" class="btn btn-primary w-100">@UserLoc.Register</button>
 			</div>
 		</div>
 	</section>
@@ -84,7 +84,7 @@
 		if (!result.IsSuccess)
 		{
 			Input.Password = "";
-			ErrorService?.ShowError(CommonLoc.Register, result.ErrorMessage);
+			ErrorService?.ShowError(UserLoc.Register, result.ErrorMessage);
 			return;
 		}
 
@@ -99,7 +99,7 @@
 
 		if (string.IsNullOrWhiteSpace(token))
 		{
-			ErrorService?.ShowError(CommonLoc.Login, ErrorLoc.ErrorCouldNotLogin);
+			ErrorService?.ShowError(UserLoc.Login, ErrorLoc.ErrorCouldNotLogin);
 			await AuthenticationService.LogoutAsync();
 		}
 		else

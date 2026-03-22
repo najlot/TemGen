@@ -3,14 +3,10 @@ using System.Collections.Generic;
 
 namespace Todo.Contracts.Events;
 
-public class NoteCreated(
-	Guid id,
-	string title,
-	string content,
-	PredefinedColor color)
+public class NoteCreated
 {
-	public Guid Id { get; } = id;
-	public string Title { get; } = title;
-	public string Content { get; } = content;
-	public PredefinedColor Color { get; } = color;
+	public Guid Id { get; set; }
+	public string Title { get; set; } = string.Empty;
+	public string Content { get; set; } = string.Empty;
+	public PredefinedColor Color { get; set; }
 }

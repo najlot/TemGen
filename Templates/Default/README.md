@@ -1,7 +1,7 @@
 # Default C# Template for TemGen
 
 ## Output
+- Avalonia Client
 - Service Backend
-- AvaloniaUI Client (Cross-Platform Desktop/Mobile)
 - WPF Client
 - Server-Side Blazor Client

@@ -1,35 +1,33 @@
-using <#cs Write(Project.Namespace)#>.Client.MVVM;
+using <# Project.Namespace#>.Client.MVVM;
 
-namespace <#cs Write(Project.Namespace)#>.ClientBase.ViewModel;
+namespace <# Project.Namespace#>.ClientBase.ViewModel;
 
 public class MenuViewModel : ViewModelBase
 {
 	public bool IsDrawerOpen { get; set => Set(ref field, value); }
 	public RelayCommand ToggleDrawerCommand { get; }
+	public AsyncCommand NavigateToGlobalSearch { get; }
+	public AsyncCommand NavigateToTrash { get; }
 
-<#cs
-foreach(var definition in Definitions.Where(d => !(d.IsArray
+<#for definition in Definitions.Where(d => !(d.IsArray
 || d.IsEnumeration
 || d.IsOwnedType
-|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))))
-{
-	WriteLine($"	public AsyncCommand NavigateTo{definition.Name}s {{ get; }}");
-}
-#>	public AsyncCommand ManageCommand { get; }
+|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
+#>	public AsyncCommand NavigateTo<# definition.Name#>s { get; }
+<#end#>	public AsyncCommand ManageCommand { get; }
 	public AsyncCommand LogoutCommand { get; }
 
 	public MenuViewModel(ViewModelBaseParameters<MenuViewModel> parameters) : base(parameters)
 	{
 		ToggleDrawerCommand = new RelayCommand(() => IsDrawerOpen = !IsDrawerOpen);
-<#cs
-foreach(var definition in Definitions.Where(d => !(d.IsArray
+		NavigateToGlobalSearch = CreateNavigationCommand<GlobalSearchViewModel>();
+		NavigateToTrash = CreateNavigationCommand<TrashViewModel>();
+<#for definition in Definitions.Where(d => !(d.IsArray
 || d.IsEnumeration
 || d.IsOwnedType
-|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))))
-{
-	WriteLine($"		NavigateTo{definition.Name}s = CreateNavigationCommand<All{definition.Name}sViewModel>();");
-}
-#>		ManageCommand = CreateNavigationCommand<ManageViewModel>();
+|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
+#>		NavigateTo<# definition.Name#>s = CreateNavigationCommand<All<# definition.Name#>sViewModel>();
+<#end#>		ManageCommand = CreateNavigationCommand<ManageViewModel>();
 		LogoutCommand = CreateNavigationCommand<LoginViewModel>();
 	}
 

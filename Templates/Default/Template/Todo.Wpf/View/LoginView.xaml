@@ -16,26 +16,24 @@
 		<Border MaxWidth="400"
 				Padding="32"
 				HorizontalAlignment="Center"
-				VerticalAlignment="Center"
-				BorderBrush="{StaticResource BackgroundColor}"
-				BorderThickness="1">
+				VerticalAlignment="Center">
 			<StackPanel>
 				<TextBlock Margin="0,0,0,16"
 						   HorizontalAlignment="Center"
 						   FontSize="24"
 						   FontWeight="Bold"
 						   Foreground="{StaticResource BackgroundColor}"
-						   Text="{x:Static loc:CommonLoc.Login}" />
+						   Text="{x:Static loc:UserLoc.Login}" />
 
 				<!--  Username  -->
 				<StackPanel Margin="0,0,0,16">
-					<TextBlock Margin="0,0,0,4" Text="{x:Static loc:CommonLoc.Username}" />
+					<TextBlock Margin="0,0,0,4" Text="{x:Static loc:UserLoc.Username}" />
 					<TextBox x:Name="UsernameTextBox" Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
 				</StackPanel>
 
 				<!--  Password  -->
 				<StackPanel Margin="0,0,0,16">
-					<TextBlock Margin="0,0,0,4" Text="{x:Static loc:CommonLoc.Password}" />
+					<TextBlock Margin="0,0,0,4" Text="{x:Static loc:UserLoc.Password}" />
 					<PasswordBox controls:PasswordBoxHelper.BindPassword="True"
 								 controls:PasswordBoxHelper.BoundPassword="{Binding Password, Mode=TwoWay, ValidatesOnNotifyDataErrors=True}" />
 				</StackPanel>
@@ -45,11 +43,11 @@
 						HorizontalAlignment="Stretch"
 						HorizontalContentAlignment="Center"
 						Command="{Binding LoginCommand}"
-						Content="{x:Static loc:CommonLoc.Login}" />
+						Content="{x:Static loc:UserLoc.Login}" />
 
 				<!--  Navigate to Register Link  -->
 				<Button Margin="0,8,0,0" Command="{Binding NavigateToRegisterCommand}">
-					<TextBlock Text="{x:Static loc:CommonLoc.Register}" />
+					<TextBlock Text="{x:Static loc:UserLoc.Register}" />
 				</Button>
 			</StackPanel>
 		</Border>

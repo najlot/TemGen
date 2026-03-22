@@ -49,21 +49,16 @@
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
 						<StackPanel Margin="5">
-<#cs
-foreach(var entry in Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2))
-{
-	WriteLine($"							<TextBlock Padding=\"5,5,5,0\" Text=\"{{Binding {entry.Field}}}\">");
-	WriteLine("								<i:Interaction.Triggers>");
-	WriteLine("									<i:EventTrigger EventName=\"MouseLeftButtonUp\">");
-	WriteLine($"										<i:InvokeCommandAction Command=\"{{Binding DataContext.Edit{Definition.Name}Command, RelativeSource={{RelativeSource AncestorType=local:All{Definition.Name}sView}}}}\" CommandParameter=\"{{Binding .}}\" />");
-	WriteLine("									</i:EventTrigger>");
-	WriteLine("								</i:Interaction.Triggers>");
-	WriteLine("							</TextBlock>");
-}
-
-Result = Result.TrimEnd();
-#>
-						</StackPanel>
+<#csfor entry in Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2)
+#>							<TextBlock Padding="5,5,5,0" Text="{Binding <#cs Write(entry.Field)#>}">
+								<i:Interaction.Triggers>
+									<i:EventTrigger EventName="MouseLeftButtonUp">
+										<i:InvokeCommandAction Command="{Binding DataContext.Edit<#cs Write(Definition.Name)#>Command, RelativeSource={RelativeSource AncestorType=local:All<#cs Write(Definition.Name)#>sView}}" CommandParameter="{Binding .}" />
+									</i:EventTrigger>
+								</i:Interaction.Triggers>
+							</TextBlock>
+<#end
+#>						</StackPanel>
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>

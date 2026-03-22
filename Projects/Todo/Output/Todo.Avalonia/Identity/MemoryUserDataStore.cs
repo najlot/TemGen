@@ -13,10 +13,6 @@ public class MemoryUserDataStore : IUserDataStore
 
 	private UserData? _data;
 
-	public MemoryUserDataStore()
-	{
-	}
-
 	private Task<UserData> GetUserData()
 	{
 		if (_data is null)
@@ -67,4 +63,3 @@ public class MemoryUserDataStore : IUserDataStore
 		await SaveUserData(data);
 	}
 }
-

@@ -1,0 +1,11 @@
+{
+    "wasmHostProperties": {
+        "perHostConfig": [
+            {
+                "name": "browser",
+                "host": "browser"
+            }
+        ]
+    }
+}
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

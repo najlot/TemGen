@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using Najlot.Map;
 using Todo.Contracts;
 using Todo.Service.Model;
@@ -17,21 +13,23 @@ namespace Todo.Service.Services;
 public class UserService(
 	IUserRepository userRepository,
 	IPublisher publisher,
-	IMap map) : IUserService
+	IMap map,
+	IUserIdProvider userIdProvider,
+	IPermissionQueryFilter permissionQueryFilter) : IUserService
 {
-	public async Task CreateUser(CreateUser command, Guid userId)
+	public async Task<Result> CreateUser(CreateUser command)
 	{
 		var username = command.Username.Normalize().ToLower();
 
 		var user = await userRepository.Get(username).ConfigureAwait(false);
 		if (user != null)
 		{
-			throw new InvalidOperationException("User already exists!");
+			return Result.Conflict("User already exists!");
 		}
 
 		if (command.Password.Trim().Length < 6)
 		{
-			throw new InvalidOperationException("Password too short!");
+			return Result.Validation("Password too short!");
 		}
 
 		var passwordBytes = Encoding.UTF8.GetBytes(command.Password);
@@ -44,27 +42,29 @@ public class UserService(
 
 		var message = map.From(item).To<UserCreated>();
 		await publisher.PublishAsync(message).ConfigureAwait(false);
+		return Result.Success();
 	}
 
-	public async Task UpdateUser(UpdateUser command, Guid userId)
+	public async Task<Result> UpdateUser(UpdateUser command)
 	{
+		var userId = userIdProvider.GetRequiredUserId();
 		var username = command.Username.Normalize().ToLower();
 
 		var item = await userRepository.Get(command.Id).ConfigureAwait(false);
 
 		if (item == null)
 		{
-			throw new InvalidOperationException("User not found!");
+			return Result.NotFound("User not found!");
 		}
 
 		if (item.Id != userId)
 		{
-			throw new InvalidOperationException("You must not modify other users!");
+			return Result.Forbidden("You must not modify other users!");
 		}
 
 		if (item.Username != username)
 		{
-			throw new InvalidOperationException("Username can not be modified!");
+			return Result.Validation("Username can not be modified!");
 		}
 
 		item.EMail = command.EMail;
@@ -73,7 +73,7 @@ public class UserService(
 		{
 			if (command.Password.Trim().Length < 6)
 			{
-				throw new InvalidOperationException("Password too short!");
+				return Result.Validation("Password too short!");
 			}
 
 			var passwordBytes = Encoding.UTF8.GetBytes(command.Password);
@@ -84,20 +84,22 @@ public class UserService(
 
 		var message = map.From(item).To<UserUpdated>();
 		await publisher.PublishAsync(message).ConfigureAwait(false);
+		return Result.Success();
 	}
 
-	public async Task DeleteUser(Guid id, Guid userId)
+	public async Task<Result> DeleteUser(Guid id)
 	{
+		var userId = userIdProvider.GetRequiredUserId();
 		var item = await userRepository.Get(id).ConfigureAwait(false);
 
 		if (item == null)
 		{
-			throw new InvalidOperationException("User not found!");
+			return Result.NotFound("User not found!");
 		}
 
 		if (item.Id != userId)
 		{
-			throw new InvalidOperationException("You must not delete other user!");
+			return Result.Forbidden("You must not delete other user!");
 		}
 
 		if (item.DeletedAt == null)
@@ -112,19 +114,33 @@ public class UserService(
 
 		var message = new UserDeleted(id);
 		await publisher.PublishAsync(message).ConfigureAwait(false);
+		return Result.Success();
 	}
 
-	public async Task<User?> GetItem(Guid id)
+	public async Task<Result<User>> GetItem(Guid id)
 	{
 		var item = await userRepository.Get(id).ConfigureAwait(false);
-		return map.FromNullable(item)?.To<User>();
+
+		if (item == null)
+		{
+			return Result<User>.NotFound("User not found!");
+		}
+
+		return Result<User>.Success(map.From(item).To<User>());
 	}
 
-	public IAsyncEnumerable<UserListItem> GetItemsForUser(Guid userId)
+	public Task<Result<User>> GetCurrentUser()
+	{
+		var userId = userIdProvider.GetRequiredUserId();
+		return GetItem(userId);
+	}
+
+	public IAsyncEnumerable<UserListItem> GetItemsForUser()
 	{
 		var query = userRepository.GetAllQueryable();
 
 		query = query.Where(e => e.DeletedAt == null);
+		query = permissionQueryFilter.ApplyReadFilter(query);
 
 		return map.From(query).To<UserListItem>().ToAsyncEnumerable();
 	}

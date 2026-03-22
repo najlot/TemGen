@@ -11,29 +11,13 @@ namespace Todo.Client.Data.Mappings;
 [Mapping]
 internal sealed partial class NoteMappings
 {
-	public static CreateNote MapToCreate(IMap map, NoteModel from) =>
-		new(from.Id,
-			from.Title,
-			from.Content,
-			from.Color);
+	public static partial void MapToCreate(IMap map, NoteModel from, CreateNote to);
 
-	public static NoteCreated MapToCreated(IMap map, NoteModel from) =>
-		new(from.Id,
-			from.Title,
-			from.Content,
-			from.Color);
+	public static partial void MapToCreated(IMap map, NoteModel from, NoteCreated to);
 
-	public static UpdateNote MapToUpdate(IMap map, NoteModel from) =>
-		new(from.Id,
-			from.Title,
-			from.Content,
-			from.Color);
+	public static partial void MapToUpdate(IMap map, NoteModel from, UpdateNote to);
 
-	public static NoteUpdated MapToUpdated(IMap map, NoteModel from) =>
-		new(from.Id,
-			from.Title,
-			from.Content,
-			from.Color);
+	public static partial void MapToUpdated(IMap map, NoteModel from, NoteUpdated to);
 
 	public static partial void MapToModel(IMap map, NoteCreated from, NoteListItemModel to);
 

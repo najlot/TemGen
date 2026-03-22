@@ -21,13 +21,15 @@ public static class ServiceCollectionExtensions
 			serviceCollection.AddTransient<RegisterViewModel>();
 			serviceCollection.AddTransient<MenuViewModel>();
 			serviceCollection.AddTransient<ManageViewModel>();
+			serviceCollection.AddTransient<GlobalSearchViewModel>();
+			serviceCollection.AddTransient<TrashViewModel>();
 
-			serviceCollection.AddTransient<AllTodoItemsViewModel>();
 			serviceCollection.AddTransient<AllNotesViewModel>();
+			serviceCollection.AddTransient<AllTodoItemsViewModel>();
 
-			serviceCollection.AddTransient<TodoItemViewModel>();
 			serviceCollection.AddTransient<ChecklistTaskViewModel>();
 			serviceCollection.AddTransient<NoteViewModel>();
+			serviceCollection.AddTransient<TodoItemViewModel>();
 		}
 	}
 }

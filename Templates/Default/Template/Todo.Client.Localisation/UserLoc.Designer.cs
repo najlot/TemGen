@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
+namespace <# Project.Namespace#>.Client.Localisation {
     using System;
 
 
@@ -39,7 +39,7 @@ namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("<#cs Write(Project.Namespace)#>.Client.Localisation.UserLoc", typeof(UserLoc).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("<# Project.Namespace#>.Client.Localisation.UserLoc", typeof(UserLoc).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -57,6 +57,24 @@ namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Change password.
+        /// </summary>
+        public static string ChangePassword {
+            get {
+                return ResourceManager.GetString("ChangePassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Confirm new password.
+        /// </summary>
+        public static string ConfirmNewPassword {
+            get {
+                return ResourceManager.GetString("ConfirmNewPassword", resourceCulture);
             }
         }
         
@@ -79,6 +97,15 @@ namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to EMail address.
+        /// </summary>
+        public static string EmailAddress {
+            get {
+                return ResourceManager.GetString("EmailAddress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to EMail:.
         /// </summary>
         public static string EMail {
@@ -88,7 +115,34 @@ namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Password:.
+        ///   Looks up a localized string similar to Log in.
+        /// </summary>
+        public static string Login {
+            get {
+                return ResourceManager.GetString("Login", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Log out.
+        /// </summary>
+        public static string Logout {
+            get {
+                return ResourceManager.GetString("Logout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New password.
+        /// </summary>
+        public static string NewPassword {
+            get {
+                return ResourceManager.GetString("NewPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password.
         /// </summary>
         public static string Password {
             get {
@@ -97,7 +151,25 @@ namespace <#cs Write(Project.Namespace)#>.Client.Localisation {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Username:.
+        ///   Looks up a localized string similar to Register.
+        /// </summary>
+        public static string Register {
+            get {
+                return ResourceManager.GetString("Register", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User management.
+        /// </summary>
+        public static string UserManagement {
+            get {
+                return ResourceManager.GetString("UserManagement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Username.
         /// </summary>
         public static string Username {
             get {

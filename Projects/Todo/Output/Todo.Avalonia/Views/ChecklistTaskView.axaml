@@ -1,0 +1,41 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="using:Todo.Avalonia.Views"
+             mc:Ignorable="d"
+             d:DesignWidth="1000"
+             d:DesignHeight="750"
+             x:Class="Todo.Avalonia.Views.ChecklistTaskView">
+  <Grid>
+    <DockPanel IsEnabled="{Binding CanEdit}">
+      <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" Margin="12">
+        <Button Grid.Column="0" Margin="0,0,8,0" Command="{Binding NavigateBackCommand}" Content="Back" />
+        <Border Grid.Column="1" />
+        <Button Grid.Column="2" Margin="8,0,0,0" Command="{Binding UndoCommand}" Content="Undo" />
+        <Button Grid.Column="3" Margin="8,0,0,0" Command="{Binding RedoCommand}" Content="Redo" />
+        <Button Grid.Column="4" Margin="8,0,0,0" Command="{Binding SaveCommand}" Content="Save" />
+        <Button Grid.Column="5" Margin="8,0,0,0" Command="{Binding DeleteCommand}" Content="Delete" />
+      </Grid>
+
+      <ScrollViewer Margin="12,0,12,12">
+        <StackPanel Spacing="10" MinWidth="420">
+          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
+            <StackPanel Spacing="8">
+              <CheckBox IsChecked="{Binding IsDone}" Content="IsDone" />
+            </StackPanel>
+          </Border>
+          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
+            <StackPanel Spacing="8">
+              <TextBlock FontWeight="SemiBold" Text="Description" />
+              <TextBox Text="{Binding Description, Mode=TwoWay}" />
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+    </DockPanel>
+
+    <local:SaveConfirmationDialogView IsVisible="{Binding SaveDialogViewModel.IsVisible}" DataContext="{Binding SaveDialogViewModel}" />
+    <local:DeleteConfirmationDialogView IsVisible="{Binding DeleteDialogViewModel.IsVisible}" DataContext="{Binding DeleteDialogViewModel}" />
+  </Grid>
+</UserControl>

@@ -15,6 +15,7 @@ public class NoteViewModel : ValidationViewModelBase, IParameterizable, IAsyncIn
 {
 	private readonly INoteService _noteService;
 
+
 	public PredefinedColor[] AvailablePredefinedColors { get; } = Enum.GetValues<PredefinedColor>();
 
 	public Guid Id { get; set => Set(ref field, value); }
@@ -82,6 +83,7 @@ public class NoteViewModel : ValidationViewModelBase, IParameterizable, IAsyncIn
 		await _noteService.StartEventListener();
 
 		_changeTracker.Clear();
+
 	}
 
 	private async Task Handle(object? sender, NoteUpdated obj)
@@ -94,6 +96,7 @@ public class NoteViewModel : ValidationViewModelBase, IParameterizable, IAsyncIn
 
 			Map.From(obj).To(this);
 			_changeTracker.Clear();
+
 		});
 
 	public AsyncCommand NavigateBackCommand { get; }
@@ -229,6 +232,8 @@ public class NoteViewModel : ValidationViewModelBase, IParameterizable, IAsyncIn
 		return true;
 	}
 
+
+
 	protected override IEnumerable<ValidationResult> Validate(string? propertyName)
 	{
 		return [];
@@ -240,7 +245,8 @@ public class NoteViewModel : ValidationViewModelBase, IParameterizable, IAsyncIn
 							or nameof(IsNew)
 							or nameof(CanEdit)
 							or nameof(Id)
-							or nameof(AvailablePredefinedColors);
+							or nameof(AvailablePredefinedColors)
+;
 
 	private bool _disposedValue;
 	protected virtual void Dispose(bool disposing)

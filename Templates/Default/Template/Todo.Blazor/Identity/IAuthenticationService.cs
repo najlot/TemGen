@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components.Authorization;
 
-namespace <#cs Write(Project.Namespace)#>.Blazor.Identity;
+namespace <# Project.Namespace#>.Blazor.Identity;
 
 public interface IAuthenticationService
 {

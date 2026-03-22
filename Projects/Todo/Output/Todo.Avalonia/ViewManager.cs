@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Todo.Client.MVVM;
 using Todo.ClientBase;
 using Todo.ClientBase.ViewModel;
-using Todo.Avalonia.View;
+using Todo.Avalonia.Views;
 
 namespace Todo.Avalonia;
 
@@ -18,11 +18,13 @@ public class ViewManager(IServiceProvider serviceProvider) : IViewManager<Contro
 		[typeof(RegisterViewModel)] = typeof(RegisterView),
 		[typeof(MenuViewModel)] = typeof(MenuView),
 		[typeof(ManageViewModel)] = typeof(ManageView),
-		[typeof(AllTodoItemsViewModel)] = typeof(AllTodoItemsView),
+		[typeof(GlobalSearchViewModel)] = typeof(GlobalSearchView),
+		[typeof(TrashViewModel)] = typeof(TrashView),
 		[typeof(AllNotesViewModel)] = typeof(AllNotesView),
-		[typeof(TodoItemViewModel)] = typeof(TodoItemView),
+		[typeof(AllTodoItemsViewModel)] = typeof(AllTodoItemsView),
 		[typeof(ChecklistTaskViewModel)] = typeof(ChecklistTaskView),
 		[typeof(NoteViewModel)] = typeof(NoteView),
+		[typeof(TodoItemViewModel)] = typeof(TodoItemView),
 	};
 
 	public Control GetView<TViewModel>(TViewModel viewModel) where TViewModel : notnull
@@ -34,13 +36,10 @@ public class ViewManager(IServiceProvider serviceProvider) : IViewManager<Contro
 				$"Ensure that this view model type is added to the '{nameof(ViewManager)}' {_knownControls.GetType().Name} mapping.");
 		}
 
-		if (viewType.GetConstructor(Type.EmptyTypes) is not null)
+		if (viewType.GetConstructor(Type.EmptyTypes) is not null && Activator.CreateInstance(viewType) is Control control)
 		{
-			if (Activator.CreateInstance(viewType) is Control control)
-			{
-				control.DataContext = viewModel;
-				return control;
-			}
+			control.DataContext = viewModel;
+			return control;
 		}
 
 		if (serviceProvider.GetRequiredService(viewType) is Control instance)
@@ -80,4 +79,3 @@ public class ViewManager(IServiceProvider serviceProvider) : IViewManager<Contro
 		}
 	}
 }
-

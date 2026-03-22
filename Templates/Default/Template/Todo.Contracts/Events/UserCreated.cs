@@ -1,13 +1,10 @@
 ﻿using System;
 
-namespace <#cs Write(Project.Namespace)#>.Contracts.Events;
+namespace <# Project.Namespace#>.Contracts.Events;
 
-public class UserCreated(
-	Guid id,
-	string username,
-	string eMail)
+public class UserCreated
 {
-	public Guid Id { get; } = id;
-	public string Username { get; } = username;
-	public string EMail { get; } = eMail;
+	public Guid Id { get; set; }
+	public string Username { get; set; } = string.Empty;
+	public string EMail { get; set; } = string.Empty;
 }<#cs SetOutputPathAndSkipOtherDefinitions()#>

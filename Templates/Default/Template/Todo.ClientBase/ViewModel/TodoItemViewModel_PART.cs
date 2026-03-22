@@ -3,27 +3,37 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Client.Data.Models;
-using <#cs Write(Project.Namespace)#>.Client.Localisation;
-using <#cs Write(Project.Namespace)#>.Client.MVVM;
+using <# Project.Namespace#>.Client.Data.Models;
+using <# Project.Namespace#>.Client.Localisation;
+using <# Project.Namespace#>.Client.MVVM;
 
-namespace <#cs Write(Project.Namespace)#>.ClientBase.ViewModel;
+namespace <# Project.Namespace#>.ClientBase.ViewModel;
 
-public partial class <#cs Write(Definition.Name)#>ViewModel
+public partial class <# Definition.Name#>ViewModel
 {
 	public ObservableCollection<<#cs Write(DefinitionEntry?.EntryType)#>ViewModel> <#cs Write(DefinitionEntry?.Field)#> { get; set => Set(ref field, value); } = [];
 
 	private void Initialize<#cs Write(DefinitionEntry?.Field)#>Tracking()
 	{
+		if (ChangeVisitor is not ChangeTracker changeTracker)
+		{
+			return;
+		}
+
 		foreach (var item in <#cs Write(DefinitionEntry?.Field)#>)
 		{
-			item.ChangeVisitor = _changeTracker;
+			item.InitializeTracking(changeTracker);
 		}
 	}
 
 	public RelayCommand Add<#cs Write(DefinitionEntry?.EntryType)#>Command => new(Add<#cs Write(DefinitionEntry?.EntryType)#>);
 	private void Add<#cs Write(DefinitionEntry?.EntryType)#>()
 	{
+		if (ChangeVisitor is not ChangeTracker changeTracker)
+		{
+			return;
+		}
+
 		var max = 0;
 
 		if (<#cs Write(DefinitionEntry?.Field)#>.Count > 0)
@@ -35,16 +45,16 @@ public partial class <#cs Write(Definition.Name)#>ViewModel
 		var viewModel = Map.From(model).To<<#cs Write(DefinitionEntry?.EntryType)#>ViewModel>();
 		viewModel.Id = max;
 		viewModel.ParentId = Id;
-		viewModel.ChangeVisitor = _changeTracker;
+		viewModel.InitializeTracking(changeTracker);
 
 		<#cs Write(DefinitionEntry?.Field)#>.Add(viewModel);
 
-		_changeTracker.Track(
+		changeTracker.Track(
 			nameof(<#cs Write(DefinitionEntry?.Field)#>),
 			() => <#cs Write(DefinitionEntry?.Field)#>.Remove(viewModel),
 			() =>
 			{
-				viewModel.ChangeVisitor = _changeTracker;
+				viewModel.InitializeTracking(changeTracker);
 				<#cs Write(DefinitionEntry?.Field)#>.Add(viewModel);
 			});
 	}
@@ -53,6 +63,11 @@ public partial class <#cs Write(Definition.Name)#>ViewModel
 	private async Task<bool> Delete<#cs Write(DefinitionEntry?.EntryType)#>Async(<#cs Write(DefinitionEntry?.EntryType)#>ViewModel? viewModel)
 	{
 		if (IsBusy || viewModel is null)
+		{
+			return false;
+		}
+
+		if (ChangeVisitor is not ChangeTracker changeTracker)
 		{
 			return false;
 		}
@@ -71,11 +86,11 @@ public partial class <#cs Write(Definition.Name)#>ViewModel
 				{
 					<#cs Write(DefinitionEntry?.Field)#>.RemoveAt(index);
 
-					_changeTracker.Track(
+					changeTracker.Track(
 						nameof(<#cs Write(DefinitionEntry?.Field)#>),
 						() =>
 						{
-							oldItem.ChangeVisitor = _changeTracker;
+							oldItem.InitializeTracking(changeTracker);
 							<#cs Write(DefinitionEntry?.Field)#>.Insert(index, oldItem);
 						},
 						() => <#cs Write(DefinitionEntry?.Field)#>.Remove(oldItem));
@@ -102,7 +117,7 @@ if (DefinitionEntry != null && DefinitionEntry.IsArray)
 }
 else
 {
-	RepeatForEachDefinitionEntry = !(Definition.IsOwnedType || Definition.IsEnumeration) && Entries.Where(e => e.IsArray).Any();
+	RepeatForEachDefinitionEntry = !Definition.IsEnumeration && Entries.Where(e => e.IsArray).Any();
 	RelativePath = "";
 }
 #>

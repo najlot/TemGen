@@ -37,7 +37,7 @@ public static class ServiceProviderFactory
 		serviceCollection.AddSingleton(navigationService);
 		serviceCollection.AddSingleton(notificationService);
 
-		serviceCollection.AddHttpClient(Options.DefaultName, c => { c.BaseAddress = new Uri(dataServiceUrl); });
+		serviceCollection.AddHttpClient(Options.DefaultName, c => c.BaseAddress = new Uri(dataServiceUrl));
 
 		serviceCollection.RegisterClientData();
 		serviceCollection.RegisterClientBase();
@@ -49,4 +49,3 @@ public static class ServiceProviderFactory
 		return serviceProvider;
 	}
 }
-

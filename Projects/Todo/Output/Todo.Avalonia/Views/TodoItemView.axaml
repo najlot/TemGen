@@ -1,0 +1,119 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="using:Todo.Avalonia.Views"
+             mc:Ignorable="d"
+             d:DesignWidth="1000"
+             d:DesignHeight="750"
+             x:Class="Todo.Avalonia.Views.TodoItemView">
+  <Grid>
+    <DockPanel IsEnabled="{Binding CanEdit}">
+      <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" Margin="12">
+        <Button Grid.Column="0" Margin="0,0,8,0" Command="{Binding NavigateBackCommand}" Content="Back" />
+        <Border Grid.Column="1" />
+        <Button Grid.Column="2" Margin="8,0,0,0" Command="{Binding UndoCommand}" Content="Undo" />
+        <Button Grid.Column="3" Margin="8,0,0,0" Command="{Binding RedoCommand}" Content="Redo" />
+        <Button Grid.Column="4" Margin="8,0,0,0" Command="{Binding SaveCommand}" Content="Save" />
+        <Button Grid.Column="5" Margin="8,0,0,0" Command="{Binding DeleteCommand}" Content="Delete" />
+      </Grid>
+
+      <ScrollViewer Margin="12,0,12,12">
+        <StackPanel Spacing="10" MinWidth="420">
+          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
+            <StackPanel Spacing="8">
+              <TextBlock FontWeight="SemiBold" Text="Title" />
+              <TextBox Text="{Binding Title, Mode=TwoWay}" />
+            </StackPanel>
+          </Border>
+          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
+            <StackPanel Spacing="8">
+              <TextBlock FontWeight="SemiBold" Text="Content" />
+              <TextBox Text="{Binding Content, Mode=TwoWay}" />
+            </StackPanel>
+          </Border>
+          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
+            <StackPanel Spacing="8">
+              <TextBlock FontWeight="SemiBold" Text="CreatedAt" />
+              <DatePicker SelectedDate="{Binding CreatedAt}" />
+            </StackPanel>
+          </Border>
+          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
+            <StackPanel Spacing="8">
+              <TextBlock FontWeight="SemiBold" Text="CreatedBy" />
+              <TextBox Text="{Binding CreatedBy, Mode=TwoWay}" />
+            </StackPanel>
+          </Border>
+          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
+            <StackPanel Spacing="8">
+              <TextBlock FontWeight="SemiBold" Text="AssignedTo" />
+              <TextBlock FontWeight="SemiBold" Text="AssignedTo" />
+              <ComboBox ItemsSource="{Binding AvailableUsers}"
+                        SelectedValue="{Binding AssignedToId}"
+                        SelectedValueBinding="{Binding Id}"
+                        PlaceholderText="Select User">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding Username}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+          </Border>
+          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
+            <StackPanel Spacing="8">
+              <TextBlock FontWeight="SemiBold" Text="Status" />
+              <ComboBox ItemsSource="{Binding AvailableTodoItemStatus}" SelectedItem="{Binding Status}" />
+            </StackPanel>
+          </Border>
+          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
+            <StackPanel Spacing="8">
+              <TextBlock FontWeight="SemiBold" Text="ChangedAt" />
+              <DatePicker SelectedDate="{Binding ChangedAt}" />
+            </StackPanel>
+          </Border>
+          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
+            <StackPanel Spacing="8">
+              <TextBlock FontWeight="SemiBold" Text="ChangedBy" />
+              <TextBox Text="{Binding ChangedBy, Mode=TwoWay}" />
+            </StackPanel>
+          </Border>
+          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
+            <StackPanel Spacing="8">
+              <TextBlock FontWeight="SemiBold" Text="Priority" />
+              <TextBox Text="{Binding Priority, Mode=TwoWay}" />
+            </StackPanel>
+          </Border>
+          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
+            <StackPanel Spacing="8">
+              <DockPanel>
+                <TextBlock DockPanel.Dock="Left" Margin="0,0,0,8" FontSize="16" FontWeight="SemiBold" Text="Checklist" />
+                <Button DockPanel.Dock="Right" Command="{Binding AddChecklistTaskCommand}" Content="Add" />
+              </DockPanel>
+              <ItemsControl ItemsSource="{Binding Checklist}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Margin="0,0,0,8" Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
+                      <StackPanel Spacing="8">
+                        <CheckBox IsChecked="{Binding IsDone}" Content="IsDone" />
+                        <TextBlock FontWeight="SemiBold" Text="Description" />
+                        <TextBox Text="{Binding Description, Mode=TwoWay}" />
+                        <Button HorizontalAlignment="Right"
+                                Command="{Binding DataContext.DeleteChecklistTaskCommand, RelativeSource={RelativeSource AncestorType=local:TodoItemView}}"
+                                CommandParameter="{Binding .}"
+                                Content="Delete" />
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+    </DockPanel>
+
+    <local:SaveConfirmationDialogView IsVisible="{Binding SaveDialogViewModel.IsVisible}" DataContext="{Binding SaveDialogViewModel}" />
+    <local:DeleteConfirmationDialogView IsVisible="{Binding DeleteDialogViewModel.IsVisible}" DataContext="{Binding DeleteDialogViewModel}" />
+  </Grid>
+</UserControl>

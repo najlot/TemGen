@@ -1,36 +1,49 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Client.MVVM;
+using <# Project.Namespace#>.Client.MVVM;
 
-namespace <#cs Write(Project.Namespace)#>.ClientBase.ViewModel;
+namespace <# Project.Namespace#>.ClientBase.ViewModel;
 
-public class <#cs Write(Definition.Name)#>ViewModel : ValidationViewModelBase
+public <#if Entries.Any(e => e.IsArray)
+#>partial <#end#>class <# Definition.Name#>ViewModel : ValidationViewModelBase
 {
 	public int Id { get; set => Set(ref field, value); }
 
-<#cs
-foreach (var entry in Entries.Where(e => !e.IsArray))
-{
-	var defaultValue = "";
-	if (!entry.IsNullable && entry.EntryType.ToLower() == "string")
-	{
-		defaultValue = " = string.Empty;";
-	}
-
-	WriteLine($"	public {entry.EntryType} {entry.Field} {{ get; set => Set(ref field, value); }}{defaultValue}");
-}
-#>
+<#for entry in Entries.Where(e => !e.IsArray)
+#>	public <# entry.EntryType#><#if entry.IsOwnedType
+#>ViewModel<#end#><#cs Write(entry.IsNullable ? "?" : "")#> <# entry.Field#> { get; set => Set(ref field, value); }<#if !entry.IsNullable && entry.EntryType.ToLower() == "string"
+#> = string.Empty;<#end#>
+<#end#>
 	public Guid ParentId { get; set => Set( ref field, value); }
+	public bool IsBusy { get; set => Set(ref field, value); }
 
-	public <#cs Write(Definition.Name)#>ViewModel(ViewModelBaseParameters<<#cs Write(Definition.Name)#>ViewModel> parameters) : base(parameters)
+	public <# Definition.Name#>ViewModel(ViewModelBaseParameters<<# Definition.Name#>ViewModel> parameters) : base(parameters)
 	{
 		SaveCommand = new AsyncCommand(RequestSave, t => HandleError(t.Exception));
 		DeleteCommand = new AsyncCommand(RequestDelete, t => HandleError(t.Exception));
 	}
 
-	private readonly List<Func<<#cs Write(Definition.Name)#>ViewModel, Task>> _onSaveRequested = [];
-	public void OnSaveRequested(Func<<#cs Write(Definition.Name)#>ViewModel, Task> func) => _onSaveRequested.Add(func);
+	public void InitializeTracking(ChangeTracker changeTracker)
+	{
+		ChangeVisitor = changeTracker;
+<#for entry in Entries.Where(e => e.IsOwnedType)
+#>		Initialize<# entry.Field#>Tracking();
+<#end#>
+<#for entry in Entries.Where(e => e.IsArray)
+#>		Initialize<# entry.Field#>Tracking();
+<#end#>	}
+
+<#for entry in Entries.Where(e => e.IsOwnedType)
+#>	private void Initialize<# entry.Field#>Tracking()
+	{
+		<# entry.Field#>?.InitializeTracking((ChangeTracker)ChangeVisitor!);
+	}
+
+<#end#>
+
+	private readonly List<Func<<# Definition.Name#>ViewModel, Task>> _onSaveRequested = [];
+	public void OnSaveRequested(Func<<# Definition.Name#>ViewModel, Task> func) => _onSaveRequested.Add(func);
 
 	public AsyncCommand SaveCommand { get; }
 	private async Task RequestSave()
@@ -41,8 +54,8 @@ foreach (var entry in Entries.Where(e => !e.IsArray))
 		}
 	}
 
-	private readonly List<Func<<#cs Write(Definition.Name)#>ViewModel, Task<bool>>> _onDeleteRequested = [];
-	public void OnDeleteRequested(Func<<#cs Write(Definition.Name)#>ViewModel, Task<bool>> func) => _onDeleteRequested.Add(func);
+	private readonly List<Func<<# Definition.Name#>ViewModel, Task<bool>>> _onDeleteRequested = [];
+	public void OnDeleteRequested(Func<<# Definition.Name#>ViewModel, Task<bool>> func) => _onDeleteRequested.Add(func);
 
 	public AsyncCommand DeleteCommand { get; }
 	private async Task RequestDelete()
@@ -70,8 +83,8 @@ foreach (var entry in Entries.Where(e => !e.IsArray))
 
 	protected override bool ShouldIgnorePropertyForChangesAndValidation(string? propertyName)
 		=> base.ShouldIgnorePropertyForChangesAndValidation(propertyName)
-			|| propertyName is nameof(Id) or nameof(ParentId);
+			|| propertyName is nameof(Id) or nameof(ParentId) or nameof(IsBusy);
 }<#cs
-SetOutputPath(!Definition.IsArray);
+SetOutputPath(!(Definition.IsArray || Definition.IsOwnedType));
 RelativePath = RelativePath.Replace("_ARRAY_", "");
 #>

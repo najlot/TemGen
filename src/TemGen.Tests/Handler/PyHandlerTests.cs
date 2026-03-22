@@ -13,6 +13,7 @@ public class PyHandlerTests
 		{
 			Namespace = "TestNamespace",
 		};
+		project.SetSetting("UserSecretsId", "aspnet-TestNamespace.Blazor-py");
 
 		var definition = new Definition()
 		{
@@ -50,7 +51,8 @@ public class PyHandlerTests
 			new TemplateSection()
 			{
 				Handler = TemplateHandler.Python,
-				Content = "w(definition.Name + ':') \n" +
+				Content = "w(project.GetSetting('UserSecretsId') + '|') \n" +
+						"w(definition.Name + ':') \n" +
 							"for val in entries: write(val.Field + ',') \n" +
 							"set_result(get_result().rstrip(',')) \n" +
 							"relative_path = \"Is\" + relative_path"
@@ -58,7 +60,7 @@ public class PyHandlerTests
 
 		Assert.Equal("IsTest.cs", globals.RelativePath);
 		Assert.False(globals.SkipOtherDefinitions);
-		Assert.Equal("Test:Entry_1,Entry_2", globals.Result);
+		Assert.Equal("aspnet-TestNamespace.Blazor-py|Test:Entry_1,Entry_2", globals.Result);
 
 		await handler.TryHandle(
 			globals,

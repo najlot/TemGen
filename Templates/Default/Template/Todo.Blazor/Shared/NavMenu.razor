@@ -1,10 +1,10 @@
-@using <#cs Write(Project.Namespace)#>.Client.Localisation;
+@using <# Project.Namespace#>.Client.Localisation;
 
 <div class="top-row ps-3 navbar navbar-dark">
 	<div class="container-fluid">
-		<a class="navbar-brand" href=""><#cs Write(Project.Namespace)#>.Blazor</a>
+		<a class="navbar-brand" href=""><# Project.Namespace#>.Blazor</a>
 		<button title="@CommonLoc.Navigation" class="navbar-toggler" @onclick="ToggleNavMenu">
-			<span class="navbar-toggler-icon"></span>
+			<span class="material-symbols-sharp">menu</span>
 		</button>
 	</div>
 </div>
@@ -16,25 +16,23 @@
 				<span class="material-symbols-sharp me-2">home</span> @CommonLoc.Home
 			</NavLink>
 		</div>
-<#cs
-foreach (var definition in Definitions.Where(d => !(d.IsArray
+<#for definition in Definitions.Where(d => !(d.IsArray
 	|| d.IsEnumeration 
 	|| d.IsOwnedType
-	|| d.Name == "User")))
-{
-	var name = definition.Name.ToLower();
-	if (name.EndsWith("entry"))
-	{
-		name = name[0..^5] + "entrie";
-	}
-
-WriteLine("		<div class=\"nav-item px-3\">");
-WriteLine($"			<NavLink class=\"nav-link ps-3\" href=\"{name}s\">");
-WriteLine($"				<span class=\"material-symbols-sharp me-2\">notes</span> @{definition.Name}Loc.{definition.Name}s");
-WriteLine("			</NavLink>");
-WriteLine("		</div>");
-}
-#>	</nav>
+	|| d.Name == "User"))
+#>		<div class="nav-item px-3">
+			<NavLink class="nav-link ps-3" href="<#if definition.Name.ToLower().EndsWith("entry")
+#><#cs Write(definition.Name.ToLower()[0..^5] + "entrie")#><#else
+#><#cs Write(definition.Name.ToLower())#><#end#>s">
+				<span class="material-symbols-sharp me-2">notes</span> @<# definition.Name#>Loc.<#cs Write(definition.Name)#>s
+			</NavLink>
+		</div>
+<#end#>		<div class="nav-item px-3 mt-3">
+			<NavLink class="nav-link ps-3" href="trash">
+				<span class="material-symbols-sharp me-2">delete</span> @TrashLoc.Trash
+			</NavLink>
+		</div>
+	</nav>
 </div>
 
 @code {

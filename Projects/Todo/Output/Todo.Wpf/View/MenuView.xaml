@@ -22,6 +22,11 @@
 		</StackPanel>
 		
 		<StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+			<Button Command="{Binding NavigateToGlobalSearch}" ToolTip="{x:Static loc:GlobalSearchLoc.GlobalSearch}" Margin="5">
+				<Button.Content>
+					<materialIcons:MaterialIcon Kind="Magnify" Width="18" Height="18" />
+				</Button.Content>
+			</Button>
 			<Button Command="{Binding ManageCommand}" ToolTip="Manage" Margin="5">
 				<Button.Content>
 					<materialIcons:MaterialIcon Kind="User" Width="18" Height="18" />
@@ -57,17 +62,28 @@
 					<TextBlock FontSize="20" FontWeight="SemiBold" Text="{x:Static loc:CommonLoc.Navigation}" Margin="5,10" />
 
 					<!--  Navigation Items  -->
+					<Button Command="{Binding NavigateToNotes}" Margin="5" HorizontalContentAlignment="Left">
+						<Grid ColumnDefinitions="Auto,*">
+							<materialIcons:MaterialIcon Width="18" Height="18" Margin="0,0,10,0" Kind="Note" />
+							<TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Static loc:NoteLoc.Notes}" />
+						</Grid>
+					</Button>
 					<Button Command="{Binding NavigateToTodoItems}" Margin="5" HorizontalContentAlignment="Left">
 						<Grid ColumnDefinitions="Auto,*">
 							<materialIcons:MaterialIcon Width="18" Height="18" Margin="0,0,10,0" Kind="Note" />
 							<TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.TodoItems}" />
 						</Grid>
 					</Button>
-
-					<Button Command="{Binding NavigateToNotes}" Margin="5" HorizontalContentAlignment="Left">
+					<Button Command="{Binding NavigateToGlobalSearch}" Margin="5,20,5,5" HorizontalContentAlignment="Left">
 						<Grid ColumnDefinitions="Auto,*">
-							<materialIcons:MaterialIcon Width="18" Height="18" Margin="0,0,10,0" Kind="Note" />
-							<TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Static loc:NoteLoc.Notes}" />
+							<materialIcons:MaterialIcon Width="18" Height="18" Margin="0,0,10,0" Kind="Magnify" />
+							<TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Static loc:GlobalSearchLoc.GlobalSearch}" />
+						</Grid>
+					</Button>
+					<Button Command="{Binding NavigateToTrash}" Margin="5" HorizontalContentAlignment="Left">
+						<Grid ColumnDefinitions="Auto,*">
+							<materialIcons:MaterialIcon Width="18" Height="18" Margin="0,0,10,0" Kind="Delete" />
+							<TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Static loc:TrashLoc.Trash}" />
 						</Grid>
 					</Button>
 				</StackPanel>

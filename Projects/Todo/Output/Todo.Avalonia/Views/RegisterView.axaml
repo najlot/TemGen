@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignWidth="900"
+             d:DesignHeight="700"
+             x:Class="Todo.Avalonia.Views.RegisterView">
+  <Grid>
+    <Border MaxWidth="460"
+            Padding="32"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Background="#FFFFFBF5"
+            BorderBrush="#FFE7E5E4"
+            BorderThickness="1"
+            CornerRadius="12">
+      <StackPanel>
+        <TextBlock Margin="0,0,0,16"
+                   HorizontalAlignment="Center"
+                   FontSize="24"
+                   FontWeight="Bold"
+                   Text="Create account" />
+
+        <StackPanel Margin="0,0,0,16">
+          <TextBlock Margin="0,0,0,4" Text="Username" />
+          <TextBox Text="{Binding Username, Mode=TwoWay}" />
+        </StackPanel>
+
+        <StackPanel Margin="0,0,0,16">
+          <TextBlock Margin="0,0,0,4" Text="Email" />
+          <TextBox Text="{Binding EMail, Mode=TwoWay}" />
+        </StackPanel>
+
+        <StackPanel Margin="0,0,0,16">
+          <TextBlock Margin="0,0,0,4" Text="Password" />
+          <TextBox PasswordChar="*" Text="{Binding Password, Mode=TwoWay}" />
+        </StackPanel>
+
+        <Button Margin="0,8,0,0"
+                HorizontalAlignment="Stretch"
+                Command="{Binding RegisterCommand}"
+                Content="Register" />
+
+        <Button Margin="0,8,0,0"
+                HorizontalAlignment="Center"
+                Command="{Binding NavigateToLoginCommand}"
+                Content="Back to login" />
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>

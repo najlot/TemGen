@@ -1,11 +1,11 @@
 @page "/Manage"
 
 @using System.ComponentModel.DataAnnotations;
-@using <#cs Write(Project.Namespace)#>.Client.Data;
-@using <#cs Write(Project.Namespace)#>.Blazor.Services;
-@using <#cs Write(Project.Namespace)#>.Client.Data.Services;
-@using <#cs Write(Project.Namespace)#>.Client.Data.Identity;
-@using <#cs Write(Project.Namespace)#>.Client.Localisation;
+@using <# Project.Namespace#>.Client.Data;
+@using <# Project.Namespace#>.Blazor.Services;
+@using <# Project.Namespace#>.Client.Data.Services;
+@using <# Project.Namespace#>.Client.Data.Identity;
+@using <# Project.Namespace#>.Client.Localisation;
 
 @inject ITokenProvider TokenProvider
 @inject IUserService UserService
@@ -14,31 +14,31 @@
 
 @attribute [Authorize]
 
-<PageTitle>@CommonLoc.UserNamagement</PageTitle>
+<PageTitle>@UserLoc.UserManagement</PageTitle>
 
 <div>
 	<EditForm Model="@Input" OnValidSubmit="@SavePassword">
 		<section class="w-100 p-4 d-flex justify-content-center pb-4">
 			<div>
-				<h1>@CommonLoc.UserNamagement</h1>
+				<h1>@UserLoc.UserManagement</h1>
 				<br />
 				<DataAnnotationsValidator />
 				<ValidationSummary />
 
 				<!-- New password input -->
 				<div class="mb-4">
-					<label class="form-label" for="PasswordInput">@CommonLoc.NewPassword</label>
+					<label class="form-label" for="PasswordInput">@UserLoc.NewPassword</label>
 					<InputText type="password" id="PasswordInput" class="form-control" @bind-Value="Input.Password" />
 				</div>
 
 				<!-- New password confirm input -->
 				<div class="mb-4">
-					<label class="form-label" for="PasswordConfirm">@CommonLoc.ConfirmNewPassword</label>
+					<label class="form-label" for="PasswordConfirm">@UserLoc.ConfirmNewPassword</label>
 					<InputText type="password" id="PasswordConfirm" class="form-control" @bind-Value="Input.PasswordConfirm" />
 				</div>
 
 				<div class="mb-4">
-					<button type="submit" class="btn btn-primary w-100">@CommonLoc.ChangePassword</button>
+					<button type="submit" class="btn btn-primary w-100">@UserLoc.ChangePassword</button>
 				</div>
 			</div>
 		</section>
@@ -74,7 +74,7 @@
 	{
 		if (Input.Password != Input.PasswordConfirm)
 		{
-			ErrorService?.ShowError(CommonLoc.UserNamagement, ErrorLoc.ErrorPasswordsDoNotMatch);
+			ErrorService?.ShowError(UserLoc.UserManagement, ErrorLoc.ErrorPasswordsDoNotMatch);
 			Input.PasswordConfirm = "";
 			return;
 		}
@@ -101,7 +101,7 @@
 		catch (Exception ex)
 		{
 			Logger.LogError(ex, "Error updating user.");
-			ErrorService?.ShowError(CommonLoc.UserNamagement, ErrorLoc.ErrorCouldNotUpdateUserData);
+			ErrorService?.ShowError(UserLoc.UserManagement, ErrorLoc.ErrorCouldNotUpdateUserData);
 		}
 	}
 }<#cs SetOutputPathAndSkipOtherDefinitions()#>

@@ -3,13 +3,13 @@ using System;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System.Net.Http.Json;
-using <#cs Write(Project.Namespace)#>.Client.Data.Models;
-using <#cs Write(Project.Namespace)#>.Client.Data.Identity;
-using <#cs Write(Project.Namespace)#>.Contracts;
-using <#cs Write(Project.Namespace)#>.Contracts.Commands;
-using <#cs Write(Project.Namespace)#>.Contracts.ListItems;
+using <# Project.Namespace#>.Client.Data.Models;
+using <# Project.Namespace#>.Client.Data.Identity;
+using <# Project.Namespace#>.Contracts;
+using <# Project.Namespace#>.Contracts.Commands;
+using <# Project.Namespace#>.Contracts.ListItems;
 
-namespace <#cs Write(Project.Namespace)#>.Client.Data.Repositories.Implementation;
+namespace <# Project.Namespace#>.Client.Data.Repositories.Implementation;
 
 public sealed class UserRepository(IHttpClientFactory httpClientFactory, ITokenProvider tokenProvider, IMap map)
 	: HttpClientRepository(httpClientFactory, tokenProvider), IUserRepository

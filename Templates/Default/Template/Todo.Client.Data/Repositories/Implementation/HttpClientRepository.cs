@@ -1,8 +1,8 @@
 using System.Net.Http;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Client.Data.Identity;
+using <# Project.Namespace#>.Client.Data.Identity;
 
-namespace <#cs Write(Project.Namespace)#>.Client.Data.Repositories.Implementation;
+namespace <# Project.Namespace#>.Client.Data.Repositories.Implementation;
 
 public abstract class HttpClientRepository(IHttpClientFactory httpClientFactory, ITokenProvider tokenProvider)
 {

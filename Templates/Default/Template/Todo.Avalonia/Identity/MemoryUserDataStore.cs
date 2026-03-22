@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Client.Data.Identity;
+using <# Project.Namespace#>.Client.Data.Identity;
 
-namespace <#cs Write(Project.Namespace)#>.Avalonia.Identity;
+namespace <# Project.Namespace#>.Avalonia.Identity;
 
 public class MemoryUserDataStore : IUserDataStore
 {
@@ -12,10 +12,6 @@ public class MemoryUserDataStore : IUserDataStore
 	}
 
 	private UserData? _data;
-
-	public MemoryUserDataStore()
-	{
-	}
 
 	private Task<UserData> GetUserData()
 	{

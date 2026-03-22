@@ -1,12 +1,10 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using Todo.Contracts;
-using System;
-using System.Collections.Generic;
 
 namespace Todo.Service.Model;
 
 [BsonIgnoreExtraElements]
-public class NoteModel
+public class NoteModel : IEntityModel
 {
 	[BsonId]
 	public Guid Id { get; set; }

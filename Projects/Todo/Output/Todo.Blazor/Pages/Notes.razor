@@ -23,25 +23,35 @@
 }
 else
 {
-	<table class="table table-sm table-striped">
-		<thead>
-			<tr>
-				<th>@NoteLoc.Title</th>
-				<th>@NoteLoc.Content</th>
-				<th><a href="/Note/@Guid.Empty" class="btn btn-success w-100">@CommonLoc.New</a></th>
-			</tr>
-		</thead>
-		<tbody>
-			@foreach (var note in notes)
-			{
-				<tr scope="row">
-					<td class="text-break">@LimitDisplayLength(note.Title, 75)</td>
-					<td class="text-break">@LimitDisplayLength(note.Content, 75)</td>
-					<td><a href="/Note/@note.Id" class="btn btn-primary w-100">@CommonLoc.Edit</a></td>
-				</tr>
-			}
-		</tbody>
-	</table>
+ 	<section class="d-grid gap-3">
+		<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+			<h1 class="mb-0">@NoteLoc.Notes</h1>
+			<a href="/Note/@Guid.Empty" class="btn btn-success">@CommonLoc.New</a>
+		</div>
+		<div class="card shadow-sm border-0">
+			<div class="table-responsive">
+				<table class="table table-hover align-middle mb-0">
+					<thead class="table-light">
+						<tr>
+							<th>@NoteLoc.Title</th>
+							<th>@NoteLoc.Content</th>
+							<th class="text-end">@CommonLoc.Edit</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var note in notes)
+						{
+							<tr scope="row">
+								<td class="text-break">@LimitDisplayLength(note.Title, 75)</td>
+								<td class="text-break">@LimitDisplayLength(note.Content, 75)</td>
+								<td class="text-end"><a href="/Note/@note.Id" class="btn btn-outline-primary btn-sm">@CommonLoc.Edit</a></td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</section>
 }
 
 @code {
@@ -77,7 +87,7 @@ else
 		}
 		catch (Exception ex)
 		{
-			Log.LogError(ex, "Error loading notes.");
+			Log.LogError(ex, "Error loading Notes.");
 			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotLoad);
 		}
 	}

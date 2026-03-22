@@ -1,10 +1,12 @@
 ﻿using Najlot.Log;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using TemGen.Handler;
 
@@ -12,6 +14,10 @@ namespace TemGen;
 
 internal class Program
 {
+	private static bool IsTemplateReadFailure(Exception ex)
+		=> ex is TemplateReadException
+			|| ex is AggregateException aggregate && aggregate.InnerExceptions.All(e => IsTemplateReadFailure(e));
+
 	private static async Task Generate(LogAdministrator admin, string path)
 	{
 		var sw = Stopwatch.StartNew();
@@ -21,8 +27,7 @@ internal class Program
 
 		var project = ProjectReader.ReadProject(path);
 		var definitions = DefinitionsReader.ReadDefinitions(project.DefinitionsPath);
-		var templates = TemplatesReader.ReadTemplates(project.TemplatesPath);
-
+		
 		var csScripts = Array.Empty<string>();
 		var jsScripts = Array.Empty<string>();
 		var pyScripts = Array.Empty<string>();
@@ -45,6 +50,18 @@ internal class Program
 			new JintSectionHandler(jsScripts),
 			new LuaSectionHandler(luaScripts)
 		], project, definitions);
+		var generatedFiles = new ConcurrentBag<string>();
+		var hasProcessingErrors = false;
+		GeneratedOutputManifest previousManifest = null;
+
+		try
+		{
+			previousManifest = await GeneratedOutputManifest.LoadAsync(project.OutputPath).ConfigureAwait(false);
+		}
+		catch (JsonException ex)
+		{
+			log.Error(ex, "Could not read generation manifest {ManifestPath}. Stale-file cleanup will be skipped for this run.", GeneratedOutputManifest.GetManifestPath(project.OutputPath));
+		}
 
 		if (!string.IsNullOrWhiteSpace(project.ResourcesScriptPath))
 		{
@@ -57,41 +74,89 @@ internal class Program
 			}
 			catch (Exception ex)
 			{
+				hasProcessingErrors = true;
 				log.Error(ex, "Error processing script {ScriptPath}: ", project.ResourcesScriptPath);
 			}
 		}
 
-		await Parallel.ForEachAsync(templates, async (template, tkn) =>
+		foreach (var templatesPath in project.TemplatePaths)
 		{
+			List<Template> templates;
+
 			try
 			{
-				var results = await processor.Handle(template, definitions).ConfigureAwait(false);
-
-				foreach (var result in results)
-				{
-					var destPath = Path.Combine(project.OutputPath, result.Key);
-					var dirPath = Path.GetDirectoryName(destPath);
-					Directory.CreateDirectory(dirPath);
-
-					if (File.Exists(destPath))
-					{
-						var currentContent = await File.ReadAllTextAsync(destPath, tkn).ConfigureAwait(false);
-
-						if (currentContent == result.Value)
-						{
-							continue;
-						}
-					}
-
-					await File.WriteAllTextAsync(destPath, result.Value, template.Encoding, tkn).ConfigureAwait(false);
-				}
+				templates = TemplatesReader.ReadTemplates(templatesPath);
 			}
-			catch (Exception ex)
+			catch (AggregateException ex) when (ex.InnerExceptions.All(e => e is TemplateReadException))
 			{
-				log.Error(ex, "Error processing {TemplatePath}: ", template.RelativePath);
-			}
-		}).ConfigureAwait(false);
+				foreach (var error in ex.InnerExceptions.Cast<TemplateReadException>())
+				{
+					log.Error("Error reading template {TemplatePath}: {Message}", error.TemplatePath, error.InnerException?.Message ?? error.Message);
+				}
 
+				throw;
+			}
+
+			await Parallel.ForEachAsync(templates, async (template, tkn) =>
+			{
+				try
+				{
+					var results = await processor.Handle(template, definitions).ConfigureAwait(false);
+
+					foreach (var result in results)
+					{
+						var destPath = Path.Combine(project.OutputPath, result.Key);
+						var normalizedRelativePath = GeneratedOutputManifest.NormalizeRelativePath(result.Key);
+						var dirPath = Path.GetDirectoryName(destPath);
+						Directory.CreateDirectory(dirPath);
+
+						if (File.Exists(destPath))
+						{
+							var currentContent = await File.ReadAllTextAsync(destPath, tkn).ConfigureAwait(false);
+							if (currentContent != result.Value)
+							{
+								await File.WriteAllTextAsync(destPath, result.Value, template.Encoding, tkn).ConfigureAwait(false);
+							}
+						}
+						else
+						{
+							await File.WriteAllTextAsync(destPath, result.Value, template.Encoding, tkn).ConfigureAwait(false);
+						}
+
+						generatedFiles.Add(normalizedRelativePath);
+					}
+				}
+				catch (Exception ex)
+				{
+					hasProcessingErrors = true;
+					log.Error(ex, "Error processing {TemplatePath}: ", template.RelativePath);
+				}
+			}).ConfigureAwait(false);
+		}
+
+		if (hasProcessingErrors)
+		{
+			log.Info("Skipping stale-file cleanup because generation completed with errors.");
+		}
+		else
+		{
+			var currentManifest = new GeneratedOutputManifest
+			{
+				Files = generatedFiles.OrderBy(f => f, StringComparer.Ordinal).ToHashSet(StringComparer.Ordinal)
+			};
+
+			var cleanupResult = await GeneratedOutputCleaner
+				.CleanupAsync(project.OutputPath, previousManifest, currentManifest)
+				.ConfigureAwait(false);
+
+			if (cleanupResult.DeletedCount > 0)
+			{
+				log.Info("Stale-file cleanup removed {DeletedCount} file(s).", cleanupResult.DeletedCount);
+			}
+
+			await currentManifest.SaveAsync(project.OutputPath).ConfigureAwait(false);
+		}
+		
 		log.Info("Done after {Elapsed}.", sw.Elapsed);
 	}
 
@@ -109,7 +174,7 @@ internal class Program
 
 		var pathOption = new Option<string>("--path", "-p")
 		{
-			Description = "Path to a project definition file or a folder containing a ProjectDefinition file.",
+			Description = "Path to a project definition file or a folder containing ProjectDefinition.json or ProjectDefinition.",
 			DefaultValueFactory = (r) => "."
 		};
 		rootCommand.Add(pathOption);
@@ -135,24 +200,52 @@ internal class Program
 
 			admin.SetLogLevel(logLevel);
 
-			do
+			try
 			{
-				await Generate(admin, path).ConfigureAwait(false);
-				admin.Flush();
-
-				if (repeat)
+				do
 				{
-					Console.WriteLine("Press any key to run or ESC to cancel...");
-					var key = Console.ReadKey();
-					if (key.Key == ConsoleKey.Escape)
+					await Generate(admin, path).ConfigureAwait(false);
+					admin.Flush();
+
+					if (repeat)
 					{
-						return;
+						Console.WriteLine("Press any key to run or ESC to cancel...");
+						var key = Console.ReadKey();
+						if (key.Key == ConsoleKey.Escape)
+						{
+							return;
+						}
 					}
 				}
+				while (repeat);
 			}
-			while (repeat);
+			catch (Exception ex) when (IsTemplateReadFailure(ex))
+			{
+				Environment.ExitCode = 1;
+				admin.Flush();
+			}
+			catch (Exception ex)
+			{
+				Environment.ExitCode = 1;
+				admin.GetLogger("Main").Error(ex, "Execution failed.");
+				admin.Flush();
+			}
 		});
 
-		return await rootCommand.Parse(args).InvokeAsync().ConfigureAwait(false);
+		try
+		{
+			return await rootCommand.Parse(args).InvokeAsync().ConfigureAwait(false);
+		}
+		catch (Exception ex) when (IsTemplateReadFailure(ex))
+		{
+			admin.Flush();
+			return 1;
+		}
+		catch (Exception ex)
+		{
+			admin.GetLogger("Main").Error(ex, "Execution failed.");
+			admin.Flush();
+			return 1;
+		}
 	}
 }

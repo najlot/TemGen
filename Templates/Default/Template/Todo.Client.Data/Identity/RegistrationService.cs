@@ -3,9 +3,9 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Contracts.Commands;
+using <# Project.Namespace#>.Contracts.Commands;
 
-namespace <#cs Write(Project.Namespace)#>.Client.Data.Identity;
+namespace <# Project.Namespace#>.Client.Data.Identity;
 
 public class RegistrationService(IHttpClientFactory httpClientFactory, ILogger<RegistrationService> log)
 	: IRegistrationService
@@ -17,11 +17,13 @@ public class RegistrationService(IHttpClientFactory httpClientFactory, ILogger<R
 			log.LogDebug("Registering user.");
 			using var client = httpClientFactory.CreateClient();
 
-			var command = new CreateUser(
-				id,
-				username,
-				email,
-				password);
+			var command = new CreateUser
+			{
+				Id = id,
+				Username = username,
+				EMail = email,
+				Password = password
+			};
 
 			var result = await client.PostAsJsonAsync("api/Auth/Register", command);
 

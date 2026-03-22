@@ -1,0 +1,41 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="using:Todo.Avalonia.Views"
+             mc:Ignorable="d"
+             d:DesignWidth="1000"
+             d:DesignHeight="700"
+             x:Class="Todo.Avalonia.Views.AllNotesView">
+  <DockPanel>
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto,Auto" Margin="12">
+      <Button Grid.Column="0" Margin="0,0,8,0" Command="{Binding NavigateBackCommand}" Content="Back" />
+      <TextBox Grid.Column="1" Text="{Binding Filter, Mode=TwoWay}" Watermark="Filter Notes" />
+      <Button Grid.Column="2" Margin="8,0,0,0" Command="{Binding RefreshNotesCommand}" Content="Refresh" />
+      <Button Grid.Column="3" Margin="8,0,0,0" Command="{Binding AddNoteCommand}" Content="New" />
+    </Grid>
+
+    <ScrollViewer Margin="12,0,12,12">
+      <ItemsControl ItemsSource="{Binding NotesView}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Button Margin="0,0,0,8"
+                    Padding="0"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    HorizontalContentAlignment="Stretch"
+                    Command="{Binding DataContext.EditNoteCommand, RelativeSource={RelativeSource AncestorType=local:AllNotesView}}"
+                    CommandParameter="{Binding .}">
+              <Border Padding="12" Background="#FFF5F5F4" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
+                <StackPanel>
+                  <TextBlock Text="{Binding Title}" />
+                  <TextBlock Margin="0,4,0,0" Text="{Binding Content}" />
+                </StackPanel>
+              </Border>
+            </Button>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>

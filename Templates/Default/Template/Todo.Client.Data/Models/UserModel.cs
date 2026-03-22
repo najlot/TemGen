@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using <#cs Write(Project.Namespace)#>.Contracts;
+using <# Project.Namespace#>.Contracts;
 
-namespace <#cs Write(Project.Namespace)#>.Client.Data.Models;
+namespace <# Project.Namespace#>.Client.Data.Models;
 
 public class UserModel
 {

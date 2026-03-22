@@ -1,37 +1,18 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
-using <#cs Write(Project.Namespace)#>.Contracts;
-using System;
-using System.Collections.Generic;
+using <# Project.Namespace#>.Contracts;
 
-namespace <#cs Write(Project.Namespace)#>.Service.Model;
+namespace <# Project.Namespace#>.Service.Model;
 
 [BsonIgnoreExtraElements]
-public class <#cs Write(Definition.Name)#>Model
+public class <# Definition.Name#>Model : IEntityModel
 {
 	[BsonId]
 	public Guid Id { get; set; }
 	public DateTime? DeletedAt { get; set; }
-<#cs
-foreach(var entry in Entries)
-{
-	var typePrefix = entry.IsArray ? "List<" : "";
-	var typeSuffix = entry.IsNullable ? "?" : "";
-	typeSuffix = entry.IsArray ? ">" : typeSuffix;
-	var suffix = entry.IsReference? "Id" : "";
-
-	var defaultValue = "";
-	if (entry.EntryType == "string")
-	{
-		defaultValue = " = string.Empty;";
-	}
-	else if (entry.IsArray)
-	{
-		defaultValue = " = [];";
-	}
-
-	WriteLine($"	public {typePrefix}{entry.EntryType}{typeSuffix} {entry.Field}{suffix} {{ get; set; }}{defaultValue}");
-}
-
-Result = Result.TrimEnd();
-#>
-}<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>
+<#for entry in Entries
+#>	public <#cs Write(entry.IsArray ? "List<" : "")#><# entry.EntryType#><#cs Write(entry.IsArray ? ">" : entry.IsNullable ? "?" : "")#> <# entry.Field#><#cs Write(entry.IsReference ? "Id" : "")#> { get; set; }<#if entry.EntryType == "string"
+#> = string.Empty;<#elseif entry.IsArray
+#> = [];<#elseif entry.IsOwnedType && !entry.IsNullable
+#> = new();<#end#>
+<#end
+#>}<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

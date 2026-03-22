@@ -1,0 +1,251 @@
+@page "/trash"
+@using Todo.Blazor.Services;
+@using Todo.Client.Data.Models;
+@using Todo.Client.Data.Services;
+@using Todo.Client.Localisation;
+@using Todo.Contracts.Events;
+@inject ILogger<Trash> Log
+@inject ITrashService TrashService
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize]
+@implements IDisposable
+
+<PageTitle>@TrashLoc.Trash</PageTitle>
+
+<section class="d-grid gap-3">
+	<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+		<h1 class="mb-0">@TrashLoc.Trash</h1>
+		<button class="btn btn-outline-danger" @onclick="RequestDeleteAll">@TrashLoc.DeleteAll</button>
+	</div>
+
+@if (items == null)
+{
+	<p><em>@CommonLoc.Loading...</em></p>
+}
+else if (items.Count == 0)
+{
+	<div class="alert alert-light border mb-0">@TrashLoc.TrashEmpty</div>
+}
+else
+{
+	<div class="row g-3">
+		@foreach (var item in items)
+		{
+			<div class="col-12">
+				<div class="card shadow-sm border-0 h-100">
+					<div class="card-body">
+						<div class="d-flex justify-content-between align-items-start gap-3">
+							<div class="flex-grow-1">
+								<div class="fw-semibold text-break">@Display(item.Title, CommonLoc.Untitled)</div>
+								@if (!string.IsNullOrWhiteSpace(item.Content))
+								{
+									<div class="text-muted text-break mt-1">@item.Content</div>
+								}
+								<div class="d-flex flex-wrap gap-2 mt-3">
+									<button class="btn btn-sm btn-outline-success" @onclick="() => RestoreAsync(item)">@TrashLoc.Restore</button>
+									<button class="btn btn-sm btn-outline-danger" @onclick="() => RequestDelete(item)">@CommonLoc.Delete</button>
+								</div>
+							</div>
+							<div class="text-end text-nowrap small text-secondary">
+								<div>@item.Type</div>
+								<div>@item.DeletedAt?.ToLocalTime().ToString("g")</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+}
+</section>
+
+<DeleteConfirmationDialog
+	Title="@deleteConfirmationTitle"
+	Description="@deleteConfirmationDescription"
+	@bind-IsVisible="isDeleteConfirmationVisible"
+	Remove="ConfirmDeleteAsync" />
+
+@code {
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	private List<TrashItemModel>? items;
+	private bool isDeleteConfirmationVisible;
+	private bool isDeleteAllRequested;
+	private TrashItemModel? pendingDeleteItem;
+	private string deleteConfirmationTitle = TrashLoc.PermanentDeleteConfirmationTitle;
+	private string deleteConfirmationDescription = TrashLoc.PermanentDeleteConfirmationDescription;
+
+	protected override async Task OnInitializedAsync()
+	{
+		TrashService.ItemCreated += Handle;
+		TrashService.ItemUpdated += Handle;
+		TrashService.ItemDeleted += Handle;
+		
+		try
+		{
+			items = [.. await TrashService.GetItemsAsync().ConfigureAwait(false)];
+			await TrashService.StartEventListener().ConfigureAwait(false);
+		}
+		catch (System.Security.Authentication.AuthenticationException)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigationManager.NavigateTo(url);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error loading trash items.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotLoad);
+		}
+	}
+
+	private async Task RestoreAsync(TrashItemModel item)
+	{
+		try
+		{
+			await TrashService.RestoreItemAsync(item.Type, item.Id).ConfigureAwait(false);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error restoring trash item.");
+			ErrorService?.ShowError(TrashLoc.Restore, ex.Message);
+		}
+	}
+
+	private void RequestDelete(TrashItemModel item)
+	{
+		if (isDeleteConfirmationVisible)
+		{
+			return;
+		}
+
+		pendingDeleteItem = item;
+		isDeleteAllRequested = false;
+		deleteConfirmationTitle = TrashLoc.PermanentDeleteConfirmationTitle;
+		deleteConfirmationDescription = TrashLoc.PermanentDeleteConfirmationDescription;
+		isDeleteConfirmationVisible = true;
+	}
+
+	private void RequestDeleteAll()
+	{
+		if (isDeleteConfirmationVisible || items is null || items.Count == 0)
+		{
+			return;
+		}
+
+		pendingDeleteItem = null;
+		isDeleteAllRequested = true;
+		deleteConfirmationTitle = TrashLoc.PermanentDeleteConfirmationTitle;
+		deleteConfirmationDescription = TrashLoc.PermanentDeleteAllConfirmationDescription;
+		isDeleteConfirmationVisible = true;
+	}
+
+	private async Task ConfirmDeleteAsync()
+	{
+		try
+		{
+			if (isDeleteAllRequested)
+			{
+				await DeleteAllAsync().ConfigureAwait(false);
+			}
+			else if (pendingDeleteItem is { } item)
+			{
+				await DeleteAsync(item).ConfigureAwait(false);
+			}
+		}
+		finally
+		{
+			pendingDeleteItem = null;
+			isDeleteAllRequested = false;
+			isDeleteConfirmationVisible = false;
+			await InvokeAsync(StateHasChanged);
+		}
+	}
+
+	private async Task DeleteAsync(TrashItemModel item)
+	{
+		try
+		{
+			await TrashService.DeleteItemAsync(item.Type, item.Id).ConfigureAwait(false);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error deleting trash item.");
+			ErrorService?.ShowError(CommonLoc.Delete, ex.Message);
+		}
+	}
+
+	private async Task DeleteAllAsync()
+	{
+		try
+		{
+			await TrashService.DeleteAllItemsAsync().ConfigureAwait(false);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error deleting all trash items.");
+			ErrorService?.ShowError(TrashLoc.DeleteAll, ex.Message);
+		}
+	}
+
+	private Task Handle(object? sender, TrashItemCreated message)
+	{
+		items ??= [];
+		items.Insert(0, new TrashItemModel
+		{
+			Id = message.Id,
+			Type = message.Type,
+			Title = message.Title,
+			Content = message.Content,
+			DeletedAt = message.DeletedAt,
+		});
+		return InvokeAsync(StateHasChanged);
+	}
+
+	private Task Handle(object? sender, TrashItemUpdated message)
+	{
+		if (items is null)
+		{
+			return Task.CompletedTask;
+		}
+
+		var item = items.FirstOrDefault(current => current.Id == message.Id && current.Type == message.Type);
+		if (item is not null)
+		{
+			item.Title = message.Title;
+			item.Content = message.Content;
+			item.DeletedAt = message.DeletedAt;
+		}
+
+		return InvokeAsync(StateHasChanged);
+	}
+
+	private Task Handle(object? sender, TrashItemDeleted message)
+	{
+		if (items is null)
+		{
+			return Task.CompletedTask;
+		}
+
+		var item = items.FirstOrDefault(current => current.Id == message.Id && current.Type == message.Type);
+		if (item is not null)
+		{
+			items.Remove(item);
+		}
+
+		return InvokeAsync(StateHasChanged);
+	}
+
+	private static string Display(string? value, string fallback)
+	{
+		return string.IsNullOrWhiteSpace(value) ? fallback : value;
+	}
+
+	public void Dispose()
+	{
+		TrashService.ItemCreated -= Handle;
+		TrashService.ItemUpdated -= Handle;
+		TrashService.ItemDeleted -= Handle;
+	}
+}

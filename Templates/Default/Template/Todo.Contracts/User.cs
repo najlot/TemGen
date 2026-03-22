@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace <#cs Write(Project.Namespace)#>.Contracts;
+namespace <# Project.Namespace#>.Contracts;
 
 public class User
 {

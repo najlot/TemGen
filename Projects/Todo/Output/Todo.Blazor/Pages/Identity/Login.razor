@@ -10,30 +10,30 @@
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
 
-<PageTitle>@CommonLoc.Login</PageTitle>
+<PageTitle>@UserLoc.Login</PageTitle>
 
 <EditForm Model="@Input" OnValidSubmit="@TryLogin">
 	<section class="w-100 p-4 d-flex justify-content-center pb-4">
 		<div>
-			<h1>@CommonLoc.Login</h1>
+			<h1>@UserLoc.Login</h1>
 			<br/>
 			<DataAnnotationsValidator />
 			<ValidationSummary  />
 
 			<!-- Username input -->
 			<div class="form-outline mb-4">
-				<label class="form-label" for="UsernameInput">@CommonLoc.Username</label>
+				<label class="form-label" for="UsernameInput">@UserLoc.Username</label>
 				<InputText type="text" id="UsernameInput" class="form-control" @bind-Value="Input.Username" />
 			</div>
 
 			<!-- Password input -->
 			<div class="form-outline mb-4">
-				<label class="form-label" for="PasswordInput">@CommonLoc.Password</label>
+				<label class="form-label" for="PasswordInput">@UserLoc.Password</label>
 				<InputText type="password" id="PasswordInput" class="form-control" @bind-Value="Input.Password" />
 			</div>
 
 			<div class="form-outline mb-4">
-				<button type="submit" class="btn btn-primary w-100">@CommonLoc.Login</button>
+				<button type="submit" class="btn btn-primary w-100">@UserLoc.Login</button>
 			</div>
 		</div>
 	</section>
@@ -75,13 +75,13 @@
 		catch (Exception ex)
 		{
 			Logger.LogError(ex, "Error creating token.");
-			ErrorService?.ShowError(CommonLoc.Login, ErrorLoc.ErrorCouldNotLogin);
+			ErrorService?.ShowError(UserLoc.Login, ErrorLoc.ErrorCouldNotLogin);
 			return;
 		}
 
 		if (string.IsNullOrWhiteSpace(token))
 		{
-			ErrorService?.ShowError(CommonLoc.Login, ErrorLoc.ErrorInvalidUsernamePassword);
+			ErrorService?.ShowError(UserLoc.Login, ErrorLoc.ErrorInvalidUsernamePassword);
 			Input.Password = "";
 		}
 		else

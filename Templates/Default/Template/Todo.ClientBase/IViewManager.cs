@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace <#cs Write(Project.Namespace)#>.ClientBase;
+namespace <# Project.Namespace#>.ClientBase;
 
 public interface IViewManager<TView>
 {

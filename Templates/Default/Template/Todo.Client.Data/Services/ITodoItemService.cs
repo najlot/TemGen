@@ -1,24 +1,24 @@
 using System;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Client.Data.Models;
-using <#cs Write(Project.Namespace)#>.Contracts.Events;
-using <#cs Write(Project.Namespace)#>.Contracts.Filters;
+using <# Project.Namespace#>.Client.Data.Models;
+using <# Project.Namespace#>.Contracts.Events;
+using <# Project.Namespace#>.Contracts.Filters;
 
-namespace <#cs Write(Project.Namespace)#>.Client.Data.Services;
+namespace <# Project.Namespace#>.Client.Data.Services;
 
-public interface I<#cs Write(Definition.Name)#>Service
+public interface I<# Definition.Name#>Service
 {
-	event AsyncEventHandler<<#cs Write(Definition.Name)#>Created>? ItemCreated;
-	event AsyncEventHandler<<#cs Write(Definition.Name)#>Updated>? ItemUpdated;
-	event AsyncEventHandler<<#cs Write(Definition.Name)#>Deleted>? ItemDeleted;
+	event AsyncEventHandler<<# Definition.Name#>Created>? ItemCreated;
+	event AsyncEventHandler<<# Definition.Name#>Updated>? ItemUpdated;
+	event AsyncEventHandler<<# Definition.Name#>Deleted>? ItemDeleted;
 
 	Task StartEventListener();
 
-	<#cs Write(Definition.Name)#>Model Create<#cs Write(Definition.Name)#>();
-	Task AddItemAsync(<#cs Write(Definition.Name)#>Model item);
-	Task<<#cs Write(Definition.Name)#>ListItemModel[]> GetItemsAsync();
-	Task<<#cs Write(Definition.Name)#>ListItemModel[]> GetItemsAsync(<#cs Write(Definition.Name)#>Filter filter);
-	Task<<#cs Write(Definition.Name)#>Model> GetItemAsync(Guid id);
-	Task UpdateItemAsync(<#cs Write(Definition.Name)#>Model item);
+	<# Definition.Name#>Model Create<# Definition.Name#>();
+	Task AddItemAsync(<# Definition.Name#>Model item);
+	Task<<# Definition.Name#>ListItemModel[]> GetItemsAsync();
+	Task<<# Definition.Name#>ListItemModel[]> GetItemsAsync(<# Definition.Name#>Filter filter);
+	Task<<# Definition.Name#>Model> GetItemAsync(Guid id);
+	Task UpdateItemAsync(<# Definition.Name#>Model item);
 	Task DeleteItemAsync(Guid id);
 }<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

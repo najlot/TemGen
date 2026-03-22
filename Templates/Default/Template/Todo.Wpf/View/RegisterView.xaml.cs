@@ -1,6 +1,6 @@
 using System.Windows.Controls;
 
-namespace <#cs Write(Project.Namespace)#>.Wpf.View;
+namespace <# Project.Namespace#>.Wpf.View;
 
 public partial class RegisterView : UserControl
 {

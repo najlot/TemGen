@@ -1,4 +1,4 @@
-namespace <#cs Write(Project.Namespace)#>.Client.MVVM;
+namespace <# Project.Namespace#>.Client.MVVM;
 
 public interface IPropertyChangeVisitor
 {

@@ -68,8 +68,8 @@
 					</DockPanel>
 					<DockPanel Margin="5">
 						<Label Content="{x:Static loc:TodoItemLoc.Status}" MinWidth="75" />
-						<ComboBox ItemsSource="{Binding AvailableTodoItemStatus, Converter={x:Static converter:EnumToTranslationConverter.Instance}, ConverterParameter={x:Type loc:TodoItemStatusLoc}}" 
-							  SelectedItem="{Binding Status, Converter={x:Static converter:EnumToTranslationConverter.Instance}, ConverterParameter={x:Type loc:TodoItemStatusLoc}}" />
+						<ComboBox ItemsSource="{Binding AvailableTodoItemStatus, Converter={x:Static converter:EnumToTranslationConverter.Instance}, ConverterParameter={x:Type loc:TodoItemStatusLoc}}"
+								  SelectedItem="{Binding Status, Converter={x:Static converter:EnumToTranslationConverter.Instance}, ConverterParameter={x:Type loc:TodoItemStatusLoc}}" />
 					</DockPanel>
 					<DockPanel Margin="5">
 						<Label Content="{x:Static loc:TodoItemLoc.ChangedAt}" MinWidth="75" />
@@ -125,7 +125,6 @@
 										</DataTemplate>
 									</DataGridTemplateColumn.CellTemplate>
 								</DataGridTemplateColumn>
-
 								<DataGridTemplateColumn Header="{x:Static loc:ChecklistTaskLoc.Description}" Width="SizeToCells" MinWidth="100">
 									<DataGridTemplateColumn.CellTemplate>
 										<DataTemplate>

@@ -1,6 +1,6 @@
 using System;
 
-namespace <#cs Write(Project.Namespace)#>.Client.Data.Identity;
+namespace <# Project.Namespace#>.Client.Data.Identity;
 
 public class RegistrationResult : IEquatable<RegistrationResult>
 {

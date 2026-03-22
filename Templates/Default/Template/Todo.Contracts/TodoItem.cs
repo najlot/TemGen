@@ -1,47 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace <#cs Write(Project.Namespace)#>.Contracts;
+namespace <# Project.Namespace#>.Contracts;
 
-public <#cs Write(Definition.IsEnumeration ? "enum" : "class")#> <#cs Write(Definition.Name);#>
+public <#cs Write(Definition.IsEnumeration ? "enum" : "class")#> <# Definition.Name#>
 {
-<#cs
-if (Definition.IsEnumeration)
-{
-	foreach(var entry in Entries) WriteLine($"	{entry.Field},");
-}
-else
-{
-	if (Definition.IsArray)
-	{
-		WriteLine("	public int Id { get; set; }");
-	}
-	else
-	{
-		WriteLine("	public Guid Id { get; set; }");
-	}
-	
-	foreach(var entry in Entries)
-	{
-		var typePrefix = entry.IsArray ? "List<" : "";
-		var typeSuffix = entry.IsNullable ? "?" : "";
-		typeSuffix = entry.IsArray ? ">" : typeSuffix;
-		var suffix = entry.IsReference? "Id" : "";
-
-		var defaultValue = "";
-		if (entry.EntryType == "string")
-		{
-			defaultValue = " = string.Empty;";
-		}
-		else if (entry.IsArray)
-		{
-			defaultValue = " = [];";
-		}
-
-		WriteLine($"	public {typePrefix}{entry.EntryType}{typeSuffix} {entry.Field}{suffix} {{ get; set; }}{defaultValue}");
-	}
-}
-
-Result = Result.TrimEnd();
-#>
-}<#cs SetOutputPath(false)#>
+<#if Definition.IsEnumeration
+#><#for entry in Entries
+#>	<# entry.Field#>,
+<#end#><#else
+#>	public <#cs Write(Definition.IsArray ? "int" : "Guid")#> Id { get; set; }
+<#for entry in Entries
+#>	public <#cs Write(entry.IsArray ? "List<" : "")#><# entry.EntryType#><#cs Write(entry.IsArray ? ">" : entry.IsNullable ? "?" : "")#> <# entry.Field#><#cs Write(entry.IsReference ? "Id" : "")#> { get; set; }<#if entry.EntryType == "string"
+#> = string.Empty;<#elseif entry.IsArray
+#> = [];<#elseif entry.IsOwnedType && !entry.IsNullable
+#> = new();<#end#>
+<#end#><#end
+#>}<#cs SetOutputPath(false)#>

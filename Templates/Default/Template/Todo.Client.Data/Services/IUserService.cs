@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using <#cs Write(Project.Namespace)#>.Client.Data.Models;
-using <#cs Write(Project.Namespace)#>.Contracts.Events;
+using <# Project.Namespace#>.Client.Data.Models;
+using <# Project.Namespace#>.Contracts.Events;
 
-namespace <#cs Write(Project.Namespace)#>.Client.Data.Services;
+namespace <# Project.Namespace#>.Client.Data.Services;
 
 public interface IUserService
 {

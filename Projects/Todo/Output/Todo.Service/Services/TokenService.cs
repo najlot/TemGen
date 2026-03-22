@@ -1,17 +1,15 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Todo.Service.Configuration;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Threading.Tasks;
+using Todo.Service.Configuration;
 
 namespace Todo.Service.Services;
 
 public class TokenService(
 	IUserService userService,
+	IUserIdProvider userIdProvider,
 	ServiceConfiguration serviceConfiguration)
 {
 	public static TokenValidationParameters GetValidationParameters(string secret)
@@ -38,8 +36,9 @@ public class TokenService(
 		return GetValidationParameters(serviceConfiguration.Secret);
 	}
 
-	public string GetRefreshToken(string username, Guid userId)
+	public string GetRefreshToken(string username)
 	{
+		var userId = userIdProvider.GetRequiredUserId();
 		var claim = new[]
 		{
 			new Claim(ClaimTypes.Name, username),

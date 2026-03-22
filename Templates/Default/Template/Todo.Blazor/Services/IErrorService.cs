@@ -1,4 +1,4 @@
-namespace <#cs Write(Project.Namespace)#>.Blazor.Services;
+namespace <# Project.Namespace#>.Blazor.Services;
 
 public interface IErrorService
 {

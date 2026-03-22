@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignWidth="1100"
+             d:DesignHeight="800"
+             x:Class="Todo.Avalonia.Views.MainView">
+  <Grid RowDefinitions="Auto,Auto,*" Background="#FFF7F5F0">
+    <Border x:Name="ErrorBorder"
+            Grid.Row="0"
+            Margin="16,16,16,8"
+            Padding="12"
+            Background="#FFFBE4E6"
+            BorderBrush="#FFDC2626"
+            BorderThickness="1"
+            CornerRadius="8"
+            IsVisible="False">
+      <TextBlock x:Name="ErrorText" Foreground="#FF991B1B" TextWrapping="Wrap" />
+    </Border>
+
+    <Border x:Name="SuccessBorder"
+            Grid.Row="1"
+            Margin="16,0,16,8"
+            Padding="12"
+            Background="#FFECFDF5"
+            BorderBrush="#FF16A34A"
+            BorderThickness="1"
+            CornerRadius="8"
+            IsVisible="False">
+      <TextBlock x:Name="SuccessText" Foreground="#FF166534" TextWrapping="Wrap" />
+    </Border>
+
+    <Border Grid.Row="2" Margin="16,0,16,16" Background="White" CornerRadius="12" BorderBrush="#FFE7E5E4" BorderThickness="1">
+      <ContentControl x:Name="ContentHost" />
+    </Border>
+  </Grid>
+</UserControl>

@@ -3,20 +3,23 @@
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+		<AnalysisLevel>latest</AnalysisLevel>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Dapper" Version="2.1.72" />
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.4" />
-		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.16.0" />
-		<PackageReference Include="MongoDB.Driver" Version="3.7.0" />
-		<PackageReference Include="Najlot.Log.Configuration.FileSource" Version="4.0.4" />
-		<PackageReference Include="Najlot.Log.Extensions.Logging" Version="4.0.4" />
-		<PackageReference Include="Najlot.Map" Version="0.1.2" />
-		<PackageReference Include="Najlot.Map.SourceGenerator" Version="0.1.2" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-		<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.3" />
-		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
+		<PackageReference Include="LiteDB" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+		<PackageReference Include="Microsoft.IdentityModel.Tokens" />
+		<PackageReference Include="MongoDB.Driver" />
+		<PackageReference Include="Najlot.Log.Configuration.FileSource" />
+		<PackageReference Include="Najlot.Log.Extensions.Logging" />
+		<PackageReference Include="Najlot.Map" />
+		<PackageReference Include="Najlot.Map.SourceGenerator" PrivateAssets="all" ReferenceOutputAssembly="false" />
+		<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
+		<PackageReference Include="Swashbuckle.AspNetCore" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -13,7 +13,7 @@
 		<PackageProjectUrl>https://github.com/Najlot/TemGen</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/Najlot/TemGen</RepositoryUrl>
-		<Version>1.0.1</Version>
+		<Version>1.1.0</Version>
 		<PackageTags>dotnet;template;generator</PackageTags>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageIcon>icon.png</PackageIcon>

@@ -19,6 +19,7 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 	private readonly IUserService _userService;
 
 	public IEnumerable<UserListItemModel> AvailableUsers { get; set => Set(ref field, value); } = [];
+
 	public TodoItemStatus[] AvailableTodoItemStatus { get; } = Enum.GetValues<TodoItemStatus>();
 
 	public Guid Id { get; set => Set(ref field, value); }
@@ -94,10 +95,10 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 		}
 
 		AvailableUsers = await _userService.GetItemsAsync();
-
 		await _todoItemService.StartEventListener();
 
 		_changeTracker.Clear();
+
 		InitializeChecklistTracking();
 	}
 
@@ -111,6 +112,7 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 
 			Map.From(obj).To(this);
 			_changeTracker.Clear();
+
 			InitializeChecklistTracking();
 		});
 
@@ -247,6 +249,8 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 		return true;
 	}
 
+
+
 	protected override IEnumerable<ValidationResult> Validate(string? propertyName)
 	{
 		return [];
@@ -259,7 +263,8 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 							or nameof(CanEdit)
 							or nameof(Id)
 							or nameof(AvailableUsers)
-							or nameof(AvailableTodoItemStatus);
+							or nameof(AvailableTodoItemStatus)
+;
 
 	private bool _disposedValue;
 	protected virtual void Dispose(bool disposing)

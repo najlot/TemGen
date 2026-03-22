@@ -1,5 +1,4 @@
 using Najlot.Map.Attributes;
-using System;
 using System.Linq.Expressions;
 using Todo.Contracts;
 using Todo.Contracts.Commands;
@@ -12,15 +11,9 @@ namespace Todo.Service.Mappings;
 [Mapping]
 internal partial class UserMappings
 {
-	public static UserCreated MapToCreated(UserModel from) =>
-		new(from.Id,
-		from.Username,
-		from.EMail);
+	public static partial void MapToCreated(UserModel from, UserCreated to);
 
-	public static UserUpdated MapToUpdated(UserModel from) =>
-		new(from.Id,
-		from.Username,
-		from.EMail);
+	public static partial void MapToUpdated(UserModel from, UserUpdated to);
 
 	[MapIgnoreProperty(nameof(to.PasswordHash))]
 	[MapIgnoreProperty(nameof(to.DeletedAt))]

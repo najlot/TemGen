@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignWidth="900"
+             d:DesignHeight="700"
+             x:Class="<#cs Write(Project.Namespace)#>.Avalonia.Views.ManageView">
+  <Grid RowDefinitions="Auto,*">
+    <Button Margin="16"
+            HorizontalAlignment="Left"
+            Command="{Binding NavigateBackCommand}"
+            Content="Back" />
+
+    <Border Grid.Row="1"
+            MaxWidth="460"
+            Padding="32"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Background="#FFFFFBF5"
+            BorderBrush="#FFE7E5E4"
+            BorderThickness="1"
+            CornerRadius="12">
+      <StackPanel>
+        <TextBlock Margin="0,0,0,16"
+                   HorizontalAlignment="Center"
+                   FontSize="24"
+                   FontWeight="Bold"
+                   Text="Manage user" />
+
+        <StackPanel Margin="0,0,0,16">
+          <TextBlock Margin="0,0,0,4" Text="New password" />
+          <TextBox PasswordChar="*" Text="{Binding Password, Mode=TwoWay}" />
+        </StackPanel>
+
+        <StackPanel Margin="0,0,0,16">
+          <TextBlock Margin="0,0,0,4" Text="Confirm password" />
+          <TextBox PasswordChar="*" Text="{Binding PasswordConfirm, Mode=TwoWay}" />
+        </StackPanel>
+
+        <Button Command="{Binding SaveCommand}" Content="Change password" />
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>
