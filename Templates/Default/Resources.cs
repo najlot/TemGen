@@ -1,7 +1,11 @@
 foreach (var path in Directory.GetFiles(Project.ResourcesPath, "*.*", SearchOption.AllDirectories))
 {
 	var newPath = path.Replace(Project.ResourcesPath, Project.OutputPath).Replace("Project.Namespace", Project.Namespace);
-	Directory.CreateDirectory(Path.GetDirectoryName(newPath));
+	var directoryName = Path.GetDirectoryName(newPath);
+	if (!string.IsNullOrEmpty(directoryName))
+	{
+		Directory.CreateDirectory(directoryName);
+	}
 
 	// Validate modify time of the file, if the file is not modified, skip copying the file to save time
 	var lastWriteTime = File.GetLastWriteTime(path);
