@@ -1,12 +1,21 @@
+using Najlot.Audit;
 using Najlot.Log;
-using <# Project.Namespace#>.Service.Configuration;
-using <# Project.Namespace#>.Service.Repository;
-using <# Project.Namespace#>.Service.Repository.FileImpl;
-using <# Project.Namespace#>.Service.Repository.LiteDbImpl;
-using <# Project.Namespace#>.Service.Repository.MongoDbImpl;
-using <# Project.Namespace#>.Service.Repository.MySqlImpl;
-using <# Project.Namespace#>.Service.Services;
-
+using <# Project.Namespace#>.Service.Features.History;
+using <# Project.Namespace#>.Service.Features.Users;
+using <# Project.Namespace#>.Service.Shared.Configuration;
+using <# Project.Namespace#>.Service.Infrastructure.Persistence;
+using <# Project.Namespace#>.Service.Infrastructure.Persistence.File;
+using <# Project.Namespace#>.Service.Infrastructure.Persistence.LiteDb;
+using <# Project.Namespace#>.Service.Infrastructure.Persistence.MongoDb;
+using <# Project.Namespace#>.Service.Infrastructure.Persistence.MySql;
+<#cs foreach (var definition in Definitions.Where(d => !(d.IsEnumeration
+|| d.IsArray
+|| d.IsOwnedType
+|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))).OrderBy(d => d.Name))
+{
+	WriteLine($"using {Project.Namespace}.Service.Features.{definition.Name}s;");
+}
+#>
 namespace <# Project.Namespace#>.Service;
 
 internal static class Program
@@ -46,8 +55,12 @@ internal static class Program
 
 		services.RegisterBackupRepositories(startupConfiguration);
 
+		var audit = new Audit().Register<# Project.Namespace#>ServiceAuditProviders();
+		services.AddSingleton(audit);
+
 		var map = new Najlot.Map.Map().Register<# Project.Namespace#>ServiceMappings();
 		services.AddSingleton(map);
+
 		services.RegisterServices();
 		services.RegisterApiInfrastructure(startupConfiguration.ServiceConfiguration);
 

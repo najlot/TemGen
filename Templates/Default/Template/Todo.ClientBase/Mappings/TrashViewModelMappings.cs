@@ -1,8 +1,7 @@
 using Najlot.Map;
 using Najlot.Map.Attributes;
 using <# Project.Namespace#>.Client.Data.Models;
-using <# Project.Namespace#>.ClientBase.ViewModel;
-
+using <# Project.Namespace#>.ClientBase.ViewModels;
 using <# Project.Namespace#>.Contracts.Events;
 
 namespace <# Project.Namespace#>.ClientBase.Mappings;

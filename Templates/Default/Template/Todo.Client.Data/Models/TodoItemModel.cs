@@ -6,7 +6,7 @@ namespace <# Project.Namespace#>.Client.Data.Models;
 
 public class <# Definition.Name#>Model
 {
-	public <#cs Write(Definition.IsArray ? "int" : "Guid");;#> Id { get; set; }
+	public <#cs Write(Definition.IsArray ? "int" : "Guid")#> Id { get; set; }
 
 <#for entry in Entries
 #><#if entry.IsArray

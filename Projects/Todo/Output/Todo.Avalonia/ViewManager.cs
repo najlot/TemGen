@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Todo.Client.MVVM;
 using Todo.ClientBase;
-using Todo.ClientBase.ViewModel;
+using Todo.ClientBase.ViewModels;
 using Todo.Avalonia.Views;
 
 namespace Todo.Avalonia;
@@ -19,10 +19,10 @@ public class ViewManager(IServiceProvider serviceProvider) : IViewManager<Contro
 		[typeof(MenuViewModel)] = typeof(MenuView),
 		[typeof(ManageViewModel)] = typeof(ManageView),
 		[typeof(GlobalSearchViewModel)] = typeof(GlobalSearchView),
+		[typeof(EntityHistoryViewModel)] = typeof(HistoryView),
 		[typeof(TrashViewModel)] = typeof(TrashView),
-		[typeof(AllNotesViewModel)] = typeof(AllNotesView),
-		[typeof(AllTodoItemsViewModel)] = typeof(AllTodoItemsView),
-		[typeof(ChecklistTaskViewModel)] = typeof(ChecklistTaskView),
+		[typeof(NotesViewModel)] = typeof(NotesView),
+		[typeof(TodoItemsViewModel)] = typeof(TodoItemsView),
 		[typeof(NoteViewModel)] = typeof(NoteView),
 		[typeof(TodoItemViewModel)] = typeof(TodoItemView),
 	};

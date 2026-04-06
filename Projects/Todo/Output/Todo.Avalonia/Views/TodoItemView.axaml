@@ -1,119 +1,150 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl x:Class="Todo.Avalonia.Views.TodoItemView"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:contracts="clr-namespace:Todo.Contracts;assembly=Todo.Contracts"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:loc="clr-namespace:Todo.Client.Localisation;assembly=Todo.Client.Localisation"
              xmlns:local="using:Todo.Avalonia.Views"
-             mc:Ignorable="d"
-             d:DesignWidth="1000"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vms="clr-namespace:Todo.ClientBase.ViewModels;assembly=Todo.ClientBase"
              d:DesignHeight="750"
-             x:Class="Todo.Avalonia.Views.TodoItemView">
-  <Grid>
-    <DockPanel IsEnabled="{Binding CanEdit}">
-      <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" Margin="12">
-        <Button Grid.Column="0" Margin="0,0,8,0" Command="{Binding NavigateBackCommand}" Content="Back" />
-        <Border Grid.Column="1" />
-        <Button Grid.Column="2" Margin="8,0,0,0" Command="{Binding UndoCommand}" Content="Undo" />
-        <Button Grid.Column="3" Margin="8,0,0,0" Command="{Binding RedoCommand}" Content="Redo" />
-        <Button Grid.Column="4" Margin="8,0,0,0" Command="{Binding SaveCommand}" Content="Save" />
-        <Button Grid.Column="5" Margin="8,0,0,0" Command="{Binding DeleteCommand}" Content="Delete" />
-      </Grid>
+             d:DesignWidth="1000"
+             x:DataType="vms:TodoItemViewModel"
+             mc:Ignorable="d">
+	<Grid>
+		<Grid IsEnabled="{Binding CanEdit}" RowDefinitions="Auto,*">
+			<!--  Header  -->
+			<Grid Margin="16" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto">
+				<Button Grid.Column="0" Margin="0,0,16,0" Command="{Binding NavigateBackCommand}">
+					<materialIcons:MaterialIcon Width="24" Height="24" Kind="ArrowBack" />
+				</Button>
+				<Button Grid.Column="2" Margin="8,0" Command="{Binding UndoCommand}">
+					<materialIcons:MaterialIcon Width="24" Height="24" Kind="Undo" />
+				</Button>
+				<Button Grid.Column="3" Margin="8,0" Command="{Binding RedoCommand}">
+					<materialIcons:MaterialIcon Width="24" Height="24" Kind="Redo" />
+				</Button>
+				<Button Grid.Column="4" Margin="8,0" Command="{Binding NavigateToHistoryCommand}">
+					<materialIcons:MaterialIcon Width="24" Height="24" Kind="History" />
+				</Button>
+				<Button Grid.Column="5" Margin="8,0" Command="{Binding SaveCommand}">
+					<materialIcons:MaterialIcon Width="24" Height="24" Kind="ContentSave" />
+				</Button>
+				<Button Grid.Column="6" Margin="8,0" Command="{Binding DeleteCommand}">
+					<materialIcons:MaterialIcon Width="24" Height="24" Kind="Delete" />
+				</Button>
+			</Grid>
 
-      <ScrollViewer Margin="12,0,12,12">
-        <StackPanel Spacing="10" MinWidth="420">
-          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
-            <StackPanel Spacing="8">
-              <TextBlock FontWeight="SemiBold" Text="Title" />
-              <TextBox Text="{Binding Title, Mode=TwoWay}" />
-            </StackPanel>
-          </Border>
-          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
-            <StackPanel Spacing="8">
-              <TextBlock FontWeight="SemiBold" Text="Content" />
-              <TextBox Text="{Binding Content, Mode=TwoWay}" />
-            </StackPanel>
-          </Border>
-          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
-            <StackPanel Spacing="8">
-              <TextBlock FontWeight="SemiBold" Text="CreatedAt" />
-              <DatePicker SelectedDate="{Binding CreatedAt}" />
-            </StackPanel>
-          </Border>
-          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
-            <StackPanel Spacing="8">
-              <TextBlock FontWeight="SemiBold" Text="CreatedBy" />
-              <TextBox Text="{Binding CreatedBy, Mode=TwoWay}" />
-            </StackPanel>
-          </Border>
-          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
-            <StackPanel Spacing="8">
-              <TextBlock FontWeight="SemiBold" Text="AssignedTo" />
-              <TextBlock FontWeight="SemiBold" Text="AssignedTo" />
-              <ComboBox ItemsSource="{Binding AvailableUsers}"
-                        SelectedValue="{Binding AssignedToId}"
-                        SelectedValueBinding="{Binding Id}"
-                        PlaceholderText="Select User">
-                <ComboBox.ItemTemplate>
-                  <DataTemplate>
-                    <TextBlock Text="{Binding Username}" />
-                  </DataTemplate>
-                </ComboBox.ItemTemplate>
-              </ComboBox>
-            </StackPanel>
-          </Border>
-          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
-            <StackPanel Spacing="8">
-              <TextBlock FontWeight="SemiBold" Text="Status" />
-              <ComboBox ItemsSource="{Binding AvailableTodoItemStatus}" SelectedItem="{Binding Status}" />
-            </StackPanel>
-          </Border>
-          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
-            <StackPanel Spacing="8">
-              <TextBlock FontWeight="SemiBold" Text="ChangedAt" />
-              <DatePicker SelectedDate="{Binding ChangedAt}" />
-            </StackPanel>
-          </Border>
-          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
-            <StackPanel Spacing="8">
-              <TextBlock FontWeight="SemiBold" Text="ChangedBy" />
-              <TextBox Text="{Binding ChangedBy, Mode=TwoWay}" />
-            </StackPanel>
-          </Border>
-          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
-            <StackPanel Spacing="8">
-              <TextBlock FontWeight="SemiBold" Text="Priority" />
-              <TextBox Text="{Binding Priority, Mode=TwoWay}" />
-            </StackPanel>
-          </Border>
-          <Border Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
-            <StackPanel Spacing="8">
-              <DockPanel>
-                <TextBlock DockPanel.Dock="Left" Margin="0,0,0,8" FontSize="16" FontWeight="SemiBold" Text="Checklist" />
-                <Button DockPanel.Dock="Right" Command="{Binding AddChecklistTaskCommand}" Content="Add" />
-              </DockPanel>
-              <ItemsControl ItemsSource="{Binding Checklist}">
-                <ItemsControl.ItemTemplate>
-                  <DataTemplate>
-                    <Border Margin="0,0,0,8" Padding="12" Background="#FFFFFBF5" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
-                      <StackPanel Spacing="8">
-                        <CheckBox IsChecked="{Binding IsDone}" Content="IsDone" />
-                        <TextBlock FontWeight="SemiBold" Text="Description" />
-                        <TextBox Text="{Binding Description, Mode=TwoWay}" />
-                        <Button HorizontalAlignment="Right"
-                                Command="{Binding DataContext.DeleteChecklistTaskCommand, RelativeSource={RelativeSource AncestorType=local:TodoItemView}}"
-                                CommandParameter="{Binding .}"
-                                Content="Delete" />
-                      </StackPanel>
-                    </Border>
-                  </DataTemplate>
-                </ItemsControl.ItemTemplate>
-              </ItemsControl>
-            </StackPanel>
-          </Border>
-        </StackPanel>
-      </ScrollViewer>
-    </DockPanel>
+			<!--  Main Content  -->
+			<ScrollViewer Grid.Row="1">
+				<StackPanel MinWidth="400"
+				            MinHeight="200"
+				            Margin="2,0"
+				            HorizontalAlignment="Center"
+				            VerticalAlignment="Center">
+					<DockPanel Margin="5">
+						<TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.Title}" />
+						<TextBox Text="{Binding Title, Mode=TwoWay}" />
+					</DockPanel>
+					<DockPanel Margin="5">
+						<TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.Content}" />
+						<TextBox Text="{Binding Content, Mode=TwoWay}" />
+					</DockPanel>
+					<DockPanel Margin="5">
+						<TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.CreatedAt}" />
+						<StackPanel Orientation="Horizontal">
+							<DatePicker SelectedDate="{Binding CreatedAtDate, Mode=TwoWay}" />
+							<TimePicker Width="110"
+							            Margin="8,0,0,0"
+							            ClockIdentifier="24HourClock"
+							            SelectedTime="{Binding CreatedAtTime, Mode=TwoWay}" />
+						</StackPanel>
+					</DockPanel>
+					<DockPanel Margin="5">
+						<TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.CreatedBy}" />
+						<TextBox Text="{Binding CreatedBy, Mode=TwoWay}" />
+					</DockPanel>
+					<DockPanel Margin="5">
+						<TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.AssignedTo}" />
+						<ComboBox ItemsSource="{Binding AvailableUsers}" SelectedValue="{Binding AssignedToId}" SelectedValueBinding="{Binding Id}">
+							<ComboBox.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Text="{Binding Username}" />
+								</DataTemplate>
+							</ComboBox.ItemTemplate>
+						</ComboBox>
+					</DockPanel>
+					<DockPanel Margin="5">
+						<TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.Status}" />
+						<ComboBox ItemsSource="{Binding AvailableTodoItemStatus}" SelectedItem="{Binding Status}" />
+					</DockPanel>
+					<DockPanel Margin="5">
+						<TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.ChangedAt}" />
+						<StackPanel Orientation="Horizontal">
+							<DatePicker SelectedDate="{Binding ChangedAtDate, Mode=TwoWay}" />
+							<TimePicker Width="110"
+							            Margin="8,0,0,0"
+							            ClockIdentifier="24HourClock"
+							            SelectedTime="{Binding ChangedAtTime, Mode=TwoWay}" />
+						</StackPanel>
+					</DockPanel>
+					<DockPanel Margin="5">
+						<TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.ChangedBy}" />
+						<TextBox Text="{Binding ChangedBy, Mode=TwoWay}" />
+					</DockPanel>
+					<DockPanel Margin="5">
+						<TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.Priority}" />
+						<TextBox Text="{Binding Priority, Mode=TwoWay}" />
+					</DockPanel>
+					<DockPanel>
+						<DockPanel DockPanel.Dock="Top">
+							<Button Margin="5" Command="{Binding AddChecklistTaskCommand}" DockPanel.Dock="Right">
+								<materialIcons:MaterialIcon Width="18" Height="18" Kind="Add" />
+							</Button>
 
-    <local:SaveConfirmationDialogView IsVisible="{Binding SaveDialogViewModel.IsVisible}" DataContext="{Binding SaveDialogViewModel}" />
-    <local:DeleteConfirmationDialogView IsVisible="{Binding DeleteDialogViewModel.IsVisible}" DataContext="{Binding DeleteDialogViewModel}" />
-  </Grid>
+							<Border Margin="0,5" Padding="5" Background="{StaticResource BackgroundColor}">
+								<TextBlock Foreground="{StaticResource ForegroundColor}" Text="{x:Static loc:TodoItemLoc.Checklist}" />
+							</Border>
+						</DockPanel>
+
+						<ItemsControl ItemsSource="{Binding Checklist}">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate x:DataType="vms:ChecklistTaskViewModel">
+									<Border Margin="0,0,5,8"
+									        Padding="8"
+									        BorderBrush="LightGray"
+									        BorderThickness="1">
+										<StackPanel>
+											<DockPanel Margin="5">
+												<TextBlock MinWidth="75" />
+												<CheckBox Content="{x:Static loc:ChecklistTaskLoc.IsDone}" IsChecked="{Binding IsDone}" />
+											</DockPanel>
+											<DockPanel Margin="5">
+												<TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:ChecklistTaskLoc.Description}" />
+												<TextBox Text="{Binding Description, Mode=TwoWay}" />
+											</DockPanel>
+
+											<Button HorizontalAlignment="Right"
+											        Background="Transparent"
+											        BorderThickness="0"
+											        Command="{Binding $parent[ItemsControl].((vms:TodoItemViewModel)DataContext).DeleteChecklistTaskCommand}"
+											        CommandParameter="{Binding .}"
+											        Foreground="{StaticResource BackgroundColor}">
+												<materialIcons:MaterialIcon Width="14" Height="14" Kind="Delete" />
+											</Button>
+										</StackPanel>
+									</Border>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</DockPanel>
+
+				</StackPanel>
+			</ScrollViewer>
+		</Grid>
+
+		<local:SaveConfirmationDialogView DataContext="{Binding $parent[Grid].((vms:TodoItemViewModel)DataContext).SaveDialogViewModel}" IsVisible="{Binding IsVisible}" />
+		<local:DeleteConfirmationDialogView DataContext="{Binding $parent[Grid].((vms:TodoItemViewModel)DataContext).DeleteDialogViewModel}" IsVisible="{Binding IsVisible}" />
+	</Grid>
 </UserControl>

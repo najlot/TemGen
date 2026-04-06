@@ -1,12 +1,14 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Todo.Client.Data.Identity;
 using Todo.Client.MVVM;
 using Todo.ClientBase;
-using Todo.ClientBase.ViewModel;
+using Todo.ClientBase.ViewModels;
 
 namespace Todo.Wpf;
 
@@ -14,6 +16,8 @@ public partial class MainWindow : Window, INavigationService, INotificationServi
 {
 	private readonly ViewStackNavigator<Control> _controlNavigator;
 	private readonly IDispatcherHelper _dispatcherHelper;
+	private readonly ITokenProvider _tokenProvider;
+	private readonly IUserDataStore _userDataStore;
 
 	public MainWindow()
 	{
@@ -21,20 +25,49 @@ public partial class MainWindow : Window, INavigationService, INotificationServi
 
 		var serviceProvider = ServiceProviderFactory.CreateServiceProvider(this, this);
 		_dispatcherHelper = serviceProvider.GetRequiredService<IDispatcherHelper>();
+		_tokenProvider = serviceProvider.GetRequiredService<ITokenProvider>();
+		_userDataStore = serviceProvider.GetRequiredService<IUserDataStore>();
 		_controlNavigator = new ViewStackNavigator<Control>(serviceProvider);
 
-		NavigateToLogin();
+		NavigateToInitialView();
 	}
 
-	private async void NavigateToLogin()
+	private async void NavigateToInitialView()
 	{
 		try
 		{
+			if (await HasValidSession())
+			{
+				await NavigateForward<MenuViewModel>();
+				return;
+			}
+
 			await NavigateForward<LoginViewModel>();
 		}
 		catch (Exception ex)
 		{
 			await ShowErrorAsync($"An error occurred while navigating: {ex}");
+		}
+	}
+
+	private async Task<bool> HasValidSession()
+	{
+		try
+		{
+			var token = await _tokenProvider.GetToken();
+			return !string.IsNullOrWhiteSpace(token);
+		}
+		catch (AuthenticationException)
+		{
+			_tokenProvider.ClearCache();
+			await _userDataStore.SetUserData(string.Empty, string.Empty);
+			return false;
+		}
+		catch (ArgumentException)
+		{
+			_tokenProvider.ClearCache();
+			await _userDataStore.SetUserData(string.Empty, string.Empty);
+			return false;
 		}
 	}
 

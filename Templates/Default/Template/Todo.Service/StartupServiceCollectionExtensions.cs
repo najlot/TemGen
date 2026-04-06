@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using <# Project.Namespace#>.Service.Configuration;
-using <# Project.Namespace#>.Service.HealthChecks;
-using <# Project.Namespace#>.Service.Services;
+using <# Project.Namespace#>.Service.Shared.Configuration;
+using <# Project.Namespace#>.Service.Shared.HealthChecks;
+using <# Project.Namespace#>.Service.Features.Auth;
 
 namespace <# Project.Namespace#>.Service;
 

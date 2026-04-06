@@ -129,11 +129,23 @@
   <data name="DeleteConfirmationTitle" xml:space="preserve">
     <value>Löschen?</value>
   </data>
+  <data name="Field" xml:space="preserve">
+    <value>Feld</value>
+  </data>
   <data name="Discard" xml:space="preserve">
     <value>Verwerfen</value>
   </data>
   <data name="Edit" xml:space="preserve">
     <value>Bearbeiten</value>
+  </data>
+  <data name="After" xml:space="preserve">
+    <value>Nachher</value>
+  </data>
+  <data name="Before" xml:space="preserve">
+    <value>Vorher</value>
+  </data>
+  <data name="ChangesRecorded" xml:space="preserve">
+    <value>Änderungen erfasst</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>Filter:</value>
@@ -144,6 +156,9 @@
   <data name="Home" xml:space="preserve">
     <value>Startseite</value>
   </data>
+  <data name="History" xml:space="preserve">
+    <value>Verlauf</value>
+  </data>
   <data name="Loading" xml:space="preserve">
     <value>Wird geladen</value>
   </data>
@@ -152,6 +167,9 @@
   </data>
   <data name="New" xml:space="preserve">
     <value>Neu</value>
+  </data>
+  <data name="NoHistoryEntries" xml:space="preserve">
+    <value>Noch keine Änderungen erfasst.</value>
   </data>
   <data name="No" xml:space="preserve">
     <value>Nein</value>

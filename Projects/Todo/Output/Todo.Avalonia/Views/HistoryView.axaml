@@ -1,0 +1,84 @@
+<UserControl x:Class="Todo.Avalonia.Views.HistoryView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:contracts="clr-namespace:Todo.Contracts;assembly=Todo.Contracts"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:loc="clr-namespace:Todo.Client.Localisation;assembly=Todo.Client.Localisation"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vms="clr-namespace:Todo.ClientBase.ViewModels;assembly=Todo.ClientBase"
+             d:DesignHeight="400"
+             d:DesignWidth="600"
+             x:DataType="vms:EntityHistoryViewModel"
+             mc:Ignorable="d">
+	<Grid RowDefinitions="Auto,*">
+		<!--  Header  -->
+		<Grid Grid.Row="0" Margin="16" ColumnDefinitions="Auto,*,Auto">
+			<Button Grid.Column="0" Margin="0,0,16,0" Command="{Binding NavigateBackCommand}">
+				<materialIcons:MaterialIcon Width="24" Height="24" Kind="ArrowBack" />
+			</Button>
+			<StackPanel Grid.Column="1">
+				<TextBlock FontSize="20" FontWeight="SemiBold" Text="{x:Static loc:CommonLoc.History}" />
+				<TextBlock Foreground="Gray" IsVisible="{Binding HasEntityName}" Text="{Binding EntityName}" />
+			</StackPanel>
+		</Grid>
+		<ScrollViewer Grid.Row="1">
+			<StackPanel Margin="5">
+				<TextBlock Margin="0,0,0,8"
+				           Foreground="Gray"
+				           IsVisible="{Binding IsLoading}"
+				           Text="{x:Static loc:CommonLoc.Loading}" />
+
+				<TextBlock Margin="0,0,0,8"
+				           Foreground="Gray"
+				           IsVisible="{Binding ShowNoHistory}"
+				           Text="{x:Static loc:CommonLoc.NoHistoryEntries}" />
+
+				<ItemsControl ItemsSource="{Binding Items}" HorizontalAlignment="Stretch">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate x:DataType="vms:HistoryListItemViewModel">
+							<Expander Margin="0,0,0,8" IsExpanded="True" HorizontalAlignment="Stretch">
+								<Expander.Header>
+									<StackPanel>
+										<TextBlock FontWeight="SemiBold" Text="{Binding Username}" />
+										<TextBlock Foreground="Gray" Text="{Binding TimeStampText}" />
+										<TextBlock Foreground="Gray">
+											<Run Text="{Binding ChangeCount}" />
+											<Run Text=" " />
+											<Run Text="{x:Static loc:CommonLoc.ChangesRecorded}" />
+										</TextBlock>
+									</StackPanel>
+								</Expander.Header>
+								<StackPanel Margin="8,6,0,0" Spacing="6">
+									<Grid ColumnDefinitions="180,*,*">
+										<TextBlock Grid.Column="0" FontWeight="SemiBold" Text="{x:Static loc:CommonLoc.Field}" />
+										<TextBlock Grid.Column="1" FontWeight="SemiBold" Text="{x:Static loc:CommonLoc.Before}" />
+										<TextBlock Grid.Column="2" FontWeight="SemiBold" Text="{x:Static loc:CommonLoc.After}" />
+									</Grid>
+									<ItemsControl ItemsSource="{Binding Changes}">
+										<ItemsControl.ItemTemplate>
+											<DataTemplate x:DataType="contracts:HistoryChange">
+												<Grid Margin="0,0,0,6" ColumnDefinitions="180,*,*">
+													<TextBlock Grid.Column="0"
+													           Margin="0,0,8,0"
+													           FontWeight="SemiBold"
+													           Text="{Binding Path}"
+													           TextWrapping="Wrap" />
+													<TextBlock Grid.Column="1"
+													           Margin="0,0,8,0"
+													           Text="{Binding OldValue}"
+													           TextWrapping="Wrap" />
+													<TextBlock Grid.Column="2" Text="{Binding NewValue}" TextWrapping="Wrap" />
+												</Grid>
+											</DataTemplate>
+										</ItemsControl.ItemTemplate>
+									</ItemsControl>
+								</StackPanel>
+							</Expander>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</StackPanel>
+		</ScrollViewer>
+	</Grid>
+</UserControl>

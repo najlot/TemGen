@@ -29,7 +29,7 @@ public sealed class ApiEventConnectionProvider(
 			if (_connection is null)
 			{
 				using var client = httpClientFactory.CreateClient();
-				var serverUri = client.BaseAddress ?? throw new NullReferenceException("Could not retrieve server connection information!");
+				var serverUri = client.BaseAddress ?? throw new InvalidOperationException("Could not retrieve server connection information!");
 				var signalRUri = new Uri(serverUri, "/events");
 
 				_connection = new HubConnectionBuilder()

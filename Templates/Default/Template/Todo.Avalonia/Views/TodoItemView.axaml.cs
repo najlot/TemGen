@@ -9,4 +9,4 @@ public partial class <# Definition.Name#>View : UserControl
 		InitializeComponent();
 	}
 }
-<#cs SetOutputPath(Definition.IsEnumeration || Definition.IsOwnedType)#>
+<#cs SetOutputPath(Definition.IsEnumeration || Definition.IsOwnedType || Definition.IsArray)#>

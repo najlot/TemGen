@@ -1,5 +1,7 @@
 <Solution>
-	<Project Path="<#ref Project.Namespace#>.Avalonia.Android/<#ref Project.Namespace#>.Avalonia.Android.csproj" />
+	<Project Path="<#ref Project.Namespace#>.Avalonia.Android/<#ref Project.Namespace#>.Avalonia.Android.csproj">
+		<Deploy Solution="Debug|*" />
+	</Project>
 	<Project Path="<#ref Project.Namespace#>.Avalonia.Browser/<#ref Project.Namespace#>.Avalonia.Browser.csproj" />
 	<Project Path="<#ref Project.Namespace#>.Avalonia.Desktop/<#ref Project.Namespace#>.Avalonia.Desktop.csproj" />
 	<Project Path="<#ref Project.Namespace#>.Avalonia.iOS/<#ref Project.Namespace#>.Avalonia.iOS.csproj" />

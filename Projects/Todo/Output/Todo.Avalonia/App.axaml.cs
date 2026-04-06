@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using System.Linq;
@@ -10,6 +9,8 @@ namespace Todo.Avalonia;
 
 public partial class App : Application
 {
+	public MainView? MainView { get; private set; }
+
 	public override void Initialize()
 	{
 		AvaloniaXamlLoader.Load(this);
@@ -20,11 +21,15 @@ public partial class App : Application
 		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 		{
 			DisableAvaloniaDataAnnotationValidation();
-			desktop.MainWindow = new MainWindow();
+			var mainWindow = new MainWindow();
+			desktop.MainWindow = mainWindow;
+			MainView = mainWindow.MainView;
 		}
 		else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
 		{
-			singleViewPlatform.MainView = new MainView();
+			var mainView = new MainView();
+			singleViewPlatform.MainView = mainView;
+			MainView = mainView;
 		}
 
 		base.OnFrameworkInitializationCompleted();

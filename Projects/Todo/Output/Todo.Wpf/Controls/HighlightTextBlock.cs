@@ -8,6 +8,8 @@ namespace Todo.Wpf.Controls;
 
 public class HighlightTextBlock : TextBlock
 {
+	private bool isUpdatingInlines;
+
 	public static readonly DependencyProperty HighlightTextProperty = DependencyProperty.Register(
 		nameof(HighlightText),
 		typeof(string),
@@ -27,7 +29,7 @@ public class HighlightTextBlock : TextBlock
 
 	private static void OnTextOrHighlightChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
 	{
-		if (dependencyObject is HighlightTextBlock textBlock)
+		if (dependencyObject is HighlightTextBlock textBlock && !textBlock.isUpdatingInlines)
 		{
 			textBlock.UpdateInlines();
 		}
@@ -35,42 +37,51 @@ public class HighlightTextBlock : TextBlock
 
 	private void UpdateInlines()
 	{
-		Inlines.Clear();
-
 		var text = Text ?? string.Empty;
-		if (string.IsNullOrEmpty(text))
-		{
-			return;
-		}
 
-		if (string.IsNullOrWhiteSpace(HighlightText))
+		isUpdatingInlines = true;
+		try
 		{
-			Inlines.Add(new Run(text));
-			return;
-		}
+			Inlines.Clear();
 
-		var remaining = text;
-		while (remaining.Length > 0)
-		{
-			var index = remaining.IndexOf(HighlightText, StringComparison.OrdinalIgnoreCase);
-			if (index < 0)
+			if (string.IsNullOrEmpty(text))
 			{
-				Inlines.Add(new Run(remaining));
-				break;
+				return;
 			}
 
-			if (index > 0)
+			if (string.IsNullOrWhiteSpace(HighlightText))
 			{
-				Inlines.Add(new Run(remaining[..index]));
+				Inlines.Add(new Run(text));
+				return;
 			}
 
-			Inlines.Add(new Run(remaining.Substring(index, HighlightText.Length))
+			var remaining = text;
+			while (remaining.Length > 0)
 			{
-				Background = Brushes.Gold,
-				Foreground = Brushes.Black,
-			});
+				var index = remaining.IndexOf(HighlightText, StringComparison.OrdinalIgnoreCase);
+				if (index < 0)
+				{
+					Inlines.Add(new Run(remaining));
+					break;
+				}
 
-			remaining = remaining[(index + HighlightText.Length)..];
+				if (index > 0)
+				{
+					Inlines.Add(new Run(remaining[..index]));
+				}
+
+				Inlines.Add(new Run(remaining.Substring(index, HighlightText.Length))
+				{
+					Background = Brushes.Gold,
+					Foreground = Brushes.Black,
+				});
+
+				remaining = remaining[(index + HighlightText.Length)..];
+			}
+		}
+		finally
+		{
+			isUpdatingInlines = false;
 		}
 	}
 }

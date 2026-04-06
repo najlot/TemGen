@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using Todo.ClientBase.ViewModel;
+using Todo.ClientBase.ViewModels;
 
 namespace Todo.ClientBase;
 
@@ -22,10 +22,11 @@ public static class ServiceCollectionExtensions
 			serviceCollection.AddTransient<MenuViewModel>();
 			serviceCollection.AddTransient<ManageViewModel>();
 			serviceCollection.AddTransient<GlobalSearchViewModel>();
+			serviceCollection.AddTransient<EntityHistoryViewModel>();
 			serviceCollection.AddTransient<TrashViewModel>();
 
-			serviceCollection.AddTransient<AllNotesViewModel>();
-			serviceCollection.AddTransient<AllTodoItemsViewModel>();
+			serviceCollection.AddTransient<NotesViewModel>();
+			serviceCollection.AddTransient<TodoItemsViewModel>();
 
 			serviceCollection.AddTransient<ChecklistTaskViewModel>();
 			serviceCollection.AddTransient<NoteViewModel>();

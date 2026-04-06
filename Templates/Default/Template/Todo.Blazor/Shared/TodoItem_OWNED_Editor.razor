@@ -148,14 +148,7 @@
 			return;
 		}
 
-		var max = 0;
-
-		if (Model.<# entry.Field#>.Count > 0)
-		{
-			max = Model.<# entry.Field#>.Max(e => e.Id) + 1;
-		}
-
-		var model = new <# entry.EntryType#>Model() { Id = max };
+		var model = new <# entry.EntryType#>Model() { Id = Model.<# entry.Field#>.Count == 0 ? -1 : Model.<# entry.Field#>.Min(i => i.Id) - 1 };
 
 		Model.<# entry.Field#>.Add(model);
 

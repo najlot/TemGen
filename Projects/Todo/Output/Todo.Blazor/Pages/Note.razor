@@ -54,6 +54,13 @@ else
 							ButtonClass="btn btn-outline-secondary"
 							CanExecute="() => _changeTracker.CanRedo"
 							Execute="_changeTracker.Redo" />
+				@if (!isNew)
+				{
+					<IconButton Icon="history"
+								ButtonClass="btn btn-outline-secondary"
+								Execute="NavigateToHistory"
+								Title="@CommonLoc.History" />
+				}
 				<IconButton Icon="Save"
 							ButtonClass="btn btn-success"
 							CanExecute="() => _changeTracker.CanUndo"
@@ -103,11 +110,12 @@ else
 						{
 							<option value="@value">@PredefinedColorLocalizer[$"{@value}"]</option>
 						}
-					</InputSelect>
+						</InputSelect>
 						</div>
 					</div>
 				</div>
 			</div>
+
 		</EditForm>
 	</section>
 
@@ -126,6 +134,16 @@ else
 	private NoteModel? Model;
 	private readonly ChangeTracker _changeTracker = new();
 
+
+	private void NavigateToHistory()
+	{
+		if (Model is null || isNew)
+		{
+			return;
+		}
+
+		NavigationManager.NavigateTo($"/history/{Model.Id}");
+	}
 
 	protected override async Task OnInitializedAsync()
 	{

@@ -1,4 +1,6 @@
-﻿namespace TemGen;
+﻿using System.Text;
+
+namespace TemGen;
 
 public class HandlingResult
 {
@@ -6,4 +8,5 @@ public class HandlingResult
 	public string Content { get; set; }
 	public bool SkipOtherDefinitions { get; set; }
 	public bool RepeatForEachDefinitionEntry { get; set; }
+	public Encoding Encoding { get; set; }
 }

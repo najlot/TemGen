@@ -60,6 +60,13 @@ else
 							ButtonClass="btn btn-outline-secondary"
 							CanExecute="() => _changeTracker.CanRedo"
 							Execute="_changeTracker.Redo" />
+				@if (!isNew)
+				{
+					<IconButton Icon="history"
+								ButtonClass="btn btn-outline-secondary"
+								Execute="NavigateToHistory"
+								Title="@CommonLoc.History" />
+				}
 				<IconButton Icon="Save"
 							ButtonClass="btn btn-success"
 							CanExecute="() => _changeTracker.CanUndo"
@@ -131,7 +138,7 @@ else
 						{
 							<option value="@value">@<# entry.EntryType#>Localizer[$"{@value}"]</option>
 						}
-					</InputSelect>
+						</InputSelect>
 <#elseif entry.IsReference
 #>							<label class="form-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
 							<InputSelect id="<# entry.Field#>Input" class="form-select"
@@ -142,7 +149,7 @@ else
 						{
 							<option value="@value.Id">@value.<#cs Write(Definitions.First(e => e.Name == entry.ReferenceType).Entries.First().Field)#></option>
 						}
-					</InputSelect>
+						</InputSelect>
 <#else
 #><# entry.EntryType;#> ???<#end
 #>						</div>
@@ -178,18 +185,19 @@ else
 <#else
 #>									<td><input type="text" class="form-control" value="@entry.<# e.Field#>" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, ev.Value?.ToString() ?? string.Empty))" /></td>
 <#end#><#end#>									<td class="text-end">
-								<IconButton Icon="Delete"
-											ButtonClass="btn btn-danger"
-											Execute="() => Remove<# entry.Field#>Entry(entry.Id)"
-											Title="@CommonLoc.Delete" />
-							</td>
+										<IconButton Icon="Delete"
+													ButtonClass="btn btn-danger"
+													Execute="() => Remove<# entry.Field#>Entry(entry.Id)"
+													Title="@CommonLoc.Delete" />
+									</td>
 								</tr>
 							}
 						</tbody>
 					</table>
 				</div>
 			</div>
-<#end#>		</EditForm>
+			<#end#>
+		</EditForm>
 	</section>
 
 	<DeleteConfirmationDialog @bind-IsVisible="isDeleteRequested" Remove="Remove" />
@@ -210,6 +218,16 @@ else
 <#for entry in Entries.Where(e => e.IsReference)
 #>	private IEnumerable<<# entry.ReferenceType#>ListItemModel> _<# entry.ReferenceTypeLow#>s = [];
 <#end#>
+	private void NavigateToHistory()
+	{
+		if (Model is null || isNew)
+		{
+			return;
+		}
+
+		NavigationManager.NavigateTo($"/history/{Model.Id}");
+	}
+
 	protected override async Task OnInitializedAsync()
 	{
 		try

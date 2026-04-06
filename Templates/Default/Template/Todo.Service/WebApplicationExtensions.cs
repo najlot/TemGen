@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using <# Project.Namespace#>.Service.Repository.LiteDbImpl;
-using <# Project.Namespace#>.Service.Repository.MySqlImpl;
-using <# Project.Namespace#>.Service.Services;
+using <# Project.Namespace#>.Service.Infrastructure.Persistence.LiteDb;
+using <# Project.Namespace#>.Service.Infrastructure.Persistence.MySql;
+using <# Project.Namespace#>.Service.Shared.Realtime;
 
 namespace <# Project.Namespace#>.Service;
 

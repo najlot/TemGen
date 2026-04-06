@@ -1,11 +1,15 @@
+using Najlot.Audit;
 using Najlot.Log;
-using Todo.Service.Configuration;
-using Todo.Service.Repository;
-using Todo.Service.Repository.FileImpl;
-using Todo.Service.Repository.LiteDbImpl;
-using Todo.Service.Repository.MongoDbImpl;
-using Todo.Service.Repository.MySqlImpl;
-using Todo.Service.Services;
+using Todo.Service.Features.History;
+using Todo.Service.Features.Users;
+using Todo.Service.Shared.Configuration;
+using Todo.Service.Infrastructure.Persistence;
+using Todo.Service.Infrastructure.Persistence.File;
+using Todo.Service.Infrastructure.Persistence.LiteDb;
+using Todo.Service.Infrastructure.Persistence.MongoDb;
+using Todo.Service.Infrastructure.Persistence.MySql;
+using Todo.Service.Features.Notes;
+using Todo.Service.Features.TodoItems;
 
 namespace Todo.Service;
 
@@ -46,8 +50,12 @@ internal static class Program
 
 		services.RegisterBackupRepositories(startupConfiguration);
 
+		var audit = new Audit().RegisterTodoServiceAuditProviders();
+		services.AddSingleton(audit);
+
 		var map = new Najlot.Map.Map().RegisterTodoServiceMappings();
 		services.AddSingleton(map);
+
 		services.RegisterServices();
 		services.RegisterApiInfrastructure(startupConfiguration.ServiceConfiguration);
 

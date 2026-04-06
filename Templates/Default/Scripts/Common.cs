@@ -39,6 +39,19 @@ string GetContractDefaultValue(dynamic? entry)
     return string.Empty;
 }
 
+void SetEncodingWithoutBom()
+{
+    if (RelativePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
+        || RelativePath.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase)
+        || RelativePath.EndsWith(".axaml", StringComparison.OrdinalIgnoreCase)
+        || RelativePath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)
+        || RelativePath.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)
+        || RelativePath.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase))
+    {
+        Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+    }
+}
+
 void SetOutputPath(bool skip)
 {
     if (skip)
@@ -53,6 +66,8 @@ void SetOutputPath(bool skip)
     {
         RelativePath = RelativePath.Replace("TodoItem", Definition.Name).Replace("Todo", Project.Namespace);
         RelativePath = RelativePath.Replace("Entrys", "Entries").Replace("Statuss", "Status");
+
+        SetEncodingWithoutBom();
     }
 }
 
@@ -61,4 +76,5 @@ void SetOutputPathAndSkipOtherDefinitions()
     RelativePath = RelativePath.Replace("TodoItem", Definition.Name).Replace("Todo", Project.Namespace);
     RelativePath = RelativePath.Replace("Entrys", "Entries").Replace("Statuss", "Status");
     SkipOtherDefinitions = true;
+    SetEncodingWithoutBom();
 }

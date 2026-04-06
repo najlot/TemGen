@@ -15,14 +15,14 @@ public class DispatcherHelper : IDispatcherHelper
 			return;
 		}
 
-		var completion = new TaskCompletionSource<object?>();
+		var completion = new TaskCompletionSource();
 
 		Dispatcher.UIThread.Post(() =>
 		{
 			try
 			{
 				action();
-				completion.SetResult(null);
+				completion.SetResult();
 			}
 			catch (Exception ex)
 			{
@@ -41,14 +41,14 @@ public class DispatcherHelper : IDispatcherHelper
 			return;
 		}
 
-		var completion = new TaskCompletionSource<object?>();
+		var completion = new TaskCompletionSource();
 
 		Dispatcher.UIThread.Post(async () =>
 		{
 			try
 			{
 				await action();
-				completion.SetResult(null);
+				completion.SetResult();
 			}
 			catch (Exception ex)
 			{

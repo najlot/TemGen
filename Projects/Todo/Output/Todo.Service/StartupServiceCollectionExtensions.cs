@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Todo.Service.Configuration;
-using Todo.Service.HealthChecks;
-using Todo.Service.Services;
+using Todo.Service.Shared.Configuration;
+using Todo.Service.Shared.HealthChecks;
+using Todo.Service.Features.Auth;
 
 namespace Todo.Service;
 

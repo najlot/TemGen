@@ -9,4 +9,5 @@ public class MapTest
 	{
 		new Najlot.Map.Map().Register<#cs Write(Project.Namespace.Replace(".", ""))#>ServiceMappings().Validate();
 	}
-}<#cs SetOutputPathAndSkipOtherDefinitions()#>
+}
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

@@ -1,12 +1,12 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using Todo.Client.MVVM;
 using Todo.ClientBase;
-using Todo.ClientBase.ViewModel;
-using Todo.Wpf.View;
+using Todo.ClientBase.ViewModels;
+using Todo.Wpf.Views;
 
 namespace Todo.Wpf;
 
@@ -19,10 +19,10 @@ public class ViewManager(IServiceProvider serviceProvider) : IViewManager<Contro
 		[typeof(MenuViewModel)] = typeof(MenuView),
 		[typeof(ManageViewModel)] = typeof(ManageView),
 		[typeof(GlobalSearchViewModel)] = typeof(GlobalSearchView),
+		[typeof(EntityHistoryViewModel)] = typeof(HistoryView),
 		[typeof(TrashViewModel)] = typeof(TrashView),
-		[typeof(AllNotesViewModel)] = typeof(AllNotesView),
-		[typeof(AllTodoItemsViewModel)] = typeof(AllTodoItemsView),
-		[typeof(ChecklistTaskViewModel)] = typeof(ChecklistTaskView),
+		[typeof(NotesViewModel)] = typeof(NotesView),
+		[typeof(TodoItemsViewModel)] = typeof(TodoItemsView),
 		[typeof(NoteViewModel)] = typeof(NoteView),
 		[typeof(TodoItemViewModel)] = typeof(TodoItemView),
 	};

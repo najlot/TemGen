@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Todo.Service.Repository.LiteDbImpl;
-using Todo.Service.Repository.MySqlImpl;
-using Todo.Service.Services;
+using Todo.Service.Infrastructure.Persistence.LiteDb;
+using Todo.Service.Infrastructure.Persistence.MySql;
+using Todo.Service.Shared.Realtime;
 
 namespace Todo.Service;
 

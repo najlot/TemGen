@@ -3,77 +3,99 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="using:<#cs Write(Project.Namespace)#>.Avalonia.Views"
+             xmlns:vms="clr-namespace:<#cs Write(Project.Namespace)#>.ClientBase.ViewModels;assembly=<#cs Write(Project.Namespace)#>.ClientBase"
+             xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d"
              d:DesignWidth="800"
              d:DesignHeight="500"
-             x:Class="<#cs Write(Project.Namespace)#>.Avalonia.Views.<#cs Write(Definition.Name)#>View">
-  <StackPanel Spacing="10">
+             x:Class="<#cs Write(Project.Namespace)#>.Avalonia.Views.<#cs Write(Definition.Name)#>View"
+             x:DataType="vms:<#cs Write(Definition.Name)#>ViewModel">
+  <StackPanel>
 <#csfor entry in Entries
-#><#csif !entry.IsOwnedType
-#>    <Border Padding="12" Background="White" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
-      <StackPanel Spacing="8">
+#><#csif !entry.IsArray && !entry.IsOwnedType
+#>    <DockPanel Margin="5">
 <#end#><#csif entry.EntryType != "bool" && !entry.IsArray && !entry.IsOwnedType
-#>        <TextBlock FontWeight="SemiBold" Text="<#cs Write(entry.Field)#>" />
+#>      <TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:<#cs Write(Definition.Name)#>Loc.<#cs Write(entry.Field)#>}" />
 <#end#><#csif entry.EntryType == "DateTime"
-#>        <DatePicker SelectedDate="{Binding <#cs Write(entry.Field)#>}" />
+#>      <StackPanel Orientation="Horizontal">
+          <DatePicker SelectedDate="{Binding <#cs Write(entry.Field)#>Date, Mode=TwoWay}" />
+          <TimePicker Width="110" Margin="8,0,0,0" SelectedTime="{Binding <#cs Write(entry.Field)#>Time, Mode=TwoWay}" ClockIdentifier="24HourClock" />
+      </StackPanel>
 <#cselseif entry.EntryType == "bool"
-#>        <CheckBox IsChecked="{Binding <#cs Write(entry.Field)#>}" Content="<#cs Write(entry.Field)#>" />
+#>      <TextBlock MinWidth="75" />
+      <CheckBox IsChecked="{Binding <#cs Write(entry.Field)#>}" Content="{x:Static loc:<#cs Write(Definition.Name)#>Loc.<#cs Write(entry.Field)#>}" />
 <#cselseif entry.IsOwnedType
-#>    <TextBlock Margin="0,4,0,0" FontSize="16" FontWeight="SemiBold" Text="<#cs Write(entry.Field)#>" />
-    <Border Padding="12" Background="White" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
-      <local:<#cs Write(entry.EntryType)#>View DataContext="{Binding <#cs Write(entry.Field)#>}" />
+#>    <Border Margin="0,5" Background="{StaticResource BackgroundColor}" Padding="5">
+      <TextBlock Foreground="{StaticResource ForegroundColor}" Text="{x:Static loc:<#cs Write(Definition.Name)#>Loc.<#cs Write(entry.Field)#>}" />
     </Border>
+    <local:<#cs Write(entry.EntryType)#>View DataContext="{Binding <#cs Write(entry.Field)#>}" />
 <#cselseif entry.IsEnumeration
-#>        <ComboBox ItemsSource="{Binding Available<#cs Write(entry.EntryType)#>s}" SelectedItem="{Binding <#cs Write(entry.Field)#>}" />
+#>      <ComboBox ItemsSource="{Binding Available<#cs Write(entry.EntryType)#>s}" SelectedItem="{Binding <#cs Write(entry.Field)#>}" />
 <#cselseif entry.IsArray
-#>        <DockPanel>
-          <TextBlock DockPanel.Dock="Left" Margin="0,0,0,8" FontSize="16" FontWeight="SemiBold" Text="<#cs Write(entry.Field)#>" />
-          <Button DockPanel.Dock="Right" Command="{Binding Add<#cs Write(entry.EntryType)#>Command}" Content="Add" />
-        </DockPanel>
-        <ItemsControl ItemsSource="{Binding <#cs Write(entry.Field)#>}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <Border Margin="0,0,0,8" Padding="12" Background="#FFFAFAF9" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
-                <StackPanel Spacing="8">
+#>    <DockPanel>
+      <DockPanel DockPanel.Dock="Top">
+        <Button Margin="5" DockPanel.Dock="Right" Command="{Binding Add<#cs Write(entry.EntryType)#>Command}">
+          <materialIcons:MaterialIcon Width="18" Height="18" Kind="Add" />
+        </Button>
+
+        <Border Margin="0,5" Background="{StaticResource BackgroundColor}" Padding="5">
+          <TextBlock Foreground="{StaticResource ForegroundColor}" Text="{x:Static loc:<#cs Write(Definition.Name)#>Loc.<#cs Write(entry.Field)#>}" />
+        </Border>
+      </DockPanel>
+
+      <ItemsControl ItemsSource="{Binding <#cs Write(entry.Field)#>}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vms:<#cs Write(entry.EntryType)#>ViewModel">
+            <Border Margin="0,0,5,8" Padding="8" BorderBrush="LightGray" BorderThickness="1">
+              <StackPanel>
 <#csfor e in Definitions.First(d => d.Name == entry.EntryType).Entries
-#><#csif e.EntryType != "bool" && !e.IsArray && !e.IsOwnedType
-#>                  <TextBlock FontWeight="SemiBold" Text="<#cs Write(e.Field)#>" />
+#><#csif !e.IsArray && !e.IsOwnedType
+#>                <DockPanel Margin="5">
+<#end#><#csif e.EntryType != "bool" && !e.IsArray && !e.IsOwnedType
+#>                  <TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:<#cs Write(entry.EntryType)#>Loc.<#cs Write(e.Field)#>}" />
 <#end#><#csif e.EntryType == "DateTime"
-#>                  <DatePicker SelectedDate="{Binding <#cs Write(e.Field)#>}" />
+#>                  <StackPanel Orientation="Horizontal">
+                    <DatePicker SelectedDate="{Binding <#cs Write(e.Field)#>Date, Mode=TwoWay}" />
+                    <TimePicker Width="110" Margin="8,0,0,0" SelectedTime="{Binding <#cs Write(e.Field)#>Time, Mode=TwoWay}" ClockIdentifier="24HourClock" />
+                  </StackPanel>
 <#cselseif e.EntryType == "bool"
-#>                  <CheckBox IsChecked="{Binding <#cs Write(e.Field)#>}" Content="<#cs Write(e.Field)#>" />
+#>                  <TextBlock MinWidth="75" />
+                  <CheckBox IsChecked="{Binding <#cs Write(e.Field)#>}" Content="{x:Static loc:<#cs Write(entry.EntryType)#>Loc.<#cs Write(e.Field)#>}" />
 <#cselseif e.IsOwnedType
-#>                  <Border Padding="12" Background="White" BorderBrush="#FFE7E5E4" BorderThickness="1" CornerRadius="10">
-                    <local:<#cs Write(e.EntryType)#>View DataContext="{Binding <#cs Write(e.Field)#>}" />
-                  </Border>
+#>                <Border Margin="0,5" Background="{StaticResource BackgroundColor}" Padding="5">
+                  <TextBlock Foreground="{StaticResource ForegroundColor}" Text="{x:Static loc:<#cs Write(entry.EntryType)#>Loc.<#cs Write(e.Field)#>}" />
+                </Border>
+                <local:<#cs Write(e.EntryType)#>View DataContext="{Binding <#cs Write(e.Field)#>}" />
 <#cselseif e.IsEnumeration
 #>                  <ComboBox ItemsSource="{Binding Available<#cs Write(e.EntryType)#>s}" SelectedItem="{Binding <#cs Write(e.Field)#>}" />
 <#else
 #>                  <TextBox Text="{Binding <#cs Write(e.Field)#>, Mode=TwoWay}" />
-<#end#><#end#>                  <Button HorizontalAlignment="Right"
-                          Command="{Binding DataContext.Delete<#cs Write(entry.EntryType)#>Command, RelativeSource={RelativeSource AncestorType=local:<#cs Write(Definition.Name)#>View}}"
-                          CommandParameter="{Binding .}"
-                          Content="Delete" />
-                </StackPanel>
-              </Border>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
+<#end#><#csif !e.IsArray && !e.IsOwnedType
+#>                </DockPanel>
+<#end#><#end#>
+                <Button HorizontalAlignment="Right"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="{StaticResource BackgroundColor}"
+                        Command="{Binding $parent[ItemsControl].((vms:<#cs Write(Definition.Name)#>ViewModel)DataContext).Delete<#cs Write(entry.EntryType)#>Command}"
+                        CommandParameter="{Binding .}">
+                  <materialIcons:MaterialIcon Width="14" Height="14" Kind="Delete" />
+                </Button>
+              </StackPanel>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </DockPanel>
 <#else
-#>        <TextBox Text="{Binding <#cs Write(entry.Field)#>, Mode=TwoWay}" />
-<#end#><#csif !entry.IsOwnedType
-#>      </StackPanel>
-    </Border>
+#>      <TextBox Text="{Binding <#cs Write(entry.Field)#>, Mode=TwoWay}" />
+<#end#><#csif !entry.IsArray && !entry.IsOwnedType
+#>    </DockPanel>
 <#end#><#end#>
   </StackPanel>
 </UserControl>
 <#cs
-if (!Definition.IsOwnedType)
-{
-	RelativePath = "";
-}
-else
-{
-	RelativePath = RelativePath.Replace("TodoItem_OWNED_", Definition.Name).Replace("Todo", Project.Namespace);
-}
+SetOutputPath(!Definition.IsOwnedType);
+RelativePath = RelativePath.Replace("_OWNED_", "");
 #>

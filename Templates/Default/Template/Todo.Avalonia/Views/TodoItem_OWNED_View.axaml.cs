@@ -10,12 +10,6 @@ public partial class <# Definition.Name#>View : UserControl
 	}
 }
 <#cs
-if (!Definition.IsOwnedType)
-{
-	RelativePath = "";
-}
-else
-{
-	RelativePath = RelativePath.Replace("TodoItem_OWNED_", Definition.Name).Replace("Todo", Project.Namespace);
-}
+SetOutputPath(!Definition.IsOwnedType);
+RelativePath = RelativePath.Replace("_OWNED_", "");
 #>

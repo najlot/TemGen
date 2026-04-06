@@ -27,6 +27,7 @@ public class Globals
 	public List<DefinitionEntry> Entries { get; set; }
 	public Project Project { get; set; }
 	public bool RepeatForEachDefinitionEntry { get; set; }
+	public Encoding Encoding { get; set; } = Encoding.UTF8;
 
 	public void Write(object obj)
 	{

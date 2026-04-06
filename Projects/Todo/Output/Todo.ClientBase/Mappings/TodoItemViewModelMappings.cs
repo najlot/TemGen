@@ -1,7 +1,7 @@
 using Najlot.Map;
 using Najlot.Map.Attributes;
 using Todo.Client.Data.Models;
-using Todo.ClientBase.ViewModel;
+using Todo.ClientBase.ViewModels;
 using Todo.Contracts;
 using Todo.Contracts.Events;
 

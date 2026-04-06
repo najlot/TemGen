@@ -1,12 +1,12 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using <# Project.Namespace#>.Client.MVVM;
 using <# Project.Namespace#>.ClientBase;
-using <# Project.Namespace#>.ClientBase.ViewModel;
-using <# Project.Namespace#>.Wpf.View;
+using <# Project.Namespace#>.ClientBase.ViewModels;
+using <# Project.Namespace#>.Wpf.Views;
 
 namespace <# Project.Namespace#>.Wpf;
 
@@ -19,15 +19,16 @@ public class ViewManager(IServiceProvider serviceProvider) : IViewManager<Contro
 		[typeof(MenuViewModel)] = typeof(MenuView),
 		[typeof(ManageViewModel)] = typeof(ManageView),
 		[typeof(GlobalSearchViewModel)] = typeof(GlobalSearchView),
+		[typeof(EntityHistoryViewModel)] = typeof(HistoryView),
 		[typeof(TrashViewModel)] = typeof(TrashView),
 <#for definition in Definitions.Where(d => !(d.IsArray
 	|| d.IsEnumeration
 	|| d.IsOwnedType
 	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
-#>		[typeof(All<# definition.Name#>sViewModel)] = typeof(All<# definition.Name#>sView),
+#>		[typeof(<# definition.Name#>sViewModel)] = typeof(<# definition.Name#>sView),
 <#end
-#><#for definition in Definitions.Where(d => !(
-	   d.IsEnumeration
+#><#for definition in Definitions.Where(d => !(d.IsArray
+	|| d.IsEnumeration
 	|| d.IsOwnedType
 	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
 #>		[typeof(<# definition.Name#>ViewModel)] = typeof(<# definition.Name#>View),

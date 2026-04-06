@@ -68,6 +68,33 @@ namespace <# Project.Namespace#>.Client.Localisation {
                 return ResourceManager.GetString("Cancel", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to After.
+        /// </summary>
+        public static string After {
+            get {
+                return ResourceManager.GetString("After", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Before.
+        /// </summary>
+        public static string Before {
+            get {
+                return ResourceManager.GetString("Before", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to changes recorded.
+        /// </summary>
+        public static string ChangesRecorded {
+            get {
+                return ResourceManager.GetString("ChangesRecorded", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Delete.
@@ -113,6 +140,15 @@ namespace <# Project.Namespace#>.Client.Localisation {
                 return ResourceManager.GetString("Edit", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Field.
+        /// </summary>
+        public static string Field {
+            get {
+                return ResourceManager.GetString("Field", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Filter:.
@@ -138,6 +174,15 @@ namespace <# Project.Namespace#>.Client.Localisation {
         public static string Home {
             get {
                 return ResourceManager.GetString("Home", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to History.
+        /// </summary>
+        public static string History {
+            get {
+                return ResourceManager.GetString("History", resourceCulture);
             }
         }
         
@@ -174,6 +219,15 @@ namespace <# Project.Namespace#>.Client.Localisation {
         public static string No {
             get {
                 return ResourceManager.GetString("No", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to No changes recorded yet..
+        /// </summary>
+        public static string NoHistoryEntries {
+            get {
+                return ResourceManager.GetString("NoHistoryEntries", resourceCulture);
             }
         }
         

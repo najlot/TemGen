@@ -1,55 +1,105 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl x:Class="<#cs Write(Project.Namespace)#>.Avalonia.Views.MenuView"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d"
-             d:DesignWidth="1000"
+             xmlns:vms="clr-namespace:<#cs Write(Project.Namespace)#>.ClientBase.ViewModels;assembly=<#cs Write(Project.Namespace)#>.ClientBase"
              d:DesignHeight="700"
-             x:Class="<#cs Write(Project.Namespace)#>.Avalonia.Views.MenuView">
-  <Grid RowDefinitions="Auto,*" ColumnDefinitions="Auto,*">
-    <Border Grid.RowSpan="2"
-            Width="240"
-            Background="#FFF5F5F4"
-            BorderBrush="#FFE7E5E4"
-            BorderThickness="0,0,1,0"
-            IsVisible="{Binding IsDrawerOpen}">
-      <ScrollViewer>
-        <StackPanel Margin="12">
-          <TextBlock Margin="4,8,4,12" FontSize="20" FontWeight="SemiBold" Text="Navigation" />
-<#csfor definition in Definitions.Where(d => !d.IsOwnedType
-&& !d.IsArray
-&& !d.IsEnumeration
-&& !d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))
-#>          <Button Margin="4" HorizontalAlignment="Stretch" Command="{Binding NavigateTo<#cs Write(definition.Name)#>s}" Content="<#cs Write(definition.Name)#>s" />
-<#end
-#>          <Button Margin="4,16,4,4" HorizontalAlignment="Stretch" Command="{Binding NavigateToGlobalSearch}" Content="Global Search" />
-          <Button Margin="4" HorizontalAlignment="Stretch" Command="{Binding NavigateToTrash}" Content="Trash" />
-        </StackPanel>
-      </ScrollViewer>
-    </Border>
+             d:DesignWidth="1000"
+             x:DataType="vms:MenuViewModel"
+             mc:Ignorable="d">
 
-    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="12,12,12,0" Spacing="8">
-      <Button Command="{Binding ToggleDrawerCommand}" Content="Menu" />
-      <Button Command="{Binding NavigateToGlobalSearch}" Content="Search" />
-      <Button Command="{Binding ManageCommand}" Content="Manage" />
-      <Button Command="{Binding LogoutCommand}" Content="Logout" />
-    </StackPanel>
+	<UserControl.Styles>
+		<!--  Style for navigation menu buttons  -->
+		<Style Selector="Button.NavMenuItem">
+			<Setter Property="HorizontalAlignment" Value="Stretch" />
+			<Setter Property="HorizontalContentAlignment" Value="Left" />
+			<Setter Property="Padding" Value="16,12" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="CornerRadius" Value="0" />
+			<Setter Property="Margin" Value="0,0,0,4" />
+		</Style>
+	</UserControl.Styles>
 
-    <Border Grid.Row="1"
-            Grid.Column="1"
-            Margin="12"
-            Padding="24"
-            Background="#FFFFFBF5"
-            BorderBrush="#FFE7E5E4"
-            BorderThickness="1"
-            CornerRadius="12">
-      <StackPanel>
-        <TextBlock FontSize="28" FontWeight="Bold" Text="<#cs Write(Project.Namespace)#>" />
-        <TextBlock Margin="0,8,0,0"
-                   Foreground="#FF57534E"
-                   Text="Use the menu to browse records, search globally, manage your account, and review deleted items." />
-      </StackPanel>
-    </Border>
-  </Grid>
+	<Grid>
+		<Grid RowDefinitions="Auto,*">
+			<!--  Header  -->
+			<Grid Grid.Row="0"
+			      Margin="16"
+			      Background="White"
+			      ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+				<Button Grid.Column="0" Margin="0,0,16,0" Command="{Binding ToggleDrawerCommand}">
+					<materialIcons:MaterialIcon Width="24" Height="24" Kind="Menu" />
+				</Button>
+				<Button Grid.Column="2" Margin="8,0" Command="{Binding NavigateToGlobalSearch}">
+					<materialIcons:MaterialIcon Width="24" Height="24" Kind="Search" />
+				</Button>
+				<Button Grid.Column="3" Margin="8,0" Command="{Binding ManageCommand}">
+					<materialIcons:MaterialIcon Width="24" Height="24" Kind="User" />
+				</Button>
+				<Button Grid.Column="4" Command="{Binding LogoutCommand}">
+					<materialIcons:MaterialIcon Width="24" Height="24" Kind="DoorOpen" />
+				</Button>
+			</Grid>
+		</Grid>
+
+		<!--  Overlay (visible when drawer is open)  -->
+		<Border Background="#80000000"
+		        IsVisible="{Binding IsDrawerOpen}"
+		        PointerPressed="OnOverlayPointerPressed"
+		        ZIndex="1" />
+
+		<!--  Off-Canvas Navigation Drawer  -->
+		<Border Width="280"
+		        HorizontalAlignment="Left"
+		        Background="White"
+		        IsVisible="{Binding IsDrawerOpen}"
+		        ZIndex="2">
+			<ScrollViewer>
+				<StackPanel Spacing="0">
+					<!--  Drawer Header  -->
+					<Border Padding="16">
+						<TextBlock FontSize="20" FontWeight="SemiBold" Text="Navigation" />
+					</Border>
+
+					<!--  Navigation Items  -->
+					<Button Classes="NavMenuItem" Command="{Binding NavigateToTodoItems}">
+						<Grid ColumnDefinitions="Auto,*">
+							<materialIcons:MaterialIcon Grid.Column="0"
+							                            Width="24"
+							                            Height="24"
+							                            Margin="0,0,12,0"
+							                            Kind="Note" />
+							<TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.TodoItems}" />
+						</Grid>
+					</Button>
+
+					<Button Classes="NavMenuItem" Command="{Binding NavigateToNotes}">
+						<Grid ColumnDefinitions="Auto,*">
+							<materialIcons:MaterialIcon Grid.Column="0"
+							                            Width="24"
+							                            Height="24"
+							                            Margin="0,0,12,0"
+							                            Kind="Note" />
+							<TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Static loc:NoteLoc.Notes}" />
+						</Grid>
+					</Button>
+
+					<Button Classes="NavMenuItem" Command="{Binding NavigateToTrash}">
+						<Grid ColumnDefinitions="Auto,*">
+							<materialIcons:MaterialIcon Grid.Column="0"
+							                            Width="24"
+							                            Height="24"
+							                            Margin="0,0,12,0"
+							                            Kind="Delete" />
+							<TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Static loc:TrashLoc.Trash}" />
+						</Grid>
+					</Button>
+				</StackPanel>
+			</ScrollViewer>
+		</Border>
+	</Grid>
 </UserControl>
 <#cs SetOutputPathAndSkipOtherDefinitions()#>

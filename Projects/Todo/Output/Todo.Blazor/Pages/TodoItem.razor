@@ -56,6 +56,13 @@ else
 							ButtonClass="btn btn-outline-secondary"
 							CanExecute="() => _changeTracker.CanRedo"
 							Execute="_changeTracker.Redo" />
+				@if (!isNew)
+				{
+					<IconButton Icon="history"
+								ButtonClass="btn btn-outline-secondary"
+								Execute="NavigateToHistory"
+								Title="@CommonLoc.History" />
+				}
 				<IconButton Icon="Save"
 							ButtonClass="btn btn-success"
 							CanExecute="() => _changeTracker.CanUndo"
@@ -123,7 +130,7 @@ else
 						{
 							<option value="@value.Id">@value.Username</option>
 						}
-					</InputSelect>
+						</InputSelect>
 						</div>
 
 						<!-- Status input -->
@@ -137,7 +144,7 @@ else
 						{
 							<option value="@value">@TodoItemStatusLocalizer[$"{@value}"]</option>
 						}
-					</InputSelect>
+						</InputSelect>
 						</div>
 
 						<!-- ChangedAt input -->
@@ -193,17 +200,18 @@ else
 									<td><input type="checkbox" class="form-check-input" checked="@entry.IsDone" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.IsDone), entry.IsDone, (bool)(ev.Value ?? false)))" /></td>
 									<td><input type="text" class="form-control" value="@entry.Description" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.Description), entry.Description, ev.Value?.ToString() ?? string.Empty))" /></td>
 									<td class="text-end">
-								<IconButton Icon="Delete"
-											ButtonClass="btn btn-danger"
-											Execute="() => RemoveChecklistEntry(entry.Id)"
-											Title="@CommonLoc.Delete" />
-							</td>
+										<IconButton Icon="Delete"
+													ButtonClass="btn btn-danger"
+													Execute="() => RemoveChecklistEntry(entry.Id)"
+													Title="@CommonLoc.Delete" />
+									</td>
 								</tr>
 							}
 						</tbody>
 					</table>
 				</div>
 			</div>
+			
 		</EditForm>
 	</section>
 
@@ -223,6 +231,16 @@ else
 	private readonly ChangeTracker _changeTracker = new();
 
 	private IEnumerable<UserListItemModel> _users = [];
+
+	private void NavigateToHistory()
+	{
+		if (Model is null || isNew)
+		{
+			return;
+		}
+
+		NavigationManager.NavigateTo($"/history/{Model.Id}");
+	}
 
 	protected override async Task OnInitializedAsync()
 	{

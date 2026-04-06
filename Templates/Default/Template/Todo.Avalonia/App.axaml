@@ -1,11 +1,24 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="<#cs Write(Project.Namespace)#>.Avalonia.App"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
-  
+
+    <Application.Resources>
+        <SolidColorBrush x:Key="BackgroundColor" Color="#004d40" />
+        <SolidColorBrush x:Key="ForegroundColor" Color="#ffffff" />
+    </Application.Resources>
+
     <Application.Styles>
+        <materialIcons:MaterialIconStyles />
         <FluentTheme />
+        <Style Selector="Button">
+            <Setter Property="Foreground" Value="{StaticResource ForegroundColor}" />
+            <Setter Property="Background" Value="{StaticResource BackgroundColor}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="10,5" />
+        </Style>
     </Application.Styles>
 </Application>
 <#cs SetOutputPathAndSkipOtherDefinitions()#>

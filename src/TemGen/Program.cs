@@ -103,24 +103,24 @@ internal class Program
 				{
 					var results = await processor.Handle(template, definitions).ConfigureAwait(false);
 
-					foreach (var result in results)
+					foreach (var (key, (encoding, content)) in results)
 					{
-						var destPath = Path.Combine(project.OutputPath, result.Key);
-						var normalizedRelativePath = GeneratedOutputManifest.NormalizeRelativePath(result.Key);
+						var destPath = Path.Combine(project.OutputPath, key);
+						var normalizedRelativePath = GeneratedOutputManifest.NormalizeRelativePath(key);
 						var dirPath = Path.GetDirectoryName(destPath);
 						Directory.CreateDirectory(dirPath);
 
 						if (File.Exists(destPath))
 						{
 							var currentContent = await File.ReadAllTextAsync(destPath, tkn).ConfigureAwait(false);
-							if (currentContent != result.Value)
+							if (currentContent != content)
 							{
-								await File.WriteAllTextAsync(destPath, result.Value, template.Encoding, tkn).ConfigureAwait(false);
+								await File.WriteAllTextAsync(destPath, content, encoding, tkn).ConfigureAwait(false);
 							}
 						}
 						else
 						{
-							await File.WriteAllTextAsync(destPath, result.Value, template.Encoding, tkn).ConfigureAwait(false);
+							await File.WriteAllTextAsync(destPath, content, encoding, tkn).ConfigureAwait(false);
 						}
 
 						generatedFiles.Add(normalizedRelativePath);

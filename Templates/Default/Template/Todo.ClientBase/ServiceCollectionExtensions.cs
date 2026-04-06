@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using <# Project.Namespace#>.ClientBase.ViewModel;
+using <# Project.Namespace#>.ClientBase.ViewModels;
 
 namespace <# Project.Namespace#>.ClientBase;
 
@@ -22,13 +22,14 @@ public static class ServiceCollectionExtensions
 			serviceCollection.AddTransient<MenuViewModel>();
 			serviceCollection.AddTransient<ManageViewModel>();
 			serviceCollection.AddTransient<GlobalSearchViewModel>();
+			serviceCollection.AddTransient<EntityHistoryViewModel>();
 			serviceCollection.AddTransient<TrashViewModel>();
 
 <#for definition in Definitions.Where(d => !(d.IsArray
 	|| d.IsEnumeration
 	|| d.IsOwnedType
 	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
-#>			serviceCollection.AddTransient<All<# definition.Name#>sViewModel>();
+#>			serviceCollection.AddTransient<<# definition.Name#>sViewModel>();
 <#end#>
 <#for definition in Definitions.Where(d => !(d.IsEnumeration
 	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
