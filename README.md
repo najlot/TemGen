@@ -75,15 +75,17 @@ ResourcesScriptPath:../../Templates/Default/Resources.cs
 ScriptsPath:../../Templates/Default/Scripts
 ```
 
-3. **Create a definition** (`Definitions/User`):
+3. **Create a definition** (`Definitions/CalendarEntry`):
 
 ```
-string Username
-string Email
-DateTime CreatedAt
+DateTime StartDateTime
+string Title
+string Description
+int DurationInMinutes
 ```
 
 4. **Generate code**:
+Run `temgen` inside the folder with your `ProjectDefinition` or
 
 ```bash
 temgen --path ./MyProject
@@ -150,7 +152,6 @@ UserId Owner
 TodoItemStatus Status
 
 # Arrays
-string[] Tags
 ChecklistTask[] Items
 ```
 
@@ -171,7 +172,7 @@ Templates are regular files with embedded script sections. Script sections are d
 - `<#js ... #>`: JavaScript scripts
 - `<#py ... #>`: Python scripts
 - `<#lua ... #>`: Lua scripts
-- `<#reflection ... #>`: Reflection-based helpers
+- `<#ref ... #>` or `<# ... #>`: Reflection-based helpers
 
 ### Example Template
 

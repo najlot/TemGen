@@ -48,7 +48,7 @@ public class ViewManager(IServiceProvider serviceProvider) : IViewManager<Contro
 			return instance;
 		}
 
-		throw new InvalidOperationException($"The class {viewType.FullName} is not a {nameof(Control)}.");
+		throw new InvalidOperationException($"The class {viewType.FullName} is not a control.");
 	}
 
 	public async Task<bool> CanNavigateAsync(Control? currentView)
