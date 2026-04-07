@@ -17,8 +17,8 @@ public class TodoItemGlobalSearchSource(
 			.ApplyReadFilter(todoItemRepository.GetAllQueryable())
 			.Where(item => item.DeletedAt == null)
 			.Where(item =>
-				item.Title.Contains(normalizedText) ||
-				item.Content.Contains(normalizedText));
+				item.Title.ToLower().Contains(normalizedText) ||
+				item.Content.ToLower().Contains(normalizedText));
 
 		return map.From(query).To<GlobalSearchItem>().ToAsyncEnumerable();
 	}

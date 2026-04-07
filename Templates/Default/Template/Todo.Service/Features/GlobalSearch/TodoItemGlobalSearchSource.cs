@@ -28,7 +28,7 @@ else
 	{
 		var entry = searchableEntries[i];
 		var suffix = i < searchableEntries.Count - 1 ? " ||" : ");";
-		WriteLine($"\t\t\t\titem.{entry.Field}.Contains(normalizedText){suffix}");
+		WriteLine($"\t\t\t\titem.{entry.Field}.ToLower().Contains(normalizedText){suffix}");
 	}
 }
 #>

@@ -14,12 +14,12 @@
 	<Grid RowDefinitions="Auto,*">
 		<!--  Header  -->
 		<Grid Grid.Row="0" Margin="16" ColumnDefinitions="Auto,*,Auto">
-			<Button Grid.Column="0" Margin="0,0,16,0" Command="{Binding NavigateBackCommand}">
+			<Button Grid.Column="0" Command="{Binding NavigateBackCommand}">
 				<materialIcons:MaterialIcon Width="24" Height="24" Kind="ArrowBack" />
 			</Button>
 
 			<TextBox Grid.Column="1"
-					 Margin="0,0,8,0"
+					 Margin="8,0"
 					 Text="{Binding QueryText, Mode=TwoWay}"
 					 HorizontalAlignment="Stretch"
 					 Watermark="{x:Static loc:GlobalSearchLoc.Search}" />

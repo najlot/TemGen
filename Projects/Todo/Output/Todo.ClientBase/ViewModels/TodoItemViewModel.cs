@@ -25,14 +25,13 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 	public Guid Id { get; set => Set(ref field, value); }
 	public string Title { get; set => Set(ref field, value); } = string.Empty;
 	public string Content { get; set => Set(ref field, value); } = string.Empty;
-	private DateTime _createdAt;
 
 	public DateTime CreatedAt
 	{
-		get => _createdAt;
+		get;
 		set
 		{
-			if (Set(ref _createdAt, value))
+			if (Set(ref field, value))
 			{
 				RaisePropertiesChanged(nameof(CreatedAtDate), nameof(CreatedAtTime));
 			}
@@ -69,14 +68,13 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 	public string CreatedBy { get; set => Set(ref field, value); } = string.Empty;
 	public Guid AssignedToId { get; set => Set(ref field, value); }
 	public TodoItemStatus Status { get; set => Set(ref field, value); }
-	private DateTime _changedAt;
 
 	public DateTime ChangedAt
 	{
-		get => _changedAt;
+		get;
 		set
 		{
-			if (Set(ref _changedAt, value))
+			if (Set(ref field, value))
 			{
 				RaisePropertiesChanged(nameof(ChangedAtDate), nameof(ChangedAtTime));
 			}
@@ -122,8 +120,6 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 
 	private readonly ChangeTracker _changeTracker = new();
 
-	public bool CanUndo => _changeTracker.CanUndo;
-	public bool CanRedo => _changeTracker.CanRedo;
 	public bool CanNavigateToHistory => !IsNew;
 
 	public bool IsBusy { get; private set => Set(ref field, value); }
@@ -147,21 +143,17 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 		_todoItemService = todoItemService;
 		_userService = userService;
 
-		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
+		NavigateBackCommand = new AsyncCommand(NavigationService.NavigateBack, t => HandleError(t.Exception));
 		NavigateToHistoryCommand = new AsyncCommand(NavigateToHistoryAsync, t => HandleError(t.Exception), () => CanNavigateToHistory);
-		SaveCommand = new AsyncCommand(SaveAsync, t => HandleError(t.Exception), () => CanUndo && !HasErrors);
+		SaveCommand = new AsyncCommand(SaveAsync, t => HandleError(t.Exception), () => !HasErrors);
 		DeleteCommand = new AsyncCommand(DeleteAsync, t => HandleError(t.Exception));
-		UndoCommand = new RelayCommand(() => _changeTracker.Undo(), () => _changeTracker.CanUndo);
-		RedoCommand = new RelayCommand(() => _changeTracker.Redo(), () => _changeTracker.CanRedo);
+		UndoCommand = new RelayCommand(_changeTracker.Undo, () => _changeTracker.CanUndo);
+		RedoCommand = new RelayCommand(_changeTracker.Redo, () => _changeTracker.CanRedo);
 
 		ChangeVisitor = _changeTracker;
-		_changeTracker.StateChanged += () =>
-		{
-			RaisePropertiesChanged(nameof(CanUndo), nameof(CanRedo));
-			UndoCommand.RaiseCanExecuteChanged();
-			RedoCommand.RaiseCanExecuteChanged();
-			SaveCommand.RaiseCanExecuteChanged();
-		};
+
+		_changeTracker.StateChanged += UndoCommand.RaiseCanExecuteChanged;
+		_changeTracker.StateChanged += RedoCommand.RaiseCanExecuteChanged;
 
 		HasErrorsChanged += SaveCommand.RaiseCanExecuteChanged;
 
@@ -390,6 +382,9 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 		{
 			if (disposing)
 			{
+				_changeTracker.StateChanged -= UndoCommand.RaiseCanExecuteChanged;
+				_changeTracker.StateChanged -= RedoCommand.RaiseCanExecuteChanged;
+				HasErrorsChanged -= SaveCommand.RaiseCanExecuteChanged;
 				_todoItemService.ItemUpdated -= Handle;
 			}
 

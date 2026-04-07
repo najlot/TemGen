@@ -210,4 +210,7 @@
   <data name="Yes" xml:space="preserve">
     <value>Ja</value>
   </data>
+  <data name="Search" xml:space="preserve">
+    <value>Suchen</value>
+  </data>
 </root><#cs SetOutputPathAndSkipOtherDefinitions()#>

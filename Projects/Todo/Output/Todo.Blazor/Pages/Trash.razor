@@ -3,6 +3,7 @@
 @using Todo.Client.Data.Models;
 @using Todo.Client.Data.Services;
 @using Todo.Client.Localisation;
+@using Todo.Contracts;
 @using Todo.Contracts.Events;
 @inject ILogger<Trash> Log
 @inject ITrashService TrashService
@@ -43,6 +44,7 @@ else
 									<div class="text-muted text-break mt-1">@item.Content</div>
 								}
 								<div class="d-flex flex-wrap gap-2 mt-3">
+									<a href="@GetItemHref(item)" class="btn btn-sm btn-outline-primary">@CommonLoc.Edit</a>
 									<button class="btn btn-sm btn-outline-success" @onclick="() => RestoreAsync(item)">@TrashLoc.Restore</button>
 									<button class="btn btn-sm btn-outline-danger" @onclick="() => RequestDelete(item)">@CommonLoc.Delete</button>
 								</div>
@@ -240,6 +242,16 @@ else
 	private static string Display(string? value, string fallback)
 	{
 		return string.IsNullOrWhiteSpace(value) ? fallback : value;
+	}
+
+	private static string GetItemHref(TrashItemModel item)
+	{
+		return item.Type switch
+		{
+			ItemType.Note => "/note/" + item.Id,
+			ItemType.TodoItem => "/todoitem/" + item.Id,
+			_ => "/",
+		};
 	}
 
 	public void Dispose()

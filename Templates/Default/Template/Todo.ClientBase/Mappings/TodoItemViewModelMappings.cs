@@ -21,8 +21,6 @@ internal sealed partial class <# Definition.Name#>ViewModelMappings
 <#end#>
 <#for entry in Entries.Where(e => e.IsArray)
 #>		to.<# entry.Field#> = [.. map.From<<# entry.EntryType#>>(from.<# entry.Field#>).To<<# entry.EntryType#>ViewModel>()];
-
-		foreach (var e in to.<# entry.Field#>) e.ParentId = from.Id;
 <#end#>	}
 
 	public static partial void MapToModel(IMap map, <# Definition.Name#>ViewModel from, <# Definition.Name#>Model to);
@@ -38,8 +36,6 @@ internal sealed partial class <# Definition.Name#>ViewModelMappings
 <#end#>
 <#for entry in Entries.Where(e => e.IsArray)
 #>		to.<# entry.Field#> = [.. map.From<<# entry.EntryType#>Model>(from.<# entry.Field#>).To<<# entry.EntryType#>ViewModel>()];
-
-		foreach (var e in to.<# entry.Field#>) e.ParentId = from.Id;
 <#end#>	}
 
 	[MapIgnoreProperty(nameof(to.ChangeVisitor))]

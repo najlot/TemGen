@@ -37,10 +37,9 @@ public class NotesViewModel : ViewModelBase, IAsyncInitializable, IDisposable
 		_noteService.ItemUpdated += Handle;
 		_noteService.ItemDeleted += Handle;
 
-		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
+		NavigateBackCommand = new AsyncCommand(NavigationService.NavigateBack, t => HandleError(t.Exception));
 		AddNoteCommand = new AsyncCommand(AddNoteAsync, t => HandleError(t.Exception));
 		EditNoteCommand = new AsyncCommand<NoteListItemViewModel>(EditNoteAsync, t => HandleError(t.Exception));
-		RefreshNotesCommand = new AsyncCommand(RefreshNotesAsync, t => HandleError(t.Exception));
 	}
 
 	public async Task InitializeAsync()
@@ -143,7 +142,6 @@ public class NotesViewModel : ViewModelBase, IAsyncInitializable, IDisposable
 		}
 	}
 
-	public AsyncCommand RefreshNotesCommand { get; }
 	public async Task RefreshNotesAsync()
 	{
 		if (IsBusy)

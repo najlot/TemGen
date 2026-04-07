@@ -13,15 +13,13 @@ internal sealed partial class <# Definition.Name#>ViewModelMappings
 
 	<#for entry in Entries.Where(e => e.IsArray)
 #>[MapIgnoreProperty(nameof(to.<# entry.Field#>))]
-	<#end#>
-	[MapIgnoreProperty(nameof(to.ChangeVisitor))]
+	<#end#>[MapIgnoreProperty(nameof(to.ChangeVisitor))]
 	[MapIgnoreProperty(nameof(to.HasErrors))]
 	public static partial void MapFromViewModelToViewModel(IMap map, <# Definition.Name#>ViewModel from, <# Definition.Name#>ViewModel to);
 
 	<#for entry in Entries.Where(e => e.IsArray)
 #>[MapIgnoreProperty(nameof(to.<# entry.Field#>))]
-	<#end#>
-	private static partial void MapPartialToViewModel(IMap map, <# Definition.Name#>Model from, <# Definition.Name#>ViewModel to);
+	<#end#>private static partial void MapPartialToViewModel(IMap map, <# Definition.Name#>Model from, <# Definition.Name#>ViewModel to);
 
 	[MapValidateSource]
 	public static void MapToViewModel(IMap map, <# Definition.Name#>Model from, <# Definition.Name#>ViewModel to)
@@ -30,14 +28,11 @@ internal sealed partial class <# Definition.Name#>ViewModelMappings
 <#end#>
 <#for entry in Entries.Where(e => e.IsArray)
 #>		to.<# entry.Field#> = [.. map.From<<# entry.EntryType#>Model>(from.<# entry.Field#>).To<<# entry.EntryType#>ViewModel>()];
-
-		foreach (var e in to.<# entry.Field#>) e.ParentId = from.Id;
 <#end#>	}
 
 	<#for entry in Entries.Where(e => e.IsArray)
 #>[MapIgnoreProperty(nameof(to.<# entry.Field#>))]
-	<#end#>
-	private static partial void MapPartialToViewModel(IMap map, <# Definition.Name#> from, <# Definition.Name#>ViewModel to);
+	<#end#>private static partial void MapPartialToViewModel(IMap map, <# Definition.Name#> from, <# Definition.Name#>ViewModel to);
 
 	[MapValidateSource]
 	public static void MapToViewModel(IMap map, <# Definition.Name#> from, <# Definition.Name#>ViewModel to)
@@ -46,8 +41,6 @@ internal sealed partial class <# Definition.Name#>ViewModelMappings
 <#end#>
 <#for entry in Entries.Where(e => e.IsArray)
 #>		to.<# entry.Field#> = [.. map.From<<# entry.EntryType#>>(from.<# entry.Field#>).To<<# entry.EntryType#>ViewModel>()];
-
-		foreach (var e in to.<# entry.Field#>) e.ParentId = from.Id;
 <#end#>	}
 }<#cs
 SetOutputPath(!(Definition.IsOwnedType || Definition.IsArray));

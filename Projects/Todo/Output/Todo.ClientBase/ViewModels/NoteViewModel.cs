@@ -25,8 +25,6 @@ public class NoteViewModel : ValidationViewModelBase, IParameterizable, IAsyncIn
 
 	private readonly ChangeTracker _changeTracker = new();
 
-	public bool CanUndo => _changeTracker.CanUndo;
-	public bool CanRedo => _changeTracker.CanRedo;
 	public bool CanNavigateToHistory => !IsNew;
 
 	public bool IsBusy { get; private set => Set(ref field, value); }
@@ -48,21 +46,19 @@ public class NoteViewModel : ValidationViewModelBase, IParameterizable, IAsyncIn
 	{
 		_noteService = noteService;
 
-		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
+		NavigateBackCommand = new AsyncCommand(NavigationService.NavigateBack, t => HandleError(t.Exception));
 		NavigateToHistoryCommand = new AsyncCommand(NavigateToHistoryAsync, t => HandleError(t.Exception), () => CanNavigateToHistory);
-		SaveCommand = new AsyncCommand(SaveAsync, t => HandleError(t.Exception), () => CanUndo);
+		SaveCommand = new AsyncCommand(SaveAsync, t => HandleError(t.Exception), () => !HasErrors);
 		DeleteCommand = new AsyncCommand(DeleteAsync, t => HandleError(t.Exception));
-		UndoCommand = new RelayCommand(() => _changeTracker.Undo(), () => _changeTracker.CanUndo);
-		RedoCommand = new RelayCommand(() => _changeTracker.Redo(), () => _changeTracker.CanRedo);
+		UndoCommand = new RelayCommand(_changeTracker.Undo, () => _changeTracker.CanUndo);
+		RedoCommand = new RelayCommand(_changeTracker.Redo, () => _changeTracker.CanRedo);
 
 		ChangeVisitor = _changeTracker;
-		_changeTracker.StateChanged += () =>
-		{
-			RaisePropertiesChanged(nameof(CanUndo), nameof(CanRedo));
-			UndoCommand.RaiseCanExecuteChanged();
-			RedoCommand.RaiseCanExecuteChanged();
-			SaveCommand.RaiseCanExecuteChanged();
-		};
+
+		_changeTracker.StateChanged += UndoCommand.RaiseCanExecuteChanged;
+		_changeTracker.StateChanged += RedoCommand.RaiseCanExecuteChanged;
+
+		HasErrorsChanged += SaveCommand.RaiseCanExecuteChanged;
 
 		_noteService.ItemUpdated += Handle;
 	}
@@ -285,6 +281,9 @@ public class NoteViewModel : ValidationViewModelBase, IParameterizable, IAsyncIn
 		{
 			if (disposing)
 			{
+				_changeTracker.StateChanged -= UndoCommand.RaiseCanExecuteChanged;
+				_changeTracker.StateChanged -= RedoCommand.RaiseCanExecuteChanged;
+				HasErrorsChanged -= SaveCommand.RaiseCanExecuteChanged;
 				_noteService.ItemUpdated -= Handle;
 			}
 

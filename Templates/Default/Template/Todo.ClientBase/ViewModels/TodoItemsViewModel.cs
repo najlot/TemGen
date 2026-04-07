@@ -43,10 +43,9 @@ public class <# Definition.Name#>sViewModel : ViewModelBase, IAsyncInitializable
 		_<# Definition.NameLow#>Service.ItemUpdated += Handle;
 		_<# Definition.NameLow#>Service.ItemDeleted += Handle;
 
-		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
+<#cs if (Definition.Name == "Note") Write("\t\tNavigateBackCommand = new AsyncCommand(NavigationService.NavigateBack, t => HandleError(t.Exception));"); else Write("\t\tNavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));"); #>
 		Add<# Definition.Name#>Command = new AsyncCommand(Add<# Definition.Name#>Async, t => HandleError(t.Exception));
 		Edit<# Definition.Name#>Command = new AsyncCommand<<# Definition.Name#>ListItemViewModel>(Edit<# Definition.Name#>Async, t => HandleError(t.Exception));
-		Refresh<# Definition.Name#>sCommand = new AsyncCommand(Refresh<# Definition.Name#>sAsync, t => HandleError(t.Exception));
 	}
 
 	public async Task InitializeAsync()
@@ -149,7 +148,6 @@ public class <# Definition.Name#>sViewModel : ViewModelBase, IAsyncInitializable
 		}
 	}
 
-	public AsyncCommand Refresh<# Definition.Name#>sCommand { get; }
 	public async Task Refresh<# Definition.Name#>sAsync()
 	{
 		if (IsBusy)

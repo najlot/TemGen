@@ -99,7 +99,7 @@
 				<RowDefinition Height="*"/>
 			</Grid.RowDefinitions>
 
-			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="12,8,12,0">
+			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
 				<Button Command="{Binding NavigateToGlobalSearch}" ToolTip="{x:Static loc:GlobalSearchLoc.GlobalSearch}" Margin="5">
 					<Button.Content>
 						<materialIcons:MaterialIcon Kind="Magnify" Width="18" Height="18" />

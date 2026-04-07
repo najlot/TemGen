@@ -52,10 +52,8 @@
 					<Button Margin="0,8,0,0"
 					        HorizontalAlignment="Stretch"
 					        HorizontalContentAlignment="Center"
-					        Classes="accent"
-					        Command="{Binding SaveCommand}">
-						<materialIcons:MaterialIcon Width="24" Height="24" Kind="ContentSave" />
-					</Button>
+					        Command="{Binding SaveCommand}"
+							Content="{x:Static loc:UserLoc.ChangePassword}"/>
 				</StackPanel>
 			</Border>
 		</ScrollViewer>

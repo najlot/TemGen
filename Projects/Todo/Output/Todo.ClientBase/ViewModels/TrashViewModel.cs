@@ -25,7 +25,7 @@ public sealed class TrashViewModel : ViewModelBase, IAsyncInitializable, IDispos
 		_trashService.ItemDeleted += Handle;
 
 		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
-		RefreshTrashCommand = new AsyncCommand(RefreshTrashAsync, t => HandleError(t.Exception));
+		OpenTrashItemCommand = new AsyncCommand<TrashItemViewModel>(OpenTrashItemAsync, t => HandleError(t.Exception));
 		RestoreTrashItemCommand = new AsyncCommand<TrashItemViewModel>(RestoreTrashItemAsync, t => HandleError(t.Exception));
 		DeleteTrashItemCommand = new AsyncCommand<TrashItemViewModel>(DeleteTrashItemAsync, t => HandleError(t.Exception));
 		DeleteAllTrashCommand = new AsyncCommand(DeleteAllTrashAsync, t => HandleError(t.Exception));
@@ -44,15 +44,15 @@ public sealed class TrashViewModel : ViewModelBase, IAsyncInitializable, IDispos
 	public DeleteConfirmationDialogViewModel DeleteDialogViewModel { get; } = new();
 
 	public AsyncCommand NavigateBackCommand { get; }
-	public AsyncCommand RefreshTrashCommand { get; }
+	public AsyncCommand<TrashItemViewModel> OpenTrashItemCommand { get; }
 	public AsyncCommand<TrashItemViewModel> RestoreTrashItemCommand { get; }
 	public AsyncCommand<TrashItemViewModel> DeleteTrashItemCommand { get; }
 	public AsyncCommand DeleteAllTrashCommand { get; }
 
 	public async Task InitializeAsync()
 	{
-		await RefreshTrashAsync().ConfigureAwait(false);
-		await _trashService.StartEventListener().ConfigureAwait(false);
+		await RefreshTrashAsync();
+		await _trashService.StartEventListener();
 	}
 
 	private async Task Handle(object? sender, TrashItemCreated obj)
@@ -106,7 +106,7 @@ public sealed class TrashViewModel : ViewModelBase, IAsyncInitializable, IDispos
 			Filter = string.Empty;
 			TrashItems.Clear();
 
-			var items = await _trashService.GetItemsAsync().ConfigureAwait(false);
+			var items = await _trashService.GetItemsAsync();
 			var viewModels = Map.From<TrashItemModel>(items).ToArray<TrashItemViewModel>();
 
 			foreach (var item in viewModels)
@@ -125,6 +125,39 @@ public sealed class TrashViewModel : ViewModelBase, IAsyncInitializable, IDispos
 		}
 	}
 
+	public async Task OpenTrashItemAsync(TrashItemViewModel? item)
+	{
+		if (IsBusy || item is null || DeleteDialogViewModel.IsVisible)
+		{
+			return;
+		}
+
+		try
+		{
+			IsBusy = true;
+
+			switch (item.Type)
+			{
+				case ItemType.Note:
+					await NavigationService.NavigateForward<NoteViewModel>(new() { { "Id", item.Id } });
+					break;
+				case ItemType.TodoItem:
+					await NavigationService.NavigateForward<TodoItemViewModel>(new() { { "Id", item.Id } });
+					break;
+				default:
+					break;
+			}
+		}
+		catch (Exception ex)
+		{
+			await NotificationService.ShowErrorAsync($"{ErrorLoc.ErrorLoadingData} {ex.Message}");
+		}
+		finally
+		{
+			IsBusy = false;
+		}
+	}
+
 	public async Task RestoreTrashItemAsync(TrashItemViewModel? item)
 	{
 		if (IsBusy || item is null)
@@ -135,7 +168,7 @@ public sealed class TrashViewModel : ViewModelBase, IAsyncInitializable, IDispos
 		try
 		{
 			IsBusy = true;
-			await _trashService.RestoreItemAsync(item.Type, item.Id).ConfigureAwait(false);
+			await _trashService.RestoreItemAsync(item.Type, item.Id);
 		}
 		catch (Exception ex)
 		{
@@ -157,7 +190,7 @@ public sealed class TrashViewModel : ViewModelBase, IAsyncInitializable, IDispos
 		DeleteDialogViewModel.Title = TrashLoc.PermanentDeleteConfirmationTitle;
 		DeleteDialogViewModel.Description = TrashLoc.PermanentDeleteConfirmationDescription;
 
-		if (await DeleteDialogViewModel.ShouldDelete().ConfigureAwait(false) == DeleteDialogResult.Cancel)
+		if (await DeleteDialogViewModel.ShouldDelete() == DeleteDialogResult.Cancel)
 		{
 			return;
 		}
@@ -165,7 +198,7 @@ public sealed class TrashViewModel : ViewModelBase, IAsyncInitializable, IDispos
 		try
 		{
 			IsBusy = true;
-			await _trashService.DeleteItemAsync(item.Type, item.Id).ConfigureAwait(false);
+			await _trashService.DeleteItemAsync(item.Type, item.Id);
 		}
 		catch (Exception ex)
 		{
@@ -187,7 +220,7 @@ public sealed class TrashViewModel : ViewModelBase, IAsyncInitializable, IDispos
 		DeleteDialogViewModel.Title = TrashLoc.PermanentDeleteConfirmationTitle;
 		DeleteDialogViewModel.Description = TrashLoc.PermanentDeleteAllConfirmationDescription;
 
-		if (await DeleteDialogViewModel.ShouldDelete().ConfigureAwait(false) == DeleteDialogResult.Cancel)
+		if (await DeleteDialogViewModel.ShouldDelete() == DeleteDialogResult.Cancel)
 		{
 			return;
 		}
@@ -195,7 +228,7 @@ public sealed class TrashViewModel : ViewModelBase, IAsyncInitializable, IDispos
 		try
 		{
 			IsBusy = true;
-			await _trashService.DeleteAllItemsAsync().ConfigureAwait(false);
+			await _trashService.DeleteAllItemsAsync();
 		}
 		catch (Exception ex)
 		{

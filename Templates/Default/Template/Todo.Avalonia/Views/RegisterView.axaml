@@ -46,7 +46,6 @@
 			<Button Margin="0,8,0,0"
 			        HorizontalAlignment="Stretch"
 			        HorizontalContentAlignment="Center"
-			        Classes="accent"
 			        Command="{Binding RegisterCommand}"
 			        Content="{x:Static loc:UserLoc.Register}" />
 

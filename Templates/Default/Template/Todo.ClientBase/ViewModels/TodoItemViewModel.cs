@@ -53,14 +53,13 @@ public <#if Entries.Any(e => e.IsArray)
 	public Guid Id { get; set => Set(ref field, value); }
 <#for entry in Entries.Where(e => !e.IsArray)
 	#><#if entry.EntryType == "DateTime"
-#>	private <# entry.EntryType#><#cs Write(entry.IsNullable ? "?" : "")#> _<# entry.FieldLow#>;
-
+#>
 	public <# entry.EntryType#><#cs Write(entry.IsNullable ? "?" : "")#> <# entry.Field#>
 	{
-		get => _<# entry.FieldLow#>;
+		get;
 		set
 		{
-			if (Set(ref _<# entry.FieldLow#>, value))
+			if (Set(ref field, value))
 			{
 				RaisePropertiesChanged(nameof(<# entry.Field#>Date), nameof(<# entry.Field#>Time));
 			}
@@ -137,8 +136,6 @@ public <#if Entries.Any(e => e.IsArray)
 <#end#>
 	private readonly ChangeTracker _changeTracker = new();
 
-	public bool CanUndo => _changeTracker.CanUndo;
-	public bool CanRedo => _changeTracker.CanRedo;
 	public bool CanNavigateToHistory => !IsNew;
 
 	public bool IsBusy { get; private set => Set(ref field, value); }
@@ -172,27 +169,20 @@ public <#if Entries.Any(e => e.IsArray)
 	.Select(n => Definitions.First(d => d.Name == n))
 #>		_<# definition.NameLow#>Service = <# definition.NameLow#>Service;
 <#end#>
-		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
+		NavigateBackCommand = new AsyncCommand(NavigationService.NavigateBack, t => HandleError(t.Exception));
 		NavigateToHistoryCommand = new AsyncCommand(NavigateToHistoryAsync, t => HandleError(t.Exception), () => CanNavigateToHistory);
-		SaveCommand = new AsyncCommand(SaveAsync, t => HandleError(t.Exception)<#if Entries.Where(e => e.IsArray).Any()
-#>, () => CanUndo && !HasErrors<#else
-#>, () => CanUndo<#end#>);
+		SaveCommand = new AsyncCommand(SaveAsync, t => HandleError(t.Exception), () => !HasErrors);
 		DeleteCommand = new AsyncCommand(DeleteAsync, t => HandleError(t.Exception));
-		UndoCommand = new RelayCommand(() => _changeTracker.Undo(), () => _changeTracker.CanUndo);
-		RedoCommand = new RelayCommand(() => _changeTracker.Redo(), () => _changeTracker.CanRedo);
+		UndoCommand = new RelayCommand(_changeTracker.Undo, () => _changeTracker.CanUndo);
+		RedoCommand = new RelayCommand(_changeTracker.Redo, () => _changeTracker.CanRedo);
 
 		ChangeVisitor = _changeTracker;
-		_changeTracker.StateChanged += () =>
-		{
-			RaisePropertiesChanged(nameof(CanUndo), nameof(CanRedo));
-			UndoCommand.RaiseCanExecuteChanged();
-			RedoCommand.RaiseCanExecuteChanged();
-			SaveCommand.RaiseCanExecuteChanged();
-		};
-<#if Entries.Where(e => e.IsArray).Any()
-#>
+
+		_changeTracker.StateChanged += UndoCommand.RaiseCanExecuteChanged;
+		_changeTracker.StateChanged += RedoCommand.RaiseCanExecuteChanged;
+
 		HasErrorsChanged += SaveCommand.RaiseCanExecuteChanged;
-<#end#>
+
 		_<# Definition.NameLow#>Service.ItemUpdated += Handle;
 	}
 
@@ -441,6 +431,9 @@ public <#if Entries.Any(e => e.IsArray)
 		{
 			if (disposing)
 			{
+				_changeTracker.StateChanged -= UndoCommand.RaiseCanExecuteChanged;
+				_changeTracker.StateChanged -= RedoCommand.RaiseCanExecuteChanged;
+				HasErrorsChanged -= SaveCommand.RaiseCanExecuteChanged;
 				_<# Definition.NameLow#>Service.ItemUpdated -= Handle;
 			}
 

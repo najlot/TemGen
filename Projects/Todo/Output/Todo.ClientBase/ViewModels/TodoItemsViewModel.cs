@@ -43,7 +43,6 @@ public class TodoItemsViewModel : ViewModelBase, IAsyncInitializable, IDisposabl
 		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
 		AddTodoItemCommand = new AsyncCommand(AddTodoItemAsync, t => HandleError(t.Exception));
 		EditTodoItemCommand = new AsyncCommand<TodoItemListItemViewModel>(EditTodoItemAsync, t => HandleError(t.Exception));
-		RefreshTodoItemsCommand = new AsyncCommand(RefreshTodoItemsAsync, t => HandleError(t.Exception));
 	}
 
 	public async Task InitializeAsync()
@@ -146,7 +145,6 @@ public class TodoItemsViewModel : ViewModelBase, IAsyncInitializable, IDisposabl
 		}
 	}
 
-	public AsyncCommand RefreshTodoItemsCommand { get; }
 	public async Task RefreshTodoItemsAsync()
 	{
 		if (IsBusy)

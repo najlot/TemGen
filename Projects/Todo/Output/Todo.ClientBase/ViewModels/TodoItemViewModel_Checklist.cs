@@ -45,7 +45,6 @@ public partial class TodoItemViewModel
 		var model = new ChecklistTaskModel() { Id = max };
 		var viewModel = Map.From(model).To<ChecklistTaskViewModel>();
 		viewModel.Id = max;
-		viewModel.ParentId = Id;
 		viewModel.InitializeTracking(changeTracker);
 
 		Checklist.Add(viewModel);

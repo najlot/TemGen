@@ -61,15 +61,6 @@ namespace Todo.Client.Localisation {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cancel.
-        /// </summary>
-        public static string Cancel {
-            get {
-                return ResourceManager.GetString("Cancel", resourceCulture);
-            }
-        }
-
-        /// <summary>
         ///   Looks up a localized string similar to After.
         /// </summary>
         public static string After {
@@ -77,7 +68,7 @@ namespace Todo.Client.Localisation {
                 return ResourceManager.GetString("After", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Before.
         /// </summary>
@@ -86,7 +77,16 @@ namespace Todo.Client.Localisation {
                 return ResourceManager.GetString("Before", resourceCulture);
             }
         }
-
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        public static string Cancel {
+            get {
+                return ResourceManager.GetString("Cancel", resourceCulture);
+            }
+        }
+        
         /// <summary>
         ///   Looks up a localized string similar to changes recorded.
         /// </summary>
@@ -122,7 +122,7 @@ namespace Todo.Client.Localisation {
                 return ResourceManager.GetString("DeleteConfirmationTitle", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Discard.
         /// </summary>
@@ -140,7 +140,7 @@ namespace Todo.Client.Localisation {
                 return ResourceManager.GetString("Edit", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Field.
         /// </summary>
@@ -169,20 +169,20 @@ namespace Todo.Client.Localisation {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Home.
-        /// </summary>
-        public static string Home {
-            get {
-                return ResourceManager.GetString("Home", resourceCulture);
-            }
-        }
-
-        /// <summary>
         ///   Looks up a localized string similar to History.
         /// </summary>
         public static string History {
             get {
                 return ResourceManager.GetString("History", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Home.
+        /// </summary>
+        public static string Home {
+            get {
+                return ResourceManager.GetString("Home", resourceCulture);
             }
         }
         
@@ -221,7 +221,7 @@ namespace Todo.Client.Localisation {
                 return ResourceManager.GetString("No", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to No changes recorded yet..
         /// </summary>
@@ -304,6 +304,15 @@ namespace Todo.Client.Localisation {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Search.
+        /// </summary>
+        public static string Search {
+            get {
+                return ResourceManager.GetString("Search", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Undo.
         /// </summary>
         public static string Undo {
@@ -311,7 +320,7 @@ namespace Todo.Client.Localisation {
                 return ResourceManager.GetString("Undo", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Untitled.
         /// </summary>

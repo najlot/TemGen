@@ -45,7 +45,6 @@ public partial class <# Definition.Name#>ViewModel
 		var model = new <#cs Write(DefinitionEntry?.EntryType)#>Model() { Id = max };
 		var viewModel = Map.From(model).To<<#cs Write(DefinitionEntry?.EntryType)#>ViewModel>();
 		viewModel.Id = max;
-		viewModel.ParentId = Id;
 		viewModel.InitializeTracking(changeTracker);
 
 		<#cs Write(DefinitionEntry?.Field)#>.Add(viewModel);

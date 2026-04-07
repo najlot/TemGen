@@ -57,8 +57,8 @@
 											{
 												<tr>
 													<td class="fw-semibold text-break">@change.Path</td>
-													<td class="text-break"><pre class="mb-0 text-wrap small">@FormatHistoryValue(change.OldValue)</pre></td>
-													<td class="text-break"><pre class="mb-0 text-wrap small">@FormatHistoryValue(change.NewValue)</pre></td>
+													<td class="text-break"><pre class="mb-0 text-wrap small">@change.OldValue</pre></td>
+													<td class="text-break"><pre class="mb-0 text-wrap small">@change.NewValue</pre></td>
 												</tr>
 											}
 										</tbody>
@@ -137,9 +137,6 @@
 
 	private static string FormatHistoryTimestamp(DateTime timeStamp)
 		=> timeStamp.ToLocalTime().ToString("g");
-
-	private static string FormatHistoryValue(string? value)
-		=> string.IsNullOrWhiteSpace(value) ? "-" : value;
 
 	private static string FormatUsername(string? username)
 		=> string.IsNullOrWhiteSpace(username) ? "-" : username;

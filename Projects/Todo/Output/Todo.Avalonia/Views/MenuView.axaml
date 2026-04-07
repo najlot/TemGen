@@ -30,13 +30,13 @@
 			      Margin="16"
 			      Background="White"
 			      ColumnDefinitions="Auto,*,Auto,Auto,Auto">
-				<Button Grid.Column="0" Margin="0,0,16,0" Command="{Binding ToggleDrawerCommand}">
+				<Button Grid.Column="0" Command="{Binding ToggleDrawerCommand}">
 					<materialIcons:MaterialIcon Width="24" Height="24" Kind="Menu" />
 				</Button>
-				<Button Grid.Column="2" Margin="8,0" Command="{Binding NavigateToGlobalSearch}">
+				<Button Grid.Column="2" Margin="0,0,8,0" Command="{Binding NavigateToGlobalSearch}">
 					<materialIcons:MaterialIcon Width="24" Height="24" Kind="Search" />
 				</Button>
-				<Button Grid.Column="3" Margin="8,0" Command="{Binding ManageCommand}">
+				<Button Grid.Column="3" Margin="0,0,8,0" Command="{Binding ManageCommand}">
 					<materialIcons:MaterialIcon Width="24" Height="24" Kind="User" />
 				</Button>
 				<Button Grid.Column="4" Command="{Binding LogoutCommand}">

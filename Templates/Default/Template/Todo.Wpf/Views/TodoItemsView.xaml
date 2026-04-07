@@ -20,14 +20,6 @@
 
 			<WrapPanel HorizontalAlignment="Right" DockPanel.Dock="Right">
 				<Button Margin="5"
-						Command="{Binding Refresh<#cs Write(Definition.Name)#>sCommand}"
-						ToolTip="{x:Static loc:CommonLoc.Refresh}">
-					<Button.Content>
-						<materialIcons:MaterialIcon Kind="Refresh" Width="18" Height="18" />
-					</Button.Content>
-				</Button>
-
-				<Button Margin="5"
 						Command="{Binding Add<#cs Write(Definition.Name)#>Command}"
 						ToolTip="{x:Static loc:CommonLoc.New}">
 					<Button.Content>

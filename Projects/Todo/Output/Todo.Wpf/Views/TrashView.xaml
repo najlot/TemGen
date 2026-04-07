@@ -19,22 +19,15 @@
 					</Button.Content>
 				</Button>
 
-				<WrapPanel HorizontalAlignment="Right" DockPanel.Dock="Right">
-					<Button Margin="5"
-							Command="{Binding DeleteAllTrashCommand}"
-							ToolTip="{x:Static loc:TrashLoc.DeleteAll}">
+				<Button HorizontalAlignment="Right"
+						DockPanel.Dock="Right"
+						Margin="5"
+						Command="{Binding DeleteAllTrashCommand}"
+						ToolTip="{x:Static loc:TrashLoc.DeleteAll}">
 						<Button.Content>
 							<materialIcons:MaterialIcon Kind="DeleteSweep" Width="18" Height="18" />
 						</Button.Content>
-					</Button>
-					<Button Margin="5"
-							Command="{Binding RefreshTrashCommand}"
-							ToolTip="{x:Static loc:CommonLoc.Refresh}">
-						<Button.Content>
-							<materialIcons:MaterialIcon Kind="Refresh" Width="18" Height="18" />
-						</Button.Content>
-					</Button>
-				</WrapPanel>
+				</Button>
 
 				<DockPanel DockPanel.Dock="Left">
 					<Label VerticalAlignment="Center" Content="{x:Static loc:CommonLoc.Filter}" />
@@ -57,6 +50,10 @@
 									<TextBlock Margin="0,4,0,0" Foreground="#FF444444" Text="{Binding Content}" TextWrapping="Wrap" />
 									<TextBlock Margin="0,6,0,0" Foreground="#FF666666" Text="{Binding TypeDisplay}" />
 									<WrapPanel Margin="0,8,0,0">
+										<Button Margin="0,0,8,0"
+												Command="{Binding DataContext.OpenTrashItemCommand, RelativeSource={RelativeSource AncestorType=local:TrashView}}"
+												CommandParameter="{Binding .}"
+												Content="{x:Static loc:CommonLoc.Edit}" />
 										<Button Margin="0,0,8,0"
 												Command="{Binding DataContext.RestoreTrashItemCommand, RelativeSource={RelativeSource AncestorType=local:TrashView}}"
 												CommandParameter="{Binding .}"

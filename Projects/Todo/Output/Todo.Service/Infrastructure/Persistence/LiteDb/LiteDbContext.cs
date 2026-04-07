@@ -23,7 +23,14 @@ public sealed class LiteDbContext : IDisposable
 			Directory.CreateDirectory(directoryPath);
 		}
 
-		Database = new LiteDatabase(databasePath);
+		var bsonMapper = new BsonMapper();
+		bsonMapper.RegisterType<string>
+		(
+			serialize: (s) => s ?? string.Empty,
+			deserialize: (bson) => bson.IsNull ? string.Empty : bson.AsString
+		);
+
+		Database = new LiteDatabase(databasePath, bsonMapper);
 	}
 
 	public ILiteCollection<T> GetCollection<T>(string name)
