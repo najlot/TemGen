@@ -1,0 +1,33 @@
+﻿<UserControl x:Class="<#cs Write(Project.Namespace)#>.Avalonia.Views.SaveConfirmationDialogView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vms="clr-namespace:<#cs Write(Project.Namespace)#>.ClientBase.ViewModels;assembly=<#cs Write(Project.Namespace)#>.ClientBase"
+             x:DataType="vms:SaveConfirmationDialogViewModel"
+             mc:Ignorable="d">
+	<Grid Background="#80000000" IsVisible="{Binding IsVisible}">
+		<Border MinWidth="300"
+		        Padding="20"
+		        HorizontalAlignment="Center"
+		        VerticalAlignment="Center"
+		        Background="{StaticResource ForegroundColor}"
+		        BorderBrush="{StaticResource BackgroundColor}"
+		        BorderThickness="1">
+			<StackPanel>
+				<TextBlock Margin="0,0,0,10"
+				           FontSize="16"
+				           FontWeight="Bold"
+				           Text="{Binding Title}" />
+				<TextBlock Margin="0,0,0,20" Text="{Binding Description}" TextWrapping="Wrap" />
+				<StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+					<Button Margin="5" Command="{Binding SaveCommand}" Content="{x:Static loc:CommonLoc.Save}" />
+					<Button Margin="5" Command="{Binding DiscardCommand}" Content="{x:Static loc:CommonLoc.Discard}" />
+					<Button Margin="5" Command="{Binding CancelCommand}" Content="{x:Static loc:CommonLoc.Cancel}" />
+				</StackPanel>
+			</StackPanel>
+		</Border>
+	</Grid>
+</UserControl>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

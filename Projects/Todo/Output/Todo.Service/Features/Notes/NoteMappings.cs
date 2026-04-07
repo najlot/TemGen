@@ -1,0 +1,37 @@
+using Najlot.Map;
+using Najlot.Map.Attributes;
+using System.Linq.Expressions;
+using Todo.Contracts;
+using Todo.Contracts.Commands;
+using Todo.Contracts.Events;
+using Todo.Contracts.ListItems;
+
+namespace Todo.Service.Features.Notes;
+
+[Mapping]
+internal partial class NoteMappings
+{
+	public static partial void MapToCreated(IMap map, NoteModel from, NoteCreated to);
+
+	public static partial void MapToUpdated(IMap map, NoteModel from, NoteUpdated to);
+
+	[MapIgnoreProperty(nameof(to.DeletedAt))]
+	public static partial void MapToModel(IMap map, CreateNote from, NoteModel to);
+
+	[MapIgnoreProperty(nameof(to.DeletedAt))]
+	public static partial void MapToModel(IMap map, UpdateNote from, NoteModel to);
+
+	public static partial void MapToModel(IMap map, NoteModel from, Note to);
+
+	public static Expression<Func<NoteModel, NoteListItem>> GetListItemExpression()
+	{
+		return from => new NoteListItem
+		{
+			Id = from.Id,
+			Title = from.Title,
+			Content = from.Content
+		};
+	}
+
+	public static partial void MapToModel(IMap map, NoteModel from, NoteListItem to);
+}

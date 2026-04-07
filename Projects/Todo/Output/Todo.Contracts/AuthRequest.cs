@@ -1,4 +1,4 @@
-﻿namespace Todo.Contracts;
+namespace Todo.Contracts;
 
 public class AuthRequest
 {

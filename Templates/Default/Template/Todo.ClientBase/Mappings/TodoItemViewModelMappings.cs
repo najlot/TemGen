@@ -1,7 +1,7 @@
 using Najlot.Map;
 using Najlot.Map.Attributes;
 using <# Project.Namespace#>.Client.Data.Models;
-using <# Project.Namespace#>.ClientBase.ViewModel;
+using <# Project.Namespace#>.ClientBase.ViewModels;
 using <# Project.Namespace#>.Contracts;
 using <# Project.Namespace#>.Contracts.Events;
 
@@ -17,11 +17,10 @@ internal sealed partial class <# Definition.Name#>ViewModelMappings
 	[MapValidateSource]
 	public static void MapToViewModel(IMap map, <# Definition.Name#>Updated from, <# Definition.Name#>ViewModel to)
 	{
-		MapPartialToViewModel(map, from, to);
+		MapPartialToViewModel(map, from, to);<#if Entries.Any(e => e.IsArray)#>
+<#end#>
 <#for entry in Entries.Where(e => e.IsArray)
 #>		to.<# entry.Field#> = [.. map.From<<# entry.EntryType#>>(from.<# entry.Field#>).To<<# entry.EntryType#>ViewModel>()];
-
-		foreach (var e in to.<# entry.Field#>) e.ParentId = from.Id;
 <#end#>	}
 
 	public static partial void MapToModel(IMap map, <# Definition.Name#>ViewModel from, <# Definition.Name#>Model to);
@@ -33,11 +32,10 @@ internal sealed partial class <# Definition.Name#>ViewModelMappings
 	[MapValidateSource]
 	public static void MapToViewModel(IMap map, <# Definition.Name#>Model from, <# Definition.Name#>ViewModel to)
 	{
-		MapPartialToViewModel(map, from, to);
+		MapPartialToViewModel(map, from, to);<#if Entries.Any(e => e.IsArray)#>
+<#end#>
 <#for entry in Entries.Where(e => e.IsArray)
 #>		to.<# entry.Field#> = [.. map.From<<# entry.EntryType#>Model>(from.<# entry.Field#>).To<<# entry.EntryType#>ViewModel>()];
-
-		foreach (var e in to.<# entry.Field#>) e.ParentId = from.Id;
 <#end#>	}
 
 	[MapIgnoreProperty(nameof(to.ChangeVisitor))]

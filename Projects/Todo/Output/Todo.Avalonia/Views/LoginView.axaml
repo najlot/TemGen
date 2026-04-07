@@ -1,0 +1,61 @@
+<UserControl x:Class="Todo.Avalonia.Views.LoginView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:loc="clr-namespace:Todo.Client.Localisation;assembly=Todo.Client.Localisation"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vms="clr-namespace:Todo.ClientBase.ViewModels;assembly=Todo.ClientBase"
+             d:DesignHeight="700"
+             d:DesignWidth="900"
+             x:DataType="vms:LoginViewModel"
+             mc:Ignorable="d">
+	<Border MaxWidth="400"
+	        Padding="32"
+	        HorizontalAlignment="Center"
+	        VerticalAlignment="Center">
+		<StackPanel Spacing="16">
+			<TextBlock Margin="0,0,0,16"
+			           HorizontalAlignment="Center"
+			           FontSize="24"
+			           FontWeight="Bold"
+			           Text="{x:Static loc:UserLoc.Login}" />
+
+			<!--  Username  -->
+			<StackPanel HorizontalAlignment="Stretch" Spacing="4">
+				<TextBlock Text="{x:Static loc:UserLoc.Username}" />
+				<TextBox Classes="clearButton" Text="{Binding Username, Mode=TwoWay}" Watermark="{x:Static loc:UserLoc.Username}" />
+			</StackPanel>
+
+			<!--  Password  -->
+			<StackPanel HorizontalAlignment="Stretch" Spacing="4">
+				<TextBlock Text="{x:Static loc:UserLoc.Password}" />
+				<TextBox Classes="revealPasswordButton"
+				         PasswordChar="•"
+				         Text="{Binding Password, Mode=TwoWay}"
+				         Watermark="{x:Static loc:UserLoc.Password}" />
+			</StackPanel>
+
+			<!--  Login Button  -->
+			<Button Margin="0,8,0,0"
+			        HorizontalAlignment="Stretch"
+			        HorizontalContentAlignment="Center"
+			        Command="{Binding LoginCommand}"
+			        Content="{x:Static loc:UserLoc.Login}" />
+
+			<!--  Forgot Password Link
+			<Button Margin="0,8,0,0"
+					HorizontalAlignment="Stretch"
+					HorizontalContentAlignment="Center"
+					Classes="hyperlink"
+					Command="{Binding NavigateToForgotPasswordCommand}"
+					Content="{x:Static loc:UserLoc.ForgotPassword}" />-->
+
+			<!--  Navigate to Register Link  -->
+			<Button HorizontalAlignment="Stretch"
+			        HorizontalContentAlignment="Center"
+			        Classes="hyperlink"
+			        Command="{Binding NavigateToRegisterCommand}"
+			        Content="{x:Static loc:UserLoc.Register}" />
+		</StackPanel>
+	</Border>
+</UserControl>

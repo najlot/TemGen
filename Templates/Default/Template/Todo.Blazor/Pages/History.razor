@@ -1,0 +1,144 @@
+@page "/history/{id:guid}"
+@using System.Linq
+@using <# Project.Namespace#>.Blazor.Pages;
+@using <# Project.Namespace#>.Blazor.Services;
+@using <# Project.Namespace#>.Client.Data.Services;
+@using <# Project.Namespace#>.Client.Localisation;
+@using <# Project.Namespace#>.Contracts;
+@inject ILogger<History> Log
+@inject IHistoryService HistoryService
+@inject NavigationManager NavigationManager
+@attribute [Authorize]
+
+<PageTitle>@CommonLoc.History</PageTitle>
+
+<section class="d-grid gap-4">
+	<div class="card shadow-sm border-0">
+		<div class="card-body">
+			@if (isHistoryLoading)
+			{
+				<div class="text-body-secondary">@CommonLoc.Loading...</div>
+			}
+			else if (historyEntries.Length == 0)
+			{
+				<p class="mb-0 text-body-secondary">@CommonLoc.NoHistoryEntries</p>
+			}
+			else
+			{
+				<div class="d-grid gap-3">
+					@foreach (var historyEntry in historyEntries)
+					{
+						var isExpanded = expandedHistoryEntryId == historyEntry.Id;
+
+						<section class="border-bottom pb-3">
+							<button type="button" class="btn btn-link w-100 px-0 text-start text-decoration-none" @onclick="() => ToggleHistoryEntry(historyEntry.Id)">
+								<div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+									<div>
+										<div class="fw-semibold text-body">@FormatUsername(historyEntry.Username)</div>
+										<div class="small text-body-secondary">@FormatHistoryTimestamp(historyEntry.TimeStamp)</div>
+									</div>
+									<div class="small text-body-secondary text-md-end">@historyEntry.Changes.Length @CommonLoc.ChangesRecorded</div>
+								</div>
+							</button>
+
+							@if (isExpanded)
+							{
+								<div class="table-responsive mt-2">
+									<table class="table table-sm align-middle mb-0">
+										<thead class="table-light">
+											<tr>
+												<th>@CommonLoc.Field</th>
+												<th>@CommonLoc.Before</th>
+												<th>@CommonLoc.After</th>
+											</tr>
+										</thead>
+										<tbody>
+											@foreach (var change in historyEntry.Changes)
+											{
+												<tr>
+													<td class="fw-semibold text-break">@change.Path</td>
+													<td class="text-break"><pre class="mb-0 text-wrap small">@change.OldValue</pre></td>
+													<td class="text-break"><pre class="mb-0 text-wrap small">@change.NewValue</pre></td>
+												</tr>
+											}
+										</tbody>
+									</table>
+								</div>
+							}
+						</section>
+					}
+				</div>
+			}
+		</div>
+	</div>
+</section>
+
+@code {
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	[Parameter]
+	public Guid Id { get; set; }
+
+	private Guid _lastEntityId;
+	private bool isHistoryLoading;
+	private Guid? expandedHistoryEntryId;
+	private HistoryEntry[] historyEntries = [];
+
+	protected override async Task OnParametersSetAsync()
+	{
+		if (_lastEntityId == Id)
+		{
+			return;
+		}
+
+		_lastEntityId = Id;
+		isHistoryLoading = false;
+		expandedHistoryEntryId = null;
+		historyEntries = [];
+
+		await LoadHistoryIfNeededAsync();
+	}
+
+	private async Task LoadHistoryIfNeededAsync()
+	{
+		if (Id == Guid.Empty || isHistoryLoading)
+		{
+			return;
+		}
+
+		try
+		{
+			isHistoryLoading = true;
+			historyEntries = await HistoryService.GetItemsAsync(Id);
+			expandedHistoryEntryId = historyEntries.FirstOrDefault()?.Id;
+		}
+		catch (System.Security.Authentication.AuthenticationException)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigationManager.NavigateTo(url);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error loading history for entity {EntityId}.", Id);
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotLoad);
+			historyEntries = [];
+		}
+		finally
+		{
+			isHistoryLoading = false;
+		}
+	}
+
+	private void ToggleHistoryEntry(Guid historyEntryId)
+	{
+		expandedHistoryEntryId = expandedHistoryEntryId == historyEntryId ? null : historyEntryId;
+	}
+
+	private static string FormatHistoryTimestamp(DateTime timeStamp)
+		=> timeStamp.ToLocalTime().ToString("g");
+
+	private static string FormatUsername(string? username)
+		=> string.IsNullOrWhiteSpace(username) ? "-" : username;
+}
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

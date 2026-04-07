@@ -2,20 +2,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TemGen.Handler;
 
 namespace TemGen;
 
-public class TemplateProcessor(AbstractSectionHandler[] handler, Project project, List<Definition> definitions)
+public partial class TemplateProcessor(AbstractSectionHandler[] handler, Project project, List<Definition> definitions)
 {
-	private static readonly Regex ForPattern = new(@"^\s*(?<name>[A-Za-z_][A-Za-z0-9_]*)\s+in\s+(?<expression>[\s\S]+?)\s*$", RegexOptions.Compiled);
+	private static readonly Regex _forPattern = GetForPatternRegex();
 	private readonly CsSectionHandler _csHandler = handler.OfType<CsSectionHandler>().FirstOrDefault() ?? throw new ArgumentException("TemplateProcessor requires a CsSectionHandler for C# control-flow blocks.", nameof(handler));
 
-	public async Task<Dictionary<string, string>> Handle(Template template, List<Definition> definitions)
+	public async Task<Dictionary<string, (Encoding, string)>> Handle(Template template, List<Definition> definitions)
 	{
-		Dictionary<string, string> results = [];
+		Dictionary<string, (Encoding, string)> results = [];
 
 		foreach (var definition in definitions)
 		{
@@ -23,7 +24,7 @@ public class TemplateProcessor(AbstractSectionHandler[] handler, Project project
 
 			if (!string.IsNullOrWhiteSpace(result.RelativePath))
 			{
-				results[result.RelativePath] = result.Content;
+				results[result.RelativePath] = (result.Encoding, result.Content);
 			}
 
 			if (result.SkipOtherDefinitions)
@@ -39,7 +40,7 @@ public class TemplateProcessor(AbstractSectionHandler[] handler, Project project
 
 					if (!string.IsNullOrWhiteSpace(result.RelativePath))
 					{
-						results[result.RelativePath] = result.Content;
+						results[result.RelativePath] = (result.Encoding, result.Content);
 					}
 				}
 			}
@@ -59,7 +60,8 @@ public class TemplateProcessor(AbstractSectionHandler[] handler, Project project
 			Entries = definition.Entries,
 			SkipOtherDefinitions = false,
 			Project = project,
-			RepeatForEachDefinitionEntry = false
+			RepeatForEachDefinitionEntry = false,
+			Encoding = template.Encoding
 		};
 
 		await HandleSections(template.Sections, globals).ConfigureAwait(false);
@@ -72,7 +74,8 @@ public class TemplateProcessor(AbstractSectionHandler[] handler, Project project
 			RelativePath = globals.RelativePath,
 			Content = globals.Result,
 			SkipOtherDefinitions = globals.SkipOtherDefinitions,
-			RepeatForEachDefinitionEntry = globals.RepeatForEachDefinitionEntry
+			RepeatForEachDefinitionEntry = globals.RepeatForEachDefinitionEntry,
+			Encoding = globals.Encoding
 		};
 	}
 
@@ -167,7 +170,7 @@ public class TemplateProcessor(AbstractSectionHandler[] handler, Project project
 
 	private static (string VariableName, string Expression) ParseForHeader(string content)
 	{
-		var match = ForPattern.Match(content);
+		var match = _forPattern.Match(content);
 
 		if (!match.Success)
 		{
@@ -188,4 +191,7 @@ public class TemplateProcessor(AbstractSectionHandler[] handler, Project project
 
 		return expression;
 	}
+
+	[GeneratedRegex(@"^\s*(?<name>[A-Za-z_][A-Za-z0-9_]*)\s+in\s+(?<expression>[\s\S]+?)\s*$", RegexOptions.Compiled)]
+	private static partial Regex GetForPatternRegex();
 }

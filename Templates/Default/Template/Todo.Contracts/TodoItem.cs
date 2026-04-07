@@ -13,6 +13,7 @@ public <#cs Write(Definition.IsEnumeration ? "enum" : "class")#> <# Definition.N
 <#for entry in Entries
 #>	public <#cs Write(entry.IsArray ? "List<" : "")#><# entry.EntryType#><#cs Write(entry.IsArray ? ">" : entry.IsNullable ? "?" : "")#> <# entry.Field#><#cs Write(entry.IsReference ? "Id" : "")#> { get; set; }<#if entry.EntryType == "string"
 #> = string.Empty;<#elseif entry.IsArray
-#> = [];<#end#>
-<#end#><#end#>
-}<#cs SetOutputPath(false)#>
+#> = [];<#elseif entry.IsOwnedType && !entry.IsNullable
+#> = new();<#end#>
+<#end#><#end
+#>}<#cs SetOutputPath(false)#>

@@ -1,0 +1,17 @@
+﻿<Window x:Class="<#cs Write(Project.Namespace)#>.Avalonia.Views.MainWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="using:<#cs Write(Project.Namespace)#>.Avalonia.Views"
+        Title="<#cs Write(Project.Namespace)#>"
+        Width="800"
+        Height="600"
+        d:DesignHeight="600"
+        d:DesignWidth="800"
+        Icon="/Assets/icon.ico"
+        WindowState="Maximized"
+        mc:Ignorable="d">
+	<views:MainView x:Name="MainView" />
+</Window>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

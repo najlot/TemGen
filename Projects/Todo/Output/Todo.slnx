@@ -1,4 +1,11 @@
 <Solution>
+	<Project Path="Todo.Avalonia.Android/Todo.Avalonia.Android.csproj">
+		<Deploy Solution="Debug|*" />
+	</Project>
+	<Project Path="Todo.Avalonia.Browser/Todo.Avalonia.Browser.csproj" />
+	<Project Path="Todo.Avalonia.Desktop/Todo.Avalonia.Desktop.csproj" />
+	<Project Path="Todo.Avalonia.iOS/Todo.Avalonia.iOS.csproj" />
+	<Project Path="Todo.Avalonia/Todo.Avalonia.csproj" />
 	<Project Path="Todo.Blazor/Todo.Blazor.csproj" />
 	<Project Path="Todo.Client.Data.Test/Todo.Client.Data.Test.csproj" />
 	<Project Path="Todo.Client.Data/Todo.Client.Data.csproj" />

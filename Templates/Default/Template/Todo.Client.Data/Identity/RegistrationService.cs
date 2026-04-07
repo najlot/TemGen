@@ -17,11 +17,13 @@ public class RegistrationService(IHttpClientFactory httpClientFactory, ILogger<R
 			log.LogDebug("Registering user.");
 			using var client = httpClientFactory.CreateClient();
 
-			var command = new CreateUser(
-				id,
-				username,
-				email,
-				password);
+			var command = new CreateUser
+			{
+				Id = id,
+				Username = username,
+				EMail = email,
+				Password = password
+			};
 
 			var result = await client.PostAsJsonAsync("api/Auth/Register", command);
 

@@ -120,12 +120,6 @@
   <data name="Cancel" xml:space="preserve">
     <value>Abbrechen</value>
   </data>
-  <data name="ChangePassword" xml:space="preserve">
-    <value>Passwort ändern</value>
-  </data>
-  <data name="ConfirmNewPassword" xml:space="preserve">
-    <value>Password bestätigen</value>
-  </data>
   <data name="Delete" xml:space="preserve">
     <value>Löschen</value>
   </data>
@@ -135,14 +129,23 @@
   <data name="DeleteConfirmationTitle" xml:space="preserve">
     <value>Löschen?</value>
   </data>
+  <data name="Field" xml:space="preserve">
+    <value>Feld</value>
+  </data>
   <data name="Discard" xml:space="preserve">
     <value>Verwerfen</value>
   </data>
   <data name="Edit" xml:space="preserve">
     <value>Bearbeiten</value>
   </data>
-  <data name="EmailAddress" xml:space="preserve">
-    <value>Email Adresse</value>
+  <data name="After" xml:space="preserve">
+    <value>Nachher</value>
+  </data>
+  <data name="Before" xml:space="preserve">
+    <value>Vorher</value>
+  </data>
+  <data name="ChangesRecorded" xml:space="preserve">
+    <value>Änderungen erfasst</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>Filter:</value>
@@ -153,14 +156,11 @@
   <data name="Home" xml:space="preserve">
     <value>Startseite</value>
   </data>
+  <data name="History" xml:space="preserve">
+    <value>Verlauf</value>
+  </data>
   <data name="Loading" xml:space="preserve">
     <value>Wird geladen</value>
-  </data>
-  <data name="Login" xml:space="preserve">
-    <value>Einloggen</value>
-  </data>
-  <data name="Logout" xml:space="preserve">
-    <value>Ausloggen</value>
   </data>
   <data name="Navigation" xml:space="preserve">
     <value>Navigation</value>
@@ -168,8 +168,8 @@
   <data name="New" xml:space="preserve">
     <value>Neu</value>
   </data>
-  <data name="NewPassword" xml:space="preserve">
-    <value>Neues Passwort</value>
+  <data name="NoHistoryEntries" xml:space="preserve">
+    <value>Noch keine Änderungen erfasst.</value>
   </data>
   <data name="No" xml:space="preserve">
     <value>Nein</value>
@@ -180,17 +180,11 @@
   <data name="NotFoundMessage" xml:space="preserve">
     <value>Unter dieser Adresse wurde nichts gefunden.</value>
   </data>
-  <data name="Password" xml:space="preserve">
-    <value>Passwort</value>
-  </data>
   <data name="Redo" xml:space="preserve">
     <value>Wiederherstellen</value>
   </data>
   <data name="Refresh" xml:space="preserve">
     <value>Aktualisieren</value>
-  </data>
-  <data name="Register" xml:space="preserve">
-    <value>Registrieren</value>
   </data>
   <data name="RegisterOrLogin" xml:space="preserve">
     <value>Bitte melden Sie sich an oder registrieren Sie sich, um fortzufahren.</value>
@@ -207,16 +201,16 @@
   <data name="Undo" xml:space="preserve">
     <value>Rückgängig</value>
   </data>
-  <data name="UserNamagement" xml:space="preserve">
-    <value>Benutzerverwaltung</value>
-  </data>
-  <data name="Username" xml:space="preserve">
-    <value>Benutzername</value>
+  <data name="Untitled" xml:space="preserve">
+    <value>Ohne Titel</value>
   </data>
   <data name="Welcome" xml:space="preserve">
     <value>Willkommen</value>
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Ja</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Suchen</value>
   </data>
 </root>

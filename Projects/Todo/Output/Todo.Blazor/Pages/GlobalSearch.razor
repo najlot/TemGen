@@ -1,0 +1,164 @@
+@page "/global-search"
+@using System.Net
+@using Microsoft.AspNetCore.Components
+@using Todo.Blazor.Services;
+@using Todo.Client.Data.Models;
+@using Todo.Client.Data.Services;
+@using Todo.Client.Localisation;
+@using Todo.Contracts;
+@inject ILogger<GlobalSearch> Log
+@inject IGlobalSearchService GlobalSearchService
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize]
+
+<PageTitle>@GlobalSearchLoc.GlobalSearch</PageTitle>
+
+<section class="d-grid gap-3">
+	<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+		<h1 class="mb-0">@GlobalSearchLoc.GlobalSearch</h1>
+		<div class="row g-2 flex-grow-1 justify-content-lg-end">
+			<div class="col-12 col-md-8 col-lg-6">
+				<input class="form-control" @bind="queryText" placeholder="@GlobalSearchLoc.SearchPlaceholder" />
+			</div>
+			<div class="col-12 col-md-auto">
+				<button class="btn btn-primary w-100" @onclick="SearchAsync">@GlobalSearchLoc.Search</button>
+			</div>
+		</div>
+	</div>
+
+@if (isLoading)
+{
+	<p><em>@CommonLoc.Loading...</em></p>
+}
+else if (string.IsNullOrWhiteSpace(activeQuery))
+{
+	<div class="alert alert-light border mb-0">@GlobalSearchLoc.SearchPrompt</div>
+}
+else if (items.Count == 0)
+{
+	<div class="alert alert-light border mb-0">@GlobalSearchLoc.NoResults</div>
+}
+else
+{
+	<div class="row g-3">
+		@foreach (var item in items)
+		{
+			<div class="col-12">
+				<a class="card shadow-sm border-0 text-decoration-none text-reset h-100" href="@GetResultHref(item)">
+					<div class="card-body">
+						<div class="d-flex justify-content-between align-items-start gap-3">
+							<div class="flex-grow-1">
+								<div class="fw-semibold text-break">@Highlight(Display(item.Title, CommonLoc.Untitled))</div>
+								@if (!string.IsNullOrWhiteSpace(item.Content))
+								{
+									<div class="text-muted text-break mt-1">@Highlight(item.Content)</div>
+								}
+							</div>
+							<div class="text-end text-nowrap small text-secondary">@item.Type</div>
+						</div>
+					</div>
+				</a>
+			</div>
+		}
+	</div>
+}
+</section>
+
+@code {
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	private readonly List<GlobalSearchItemModel> items = [];
+	private string queryText = string.Empty;
+	private string activeQuery = string.Empty;
+	private bool isLoading;
+
+	private async Task SearchAsync()
+	{
+		var searchText = queryText.Trim();
+		activeQuery = searchText;
+		items.Clear();
+
+		if (string.IsNullOrWhiteSpace(searchText))
+		{
+			await InvokeAsync(StateHasChanged);
+			return;
+		}
+
+		try
+		{
+			isLoading = true;
+			items.AddRange(await GlobalSearchService.SearchAsync(searchText).ConfigureAwait(false));
+		}
+		catch (System.Security.Authentication.AuthenticationException)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigationManager.NavigateTo(url);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error searching globally.");
+			ErrorService?.ShowError(GlobalSearchLoc.GlobalSearch, ex.Message);
+		}
+		finally
+		{
+			isLoading = false;
+		}
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private MarkupString Highlight(string? value)
+	{
+		if (string.IsNullOrEmpty(value))
+		{
+			return new MarkupString(string.Empty);
+		}
+
+		if (string.IsNullOrWhiteSpace(activeQuery))
+		{
+			return new MarkupString(WebUtility.HtmlEncode(value));
+		}
+
+		var result = new System.Text.StringBuilder();
+		var remaining = value;
+
+		while (remaining.Length > 0)
+		{
+			var index = remaining.IndexOf(activeQuery, StringComparison.OrdinalIgnoreCase);
+			if (index < 0)
+			{
+				result.Append(WebUtility.HtmlEncode(remaining));
+				break;
+			}
+
+			if (index > 0)
+			{
+				result.Append(WebUtility.HtmlEncode(remaining[..index]));
+			}
+
+			result.Append("<mark>");
+			result.Append(WebUtility.HtmlEncode(remaining.Substring(index, activeQuery.Length)));
+			result.Append("</mark>");
+			remaining = remaining[(index + activeQuery.Length)..];
+		}
+
+		return new MarkupString(result.ToString());
+	}
+
+	private static string Display(string? value, string fallback)
+	{
+		return string.IsNullOrWhiteSpace(value) ? fallback : value;
+	}
+
+	private static string GetResultHref(GlobalSearchItemModel item)
+	{
+		return item.Type switch
+		{
+			ItemType.Note => "/note/" + item.Id,
+			ItemType.TodoItem => "/todoitem/" + item.Id,
+			_ => "/",
+		};
+	}
+}

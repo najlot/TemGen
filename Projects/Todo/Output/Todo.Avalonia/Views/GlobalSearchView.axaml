@@ -1,0 +1,76 @@
+<UserControl x:Class="Todo.Avalonia.Views.GlobalSearchView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:loc="clr-namespace:Todo.Client.Localisation;assembly=Todo.Client.Localisation"
+             xmlns:local="using:Todo.Avalonia.Views"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vms="clr-namespace:Todo.ClientBase.ViewModels;assembly=Todo.ClientBase"
+             d:DesignHeight="700"
+             d:DesignWidth="1000"
+             x:DataType="vms:GlobalSearchViewModel"
+             mc:Ignorable="d">
+	<Grid RowDefinitions="Auto,*">
+		<!--  Header  -->
+		<Grid Grid.Row="0" Margin="16" ColumnDefinitions="Auto,*,Auto">
+			<Button Grid.Column="0" Command="{Binding NavigateBackCommand}">
+				<materialIcons:MaterialIcon Width="24" Height="24" Kind="ArrowBack" />
+			</Button>
+
+			<TextBox Grid.Column="1"
+					 Margin="8,0"
+					 Text="{Binding QueryText, Mode=TwoWay}"
+					 HorizontalAlignment="Stretch"
+					 Watermark="{x:Static loc:GlobalSearchLoc.Search}" />
+
+			<Button Grid.Column="2" Margin="0,0,0,0" HorizontalAlignment="Right" Command="{Binding SearchCommand}">
+				<materialIcons:MaterialIcon Width="24" Height="24" Kind="Magnify" />
+			</Button>
+		</Grid>
+
+		<Grid Grid.Row="1">
+			<TextBlock Margin="8"
+			           Foreground="#FF666666"
+			           IsVisible="{Binding ShowSearchPrompt}"
+			           Text="{x:Static loc:GlobalSearchLoc.SearchPrompt}" />
+			<TextBlock Margin="8"
+			           Foreground="#FF666666"
+			           IsVisible="{Binding ShowNoResults}"
+			           Text="{x:Static loc:GlobalSearchLoc.NoResults}" />
+
+			<ScrollViewer>
+				<ItemsControl ItemsSource="{Binding Items}" HorizontalAlignment="Stretch">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate x:DataType="vms:GlobalSearchItemViewModel">
+							<Button Margin="0,0,0,8"
+							        Padding="0"
+							        HorizontalAlignment="Stretch"
+									HorizontalContentAlignment="Stretch"
+							        Background="Transparent"
+							        BorderThickness="0"
+							        Command="{Binding $parent[ItemsControl].((vms:GlobalSearchViewModel)DataContext).OpenResultCommand}"
+							        CommandParameter="{Binding .}">
+								<Border Padding="10"
+								        Background="#FFF6F6F6"
+								        BorderBrush="#FFE0E0E0"
+								        BorderThickness="1">
+									<DockPanel>
+										<TextBlock DockPanel.Dock="Right" Foreground="#FF666666" Text="{Binding TypeDisplay}" />
+										<StackPanel>
+											<TextBlock FontWeight="SemiBold" Foreground="{StaticResource BackgroundColor}" Text="{Binding Title}" />
+											<TextBlock Margin="0,4,0,0"
+											           Foreground="{StaticResource BackgroundColor}"
+											           Text="{Binding Content}"
+											           TextWrapping="Wrap" />
+										</StackPanel>
+									</DockPanel>
+								</Border>
+							</Button>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</ScrollViewer>
+		</Grid>
+	</Grid>
+</UserControl>

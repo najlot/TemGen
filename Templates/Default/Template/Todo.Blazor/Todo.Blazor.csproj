@@ -8,10 +8,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.4" />
-		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.2" />
-		<PackageReference Include="Najlot.Log.Configuration.FileSource" Version="4.0.4" />
-		<PackageReference Include="Najlot.Log.Extensions.Logging" Version="4.0.4" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.UI" />
+		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design"
+			PrivateAssets="all"
+			ReferenceOutputAssembly="false" />
+		<PackageReference Include="Najlot.Log.Configuration.FileSource" />
+		<PackageReference Include="Najlot.Log.Extensions.Logging" />
 	</ItemGroup>
 
 	<ItemGroup>

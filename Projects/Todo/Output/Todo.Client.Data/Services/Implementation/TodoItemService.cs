@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.SignalR.Client;
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
-using Todo.Client.Data.Identity;
 using Todo.Client.Data.Models;
 using Todo.Client.Data.Repositories;
 using Todo.Contracts.Events;
@@ -13,12 +13,13 @@ using Todo.Contracts.Filters;
 namespace Todo.Client.Data.Services.Implementation;
 
 public sealed class TodoItemService(
-	ITokenProvider tokenProvider,
-	IHttpClientFactory httpClientFactory,
+	IApiEventConnectionProvider apiEventConnectionProvider,
 	ITodoItemRepository repository)
 	: ITodoItemService, IAsyncDisposable
 {
-	private HubConnection? _connection;
+	private readonly SemaphoreSlim _listenerLock = new(1, 1);
+	private readonly List<IDisposable> _subscriptions = [];
+	private bool _eventListenerStarted;
 
 	public event AsyncEventHandler<TodoItemCreated>? ItemCreated;
 	public event AsyncEventHandler<TodoItemUpdated>? ItemUpdated;
@@ -26,57 +27,61 @@ public sealed class TodoItemService(
 
 	public async Task StartEventListener()
 	{
-		if (_connection is not null)
+		if (_eventListenerStarted)
 		{
 			return;
 		}
 
-		using var client = httpClientFactory.CreateClient();
-		var serverUri = (client?.BaseAddress) ?? throw new NullReferenceException("Could not retrieve server connection information!");
-		var token = await tokenProvider.GetToken().ConfigureAwait(false);
-		var signalRUri = new Uri(serverUri, "/events");
+		await _listenerLock.WaitAsync().ConfigureAwait(false);
 
-		_connection = new HubConnectionBuilder()
-			.WithUrl(
-				signalRUri.AbsoluteUri,
-				options => options.Headers.Add("Authorization", $"Bearer {token}"))
-			.WithAutomaticReconnect()
-			.Build();
-
-		_connection.On<string>(typeof(TodoItemCreated).Name, async param =>
+		try
 		{
-			if (ItemCreated is { } handler && JsonSerializer.Deserialize<TodoItemCreated>(param) is { } message)
+			if (_eventListenerStarted)
 			{
-				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<TodoItemCreated>>())
-				{
-					await invocation(this, message).ConfigureAwait(false);
-				}
+				return;
 			}
-		});
 
-		_connection.On<string>(typeof(TodoItemUpdated).Name, async param =>
+			var connection = await apiEventConnectionProvider.GetConnectionAsync().ConfigureAwait(false);
+
+			_subscriptions.Add(connection.On<string>(typeof(TodoItemCreated).Name, async param =>
+			{
+				if (ItemCreated is { } handler && JsonSerializer.Deserialize<TodoItemCreated>(param) is { } message)
+				{
+					foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<TodoItemCreated>>())
+					{
+						await invocation(this, message).ConfigureAwait(false);
+					}
+				}
+			}));
+
+			_subscriptions.Add(connection.On<string>(typeof(TodoItemUpdated).Name, async param =>
+			{
+				if (ItemUpdated is { } handler && JsonSerializer.Deserialize<TodoItemUpdated>(param) is { } message)
+				{
+					foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<TodoItemUpdated>>())
+					{
+						await invocation(this, message).ConfigureAwait(false);
+					}
+				}
+			}));
+
+			_subscriptions.Add(connection.On<string>(typeof(TodoItemDeleted).Name, async param =>
+			{
+				if (ItemDeleted is { } handler && JsonSerializer.Deserialize<TodoItemDeleted>(param) is { } message)
+				{
+					foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<TodoItemDeleted>>())
+					{
+						await invocation(this, message).ConfigureAwait(false);
+					}
+				}
+			}));
+
+			_eventListenerStarted = true;
+		}
+		finally
 		{
-			if (ItemUpdated is { } handler && JsonSerializer.Deserialize<TodoItemUpdated>(param) is { } message)
-			{
-				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<TodoItemUpdated>>())
-				{
-					await invocation(this, message).ConfigureAwait(false);
-				}
-			}
-		});
-
-		_connection.On<string>(typeof(TodoItemDeleted).Name, async param =>
-		{
-			if (ItemDeleted is { } handler && JsonSerializer.Deserialize<TodoItemDeleted>(param) is { } message)
-			{
-				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<TodoItemDeleted>>())
-				{
-					await invocation(this, message).ConfigureAwait(false);
-				}
-			}
-		});
-
-		await _connection.StartAsync().ConfigureAwait(false);
+			_listenerLock.Release();
+		}
 	}
 
 	public TodoItemModel CreateTodoItem()
@@ -84,11 +89,11 @@ public sealed class TodoItemService(
 		return new TodoItemModel()
 		{
 			Id = Guid.NewGuid(),
-			Title = "",
-			Content = "",
-			CreatedBy = "",
-			ChangedBy = "",
-			Priority = "",
+			Title = string.Empty,
+			Content = string.Empty,
+			CreatedBy = string.Empty,
+			ChangedBy = string.Empty,
+			Priority = string.Empty,
 			Checklist = []
 		};
 	}
@@ -125,10 +130,22 @@ public sealed class TodoItemService(
 
 	public async ValueTask DisposeAsync()
 	{
-		if (_connection is not null)
+		await _listenerLock.WaitAsync().ConfigureAwait(false);
+
+		try
 		{
-			await _connection.DisposeAsync();
-			_connection = null;
+			foreach (var subscription in _subscriptions)
+			{
+				subscription.Dispose();
+			}
+
+			_subscriptions.Clear();
+			_eventListenerStarted = false;
+		}
+		finally
+		{
+			_listenerLock.Release();
+			_listenerLock.Dispose();
 		}
 	}
 }

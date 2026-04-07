@@ -1,0 +1,59 @@
+<UserControl x:Class="<#cs Write(Project.Namespace)#>.Wpf.Views.<#cs Write(Definition.Name)#>sView"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+			 xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
+			 xmlns:local="clr-namespace:<#cs Write(Project.Namespace)#>.Wpf.Views"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:materialIcons="clr-namespace:Material.Icons.WPF;assembly=Material.Icons.WPF"
+			 d:DesignHeight="450"
+			 d:DesignWidth="800"
+			 mc:Ignorable="d">
+	<DockPanel>
+		<DockPanel DockPanel.Dock="Top">
+			<Button Margin="5" DockPanel.Dock="Left" Command="{Binding NavigateBackCommand}">
+				<Button.Content>
+					<materialIcons:MaterialIcon Kind="ArrowLeft" Width="18" Height="18" />
+				</Button.Content>
+			</Button>
+
+			<WrapPanel HorizontalAlignment="Right" DockPanel.Dock="Right">
+				<Button Margin="5"
+						Command="{Binding Add<#cs Write(Definition.Name)#>Command}"
+						ToolTip="{x:Static loc:CommonLoc.New}">
+					<Button.Content>
+						<materialIcons:MaterialIcon Kind="Add" Width="18" Height="18" />
+					</Button.Content>
+				</Button>
+			</WrapPanel>
+
+			<DockPanel DockPanel.Dock="Left">
+				<Label VerticalAlignment="Center" Content="{x:Static loc:CommonLoc.Filter}" />
+				<TextBox Margin="5"
+						 VerticalAlignment="Center"
+						 Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}" />
+			</DockPanel>
+		</DockPanel>
+
+		<ScrollViewer>
+			<ItemsControl ItemsSource="{Binding <#cs Write(Definition.Name)#>sView}">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<StackPanel Margin="5">
+<#csfor entry in Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2)
+#>							<TextBlock Padding="5,5,5,0" Text="{Binding <#cs Write(entry.Field)#>}">
+								<i:Interaction.Triggers>
+									<i:EventTrigger EventName="MouseLeftButtonUp">
+										<i:InvokeCommandAction Command="{Binding DataContext.Edit<#cs Write(Definition.Name)#>Command, RelativeSource={RelativeSource AncestorType=local:<#cs Write(Definition.Name)#>sView}}" CommandParameter="{Binding .}" />
+									</i:EventTrigger>
+								</i:Interaction.Triggers>
+							</TextBlock>
+<#end
+#>						</StackPanel>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</ScrollViewer>
+	</DockPanel>
+</UserControl><#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

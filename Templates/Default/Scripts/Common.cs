@@ -1,18 +1,3 @@
-void WriteContractParameter()
-{
-    foreach(var entry in Entries)
-    {
-        var typePrefix = entry.IsArray ? "List<" : "";
-        var typeSuffix = entry.IsNullable ? "?" : "";
-        typeSuffix = entry.IsArray ? ">" : typeSuffix;
-        var suffix = entry.IsReference? "Id" : "";
-        
-        WriteLine($"	{typePrefix}{entry.EntryType}{typeSuffix} {entry.FieldLow}{suffix},");
-    }
-
-    Result = Result.TrimEnd('\r', '\n', ',');
-}
-
 void WriteContractProperties()
 {
     foreach(var entry in Entries)
@@ -22,10 +7,49 @@ void WriteContractProperties()
         typeSuffix = entry.IsArray ? ">" : typeSuffix;
         var suffix = entry.IsReference? "Id" : "";
         
-        WriteLine($"	public {typePrefix}{entry.EntryType}{typeSuffix} {entry.Field}{suffix} {{ get; }} = {entry.FieldLow}{suffix};");
+        Write($"	public {typePrefix}{entry.EntryType}{typeSuffix} {entry.Field}{suffix}");
+        WriteLine($" {{ get; set; }}{GetContractDefaultValue(entry)}");
     }
 
-    Result = Result.TrimEnd();
+    Result = Result.TrimEnd('\r', '\n', ',');
+}
+
+string GetContractDefaultValue(dynamic? entry)
+{
+    if (entry == null)
+    {
+        return string.Empty;
+    }
+
+    if (entry.EntryType == "string")
+    {
+        return " = string.Empty;";
+    }
+
+    if (entry.IsArray)
+    {
+        return " = [];";
+    }
+
+    if (entry.IsOwnedType)
+    {
+        return " = new();";
+    }
+
+    return string.Empty;
+}
+
+void SetEncodingWithoutBom()
+{
+    if (RelativePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
+        || RelativePath.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase)
+        || RelativePath.EndsWith(".axaml", StringComparison.OrdinalIgnoreCase)
+        || RelativePath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)
+        || RelativePath.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)
+        || RelativePath.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase))
+    {
+        Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+    }
 }
 
 void SetOutputPath(bool skip)
@@ -42,6 +66,8 @@ void SetOutputPath(bool skip)
     {
         RelativePath = RelativePath.Replace("TodoItem", Definition.Name).Replace("Todo", Project.Namespace);
         RelativePath = RelativePath.Replace("Entrys", "Entries").Replace("Statuss", "Status");
+
+        SetEncodingWithoutBom();
     }
 }
 
@@ -50,53 +76,5 @@ void SetOutputPathAndSkipOtherDefinitions()
     RelativePath = RelativePath.Replace("TodoItem", Definition.Name).Replace("Todo", Project.Namespace);
     RelativePath = RelativePath.Replace("Entrys", "Entries").Replace("Statuss", "Status");
     SkipOtherDefinitions = true;
-}
-
-enum MapArrayStrategy
-{
-    Remap,
-    RemapToCustomCollection,
-    LeaveAsIs,
-    MapInto
-}
-
-void WriteCtorMapping(
-    string fromSuffix = "",
-    string toSuffix = "",
-    MapArrayStrategy arrayStrategy = MapArrayStrategy.Remap)
-{
-    string tabs = "\t\t\t";
-
-    foreach(var entry in Entries)
-    {
-        if (entry.IsArray)
-        {
-            switch(arrayStrategy)
-            {
-                case MapArrayStrategy.Remap:
-                    WriteLine($"{tabs}map.From<{entry.EntryType}{fromSuffix}>(from.{entry.Field}).ToList<{entry.EntryType}{toSuffix}>(),");
-                    break;
-                case MapArrayStrategy.RemapToCustomCollection:
-                    WriteLine($"{tabs}[.. map.From<{entry.EntryType}{fromSuffix}>(from.{entry.Field}).ToList<{entry.EntryType}{toSuffix}>()],");
-                    break;
-                default:
-                     WriteLine($"{tabs}from.{entry.Field},");
-                     break;
-            }
-        }
-        else if (entry.IsOwnedType)
-        {
-            WriteLine($"{tabs}map.From(from.{entry.Field}).To<{entry.EntryType}{toSuffix}>(),");
-        }
-        else if (entry.IsReference)
-        {
-            WriteLine($"{tabs}from.{entry.Field}Id,");
-        }
-        else
-        {
-            WriteLine($"{tabs}from.{entry.Field},");
-        }
-    }
-
-    Result = Result.TrimEnd('\r', '\n', ',');
+    SetEncodingWithoutBom();
 }

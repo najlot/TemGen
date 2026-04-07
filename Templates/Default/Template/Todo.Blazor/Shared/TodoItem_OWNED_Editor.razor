@@ -1,0 +1,196 @@
+@using Microsoft.Extensions.Localization;
+@using <# Project.Namespace#>.Blazor.Services;
+@using <# Project.Namespace#>.Client.Data.Models;
+@using <# Project.Namespace#>.Client.Data.Services;
+@using <# Project.Namespace#>.Client.Localisation;
+@using <# Project.Namespace#>.Contracts;
+@inject ILogger<<# Definition.Name#>Editor> Log
+<#for entry in Entries.Where(e => e.IsReference)
+#>@inject I<# entry.ReferenceType#>Service <# entry.ReferenceType#>Service
+<#end#><#for entry in Entries.Where(e => e.IsEnumeration)
+#>@inject IStringLocalizer<<# entry.EntryType#>Loc> <# entry.EntryType#>Localizer
+<#end#>
+
+@if (Model is not null)
+{
+<#for entry in Entries.Where(e => !e.IsArray)
+#>	<div class="form-outline mb-2">
+		<label class="form-label" for="<# Definition.Name#><# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
+<#if entry.EntryType.ToLower() == "string"
+#>		<InputText type="text" id="<# Definition.Name#><# entry.Field#>Input" class="form-control"
+				   Value="@Model.<# entry.Field#>"
+				   ValueChanged="@((string v) => ChangeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
+				   ValueExpression="@(() => Model.<# entry.Field#>)" />
+<#elseif entry.EntryType.ToLower() == "datetime"
+#>		<InputDate id="<# Definition.Name#><# entry.Field#>Input" class="form-control"
+				   Value="@Model.<# entry.Field#>"
+				   ValueChanged="@((DateTime v) => ChangeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
+				   ValueExpression="@(() => Model.<# entry.Field#>)" ParsingErrorMessage="@ErrorLoc.ParsingErrorMustBeDate" />
+<#elseif entry.EntryType.ToLower() == "bool"
+#>		<InputCheckbox id="<# Definition.Name#><# entry.Field#>Input" class="form-check-input"
+				   Value="@Model.<# entry.Field#>"
+				   ValueChanged="@((bool v) => ChangeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
+				   ValueExpression="@(() => Model.<# entry.Field#>)" />
+<#elseif entry.EntryType.ToLower() == "int" || entry.EntryType.ToLower() == "long" || entry.EntryType.ToLower() == "double"
+#>		<InputNumber id="<# Definition.Name#><# entry.Field#>Input" class="form-control"
+				 Value="@Model.<# entry.Field#>"
+				 ValueChanged="@((<# entry.EntryType#> v) => ChangeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
+				 ValueExpression="@(() => Model.<# entry.Field#>)" ParsingErrorMessage="@ErrorLoc.ParsingErrorMustBeNumber" />
+<#elseif entry.IsOwnedType
+#>		<div class="border rounded p-3 bg-body-tertiary">
+			@if (Model.<# entry.Field#> is not null)
+			{
+				<<# entry.EntryType#>Editor Model="@Model.<# entry.Field#>" ChangeTracker="ChangeTracker" />
+			}
+		</div>
+<#elseif entry.IsEnumeration
+#>		<InputSelect id="<# Definition.Name#><# entry.Field#>Input" class="form-control"
+				 Value="@Model.<# entry.Field#>"
+				 ValueChanged="@((Contracts.<# entry.EntryType#> v) => ChangeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
+				 ValueExpression="@(() => Model.<# entry.Field#>)">
+			@foreach (var value in Enum.GetValues(typeof(Contracts.<# entry.EntryType#>)))
+			{
+				<option value="@value">@<# entry.EntryType#>Localizer[$"{@value}"]</option>
+			}
+		</InputSelect>
+<#elseif entry.IsReference
+#>		<InputSelect id="<# Definition.Name#><# entry.Field#>Input" class="form-control"
+				 Value="@Model.<# entry.Field#>Id"
+				 ValueChanged="@((Guid v) => ChangeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>Id), Model.<# entry.Field#>Id, v))"
+				 ValueExpression="@(() => Model.<# entry.Field#>Id)">
+			@foreach (var value in _<# entry.ReferenceTypeLow#>s)
+			{
+				<option value="@value.Id">@value.<#cs Write(Definitions.First(e => e.Name == entry.ReferenceType).Entries.First().Field)#></option>
+			}
+		</InputSelect>
+<#else
+#>		<<# entry.EntryType#> ???
+<#end#>	</div>
+<#end#><#if Entries.Any(e => e.IsArray)
+#>	<section>
+<#end#><#for entry in Entries.Where(e => e.IsArray)
+#>		<table class="table table-striped">
+			<thead>
+				<tr>
+<#for e in Definitions.First(definition => definition.Name == entry.EntryType).Entries
+#>					<th>@<# entry.EntryType#>Loc.<# e.Field#></th>
+<#end#>					<th>
+						<IconButton Icon="Add"
+								ButtonClass="btn btn-success"
+								Execute="Add<# entry.Field#>Entry"
+								Title="@CommonLoc.New" />
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var entry in Model.<# entry.Field#>)
+				{
+					<tr scope="row">
+<#for e in Definitions.First(definition => definition.Name == entry.EntryType).Entries
+#><#if e.EntryType.ToLower() == "bool"
+#>						<td><input type="checkbox" class="form-check-input" checked="@entry.<# e.Field#>" @onchange="@(ev => ChangeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, (bool)(ev.Value ?? false)))" /></td>
+<#elseif e.IsOwnedType
+#>						<td>
+							@if (entry.<# e.Field#> is not null)
+							{
+								<<# e.EntryType#>Editor Model="@entry.<# e.Field#>" ChangeTracker="ChangeTracker" />
+							}
+						</td>
+<#else
+#>						<td><input type="text" class="form-control" value="@entry.<# e.Field#>" @onchange="@(ev => ChangeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, ev.Value?.ToString() ?? string.Empty))" /></td>
+<#end#><#end#>						<td>
+							<IconButton Icon="Delete"
+									ButtonClass="btn btn-danger"
+									Execute="() => Remove<# entry.Field#>Entry(entry.Id)"
+									Title="@CommonLoc.Delete" />
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+<#end#><#if Entries.Any(e => e.IsArray)
+#>	</section>
+<#end#>
+}
+
+@code {
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	[Parameter, EditorRequired]
+	public <# Definition.Name#>Model? Model { get; set; }
+
+	[Parameter, EditorRequired]
+	public ChangeTracker ChangeTracker { get; set; } = default!;
+
+<#for entry in Entries.Where(e => e.IsReference)
+#>	private IEnumerable<<# entry.ReferenceType#>ListItemModel> _<# entry.ReferenceTypeLow#>s = [];
+<#end#>
+	protected override async Task OnInitializedAsync()
+	{
+		try
+		{
+<#for entry in Entries.Where(e => e.IsReference)
+#>			_<# entry.ReferenceTypeLow#>s = await <# entry.ReferenceType#>Service.GetItemsAsync();
+<#end#>		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error loading owned type editor for <# Definition.Name#>.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotLoad);
+		}
+	}
+<#for entry in Entries.Where(e => e.IsArray)
+#>
+	private void Add<# entry.Field#>Entry()
+	{
+		if (Model is null)
+		{
+			return;
+		}
+
+		var model = new <# entry.EntryType#>Model() { Id = Model.<# entry.Field#>.Count == 0 ? -1 : Model.<# entry.Field#>.Min(i => i.Id) - 1 };
+
+		Model.<# entry.Field#>.Add(model);
+
+		ChangeTracker.Track(
+			nameof(Model.<# entry.Field#>),
+			() => Model.<# entry.Field#>.Remove(model),
+			() => Model.<# entry.Field#>.Add(model));
+	}
+
+	private void Remove<# entry.Field#>Entry(int id)
+	{
+		if (Model is null)
+		{
+			return;
+		}
+
+		var oldItem = Model.<# entry.Field#>.FirstOrDefault(i => i.Id == id);
+
+		if (oldItem != null)
+		{
+			var index = Model.<# entry.Field#>.IndexOf(oldItem);
+
+			if (index != -1)
+			{
+				Model.<# entry.Field#>.RemoveAt(index);
+
+				ChangeTracker.Track(
+					nameof(Model.<# entry.Field#>),
+					() => Model.<# entry.Field#>.Insert(index, oldItem),
+					() => Model.<# entry.Field#>.Remove(oldItem));
+			}
+		}
+	}
+<#end#>
+}
+<#cs
+if (!Definition.IsOwnedType)
+{
+	RelativePath = "";
+}
+else
+{
+	RelativePath = RelativePath.Replace("TodoItem_OWNED_", Definition.Name).Replace("Todo", Project.Namespace);
+}
+#>

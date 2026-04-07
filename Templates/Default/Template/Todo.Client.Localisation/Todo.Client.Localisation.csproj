@@ -15,6 +15,16 @@
 			<AutoGen>True</AutoGen>
 			<DependentUpon>ErrorLoc.resx</DependentUpon>
 		</Compile>
+		<Compile Update="GlobalSearchLoc.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>GlobalSearchLoc.resx</DependentUpon>
+		</Compile>
+		<Compile Update="TrashLoc.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>TrashLoc.resx</DependentUpon>
+		</Compile>
 		<Compile Update="UserLoc.Designer.cs">
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>
@@ -37,6 +47,14 @@
 		<EmbeddedResource Update="ErrorLoc.resx">
 			<Generator>PublicResXFileCodeGenerator</Generator>
 			<LastGenOutput>ErrorLoc.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="GlobalSearchLoc.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>GlobalSearchLoc.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="TrashLoc.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>TrashLoc.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
 		<EmbeddedResource Update="UserLoc.resx">
 			<Generator>PublicResXFileCodeGenerator</Generator>

@@ -1,10 +1,12 @@
 ﻿using Najlot.Log;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using TemGen.Handler;
 
@@ -48,6 +50,18 @@ internal class Program
 			new JintSectionHandler(jsScripts),
 			new LuaSectionHandler(luaScripts)
 		], project, definitions);
+		var generatedFiles = new ConcurrentBag<string>();
+		var hasProcessingErrors = false;
+		GeneratedOutputManifest previousManifest = null;
+
+		try
+		{
+			previousManifest = await GeneratedOutputManifest.LoadAsync(project.OutputPath).ConfigureAwait(false);
+		}
+		catch (JsonException ex)
+		{
+			log.Error(ex, "Could not read generation manifest {ManifestPath}. Stale-file cleanup will be skipped for this run.", GeneratedOutputManifest.GetManifestPath(project.OutputPath));
+		}
 
 		if (!string.IsNullOrWhiteSpace(project.ResourcesScriptPath))
 		{
@@ -60,6 +74,7 @@ internal class Program
 			}
 			catch (Exception ex)
 			{
+				hasProcessingErrors = true;
 				log.Error(ex, "Error processing script {ScriptPath}: ", project.ResourcesScriptPath);
 			}
 		}
@@ -88,30 +103,58 @@ internal class Program
 				{
 					var results = await processor.Handle(template, definitions).ConfigureAwait(false);
 
-					foreach (var result in results)
+					foreach (var (key, (encoding, content)) in results)
 					{
-						var destPath = Path.Combine(project.OutputPath, result.Key);
+						var destPath = Path.Combine(project.OutputPath, key);
+						var normalizedRelativePath = GeneratedOutputManifest.NormalizeRelativePath(key);
 						var dirPath = Path.GetDirectoryName(destPath);
 						Directory.CreateDirectory(dirPath);
 
 						if (File.Exists(destPath))
 						{
 							var currentContent = await File.ReadAllTextAsync(destPath, tkn).ConfigureAwait(false);
-
-							if (currentContent == result.Value)
+							if (currentContent != content)
 							{
-								continue;
+								await File.WriteAllTextAsync(destPath, content, encoding, tkn).ConfigureAwait(false);
 							}
 						}
+						else
+						{
+							await File.WriteAllTextAsync(destPath, content, encoding, tkn).ConfigureAwait(false);
+						}
 
-						await File.WriteAllTextAsync(destPath, result.Value, template.Encoding, tkn).ConfigureAwait(false);
+						generatedFiles.Add(normalizedRelativePath);
 					}
 				}
 				catch (Exception ex)
 				{
+					hasProcessingErrors = true;
 					log.Error(ex, "Error processing {TemplatePath}: ", template.RelativePath);
 				}
 			}).ConfigureAwait(false);
+		}
+
+		if (hasProcessingErrors)
+		{
+			log.Info("Skipping stale-file cleanup because generation completed with errors.");
+		}
+		else
+		{
+			var currentManifest = new GeneratedOutputManifest
+			{
+				Files = generatedFiles.OrderBy(f => f, StringComparer.Ordinal).ToHashSet(StringComparer.Ordinal)
+			};
+
+			var cleanupResult = await GeneratedOutputCleaner
+				.CleanupAsync(project.OutputPath, previousManifest, currentManifest)
+				.ConfigureAwait(false);
+
+			if (cleanupResult.DeletedCount > 0)
+			{
+				log.Info("Stale-file cleanup removed {DeletedCount} file(s).", cleanupResult.DeletedCount);
+			}
+
+			await currentManifest.SaveAsync(project.OutputPath).ConfigureAwait(false);
 		}
 		
 		log.Info("Done after {Elapsed}.", sw.Elapsed);

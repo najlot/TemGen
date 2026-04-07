@@ -3,10 +3,8 @@ using System.Collections.Generic;
 
 namespace <# Project.Namespace#>.Contracts.Commands;
 
-public class Update<# Definition.Name#>(
-	Guid id,
-<#cs WriteContractParameter()#>)
+public class Update<# Definition.Name#>
 {
-	public Guid Id { get; } = id;
+	public Guid Id { get; set; }
 <#cs WriteContractProperties()#>
 }<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

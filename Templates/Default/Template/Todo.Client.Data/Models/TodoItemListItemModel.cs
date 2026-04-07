@@ -14,5 +14,5 @@ public class <# Definition.Name#>ListItemModel
 <#else
 #>	public <# entry.EntryType#><#cs Write(entry.IsNullable ? "?" : "")#> <# entry.Field#><#cs Write(entry.IsReference ? "Id" : "")#> { get; set; }<#if entry.EntryType == "string"
 #> = string.Empty;<#end#>
-<#end#><#end#>
-}<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>
+<#end#><#end
+#>}<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

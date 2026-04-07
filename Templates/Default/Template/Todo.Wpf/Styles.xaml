@@ -5,6 +5,32 @@
 
 	<SolidColorBrush x:Key="BackgroundColor" Color="<#cs Write(Project.GetSetting("PrimaryColor"))#>" />
 	<SolidColorBrush x:Key="ForegroundColor" Color="<#cs Write(Project.GetSetting("ForegroundColor"))#>" />
+	<SolidColorBrush x:Key="ValidationErrorColor" Color="#B42318" />
+
+	<ControlTemplate x:Key="ValidationErrorTemplate">
+		<DockPanel LastChildFill="True">
+			<TextBlock DockPanel.Dock="Bottom"
+					   Margin="0,0,0,5"
+					   Foreground="{StaticResource ValidationErrorColor}"
+					   Text="{Binding [0].ErrorContent}"
+					   TextWrapping="Wrap" />
+			<AdornedElementPlaceholder />
+		</DockPanel>
+	</ControlTemplate>
+
+	<Style x:Key="ValidatedInputStyle" TargetType="{x:Type Control}">
+		<Setter Property="Validation.ErrorTemplate" Value="{StaticResource ValidationErrorTemplate}" />
+		<Style.Triggers>
+			<Trigger Property="Validation.HasError" Value="True">
+				<Setter Property="BorderBrush" Value="{StaticResource ValidationErrorColor}" />
+			</Trigger>
+		</Style.Triggers>
+	</Style>
+
+	<Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource ValidatedInputStyle}" />
+	<Style TargetType="{x:Type PasswordBox}" BasedOn="{StaticResource ValidatedInputStyle}" />
+	<Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource ValidatedInputStyle}" />
+	<Style TargetType="{x:Type DatePicker}" BasedOn="{StaticResource ValidatedInputStyle}" />
 
 	<Style TargetType="{x:Type Button}">
 		<Setter Property="Foreground" Value="{StaticResource ForegroundColor}" />

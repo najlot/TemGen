@@ -1,0 +1,73 @@
+﻿<UserControl x:Class="<#cs Write(Project.Namespace)#>.Avalonia.Views.TrashView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
+             xmlns:local="using:<#cs Write(Project.Namespace)#>.Avalonia.Views"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vms="clr-namespace:<#cs Write(Project.Namespace)#>.ClientBase.ViewModels;assembly=<#cs Write(Project.Namespace)#>.ClientBase"
+             d:DesignHeight="700"
+             d:DesignWidth="1000"
+             x:DataType="vms:TrashViewModel"
+             mc:Ignorable="d">
+	<Grid RowDefinitions="Auto,*">
+		<!--  Header  -->
+		<Grid Grid.Row="0" Margin="16" ColumnDefinitions="Auto,*,Auto">
+			<Button Grid.Column="0" Command="{Binding NavigateBackCommand}">
+				<materialIcons:MaterialIcon Width="24" Height="24" Kind="ArrowBack" />
+			</Button>
+
+			<TextBox Margin="8,0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Filter, Mode=TwoWay}" Watermark="{x:Static loc:CommonLoc.Search}" />
+
+			<Button Grid.Column="2"
+					HorizontalAlignment="Right"
+					VerticalAlignment="Center"
+					Command="{Binding DeleteAllTrashCommand}">
+				<materialIcons:MaterialIcon Width="24" Height="24" Kind="DeleteSweep" />
+			</Button>
+		</Grid>
+
+		<ScrollViewer Grid.Row="1">
+			<ItemsControl ItemsSource="{Binding TrashItemsView}" HorizontalAlignment="Stretch">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate x:DataType="vms:TrashItemViewModel">
+						<Border Margin="6"
+							    Padding="10"
+							    HorizontalAlignment="Stretch"
+							    Background="#FFF6F6F6"
+							    BorderBrush="#FFE0E0E0"
+							    BorderThickness="1"
+							    CornerRadius="8">
+							<StackPanel>
+								<DockPanel>
+									<TextBlock DockPanel.Dock="Right" Foreground="#FF666666" Text="{Binding DeletedAtDisplay}" />
+									<TextBlock FontWeight="SemiBold" Text="{Binding Title}" />
+								</DockPanel>
+								<TextBlock Margin="0,4,0,0"
+									        Foreground="#FF444444"
+									        Text="{Binding Content}"
+									        TextWrapping="Wrap" />
+								<TextBlock Margin="0,6,0,0" Foreground="#FF666666" Text="{Binding TypeDisplay}" />
+								<WrapPanel Margin="0,8,0,0">
+									<Button Margin="0,0,8,0"
+										    Command="{Binding $parent[ItemsControl].((vms:TrashViewModel)DataContext).OpenTrashItemCommand}"
+										    CommandParameter="{Binding .}"
+										    Content="{x:Static loc:CommonLoc.Edit}" />
+									<Button Margin="0,0,8,0"
+										    Command="{Binding $parent[ItemsControl].((vms:TrashViewModel)DataContext).RestoreTrashItemCommand}"
+										    CommandParameter="{Binding .}"
+										    Content="{x:Static loc:TrashLoc.Restore}" />
+									<Button Command="{Binding $parent[ItemsControl].((vms:TrashViewModel)DataContext).DeleteTrashItemCommand}" CommandParameter="{Binding .}" Content="{x:Static loc:CommonLoc.Delete}" />
+								</WrapPanel>
+							</StackPanel>
+						</Border>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</ScrollViewer>
+
+		<local:DeleteConfirmationDialogView Grid.Row="1" DataContext="{Binding $parent[Grid].((vms:TrashViewModel)DataContext).DeleteDialogViewModel}" IsVisible="{Binding $parent[Grid].((vms:TrashViewModel)DataContext).DeleteDialogViewModel.IsVisible}" />
+	</Grid>
+</UserControl>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

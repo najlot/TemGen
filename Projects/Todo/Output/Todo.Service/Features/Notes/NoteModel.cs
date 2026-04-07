@@ -1,0 +1,16 @@
+using MongoDB.Bson.Serialization.Attributes;
+using Todo.Contracts;
+using Todo.Service.Infrastructure.Persistence;
+
+namespace Todo.Service.Features.Notes;
+
+[BsonIgnoreExtraElements]
+public class NoteModel : IEntityModel
+{
+	[BsonId]
+	public Guid Id { get; set; }
+	public DateTime? DeletedAt { get; set; }
+	public string Title { get; set; } = string.Empty;
+	public string Content { get; set; } = string.Empty;
+	public PredefinedColor Color { get; set; }
+}

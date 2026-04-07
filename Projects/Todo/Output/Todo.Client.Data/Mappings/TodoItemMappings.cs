@@ -11,57 +11,41 @@ namespace Todo.Client.Data.Mappings;
 [Mapping]
 internal sealed partial class TodoItemMappings
 {
-	public static CreateTodoItem MapToCreate(IMap map, TodoItemModel from) =>
-		new(from.Id,
-			from.Title,
-			from.Content,
-			from.CreatedAt,
-			from.CreatedBy,
-			from.AssignedToId,
-			from.Status,
-			from.ChangedAt,
-			from.ChangedBy,
-			from.Priority,
-			map.From<ChecklistTaskModel>(from.Checklist).ToList<ChecklistTask>());
+	[MapIgnoreProperty(nameof(to.Checklist))]
+	private static partial void MapPartialToCreate(IMap map, TodoItemModel from, CreateTodoItem to);
 
-	public static TodoItemCreated MapToCreated(IMap map, TodoItemModel from) =>
-		new(from.Id,
-			from.Title,
-			from.Content,
-			from.CreatedAt,
-			from.CreatedBy,
-			from.AssignedToId,
-			from.Status,
-			from.ChangedAt,
-			from.ChangedBy,
-			from.Priority,
-			map.From<ChecklistTaskModel>(from.Checklist).ToList<ChecklistTask>());
+	public static void MapToCreate(IMap map, TodoItemModel from, CreateTodoItem to)
+	{
+		MapPartialToCreate(map, from, to);
+		to.Checklist = map.From<ChecklistTaskModel>(from.Checklist).ToList<ChecklistTask>();
+	}
 
-	public static UpdateTodoItem MapToUpdate(IMap map, TodoItemModel from) =>
-		new(from.Id,
-			from.Title,
-			from.Content,
-			from.CreatedAt,
-			from.CreatedBy,
-			from.AssignedToId,
-			from.Status,
-			from.ChangedAt,
-			from.ChangedBy,
-			from.Priority,
-			map.From<ChecklistTaskModel>(from.Checklist).ToList<ChecklistTask>());
+	[MapIgnoreProperty(nameof(to.Checklist))]
+	private static partial void MapPartialToCreated(IMap map, TodoItemModel from, TodoItemCreated to);
 
-	public static TodoItemUpdated MapToUpdated(IMap map, TodoItemModel from) =>
-		new(from.Id,
-			from.Title,
-			from.Content,
-			from.CreatedAt,
-			from.CreatedBy,
-			from.AssignedToId,
-			from.Status,
-			from.ChangedAt,
-			from.ChangedBy,
-			from.Priority,
-			map.From<ChecklistTaskModel>(from.Checklist).ToList<ChecklistTask>());
+	public static void MapToCreated(IMap map, TodoItemModel from, TodoItemCreated to)
+	{
+		MapPartialToCreated(map, from, to);
+		to.Checklist = map.From<ChecklistTaskModel>(from.Checklist).ToList<ChecklistTask>();
+	}
+
+	[MapIgnoreProperty(nameof(to.Checklist))]
+	private static partial void MapPartialToUpdate(IMap map, TodoItemModel from, UpdateTodoItem to);
+
+	public static void MapToUpdate(IMap map, TodoItemModel from, UpdateTodoItem to)
+	{
+		MapPartialToUpdate(map, from, to);
+		to.Checklist = map.From<ChecklistTaskModel>(from.Checklist).ToList<ChecklistTask>();
+	}
+
+	[MapIgnoreProperty(nameof(to.Checklist))]
+	private static partial void MapPartialToUpdated(IMap map, TodoItemModel from, TodoItemUpdated to);
+
+	public static void MapToUpdated(IMap map, TodoItemModel from, TodoItemUpdated to)
+	{
+		MapPartialToUpdated(map, from, to);
+		to.Checklist = map.From<ChecklistTaskModel>(from.Checklist).ToList<ChecklistTask>();
+	}
 
 	public static partial void MapToModel(IMap map, TodoItemCreated from, TodoItemListItemModel to);
 

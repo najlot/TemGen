@@ -1,7 +1,7 @@
 using Najlot.Map;
 using Najlot.Map.Attributes;
 using Todo.Client.Data.Models;
-using Todo.ClientBase.ViewModel;
+using Todo.ClientBase.ViewModels;
 using Todo.Contracts;
 using Todo.Contracts.Events;
 
@@ -19,8 +19,6 @@ internal sealed partial class TodoItemViewModelMappings
 		MapPartialToViewModel(map, from, to);
 
 		to.Checklist = [.. map.From<ChecklistTask>(from.Checklist).To<ChecklistTaskViewModel>()];
-
-		foreach (var e in to.Checklist) e.ParentId = from.Id;
 	}
 
 	public static partial void MapToModel(IMap map, TodoItemViewModel from, TodoItemModel to);
@@ -34,8 +32,6 @@ internal sealed partial class TodoItemViewModelMappings
 		MapPartialToViewModel(map, from, to);
 
 		to.Checklist = [.. map.From<ChecklistTaskModel>(from.Checklist).To<ChecklistTaskViewModel>()];
-
-		foreach (var e in to.Checklist) e.ParentId = from.Id;
 	}
 
 	[MapIgnoreProperty(nameof(to.ChangeVisitor))]

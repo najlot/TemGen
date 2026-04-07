@@ -33,20 +33,36 @@ else
 }
 else
 {
-	<EditForm Model="@Model" OnValidSubmit="@Save">
-		<section class="w-100 p-4 pb-4">
-			<div class="form-outline align-content-md-end mb-4 float-end">
+	<section class="d-grid gap-4">
+		<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
+			<div>
+				@if (isNew)
+				{
+					<h1 class="mb-1">@NoteLoc.CreateNote</h1>
+				}
+				else
+				{
+					<h1 class="mb-1">@NoteLoc.EditNote</h1>
+				}
+			</div>
+			<div class="d-flex flex-wrap gap-2">
 				<IconButton Icon="Undo"
-							ButtonClass="btn btn-secondary"
+							ButtonClass="btn btn-outline-secondary"
 							CanExecute="() => _changeTracker.CanUndo"
 							Execute="_changeTracker.Undo" />
 				<IconButton Icon="Redo"
-							ButtonClass="btn btn-secondary"
+							ButtonClass="btn btn-outline-secondary"
 							CanExecute="() => _changeTracker.CanRedo"
 							Execute="_changeTracker.Redo" />
+				@if (!isNew)
+				{
+					<IconButton Icon="history"
+								ButtonClass="btn btn-outline-secondary"
+								Execute="NavigateToHistory"
+								Title="@CommonLoc.History" />
+				}
 				<IconButton Icon="Save"
 							ButtonClass="btn btn-success"
-							CanExecute="() => _changeTracker.CanUndo"
 							Execute="Save"
 							Title="@CommonLoc.Save" />
 				<IconButton Icon="Delete"
@@ -55,42 +71,37 @@ else
 							Execute="() => isDeleteRequested = true"
 							Title="@CommonLoc.Delete" />
 			</div>
-			<div class="form-outline mb-4">
-				@if (isNew)
-				{
-					<h1>@NoteLoc.CreateNote</h1>
-				}
-				else
-				{
-					<h1>@NoteLoc.EditNote</h1>
-				}
-			</div>
-			<div class="w-auto h-auto">
-				<DataAnnotationsValidator />
-				<ValidationSummary />
+		</div>
 
-				<!-- Title input -->
-				<div class="form-outline mb-2">
-					<label class="form-label" for="TitleInput">@NoteLoc.Title</label>
-					<InputText type="text" id="TitleInput" class="form-control"
+		<EditForm Model="@Model" OnValidSubmit="@Save">
+			<div class="card shadow-sm border-0">
+				<div class="card-body">
+					<DataAnnotationsValidator />
+					<ValidationSummary class="alert alert-danger mb-4" />
+					<div class="row g-3">
+
+						<!-- Title input -->
+						<div class="col-12 col-md-6">
+							<label class="form-label" for="TitleInput">@NoteLoc.Title</label>
+							<InputText type="text" id="TitleInput" class="form-control"
 							   Value="@Model.Title"
 							   ValueChanged="@((string v) => _changeTracker.TrackChange(Model, nameof(Model.Title), Model.Title, v))"
 							   ValueExpression="@(() => Model.Title)" />
-				</div>
+						</div>
 
-				<!-- Content input -->
-				<div class="form-outline mb-2">
-					<label class="form-label" for="ContentInput">@NoteLoc.Content</label>
-					<InputText type="text" id="ContentInput" class="form-control"
+						<!-- Content input -->
+						<div class="col-12 col-md-6">
+							<label class="form-label" for="ContentInput">@NoteLoc.Content</label>
+							<InputText type="text" id="ContentInput" class="form-control"
 							   Value="@Model.Content"
 							   ValueChanged="@((string v) => _changeTracker.TrackChange(Model, nameof(Model.Content), Model.Content, v))"
 							   ValueExpression="@(() => Model.Content)" />
-				</div>
+						</div>
 
-				<!-- Color input -->
-				<div class="form-outline mb-2">
-					<label class="form-label" for="ColorInput">@NoteLoc.Color</label>
-					<InputSelect id="ColorInput" class="form-control"
+						<!-- Color input -->
+						<div class="col-12 col-md-6">
+							<label class="form-label" for="ColorInput">@NoteLoc.Color</label>
+							<InputSelect id="ColorInput" class="form-select"
 								 Value="@Model.Color"
 								 ValueChanged="@((Contracts.PredefinedColor v) => _changeTracker.TrackChange(Model, nameof(Model.Color), Model.Color, v))"
 								 ValueExpression="@(() => Model.Color)" >
@@ -98,11 +109,14 @@ else
 						{
 							<option value="@value">@PredefinedColorLocalizer[$"{@value}"]</option>
 						}
-					</InputSelect>
+						</InputSelect>
+						</div>
+					</div>
 				</div>
 			</div>
-		</section>
-	</EditForm>
+
+		</EditForm>
+	</section>
 
 	<DeleteConfirmationDialog @bind-IsVisible="isDeleteRequested" Remove="Remove" />
 }
@@ -119,6 +133,16 @@ else
 	private NoteModel? Model;
 	private readonly ChangeTracker _changeTracker = new();
 
+
+	private void NavigateToHistory()
+	{
+		if (Model is null || isNew)
+		{
+			return;
+		}
+
+		NavigationManager.NavigateTo($"/history/{Model.Id}");
+	}
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -147,7 +171,7 @@ else
 		}
 		catch (Exception ex)
 		{
-			Log.LogError(ex, "Error loading note.");
+			Log.LogError(ex, "Error loading Note.");
 			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotLoad);
 		}
 	}
@@ -183,7 +207,7 @@ else
 		}
 		catch (Exception ex)
 		{
-			Log.LogError(ex, "Error saving note.");
+			Log.LogError(ex, "Error saving Note.");
 			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotSave);
 		}
 	}
@@ -213,7 +237,7 @@ else
 		}
 		catch (Exception ex)
 		{
-			Log.LogError(ex, "Error deleting note.");
+			Log.LogError(ex, "Error deleting Note.");
 			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorDeleting);
 		}
 	}

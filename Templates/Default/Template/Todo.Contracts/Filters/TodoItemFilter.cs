@@ -20,5 +20,5 @@ public sealed class <# Definition.Name#>Filter
 	public <# entry.EntryType#>? <# entry.Field#>To { get; set; }
 <#elseif !(entry.IsArray || entry.IsOwnedType)
 #>	public <# entry.EntryType#>? <# entry.Field#> { get; set; }
-<#end#><#end#>
-}<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>
+<#end#><#end
+#>}<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

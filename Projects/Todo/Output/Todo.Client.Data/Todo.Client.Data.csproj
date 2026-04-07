@@ -7,11 +7,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.4" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.4" />
-		<PackageReference Include="Najlot.Map" Version="0.1.2" />
-		<PackageReference Include="Najlot.Map.SourceGenerator" Version="0.1.2" />
-		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
+		<PackageReference Include="Microsoft.Extensions.Http" />
+		<PackageReference Include="Najlot.Map" />
+		<PackageReference Include="Najlot.Map.SourceGenerator"
+			PrivateAssets="all"
+			ReferenceOutputAssembly="false" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" />
 	</ItemGroup>
 
 	<ItemGroup>

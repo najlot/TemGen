@@ -1,36 +1,36 @@
 @page "/<#cs Write(Definition.Name.ToLower())#>/{id:guid}"
 @using Microsoft.Extensions.Localization;
-@using <#ref Project.Namespace#>.Blazor.Identity;
-@using <#ref Project.Namespace#>.Blazor.Services;
+@using <# Project.Namespace#>.Blazor.Identity;
+@using <# Project.Namespace#>.Blazor.Services;
 <#if Definitions.Any(d => d.IsArray)
-#>@using <#ref Project.Namespace#>.Client.Data.Mappings;
-<#end#>@using <#ref Project.Namespace#>.Client.Data.Models;
-@using <#ref Project.Namespace#>.Client.Data.Services;
-@using <#ref Project.Namespace#>.Client.Data;
-@using <#ref Project.Namespace#>.Client.Localisation;
-@using <#ref Project.Namespace#>.Contracts;
-@using <#ref Project.Namespace#>.Contracts.Events;
-@inject ILogger<<#ref Definition.Name#>> Log
+#>@using <# Project.Namespace#>.Client.Data.Mappings;
+<#end#>@using <# Project.Namespace#>.Client.Data.Models;
+@using <# Project.Namespace#>.Client.Data.Services;
+@using <# Project.Namespace#>.Client.Data;
+@using <# Project.Namespace#>.Client.Localisation;
+@using <# Project.Namespace#>.Contracts;
+@using <# Project.Namespace#>.Contracts.Events;
+@inject ILogger<<# Definition.Name#>> Log
 @inject Najlot.Map.IMap Map;
-@inject I<#ref Definition.Name#>Service <#ref Definition.Name#>Service<#if Entries.Any(e => e.IsReference)
+@inject I<# Definition.Name#>Service <# Definition.Name#>Service<#if Entries.Any(e => e.IsReference)
 #>
 <#for entry in Entries.Where(e => e.IsReference)
-#>@inject I<#ref entry.ReferenceType#>Service <#ref entry.ReferenceType#>Service
+#>@inject I<# entry.ReferenceType#>Service <# entry.ReferenceType#>Service
 <#end#><#end#>
 @inject NavigationManager NavigationManager
 <#for entry in Entries.Where(e => e.IsEnumeration)
-#>@inject IStringLocalizer<<#ref entry.EntryType#>Loc> <#ref entry.EntryType#>Localizer
+#>@inject IStringLocalizer<<# entry.EntryType#>Loc> <# entry.EntryType#>Localizer
 <#end#>
 @attribute [Authorize]
 @implements IDisposable
 
 @if (isNew)
 {
-	<PageTitle>@<#ref Definition.Name#>Loc.Create<#ref Definition.Name#></PageTitle>
+	<PageTitle>@<# Definition.Name#>Loc.Create<# Definition.Name#></PageTitle>
 }
 else
 {
-	<PageTitle>@<#ref Definition.Name#>Loc.Edit<#ref Definition.Name#></PageTitle>
+	<PageTitle>@<# Definition.Name#>Loc.Edit<# Definition.Name#></PageTitle>
 }
 
 @if (Model == null)
@@ -39,20 +39,36 @@ else
 }
 else
 {
-	<EditForm Model="@Model" OnValidSubmit="@Save">
-		<section class="w-100 p-4 pb-4">
-			<div class="form-outline align-content-md-end mb-4 float-end">
+	<section class="d-grid gap-4">
+		<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
+			<div>
+				@if (isNew)
+				{
+					<h1 class="mb-1">@<# Definition.Name#>Loc.Create<# Definition.Name#></h1>
+				}
+				else
+				{
+					<h1 class="mb-1">@<# Definition.Name#>Loc.Edit<# Definition.Name#></h1>
+				}
+			</div>
+			<div class="d-flex flex-wrap gap-2">
 				<IconButton Icon="Undo"
-							ButtonClass="btn btn-secondary"
+							ButtonClass="btn btn-outline-secondary"
 							CanExecute="() => _changeTracker.CanUndo"
 							Execute="_changeTracker.Undo" />
 				<IconButton Icon="Redo"
-							ButtonClass="btn btn-secondary"
+							ButtonClass="btn btn-outline-secondary"
 							CanExecute="() => _changeTracker.CanRedo"
 							Execute="_changeTracker.Redo" />
+				@if (!isNew)
+				{
+					<IconButton Icon="history"
+								ButtonClass="btn btn-outline-secondary"
+								Execute="NavigateToHistory"
+								Title="@CommonLoc.History" />
+				}
 				<IconButton Icon="Save"
 							ButtonClass="btn btn-success"
-							CanExecute="() => _changeTracker.CanUndo"
 							Execute="Save"
 							Title="@CommonLoc.Save" />
 				<IconButton Icon="Delete"
@@ -61,107 +77,127 @@ else
 							Execute="() => isDeleteRequested = true"
 							Title="@CommonLoc.Delete" />
 			</div>
-			<div class="form-outline mb-4">
-				@if (isNew)
-				{
-					<h1>@<#ref Definition.Name#>Loc.Create<#ref Definition.Name#></h1>
-				}
-				else
-				{
-					<h1>@<#ref Definition.Name#>Loc.Edit<#ref Definition.Name#></h1>
-				}
-			</div>
-			<div class="w-auto h-auto">
-				<DataAnnotationsValidator />
-				<ValidationSummary />
+		</div>
+
+		<EditForm Model="@Model" OnValidSubmit="@Save">
+			<div class="card shadow-sm border-0">
+				<div class="card-body">
+					<DataAnnotationsValidator />
+					<ValidationSummary class="alert alert-danger mb-4" />
+					<div class="row g-3">
 <#for entry in Entries.Where(e => !e.IsArray)#>
-				<!-- <#ref entry.Field#> input -->
-				<div class="form-outline mb-2">
-					<label class="form-label" for="<#ref entry.Field#>Input">@<#ref Definition.Name#>Loc.<#ref entry.Field#></label>
+						<!-- <# entry.Field#> input -->
+						<div class="<#if entry.IsOwnedType
+#>col-12<#elseif entry.EntryType.ToLower() == "bool"
+#>col-12 col-md-6<#else
+#>col-12 col-md-6<#end#>">
 <#if entry.EntryType.ToLower() == "string"
-#>					<InputText type="text" id="<#ref entry.Field#>Input" class="form-control"
-							   Value="@Model.<#ref entry.Field#>"
-							   ValueChanged="@((string v) => _changeTracker.TrackChange(Model, nameof(Model.<#ref entry.Field#>), Model.<#ref entry.Field#>, v))"
-							   ValueExpression="@(() => Model.<#ref entry.Field#>)" />
+#>							<label class="form-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
+							<InputText type="text" id="<# entry.Field#>Input" class="form-control"
+							   Value="@Model.<# entry.Field#>"
+							   ValueChanged="@((string v) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
+							   ValueExpression="@(() => Model.<# entry.Field#>)" />
 <#elseif entry.EntryType.ToLower() == "datetime"
-#>					<InputDate id="<#ref entry.Field#>Input" class="form-control"
-							   Value="@Model.<#ref entry.Field#>"
-							   ValueChanged="@((DateTime v) => _changeTracker.TrackChange(Model, nameof(Model.<#ref entry.Field#>), Model.<#ref entry.Field#>, v))"
-							   ValueExpression="@(() => Model.<#ref entry.Field#>)" ParsingErrorMessage="@ErrorLoc.ParsingErrorMustBeDate" />
+#>							<label class="form-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
+							<InputDate id="<# entry.Field#>Input" class="form-control"
+							   Value="@Model.<# entry.Field#>"
+							   ValueChanged="@((DateTime v) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
+							   ValueExpression="@(() => Model.<# entry.Field#>)" ParsingErrorMessage="@ErrorLoc.ParsingErrorMustBeDate" />
 <#elseif entry.EntryType.ToLower() == "bool"
-#>					<InputCheckbox id="<#ref entry.Field#>Input" class="form-control"
-								   Value="@Model.<#ref entry.Field#>"
-								   ValueChanged="@((bool v) => _changeTracker.TrackChange(Model, nameof(Model.<#ref entry.Field#>), Model.<#ref entry.Field#>, v))"
-								   ValueExpression="@(() => Model.<#ref entry.Field#>)" />
+#>							<div class="form-check mt-md-4 pt-md-2">
+								<InputCheckbox id="<# entry.Field#>Input" class="form-check-input"
+								   Value="@Model.<# entry.Field#>"
+								   ValueChanged="@((bool v) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
+								   ValueExpression="@(() => Model.<# entry.Field#>)" />
+								<label class="form-check-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
+							</div>
 <#elseif entry.EntryType.ToLower() == "int" || entry.EntryType.ToLower() == "long" || entry.EntryType.ToLower() == "double"
-#>					<InputNumber id="<#ref entry.Field#>Input" class="form-control"
-							 Value="@Model.<#ref entry.Field#>"
-							 ValueChanged="@((<#ref entry.EntryType#> v) => _changeTracker.TrackChange(Model, nameof(Model.<#ref entry.Field#>), Model.<#ref entry.Field#>, v))"
-							 ValueExpression="@(() => Model.<#ref entry.Field#>)" ParsingErrorMessage="@ErrorLoc.ParsingErrorMustBeNumber" />
+#>							<label class="form-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
+							<InputNumber id="<# entry.Field#>Input" class="form-control"
+							 Value="@Model.<# entry.Field#>"
+							 ValueChanged="@((<# entry.EntryType#> v) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
+							 ValueExpression="@(() => Model.<# entry.Field#>)" ParsingErrorMessage="@ErrorLoc.ParsingErrorMustBeNumber" />
+<#elseif entry.IsOwnedType
+#>							<div class="card bg-body-tertiary border-0 h-100">
+								<div class="card-body">
+									<h2 class="h5 mb-3">@<# Definition.Name#>Loc.<# entry.Field#></h2>
+									@if (Model.<# entry.Field#> is not null)
+									{
+										<<# entry.EntryType#>Editor Model="@Model.<# entry.Field#>" ChangeTracker="_changeTracker" />
+									}
+								</div>
+							</div>
 <#elseif entry.IsEnumeration
-#>					<InputSelect id="<#ref entry.Field#>Input" class="form-control"
-								 Value="@Model.<#ref entry.Field#>"
-								 ValueChanged="@((Contracts.<#ref entry.EntryType#> v) => _changeTracker.TrackChange(Model, nameof(Model.<#ref entry.Field#>), Model.<#ref entry.Field#>, v))"
-								 ValueExpression="@(() => Model.<#ref entry.Field#>)" >
-						@foreach (var value in Enum.GetValues(typeof(Contracts.<#ref entry.EntryType#>)))
+#>							<label class="form-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
+							<InputSelect id="<# entry.Field#>Input" class="form-select"
+								 Value="@Model.<# entry.Field#>"
+								 ValueChanged="@((Contracts.<# entry.EntryType#> v) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
+								 ValueExpression="@(() => Model.<# entry.Field#>)" >
+						@foreach (var value in Enum.GetValues(typeof(Contracts.<# entry.EntryType#>)))
 						{
-							<option value="@value">@<#ref entry.EntryType#>Localizer[$"{@value}"]</option>
+							<option value="@value">@<# entry.EntryType#>Localizer[$"{@value}"]</option>
 						}
-					</InputSelect>
+						</InputSelect>
 <#elseif entry.IsReference
-#>					<InputSelect id="<#ref entry.Field#>Input" class="form-control"
-								 Value="@Model.<#ref entry.Field#>Id"
-								 ValueChanged="@((Guid v) => _changeTracker.TrackChange(Model, nameof(Model.<#ref entry.Field#>Id), Model.<#ref entry.Field#>Id, v))"
-								 ValueExpression="@(() => Model.<#ref entry.Field#>Id)">
-						@foreach (var value in _<#ref entry.ReferenceTypeLow#>s)
+#>							<label class="form-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
+							<InputSelect id="<# entry.Field#>Input" class="form-select"
+								 Value="@Model.<# entry.Field#>Id"
+								 ValueChanged="@((Guid v) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>Id), Model.<# entry.Field#>Id, v))"
+								 ValueExpression="@(() => Model.<# entry.Field#>Id)">
+						@foreach (var value in _<# entry.ReferenceTypeLow#>s)
 						{
 							<option value="@value.Id">@value.<#cs Write(Definitions.First(e => e.Name == entry.ReferenceType).Entries.First().Field)#></option>
 						}
-					</InputSelect>
+						</InputSelect>
 <#else
-#><#ref entry.EntryType;#> ???<#end
-#>				</div>
+#><# entry.EntryType;#> ???<#end
+#>						</div>
 <#end
-#>			</div>
-		</section>
-<#if Entries.Any(e => e.IsArray)
-#>		<section>
-<#end#><#for entry in Entries.Where(e => e.IsArray)
-#>			<table class="table table-striped">
-				<thead>
-					<tr>
+#>					</div>
+				</div>
+			</div>
+<#for entry in Entries.Where(e => e.IsArray)
+#>			<div class="card shadow-sm border-0">
+				<div class="card-header bg-body-tertiary d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+					<h2 class="h5 mb-0">@<# Definition.Name#>Loc.<# entry.Field#></h2>
+					<IconButton Icon="Add"
+								ButtonClass="btn btn-success"
+								Execute="Add<# entry.Field#>Entry"
+								Title="@CommonLoc.New" />
+				</div>
+				<div class="table-responsive">
+					<table class="table table-striped align-middle mb-0">
+						<thead class="table-light">
+							<tr>
 <#for e in Definitions.First(definition => definition.Name == entry.EntryType).Entries
-#>						<th>@<#ref entry.EntryType#>Loc.<#ref e.Field#></th>
-<#end#>						<th>
-							<IconButton Icon="Add"
-										ButtonClass="btn btn-success"
-										Execute="Add<#ref entry.Field#>Entry"
-										Title="@CommonLoc.New" />
-						</th>
-					</tr>
-				</thead>
-				<tbody>
-					@foreach (var entry in Model.<#ref entry.Field#>)
-					{
-						<tr scope="row">
+#>								<th>@<# entry.EntryType#>Loc.<# e.Field#></th>
+<#end#>								<th class="text-end">@CommonLoc.Delete</th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var entry in Model.<# entry.Field#>)
+							{
+								<tr scope="row">
 <#for e in Definitions.First(definition => definition.Name == entry.EntryType).Entries
 #><#if e.EntryType.ToLower() == "bool"
-#>							<td><input type="checkbox" class="form-check-input" checked="@entry.<#ref e.Field#>" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<#ref e.Field#>), entry.<#ref e.Field#>, (bool)(ev.Value ?? false)))" /></td>
+#>									<td><input type="checkbox" class="form-check-input" checked="@entry.<# e.Field#>" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, (bool)(ev.Value ?? false)))" /></td>
 <#else
-#>							<td><input type="text" class="form-control" value="@entry.<#ref e.Field#>" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<#ref e.Field#>), entry.<#ref e.Field#>, ev.Value?.ToString() ?? string.Empty))" /></td>
-<#end#><#end#>							<td>
-								<IconButton Icon="Delete"
-											ButtonClass="btn btn-danger"
-											Execute="() => Remove<#ref entry.Field#>Entry(entry.Id)"
-											Title="@CommonLoc.Delete" />
-							</td>
-						</tr>
-					}
-				</tbody>
-			</table>
-<#end#><#if Entries.Any(e => e.IsArray)
-#>		</section>
-<#end#>	</EditForm>
+#>									<td><input type="text" class="form-control" value="@entry.<# e.Field#>" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, ev.Value?.ToString() ?? string.Empty))" /></td>
+<#end#><#end#>									<td class="text-end">
+										<IconButton Icon="Delete"
+													ButtonClass="btn btn-danger"
+													Execute="() => Remove<# entry.Field#>Entry(entry.Id)"
+													Title="@CommonLoc.Delete" />
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<#end#>
+		</EditForm>
+	</section>
 
 	<DeleteConfirmationDialog @bind-IsVisible="isDeleteRequested" Remove="Remove" />
 }
@@ -175,33 +211,43 @@ else
 
 	private bool isNew = false;
 	private bool isDeleteRequested = false;
-	private <#ref Definition.Name#>Model? Model;
+	private <# Definition.Name#>Model? Model;
 	private readonly ChangeTracker _changeTracker = new();
 
 <#for entry in Entries.Where(e => e.IsReference)
-#>	private IEnumerable<<#ref entry.ReferenceType#>ListItemModel> _<#ref entry.ReferenceTypeLow#>s = [];
+#>	private IEnumerable<<# entry.ReferenceType#>ListItemModel> _<# entry.ReferenceTypeLow#>s = [];
 <#end#>
+	private void NavigateToHistory()
+	{
+		if (Model is null || isNew)
+		{
+			return;
+		}
+
+		NavigationManager.NavigateTo($"/history/{Model.Id}");
+	}
+
 	protected override async Task OnInitializedAsync()
 	{
 		try
 		{
 			if (Id == Guid.Empty)
 			{
-				Model = <#ref Definition.Name#>Service.Create<#ref Definition.Name#>();
+				Model = <# Definition.Name#>Service.Create<# Definition.Name#>();
 				isNew = true;
 			}
 			else
 			{
-				Model = await <#ref Definition.Name#>Service.GetItemAsync(Id);
+				Model = await <# Definition.Name#>Service.GetItemAsync(Id);
 			}
 
 <#for entry in Entries.Where(e => e.IsReference)
-#>			_<#ref entry.ReferenceTypeLow#>s = await <#ref entry.ReferenceType#>Service.GetItemsAsync();
+#>			_<# entry.ReferenceTypeLow#>s = await <# entry.ReferenceType#>Service.GetItemsAsync();
 <#end#>
-			<#ref Definition.Name#>Service.ItemUpdated += Handle;
+			<# Definition.Name#>Service.ItemUpdated += Handle;
 			_changeTracker.StateChanged += () => InvokeAsync(StateHasChanged);
 
-			await <#ref Definition.Name#>Service.StartEventListener();
+			await <# Definition.Name#>Service.StartEventListener();
 		}
 		catch (System.Security.Authentication.AuthenticationException)
 		{
@@ -210,7 +256,7 @@ else
 		}
 		catch (Exception ex)
 		{
-			Log.LogError(ex, "Error loading <#ref Definition.Name#>.");
+			Log.LogError(ex, "Error loading <# Definition.Name#>.");
 			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotLoad);
 		}
 	}
@@ -227,7 +273,7 @@ else
 		{
 			if (isNew)
 			{
-				await <#ref Definition.Name#>Service.AddItemAsync(Model);
+				await <# Definition.Name#>Service.AddItemAsync(Model);
 				Id = Model.Id;
 				NavigationManager.NavigateTo($"/<#cs
 var name = Definition.Name.ToLower();
@@ -241,7 +287,7 @@ Write(name);
 			}
 			else
 			{
-				await <#ref Definition.Name#>Service.UpdateItemAsync(Model);
+				await <# Definition.Name#>Service.UpdateItemAsync(Model);
 			}
 
 			_changeTracker.Clear();
@@ -253,7 +299,7 @@ Write(name);
 		}
 		catch (Exception ex)
 		{
-			Log.LogError(ex, "Error saving <#ref Definition.Name#>.");
+			Log.LogError(ex, "Error saving <# Definition.Name#>.");
 			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotSave);
 		}
 	}
@@ -270,7 +316,7 @@ Write(name);
 		{
 			if (!isNew)
 			{
-				await <#ref Definition.Name#>Service.DeleteItemAsync(Model.Id);
+				await <# Definition.Name#>Service.DeleteItemAsync(Model.Id);
 			}
 
 			_changeTracker.Clear();
@@ -290,12 +336,12 @@ Write(name);
 		}
 		catch (Exception ex)
 		{
-			Log.LogError(ex, "Error deleting <#ref Definition.Name#>.");
+			Log.LogError(ex, "Error deleting <# Definition.Name#>.");
 			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorDeleting);
 		}
 	}
 
-	private async Task Handle(object? sender, <#ref Definition.Name#>Updated message)
+	private async Task Handle(object? sender, <# Definition.Name#>Updated message)
 	{
 		if (Model is null || Model.Id != message.Id)
 		{
@@ -309,7 +355,7 @@ Write(name);
 	}
 <#for entry in Entries.Where(e => e.IsArray)
 #>
-	private void Add<#ref entry.Field#>Entry()
+	private void Add<# entry.Field#>Entry()
 	{
 		if (Model is null)
 		{
@@ -318,49 +364,49 @@ Write(name);
 
 		var max = 0;
 
-		if (Model.<#ref entry.Field#>.Count > 0)
+		if (Model.<# entry.Field#>.Count > 0)
 		{
-			max = Model.<#ref entry.Field#>.Max(e => e.Id) + 1;
+			max = Model.<# entry.Field#>.Max(e => e.Id) + 1;
 		}
 
-		var model = new <#ref entry.EntryType#>Model() { Id = max };
+		var model = new <# entry.EntryType#>Model() { Id = max };
 
-		Model.<#ref entry.Field#>.Add(model);
+		Model.<# entry.Field#>.Add(model);
 
 		_changeTracker.Track(
-			nameof(Model.<#ref entry.Field#>),
-			() => Model.<#ref entry.Field#>.Remove(model),
-			() => Model.<#ref entry.Field#>.Add(model));
+			nameof(Model.<# entry.Field#>),
+			() => Model.<# entry.Field#>.Remove(model),
+			() => Model.<# entry.Field#>.Add(model));
 	}
 
-	private void Remove<#ref entry.Field#>Entry(int id)
+	private void Remove<# entry.Field#>Entry(int id)
 	{
 		if (Model is null)
 		{
 			return;
 		}
 
-		var oldItem = Model.<#ref entry.Field#>.FirstOrDefault(i => i.Id == id);
+		var oldItem = Model.<# entry.Field#>.FirstOrDefault(i => i.Id == id);
 
 		if (oldItem != null)
 		{
-			var index = Model.<#ref entry.Field#>.IndexOf(oldItem);
+			var index = Model.<# entry.Field#>.IndexOf(oldItem);
 
 			if (index != -1)
 			{
-				Model.<#ref entry.Field#>.RemoveAt(index);
+				Model.<# entry.Field#>.RemoveAt(index);
 
 				_changeTracker.Track(
-					nameof(Model.<#ref entry.Field#>),
-					() => Model.<#ref entry.Field#>.Insert(index, oldItem),
-					() => Model.<#ref entry.Field#>.Remove(oldItem));
+					nameof(Model.<# entry.Field#>),
+					() => Model.<# entry.Field#>.Insert(index, oldItem),
+					() => Model.<# entry.Field#>.Remove(oldItem));
 			}
 		}
 	}
 <#end#>
 	public void Dispose()
 	{
-		<#ref Definition.Name#>Service.ItemUpdated -= Handle;
+		<# Definition.Name#>Service.ItemUpdated -= Handle;
 	}
 }
 <#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

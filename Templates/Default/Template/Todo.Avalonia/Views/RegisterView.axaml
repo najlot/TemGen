@@ -1,0 +1,62 @@
+﻿<UserControl x:Class="<#cs Write(Project.Namespace)#>.Avalonia.Views.RegisterView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vms="clr-namespace:<#cs Write(Project.Namespace)#>.ClientBase.ViewModels;assembly=<#cs Write(Project.Namespace)#>.ClientBase"
+             d:DesignHeight="700"
+             d:DesignWidth="900"
+             x:DataType="vms:RegisterViewModel"
+             mc:Ignorable="d">
+
+	<Border MaxWidth="400"
+	        Padding="32"
+	        HorizontalAlignment="Center"
+	        VerticalAlignment="Center">
+		<StackPanel Spacing="16">
+			<TextBlock Margin="0,0,0,16"
+			           HorizontalAlignment="Center"
+			           FontSize="24"
+			           FontWeight="Bold"
+			           Text="{x:Static loc:UserLoc.Register}" />
+
+			<!--  Username  -->
+			<StackPanel Spacing="4">
+				<TextBlock Text="{x:Static loc:UserLoc.Username}" />
+				<TextBox Classes="clearButton" Text="{Binding Username, Mode=TwoWay}" Watermark="{x:Static loc:UserLoc.Username}" />
+			</StackPanel>
+
+			<!--  Email  -->
+			<StackPanel Spacing="4">
+				<TextBlock Text="{x:Static loc:UserLoc.EmailAddress}" />
+				<TextBox Classes="clearButton" Text="{Binding EMail, Mode=TwoWay}" Watermark="{x:Static loc:UserLoc.EmailAddress}" />
+			</StackPanel>
+
+			<!--  Password  -->
+			<StackPanel Spacing="4">
+				<TextBlock Text="{x:Static loc:UserLoc.Password}" />
+				<TextBox Classes="revealPasswordButton"
+				         PasswordChar="•"
+				         Text="{Binding Password, Mode=TwoWay}"
+				         Watermark="{x:Static loc:UserLoc.Password}" />
+			</StackPanel>
+
+			<!--  Register Button  -->
+			<Button Margin="0,8,0,0"
+			        HorizontalAlignment="Stretch"
+			        HorizontalContentAlignment="Center"
+			        Command="{Binding RegisterCommand}"
+			        Content="{x:Static loc:UserLoc.Register}" />
+
+			<!--  Navigate to Login Link  -->
+			<Button Margin="0,8,0,0"
+			        HorizontalAlignment="Stretch"
+			        HorizontalContentAlignment="Center"
+			        Classes="hyperlink"
+			        Command="{Binding NavigateToLoginCommand}"
+			        Content="{x:Static loc:UserLoc.Login}" />
+		</StackPanel>
+	</Border>
+</UserControl>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

@@ -59,9 +59,14 @@ namespace <# Project.Namespace#>.Client.Localisation {
                 resourceCulture = value;
             }
         }
-        
-<#for entry in Entries.Select(e => e.Field).Concat(Definition.IsArray || Definition.IsEnumeration ? new string[] { } : new[] { "Create" + Definition.Name, "Edit" + Definition.Name, Definition.Name + "s" }).OrderBy(e => e)
-#>        /// <summary>
+<#for entry in Entries
+    .Select(e => e.Field)
+    .Concat(Definition.IsArray || Definition.IsEnumeration 
+        ? []
+        : ["Create" + Definition.Name, "Edit" + Definition.Name, Definition.Name + "s"])
+    .OrderBy(e => e)
+#>        
+        /// <summary>
         ///   Looks up a localized string similar to <# entry#>:.
         /// </summary>
         public static string <# entry#> {
@@ -69,8 +74,7 @@ namespace <# Project.Namespace#>.Client.Localisation {
                 return ResourceManager.GetString("<# entry#>", resourceCulture);
             }
         }
-
-<#end#>
-    }
+<#end
+#>    }
 }
 <#cs SetOutputPath(false)#>

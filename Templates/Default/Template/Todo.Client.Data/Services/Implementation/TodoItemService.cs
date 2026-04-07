@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
-using <# Project.Namespace#>.Client.Data.Identity;
 using <# Project.Namespace#>.Client.Data.Models;
 using <# Project.Namespace#>.Client.Data.Repositories;
 using <# Project.Namespace#>.Contracts.Events;
@@ -13,12 +13,13 @@ using <# Project.Namespace#>.Contracts.Filters;
 namespace <# Project.Namespace#>.Client.Data.Services.Implementation;
 
 public sealed class <# Definition.Name#>Service(
-	ITokenProvider tokenProvider,
-	IHttpClientFactory httpClientFactory,
+	IApiEventConnectionProvider apiEventConnectionProvider,
 	I<# Definition.Name#>Repository repository)
 	: I<# Definition.Name#>Service, IAsyncDisposable
 {
-	private HubConnection? _connection;
+	private readonly SemaphoreSlim _listenerLock = new(1, 1);
+	private readonly List<IDisposable> _subscriptions = [];
+	private bool _eventListenerStarted;
 
 	public event AsyncEventHandler<<# Definition.Name#>Created>? ItemCreated;
 	public event AsyncEventHandler<<# Definition.Name#>Updated>? ItemUpdated;
@@ -26,57 +27,61 @@ public sealed class <# Definition.Name#>Service(
 
 	public async Task StartEventListener()
 	{
-		if (_connection is not null)
+		if (_eventListenerStarted)
 		{
 			return;
 		}
 
-		using var client = httpClientFactory.CreateClient();
-		var serverUri = (client?.BaseAddress) ?? throw new NullReferenceException("Could not retrieve server connection information!");
-		var token = await tokenProvider.GetToken().ConfigureAwait(false);
-		var signalRUri = new Uri(serverUri, "/events");
+		await _listenerLock.WaitAsync().ConfigureAwait(false);
 
-		_connection = new HubConnectionBuilder()
-			.WithUrl(
-				signalRUri.AbsoluteUri,
-				options => options.Headers.Add("Authorization", $"Bearer {token}"))
-			.WithAutomaticReconnect()
-			.Build();
-
-		_connection.On<string>(typeof(<# Definition.Name#>Created).Name, async param =>
+		try
 		{
-			if (ItemCreated is { } handler && JsonSerializer.Deserialize<<# Definition.Name#>Created>(param) is { } message)
+			if (_eventListenerStarted)
 			{
-				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<<# Definition.Name#>Created>>())
-				{
-					await invocation(this, message).ConfigureAwait(false);
-				}
+				return;
 			}
-		});
 
-		_connection.On<string>(typeof(<# Definition.Name#>Updated).Name, async param =>
+			var connection = await apiEventConnectionProvider.GetConnectionAsync().ConfigureAwait(false);
+
+			_subscriptions.Add(connection.On<string>(typeof(<# Definition.Name#>Created).Name, async param =>
+			{
+				if (ItemCreated is { } handler && JsonSerializer.Deserialize<<# Definition.Name#>Created>(param) is { } message)
+				{
+					foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<<# Definition.Name#>Created>>())
+					{
+						await invocation(this, message).ConfigureAwait(false);
+					}
+				}
+			}));
+
+			_subscriptions.Add(connection.On<string>(typeof(<# Definition.Name#>Updated).Name, async param =>
+			{
+				if (ItemUpdated is { } handler && JsonSerializer.Deserialize<<# Definition.Name#>Updated>(param) is { } message)
+				{
+					foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<<# Definition.Name#>Updated>>())
+					{
+						await invocation(this, message).ConfigureAwait(false);
+					}
+				}
+			}));
+
+			_subscriptions.Add(connection.On<string>(typeof(<# Definition.Name#>Deleted).Name, async param =>
+			{
+				if (ItemDeleted is { } handler && JsonSerializer.Deserialize<<# Definition.Name#>Deleted>(param) is { } message)
+				{
+					foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<<# Definition.Name#>Deleted>>())
+					{
+						await invocation(this, message).ConfigureAwait(false);
+					}
+				}
+			}));
+
+			_eventListenerStarted = true;
+		}
+		finally
 		{
-			if (ItemUpdated is { } handler && JsonSerializer.Deserialize<<# Definition.Name#>Updated>(param) is { } message)
-			{
-				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<<# Definition.Name#>Updated>>())
-				{
-					await invocation(this, message).ConfigureAwait(false);
-				}
-			}
-		});
-
-		_connection.On<string>(typeof(<# Definition.Name#>Deleted).Name, async param =>
-		{
-			if (ItemDeleted is { } handler && JsonSerializer.Deserialize<<# Definition.Name#>Deleted>(param) is { } message)
-			{
-				foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<<# Definition.Name#>Deleted>>())
-				{
-					await invocation(this, message).ConfigureAwait(false);
-				}
-			}
-		});
-
-		await _connection.StartAsync().ConfigureAwait(false);
+			_listenerLock.Release();
+		}
 	}
 
 	public <# Definition.Name#>Model Create<# Definition.Name#>()
@@ -88,10 +93,10 @@ public sealed class <# Definition.Name#>Service(
 #><#if entry.IsOwnedType
 #>			<# entry.Field#> = new (),
 <#elseif entry.EntryType.ToLower() == "string"
-#>			<# entry.Field#> = "",
+#>			<# entry.Field#> = string.Empty,
 <#elseif entry.IsArray
 #>			<# entry.Field#> = [],
-<#end#><#end#>
+<#end#><#end#><#cs Result = Result.TrimEnd(',', '\n','\r')#>
 		};
 	}
 
@@ -127,10 +132,22 @@ public sealed class <# Definition.Name#>Service(
 
 	public async ValueTask DisposeAsync()
 	{
-		if (_connection is not null)
+		await _listenerLock.WaitAsync().ConfigureAwait(false);
+
+		try
 		{
-			await _connection.DisposeAsync();
-			_connection = null;
+			foreach (var subscription in _subscriptions)
+			{
+				subscription.Dispose();
+			}
+
+			_subscriptions.Clear();
+			_eventListenerStarted = false;
+		}
+		finally
+		{
+			_listenerLock.Release();
+			_listenerLock.Dispose();
 		}
 	}
 }<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

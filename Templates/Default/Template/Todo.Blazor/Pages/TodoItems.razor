@@ -32,30 +32,40 @@ else
 }
 else
 {
-	<table class="table table-sm table-striped">
-		<thead>
-			<tr>
+ 	<section class="d-grid gap-3">
+		<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+			<h1 class="mb-0">@<# Definition.Name#>Loc.<# Definition.Name#>s</h1>
+			<a href="/<# Definition.Name#>/@Guid.Empty" class="btn btn-success material-symbols-sharp">add</a>
+		</div>
+		<div class="card shadow-sm border-0">
+			<div class="table-responsive">
+				<table class="table table-hover align-middle mb-0">
+					<thead class="table-light">
+						<tr>
 <#for entry in Definition.Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2)
-#>				<th>@<# Definition.Name#>Loc.<# entry.Field#></th>
+#>							<th>@<# Definition.Name#>Loc.<# entry.Field#></th>
 <#end
-#>				<th><a href="/<# Definition.Name#>/@Guid.Empty" class="btn btn-success w-100">@CommonLoc.New</a></th>
-			</tr>
-		</thead>
-		<tbody>
-			@foreach (var <# Definition.NameLow#> in <# Definition.NameLow#>s)
-			{
-				<tr scope="row">
+#>							<th class="text-end">@CommonLoc.Edit</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var <# Definition.NameLow#> in <# Definition.NameLow#>s)
+						{
+							<tr scope="row">
 <#for entry in Definition.Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2)
 #><#if entry.EntryType.ToLower() == "string"
-#>					<td class="text-break">@LimitDisplayLength(<# Definition.NameLow#>.<# entry.Field#>, 75)</td>
+#>								<td class="text-break">@LimitDisplayLength(<# Definition.NameLow#>.<# entry.Field#>, 75)</td>
 <#else
-#>					<td class="text-break">@<# Definition.NameLow#>.<# entry.Field#></td>
+#>								<td class="text-break">@<# Definition.NameLow#>.<# entry.Field#></td>
 <#end#><#end
-#>					<td><a href="/<# Definition.Name#>/@<# Definition.NameLow#>.Id" class="btn btn-primary w-100">@CommonLoc.Edit</a></td>
-				</tr>
-			}
-		</tbody>
-	</table>
+#>								<td class="text-end"><a href="/<# Definition.Name#>/@<# Definition.NameLow#>.Id" class="btn btn-outline-primary btn-sm">@CommonLoc.Edit</a></td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</section>
 }
 
 @code {

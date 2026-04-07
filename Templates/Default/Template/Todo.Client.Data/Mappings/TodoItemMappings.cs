@@ -11,22 +11,57 @@ namespace <# Project.Namespace#>.Client.Data.Mappings;
 [Mapping]
 internal sealed partial class <# Definition.Name#>Mappings
 {
-	public static Create<# Definition.Name#> MapToCreate(IMap map, <# Definition.Name#>Model from) =>
-		new(from.Id,
-<#cs WriteCtorMapping("Model", "")#>);
+<#if Entries.Any(e => e.IsArray)#><#for entry in Entries.Where(e => e.IsArray)
+#>	[MapIgnoreProperty(nameof(to.<# entry.Field#>))]
+<#end#>	private static partial void MapPartialToCreate(IMap map, <# Definition.Name#>Model from, Create<# Definition.Name#> to);
 
-	public static <# Definition.Name#>Created MapToCreated(IMap map, <# Definition.Name#>Model from) =>
-		new(from.Id,
-<#cs WriteCtorMapping("Model", "")#>);
+	public static void MapToCreate(IMap map, <# Definition.Name#>Model from, Create<# Definition.Name#> to)
+	{
+		MapPartialToCreate(map, from, to);
+<#for entry in Entries.Where(e => e.IsArray)
+#>		to.<# entry.Field#> = map.From<<# entry.EntryType#>Model>(from.<# entry.Field#>).ToList<<# entry.EntryType#>>();
+<#end#>	}
 
-	public static Update<# Definition.Name#> MapToUpdate(IMap map, <# Definition.Name#>Model from) =>
-		new(from.Id,
-<#cs WriteCtorMapping("Model", "")#>);
+<#for entry in Entries.Where(e => e.IsArray)
+#>	[MapIgnoreProperty(nameof(to.<# entry.Field#>))]
+<#end#>	private static partial void MapPartialToCreated(IMap map, <# Definition.Name#>Model from, <# Definition.Name#>Created to);
 
-	public static <# Definition.Name#>Updated MapToUpdated(IMap map, <# Definition.Name#>Model from) =>
-		new(from.Id,
-<#cs WriteCtorMapping("Model", "")#>);
+	public static void MapToCreated(IMap map, <# Definition.Name#>Model from, <# Definition.Name#>Created to)
+	{
+		MapPartialToCreated(map, from, to);
+<#for entry in Entries.Where(e => e.IsArray)
+#>		to.<# entry.Field#> = map.From<<# entry.EntryType#>Model>(from.<# entry.Field#>).ToList<<# entry.EntryType#>>();
+<#end#>	}
 
+<#for entry in Entries.Where(e => e.IsArray)
+#>	[MapIgnoreProperty(nameof(to.<# entry.Field#>))]
+<#end#>	private static partial void MapPartialToUpdate(IMap map, <# Definition.Name#>Model from, Update<# Definition.Name#> to);
+
+	public static void MapToUpdate(IMap map, <# Definition.Name#>Model from, Update<# Definition.Name#> to)
+	{
+		MapPartialToUpdate(map, from, to);
+<#for entry in Entries.Where(e => e.IsArray)
+#>		to.<# entry.Field#> = map.From<<# entry.EntryType#>Model>(from.<# entry.Field#>).ToList<<# entry.EntryType#>>();
+<#end#>	}
+
+<#for entry in Entries.Where(e => e.IsArray)
+#>	[MapIgnoreProperty(nameof(to.<# entry.Field#>))]
+<#end#>	private static partial void MapPartialToUpdated(IMap map, <# Definition.Name#>Model from, <# Definition.Name#>Updated to);
+
+	public static void MapToUpdated(IMap map, <# Definition.Name#>Model from, <# Definition.Name#>Updated to)
+	{
+		MapPartialToUpdated(map, from, to);
+<#for entry in Entries.Where(e => e.IsArray)
+#>		to.<# entry.Field#> = map.From<<# entry.EntryType#>Model>(from.<# entry.Field#>).ToList<<# entry.EntryType#>>();
+<#end#>	}
+<#else#>	public static partial void MapToCreate(IMap map, <# Definition.Name#>Model from, Create<# Definition.Name#> to);
+
+	public static partial void MapToCreated(IMap map, <# Definition.Name#>Model from, <# Definition.Name#>Created to);
+
+	public static partial void MapToUpdate(IMap map, <# Definition.Name#>Model from, Update<# Definition.Name#> to);
+
+	public static partial void MapToUpdated(IMap map, <# Definition.Name#>Model from, <# Definition.Name#>Updated to);
+<#end#>
 	public static partial void MapToModel(IMap map, <# Definition.Name#>Created from, <# Definition.Name#>ListItemModel to);
 
 	public static partial void MapToModel(IMap map, <# Definition.Name#>Updated from, <# Definition.Name#>ListItemModel to);

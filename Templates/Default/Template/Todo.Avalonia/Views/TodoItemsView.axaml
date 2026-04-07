@@ -1,0 +1,57 @@
+﻿<UserControl x:Class="<#cs Write(Project.Namespace)#>.Avalonia.Views.<#cs Write(Definition.Name)#>sView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
+             xmlns:local="using:<#cs Write(Project.Namespace)#>.Avalonia.Views"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vms="clr-namespace:<#cs Write(Project.Namespace)#>.ClientBase.ViewModels;assembly=<#cs Write(Project.Namespace)#>.ClientBase"
+             d:DesignHeight="700"
+             d:DesignWidth="1000"
+             x:DataType="vms:<#cs Write(Definition.Name)#>sViewModel"
+             mc:Ignorable="d">
+
+	<Grid RowDefinitions="Auto,*">
+		<!--  Header  -->
+		<Grid Margin="16" ColumnDefinitions="Auto,*,Auto">
+			<Button Grid.Column="0" Command="{Binding NavigateBackCommand}">
+				<materialIcons:MaterialIcon Width="24" Height="24" Kind="ArrowBack" />
+			</Button>
+			<TextBox Grid.Column="1"
+			         Margin="8,0"
+			         VerticalAlignment="Center"
+			         Text="{Binding Filter, Mode=TwoWay}"
+			         Watermark="{x:Static loc:CommonLoc.Search}" />
+			<Button Grid.Column="2" Command="{Binding Add<#cs Write(Definition.Name)#>Command}">
+				<materialIcons:MaterialIcon Width="24" Height="24" Kind="Add" />
+			</Button>
+		</Grid>
+
+		<!--  Main Content  -->
+		<ScrollViewer Grid.Row="1">
+			<ItemsControl ItemsSource="{Binding <#cs Write(Definition.Name)#>sView}">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate x:DataType="vms:<#cs Write(Definition.Name)#>ListItemViewModel">
+						<Button Margin="16,8"
+						        Padding="0"
+						        HorizontalAlignment="Stretch"
+						        HorizontalContentAlignment="Stretch"
+						        Background="Transparent"
+						        BorderThickness="0"
+						        Command="{Binding $parent[ItemsControl].((vms:<#cs Write(Definition.Name)#>sViewModel)DataContext).Edit<#cs Write(Definition.Name)#>Command}"
+						        CommandParameter="{Binding .}"
+						        Foreground="{StaticResource BackgroundColor}">
+							<StackPanel Margin="5">
+<#csfor entry in Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2)
+#>								<TextBlock Margin="5,5,5,0" Text="{Binding <#cs Write(entry.Field)#>}"<#if entry.Field != Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2).First().Field
+#> TextWrapping="Wrap"<#end#> />
+<#end#>							</StackPanel>
+						</Button>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</ScrollViewer>
+	</Grid>
+</UserControl>
+<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

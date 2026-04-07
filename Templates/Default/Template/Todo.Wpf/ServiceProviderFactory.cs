@@ -31,7 +31,7 @@ public static class ServiceProviderFactory
 
 		serviceCollection.AddSingleton(map);
 		serviceCollection.AddSingleton<IViewManager<Control>>(sp => new ViewManager(sp));
-		serviceCollection.AddSingleton<IUserDataStore, MemoryUserDataStore>();
+		serviceCollection.AddSingleton<IUserDataStore, PersistentUserDataStore>();
 		serviceCollection.AddSingleton<IDispatcherHelper, DispatcherHelper>();
 
 		serviceCollection.AddSingleton(navigationService);

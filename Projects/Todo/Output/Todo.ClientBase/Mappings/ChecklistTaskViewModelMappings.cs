@@ -1,7 +1,7 @@
 using Najlot.Map;
 using Najlot.Map.Attributes;
 using Todo.Client.Data.Models;
-using Todo.ClientBase.ViewModel;
+using Todo.ClientBase.ViewModels;
 using Todo.Contracts;
 
 namespace Todo.ClientBase.Mappings;
@@ -15,9 +15,19 @@ internal sealed partial class ChecklistTaskViewModelMappings
 	[MapIgnoreProperty(nameof(to.HasErrors))]
 	public static partial void MapFromViewModelToViewModel(IMap map, ChecklistTaskViewModel from, ChecklistTaskViewModel to);
 
-	[MapValidateSource]
-	public static partial void MapToViewModel(IMap map, ChecklistTaskModel from, ChecklistTaskViewModel to);
+	private static partial void MapPartialToViewModel(IMap map, ChecklistTaskModel from, ChecklistTaskViewModel to);
 
 	[MapValidateSource]
-	public static partial void MapToViewModel(IMap map, ChecklistTask from, ChecklistTaskViewModel to);
+	public static void MapToViewModel(IMap map, ChecklistTaskModel from, ChecklistTaskViewModel to)
+	{
+		MapPartialToViewModel(map, from, to);
+	}
+
+	private static partial void MapPartialToViewModel(IMap map, ChecklistTask from, ChecklistTaskViewModel to);
+
+	[MapValidateSource]
+	public static void MapToViewModel(IMap map, ChecklistTask from, ChecklistTaskViewModel to)
+	{
+		MapPartialToViewModel(map, from, to);
+	}
 }

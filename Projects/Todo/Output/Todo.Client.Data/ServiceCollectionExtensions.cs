@@ -27,6 +27,9 @@ public static class ServiceCollectionExtensions
 
 		public void RegisterClientDataRepositories()
 		{
+			serviceCollection.AddScoped<IGlobalSearchRepository, GlobalSearchRepository>();
+			serviceCollection.AddScoped<IHistoryRepository, HistoryRepository>();
+			serviceCollection.AddScoped<ITrashRepository, TrashRepository>();
 			serviceCollection.AddScoped<INoteRepository, NoteRepository>();
 			serviceCollection.AddScoped<ITodoItemRepository, TodoItemRepository>();
 			serviceCollection.AddScoped<IUserRepository, UserRepository>();
@@ -34,6 +37,10 @@ public static class ServiceCollectionExtensions
 
 		public void RegisterClientDataServices()
 		{
+			serviceCollection.AddScoped<IApiEventConnectionProvider, ApiEventConnectionProvider>();
+			serviceCollection.AddScoped<IGlobalSearchService, GlobalSearchService>();
+			serviceCollection.AddScoped<IHistoryService, HistoryService>();
+			serviceCollection.AddScoped<ITrashService, TrashService>();
 			serviceCollection.AddScoped<INoteService, NoteService>();
 			serviceCollection.AddScoped<ITodoItemService, TodoItemService>();
 			serviceCollection.AddScoped<IUserService, UserService>();
