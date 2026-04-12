@@ -1,14 +1,11 @@
-@page "/note/{id:guid}"
+@page "/Note/{id:guid}"
 @using Microsoft.Extensions.Localization;
 @using Todo.Blazor.Identity;
 @using Todo.Blazor.Services;
-@using Todo.Client.Data.Mappings;
-@using Todo.Client.Data.Models;
-@using Todo.Client.Data.Services;
 @using Todo.Client.Data;
-@using Todo.Client.Localisation;
-@using Todo.Contracts;
-@using Todo.Contracts.Events;
+@using Todo.Client.Data.Notes;@using Todo.Client.Localisation;
+@using Todo.Contracts.Notes;
+
 @inject ILogger<Note> Log
 @inject Najlot.Map.IMap Map;
 @inject INoteService NoteService
@@ -103,9 +100,9 @@ else
 							<label class="form-label" for="ColorInput">@NoteLoc.Color</label>
 							<InputSelect id="ColorInput" class="form-select"
 								 Value="@Model.Color"
-								 ValueChanged="@((Contracts.PredefinedColor v) => _changeTracker.TrackChange(Model, nameof(Model.Color), Model.Color, v))"
+								 ValueChanged="@((PredefinedColor v) => _changeTracker.TrackChange(Model, nameof(Model.Color), Model.Color, v))"
 								 ValueExpression="@(() => Model.Color)" >
-						@foreach (var value in Enum.GetValues(typeof(Contracts.PredefinedColor)))
+						@foreach (var value in Enum.GetValues(typeof(PredefinedColor)))
 						{
 							<option value="@value">@PredefinedColorLocalizer[$"{@value}"]</option>
 						}
@@ -164,7 +161,7 @@ else
 
 			await NoteService.StartEventListener();
 		}
-		catch (System.Security.Authentication.AuthenticationException)
+		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
 			NavigationManager.NavigateTo(url);
@@ -200,7 +197,7 @@ else
 
 			_changeTracker.Clear();
 		}
-		catch (System.Security.Authentication.AuthenticationException)
+		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
 			NavigationManager.NavigateTo(url);
@@ -230,7 +227,7 @@ else
 			_changeTracker.Clear();
 			NavigationManager.NavigateTo("/notes");
 		}
-		catch (System.Security.Authentication.AuthenticationException)
+		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
 			NavigationManager.NavigateTo(url);

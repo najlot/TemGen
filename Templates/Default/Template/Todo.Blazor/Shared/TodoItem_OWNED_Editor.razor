@@ -3,7 +3,7 @@
 @using <# Project.Namespace#>.Client.Data.Models;
 @using <# Project.Namespace#>.Client.Data.Services;
 @using <# Project.Namespace#>.Client.Localisation;
-@using <# Project.Namespace#>.Contracts;
+@using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
 @inject ILogger<<# Definition.Name#>Editor> Log
 <#for entry in Entries.Where(e => e.IsReference)
 #>@inject I<# entry.ReferenceType#>Service <# entry.ReferenceType#>Service
@@ -46,9 +46,9 @@
 <#elseif entry.IsEnumeration
 #>		<InputSelect id="<# Definition.Name#><# entry.Field#>Input" class="form-control"
 				 Value="@Model.<# entry.Field#>"
-				 ValueChanged="@((Contracts.<# entry.EntryType#> v) => ChangeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
+				 ValueChanged="@((<# entry.EntryType#> v) => ChangeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
 				 ValueExpression="@(() => Model.<# entry.Field#>)">
-			@foreach (var value in Enum.GetValues(typeof(Contracts.<# entry.EntryType#>)))
+			@foreach (var value in Enum.GetValues(typeof(<# entry.EntryType#>)))
 			{
 				<option value="@value">@<# entry.EntryType#>Localizer[$"{@value}"]</option>
 			}

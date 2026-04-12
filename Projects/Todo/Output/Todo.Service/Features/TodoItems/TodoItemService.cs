@@ -1,9 +1,7 @@
 using Najlot.Map;
-using Todo.Contracts;
-using Todo.Contracts.Commands;
-using Todo.Contracts.Events;
-using Todo.Contracts.ListItems;
-using Todo.Contracts.Filters;
+using Todo.Contracts.TodoItems;
+using Todo.Contracts.Trash;
+using Todo.Contracts.Shared;
 using Todo.Service.Features.Auth;
 using Todo.Service.Features.History;
 using Todo.Service.Shared.Realtime;

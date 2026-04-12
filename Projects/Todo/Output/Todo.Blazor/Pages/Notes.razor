@@ -1,12 +1,12 @@
-@page "/notes"
+@page "/Notes"
 @using Microsoft.Extensions.Localization;
 @using Todo.Blazor.Identity;
 @using Todo.Blazor.Services;
-@using Todo.Client.Data.Models;
-@using Todo.Client.Data.Services;
 @using Todo.Client.Data;
+@using Todo.Client.Data.Notes;
 @using Todo.Client.Localisation;
-@using Todo.Contracts.Events;
+@using Todo.Contracts.Notes;
+
 @inject ILogger<Notes> Log
 @inject Najlot.Map.IMap Map
 @inject INoteService NoteService
@@ -80,7 +80,7 @@ else
 
 			await NoteService.StartEventListener();
 		}
-		catch (System.Security.Authentication.AuthenticationException)
+		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
 			NavigationManager.NavigateTo(url);

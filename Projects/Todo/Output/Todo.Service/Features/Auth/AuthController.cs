@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Todo.Contracts;
-using Todo.Contracts.Commands;
+using Todo.Contracts.Auth;
+using Todo.Contracts.Users;
 using Todo.Service.Features.Users;
 using Todo.Service.Infrastructure.Persistence;
 using Todo.Service.Shared.Results;

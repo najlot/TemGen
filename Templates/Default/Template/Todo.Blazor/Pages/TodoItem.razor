@@ -1,23 +1,23 @@
-@page "/<#cs Write(Definition.Name.ToLower())#>/{id:guid}"
+@page "/<#cs Write(Definition.Name)#>/{id:guid}"
 @using Microsoft.Extensions.Localization;
 @using <# Project.Namespace#>.Blazor.Identity;
 @using <# Project.Namespace#>.Blazor.Services;
-<#if Definitions.Any(d => d.IsArray)
-#>@using <# Project.Namespace#>.Client.Data.Mappings;
-<#end#>@using <# Project.Namespace#>.Client.Data.Models;
-@using <# Project.Namespace#>.Client.Data.Services;
 @using <# Project.Namespace#>.Client.Data;
-@using <# Project.Namespace#>.Client.Localisation;
-@using <# Project.Namespace#>.Contracts;
-@using <# Project.Namespace#>.Contracts.Events;
+@using <# Project.Namespace#>.Client.Data.<# Definition.Name#>s;<#if Entries.Any(e => e.IsReference)
+#>
+<#for entry in Entries.Where(e => e.IsReference)
+#>@using <# Project.Namespace#>.Client.Data.<# entry.ReferenceType#>s;
+<#end#><#end#>@using <# Project.Namespace#>.Client.Localisation;
+@using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
+
 @inject ILogger<<# Definition.Name#>> Log
 @inject Najlot.Map.IMap Map;
 @inject I<# Definition.Name#>Service <# Definition.Name#>Service<#if Entries.Any(e => e.IsReference)
 #>
 <#for entry in Entries.Where(e => e.IsReference)
 #>@inject I<# entry.ReferenceType#>Service <# entry.ReferenceType#>Service
-<#end#><#end#>
-@inject NavigationManager NavigationManager
+<#end#><#else#>
+<#end#>@inject NavigationManager NavigationManager
 <#for entry in Entries.Where(e => e.IsEnumeration)
 #>@inject IStringLocalizer<<# entry.EntryType#>Loc> <# entry.EntryType#>Localizer
 <#end#>
@@ -131,9 +131,9 @@ else
 #>							<label class="form-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
 							<InputSelect id="<# entry.Field#>Input" class="form-select"
 								 Value="@Model.<# entry.Field#>"
-								 ValueChanged="@((Contracts.<# entry.EntryType#> v) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
+								 ValueChanged="@((<# entry.EntryType#> v) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
 								 ValueExpression="@(() => Model.<# entry.Field#>)" >
-						@foreach (var value in Enum.GetValues(typeof(Contracts.<# entry.EntryType#>)))
+						@foreach (var value in Enum.GetValues(typeof(<# entry.EntryType#>)))
 						{
 							<option value="@value">@<# entry.EntryType#>Localizer[$"{@value}"]</option>
 						}
@@ -249,7 +249,7 @@ else
 
 			await <# Definition.Name#>Service.StartEventListener();
 		}
-		catch (System.Security.Authentication.AuthenticationException)
+		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
 			NavigationManager.NavigateTo(url);
@@ -292,7 +292,7 @@ Write(name);
 
 			_changeTracker.Clear();
 		}
-		catch (System.Security.Authentication.AuthenticationException)
+		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
 			NavigationManager.NavigateTo(url);
@@ -329,7 +329,7 @@ if (name.EndsWith("entry"))
 Write(name);
 #>s");
 		}
-		catch (System.Security.Authentication.AuthenticationException)
+		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
 			NavigationManager.NavigateTo(url);

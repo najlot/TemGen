@@ -1,6 +1,6 @@
 using Najlot.Map;
 using Najlot.Map.Attributes;
-using Todo.Contracts;
+using Todo.Contracts.TodoItems;
 
 namespace Todo.Service.Features.ChecklistTasks;
 

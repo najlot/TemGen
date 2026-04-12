@@ -52,6 +52,17 @@ void SetEncodingWithoutBom()
     }
 }
 
+string FixPathPluralization(string path)
+    => path.Replace("Entrys", "Entries").Replace("Statuss", "Status");
+
+void SetOutputPathAndSkipOtherDefinitions()
+{
+    RelativePath = RelativePath.Replace("TodoItem", Definition.Name).Replace("Todo", Project.Namespace);
+    RelativePath = FixPathPluralization(RelativePath);
+    SkipOtherDefinitions = true;
+    SetEncodingWithoutBom();
+}
+
 void SetOutputPath(bool skip)
 {
     if (skip)
@@ -65,16 +76,37 @@ void SetOutputPath(bool skip)
     else
     {
         RelativePath = RelativePath.Replace("TodoItem", Definition.Name).Replace("Todo", Project.Namespace);
-        RelativePath = RelativePath.Replace("Entrys", "Entries").Replace("Statuss", "Status");
+        RelativePath = FixPathPluralization(RelativePath);
 
         SetEncodingWithoutBom();
     }
 }
 
-void SetOutputPathAndSkipOtherDefinitions()
+void MoveChildToFeatureFolder()
 {
-    RelativePath = RelativePath.Replace("TodoItem", Definition.Name).Replace("Todo", Project.Namespace);
-    RelativePath = RelativePath.Replace("Entrys", "Entries").Replace("Statuss", "Status");
-    SkipOtherDefinitions = true;
-    SetEncodingWithoutBom();
+    var lastIndex = RelativePath.LastIndexOfAny(['\\', '/']);
+    if (lastIndex == -1)
+    {
+        return;
+    }
+    var preLastIndex = RelativePath.LastIndexOfAny(['\\', '/'], lastIndex - 1);
+    var toReplace = RelativePath.Substring(preLastIndex, lastIndex - preLastIndex + 1);
+    var replaced = toReplace.Replace(FixPathPluralization(Definition.Name + "s"), GetChildFeatureFolderName(Definition.Name));
+    RelativePath = RelativePath.Replace(toReplace, replaced);
+}
+
+IEnumerable<string> GetDefinitionUsageNames(string definitionName)
+{
+    return Definitions
+        .Where(d => d.Name != definitionName)
+        .Where(d => d.Entries.Any(entry => entry.EntryType == definitionName))
+        .Select(d => d.Name);
+}
+
+string GetChildFeatureFolderName(string definitionName)
+{
+    var usages = GetDefinitionUsageNames(definitionName).ToList();
+    return usages.Count == 1
+        ? FixPathPluralization(usages[0] + "s")
+        : "Shared";
 }

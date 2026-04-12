@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Todo.Service.Shared.Configuration;
 using Todo.Service.Shared.HealthChecks;
+using Todo.Service.Serialization;
 using Todo.Service.Features.Auth;
 
 namespace Todo.Service;
@@ -41,7 +42,11 @@ public static class StartupServiceCollectionExtensions
 		});
 
 		services.AddAuthorization();
-		services.AddControllers();
+		services.AddControllers()
+			.AddJsonOptions(options =>
+			{
+				options.JsonSerializerOptions.TypeInfoResolverChain.Insert(0, ServiceJsonSerializerContext.Default);
+			});
 		services.AddEndpointsApiExplorer();
 		services.AddSwaggerGen();
 		services.AddHealthChecks()

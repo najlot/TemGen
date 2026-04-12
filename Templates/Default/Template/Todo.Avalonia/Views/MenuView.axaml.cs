@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
-using <# Project.Namespace#>.ClientBase.ViewModels;
+using <# Project.Namespace#>.ClientBase.Shared;
 
 namespace <# Project.Namespace#>.Avalonia.Views;
 

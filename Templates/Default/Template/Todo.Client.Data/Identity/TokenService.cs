@@ -1,7 +1,8 @@
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using <# Project.Namespace#>.Contracts;
+using <# Project.Namespace#>.Client.Data.Serialization;
+using <# Project.Namespace#>.Contracts.Auth;
 
 namespace <# Project.Namespace#>.Client.Data.Identity;
 
@@ -16,7 +17,7 @@ public class TokenService(IHttpClientFactory httpClientFactory) : ITokenService
 		};
 
 		using var client = httpClientFactory.CreateClient();
-		var response = await client.PostAsJsonAsync("api/Auth", request);
+		var response = await client.PostAsJsonAsync("api/Auth", request, ClientDataJsonSerializer.Options);
 
 		if (response.IsSuccessStatusCode)
 		{

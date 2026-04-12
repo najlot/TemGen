@@ -1,10 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Najlot.Map;
-using <# Project.Namespace#>.Contracts;
-using <# Project.Namespace#>.Contracts.Commands;
-using <# Project.Namespace#>.Contracts.Events;
-using <# Project.Namespace#>.Contracts.ListItems;
+using <# Project.Namespace#>.Contracts.Users;
 using <# Project.Namespace#>.Service.Features.Auth;
 using <# Project.Namespace#>.Service.Features.History;
 using <# Project.Namespace#>.Service.Shared.Realtime;

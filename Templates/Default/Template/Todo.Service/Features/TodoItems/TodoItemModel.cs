@@ -1,5 +1,5 @@
 using MongoDB.Bson.Serialization.Attributes;
-using <# Project.Namespace#>.Contracts;
+using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
 using <# Project.Namespace#>.Service.Infrastructure.Persistence;
 
 namespace <# Project.Namespace#>.Service.Features.<# Definition.Name#>s;

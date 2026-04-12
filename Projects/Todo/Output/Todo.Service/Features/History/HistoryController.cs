@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Todo.Contracts;
+using Todo.Contracts.History;
 using Todo.Service.Shared.Results;
 
 namespace Todo.Service.Features.History;

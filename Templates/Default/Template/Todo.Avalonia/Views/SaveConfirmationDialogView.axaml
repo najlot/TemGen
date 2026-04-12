@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vms="clr-namespace:<#cs Write(Project.Namespace)#>.ClientBase.ViewModels;assembly=<#cs Write(Project.Namespace)#>.ClientBase"
+             xmlns:vms="clr-namespace:<#cs Write(Project.Namespace)#>.ClientBase.Shared;assembly=<#cs Write(Project.Namespace)#>.ClientBase"
              x:DataType="vms:SaveConfirmationDialogViewModel"
              mc:Ignorable="d">
 	<Grid Background="#80000000" IsVisible="{Binding IsVisible}">

@@ -1,5 +1,5 @@
 using Najlot.Map;
-using <# Project.Namespace#>.Contracts;
+using <# Project.Namespace#>.Contracts.GlobalSearch;
 using <# Project.Namespace#>.Service.Features.Auth;
 using <# Project.Namespace#>.Service.Features.<# Definition.Name#>s;
 

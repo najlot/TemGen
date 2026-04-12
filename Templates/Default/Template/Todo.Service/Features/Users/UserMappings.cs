@@ -1,9 +1,6 @@
 using Najlot.Map.Attributes;
 using System.Linq.Expressions;
-using <# Project.Namespace#>.Contracts;
-using <# Project.Namespace#>.Contracts.Commands;
-using <# Project.Namespace#>.Contracts.Events;
-using <# Project.Namespace#>.Contracts.ListItems;
+using <# Project.Namespace#>.Contracts.Users;
 
 namespace <# Project.Namespace#>.Service.Features.Users;
 

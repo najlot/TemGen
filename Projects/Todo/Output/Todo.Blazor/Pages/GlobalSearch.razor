@@ -2,10 +2,10 @@
 @using System.Net
 @using Microsoft.AspNetCore.Components
 @using Todo.Blazor.Services;
-@using Todo.Client.Data.Models;
-@using Todo.Client.Data.Services;
+@using Todo.Client.Data.GlobalSearch;
 @using Todo.Client.Localisation;
-@using Todo.Contracts;
+@using Todo.Contracts.Trash;
+@using Todo.Contracts.Shared
 @inject ILogger<GlobalSearch> Log
 @inject IGlobalSearchService GlobalSearchService
 @inject NavigationManager NavigationManager
@@ -91,7 +91,7 @@ else
 			isLoading = true;
 			items.AddRange(await GlobalSearchService.SearchAsync(searchText).ConfigureAwait(false));
 		}
-		catch (System.Security.Authentication.AuthenticationException)
+		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
 			NavigationManager.NavigateTo(url);

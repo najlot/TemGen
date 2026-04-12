@@ -5,8 +5,25 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using <# Project.Namespace#>.Client.MVVM;
 using <# Project.Namespace#>.ClientBase;
-using <# Project.Namespace#>.ClientBase.ViewModels;
-using <# Project.Namespace#>.Wpf.Views;
+using <# Project.Namespace#>.ClientBase.GlobalSearch;
+using <# Project.Namespace#>.ClientBase.History;
+using <# Project.Namespace#>.ClientBase.Identity;
+using <# Project.Namespace#>.ClientBase.Shared;
+using <# Project.Namespace#>.ClientBase.Trash;
+<#cs 
+var features = Definitions
+	.Where(e => !(e.IsArray 
+				|| e.IsEnumeration 
+				|| e.IsOwnedType 
+				|| e.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
+	.Distinct()
+	.OrderByDescending(d => d.Name);
+
+foreach (var feature in features)
+{
+	WriteLine($"using {Project.Namespace}.ClientBase.{feature.Name}s;");
+}
+#>using <# Project.Namespace#>.Wpf.Views;
 
 namespace <# Project.Namespace#>.Wpf;
 

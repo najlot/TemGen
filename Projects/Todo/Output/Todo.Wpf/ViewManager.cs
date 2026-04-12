@@ -5,7 +5,13 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using Todo.Client.MVVM;
 using Todo.ClientBase;
-using Todo.ClientBase.ViewModels;
+using Todo.ClientBase.GlobalSearch;
+using Todo.ClientBase.History;
+using Todo.ClientBase.Identity;
+using Todo.ClientBase.Shared;
+using Todo.ClientBase.Trash;
+using Todo.ClientBase.TodoItems;
+using Todo.ClientBase.Notes;
 using Todo.Wpf.Views;
 
 namespace Todo.Wpf;

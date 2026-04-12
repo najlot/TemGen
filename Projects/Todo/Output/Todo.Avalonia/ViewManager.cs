@@ -3,10 +3,16 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Todo.Avalonia.Views;
 using Todo.Client.MVVM;
 using Todo.ClientBase;
-using Todo.ClientBase.ViewModels;
-using Todo.Avalonia.Views;
+using Todo.ClientBase.GlobalSearch;
+using Todo.ClientBase.History;
+using Todo.ClientBase.Identity;
+using Todo.ClientBase.Shared;
+using Todo.ClientBase.Trash;
+using Todo.ClientBase.TodoItems;
+using Todo.ClientBase.Notes;
 
 namespace Todo.Avalonia;
 

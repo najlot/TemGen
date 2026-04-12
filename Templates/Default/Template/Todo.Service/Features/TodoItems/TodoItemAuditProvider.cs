@@ -1,6 +1,6 @@
 using Najlot.Audit;
 using Najlot.Audit.Attributes;
-using <# Project.Namespace#>.Contracts;
+using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
 
 namespace <# Project.Namespace#>.Service.Features.<# Definition.Name#>s;
 

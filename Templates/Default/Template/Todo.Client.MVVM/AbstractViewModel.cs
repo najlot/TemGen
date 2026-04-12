@@ -9,10 +9,6 @@ public abstract class AbstractViewModel : INotifyPropertyChanged
 {
 	public event PropertyChangedEventHandler? PropertyChanged;
 
-	public IPropertyChangeVisitor? ChangeVisitor { get; set; }
-
-	protected virtual bool ShouldTrackChange(string? propertyName) => true;
-
 	protected void RaisePropertiesChanged(params string[] propertyNames)
 	{
 		foreach (var propertyName in propertyNames)
@@ -28,27 +24,13 @@ public abstract class AbstractViewModel : INotifyPropertyChanged
 
 	protected virtual bool Set<T>(ref T oldValue, T newValue, [CallerMemberName] string? propertyName = null)
 	{
-		if (EqualityComparer<T>.Default.Equals(oldValue, default) &&
-			EqualityComparer<T>.Default.Equals(newValue, default))
+		if (EqualityComparer<T>.Default.Equals(oldValue, newValue))
 		{
 			return false;
 		}
 
-		if (oldValue?.Equals(newValue) ?? false)
-		{
-			return false;
-		}
-
-		var previous = oldValue;
 		oldValue = newValue;
 		RaisePropertyChanged(propertyName);
-
-		if (ChangeVisitor is { IsApplyingChange: false } visitor 
-			&& !string.IsNullOrEmpty(propertyName)
-			&& ShouldTrackChange(propertyName))
-		{
-			visitor.Visit(this, propertyName, previous, newValue);
-		}
 
 		return true;
 	}

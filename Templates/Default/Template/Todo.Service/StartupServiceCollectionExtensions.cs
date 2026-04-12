@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using <# Project.Namespace#>.Service.Shared.Configuration;
 using <# Project.Namespace#>.Service.Shared.HealthChecks;
+using <# Project.Namespace#>.Service.Serialization;
 using <# Project.Namespace#>.Service.Features.Auth;
 
 namespace <# Project.Namespace#>.Service;
@@ -41,7 +42,11 @@ public static class StartupServiceCollectionExtensions
 		});
 
 		services.AddAuthorization();
-		services.AddControllers();
+		services.AddControllers()
+			.AddJsonOptions(options =>
+			{
+				options.JsonSerializerOptions.TypeInfoResolverChain.Insert(0, ServiceJsonSerializerContext.Default);
+			});
 		services.AddEndpointsApiExplorer();
 		services.AddSwaggerGen();
 		services.AddHealthChecks()

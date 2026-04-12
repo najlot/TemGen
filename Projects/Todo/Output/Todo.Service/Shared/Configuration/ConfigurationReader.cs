@@ -1,16 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using Todo.Service.Serialization;
 
 namespace Todo.Service.Shared.Configuration;
 
 public static class ConfigurationReader
 {
-	private static readonly JsonSerializerOptions _options = new()
-	{
-		WriteIndented = true,
-		PropertyNameCaseInsensitive = true,
-	};
-
 	public static bool TryReadConfiguration<T>(this IConfiguration configuration, [NotNullWhen(true)] out T? config) where T : class, new()
 	{
 		var key = typeof(T).Name;
@@ -55,7 +50,7 @@ public static class ConfigurationReader
 		}
 
 		var configContent = File.ReadAllText(configPath);
-		config = JsonSerializer.Deserialize<T>(configContent, _options) ?? new T();
+		config = JsonSerializer.Deserialize<T>(configContent, ServiceJsonSerializer.IndentedOptions) ?? new T();
 		return true;
 	}
 
@@ -77,6 +72,6 @@ public static class ConfigurationReader
 			Directory.CreateDirectory(configDir);
 		}
 
-		File.WriteAllText(configPath + ".example", JsonSerializer.Serialize(new T(), _options));
+		File.WriteAllText(configPath + ".example", JsonSerializer.Serialize(new T(), ServiceJsonSerializer.IndentedOptions));
 	}
 }

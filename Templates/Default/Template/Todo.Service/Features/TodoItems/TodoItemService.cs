@@ -1,9 +1,7 @@
 using Najlot.Map;
-using <# Project.Namespace#>.Contracts;
-using <# Project.Namespace#>.Contracts.Commands;
-using <# Project.Namespace#>.Contracts.Events;
-using <# Project.Namespace#>.Contracts.ListItems;
-using <# Project.Namespace#>.Contracts.Filters;
+using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
+using <# Project.Namespace#>.Contracts.Trash;
+using <# Project.Namespace#>.Contracts.Shared;
 using <# Project.Namespace#>.Service.Features.Auth;
 using <# Project.Namespace#>.Service.Features.History;
 using <# Project.Namespace#>.Service.Shared.Realtime;

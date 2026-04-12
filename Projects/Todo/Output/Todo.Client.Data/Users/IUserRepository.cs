@@ -1,0 +1,19 @@
+using System;
+using System.Threading.Tasks;
+
+namespace Todo.Client.Data.Users;
+
+public interface IUserRepository
+{
+	Task<UserModel> GetCurrentUserAsync();
+
+	Task<UserListItemModel[]> GetItemsAsync();
+
+	Task<UserModel> GetItemAsync(Guid id);
+
+	Task AddItemAsync(UserModel item);
+
+	Task UpdateItemAsync(UserModel item);
+
+	Task DeleteItemAsync(Guid id);
+}

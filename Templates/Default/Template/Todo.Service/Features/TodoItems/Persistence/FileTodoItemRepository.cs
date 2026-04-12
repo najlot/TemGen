@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using <# Project.Namespace#>.Service.Serialization;
 using <# Project.Namespace#>.Service.Shared.Configuration;
 using <# Project.Namespace#>.Service.Features.<# Definition.Name#>s;
 
@@ -13,7 +13,6 @@ namespace <# Project.Namespace#>.Service.Features.<# Definition.Name#>s.Persiste
 
 public class File<# Definition.Name#>Repository : I<# Definition.Name#>Repository
 {
-	private static readonly JsonSerializerOptions _options = new() { PropertyNameCaseInsensitive = true };
 	private readonly string _storagePath;
 
 	public File<# Definition.Name#>Repository(FileConfiguration configuration)
@@ -29,8 +28,7 @@ public class File<# Definition.Name#>Repository : I<# Definition.Name#>Repositor
 		foreach (var path in Directory.GetFiles(_storagePath))
 		{
 			var bytes = File.ReadAllBytes(path);
-			var text = Encoding.UTF8.GetString(bytes);
-			var item = JsonSerializer.Deserialize<<# Definition.Name#>Model>(text, _options);
+			var item = JsonSerializer.Deserialize<<# Definition.Name#>Model>(bytes, ServiceJsonSerializer.Options);
 			if (item is not null)
 			{
 				items.Add(item);
@@ -50,7 +48,7 @@ public class File<# Definition.Name#>Repository : I<# Definition.Name#>Repositor
 		}
 
 		var bytes = await File.ReadAllBytesAsync(path).ConfigureAwait(false);
-		var item = JsonSerializer.Deserialize<<# Definition.Name#>Model>(bytes, _options);
+		var item = JsonSerializer.Deserialize<<# Definition.Name#>Model>(bytes, ServiceJsonSerializer.Options);
 
 		return item;
 	}
@@ -63,7 +61,7 @@ public class File<# Definition.Name#>Repository : I<# Definition.Name#>Repositor
 	public async Task Update(<# Definition.Name#>Model model)
 	{
 		var path = Path.Combine(_storagePath, model.Id.ToString());
-		var bytes = JsonSerializer.SerializeToUtf8Bytes(model);
+		var bytes = JsonSerializer.SerializeToUtf8Bytes(model, ServiceJsonSerializer.Options);
 		await File.WriteAllBytesAsync(path, bytes).ConfigureAwait(false);
 	}
 

@@ -1,5 +1,5 @@
 using MongoDB.Bson.Serialization.Attributes;
-using Todo.Contracts;
+using Todo.Contracts.TodoItems;
 using Todo.Service.Infrastructure.Persistence;
 
 namespace Todo.Service.Features.TodoItems;

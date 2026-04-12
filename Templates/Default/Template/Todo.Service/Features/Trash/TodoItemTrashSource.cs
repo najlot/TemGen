@@ -1,8 +1,9 @@
 <#if Definition.Name == "TodoItem"
 #>using LiteDB;
 using Najlot.Map;
-using <# Project.Namespace#>.Contracts;
-using <# Project.Namespace#>.Contracts.Events;
+using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
+using <# Project.Namespace#>.Contracts.Trash;
+using <# Project.Namespace#>.Contracts.Shared;
 using <# Project.Namespace#>.Service.Features.Auth;
 using <# Project.Namespace#>.Service.Features.History;
 using <# Project.Namespace#>.Service.Features.<# Definition.Name#>s;
@@ -10,8 +11,9 @@ using <# Project.Namespace#>.Service.Shared.Realtime;
 using <# Project.Namespace#>.Service.Shared.Results;
 
 
-<#else#>using <# Project.Namespace#>.Contracts;
-using <# Project.Namespace#>.Contracts.Events;
+<#else#>using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
+using <# Project.Namespace#>.Contracts.Trash;
+using <# Project.Namespace#>.Contracts.Shared;
 using <# Project.Namespace#>.Service.Features.Auth;
 using <# Project.Namespace#>.Service.Features.History;
 using <# Project.Namespace#>.Service.Features.<# Definition.Name#>s;

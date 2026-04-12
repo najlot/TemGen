@@ -1,5 +1,6 @@
-using Todo.Contracts;
-using Todo.Contracts.Events;
+using Todo.Contracts.Notes;
+using Todo.Contracts.Trash;
+using Todo.Contracts.Shared;
 using Todo.Service.Features.Auth;
 using Todo.Service.Features.History;
 using Todo.Service.Features.Notes;

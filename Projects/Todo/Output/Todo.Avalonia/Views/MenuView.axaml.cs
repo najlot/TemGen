@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
-using Todo.ClientBase.ViewModels;
+using Todo.ClientBase.Shared;
 
 namespace Todo.Avalonia.Views;
 

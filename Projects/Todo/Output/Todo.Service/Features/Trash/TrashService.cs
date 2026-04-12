@@ -1,4 +1,5 @@
-using Todo.Contracts;
+using Todo.Contracts.Trash;
+using Todo.Contracts.Shared;
 using Todo.Service.Shared.Results;
 
 namespace Todo.Service.Features.Trash;

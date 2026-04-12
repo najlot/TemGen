@@ -15,6 +15,7 @@ namespace <# Project.Namespace#>.Avalonia;
 public static class ServiceProviderFactory
 {
 	public static Func<IUserDataStore>? PlatformUserDataStoreFactory { get; set; }
+	public static Func<string?>? PlatformDataServiceUrlFactory { get; set; }
 
 	public static ServiceProvider CreateServiceProvider(
 		INavigationService navigationService,
@@ -42,7 +43,11 @@ public static class ServiceProviderFactory
 
 		var configuration = configurationBuilder.Build();
 
-		var dataServiceUrl = configuration.GetSection("DataServiceUrl")?.Get<string>() ?? throw new InvalidOperationException("DataServiceUrl not found.");
+		var dataServiceUrl = PlatformDataServiceUrlFactory?.Invoke();
+		if (string.IsNullOrWhiteSpace(dataServiceUrl))
+		{
+			dataServiceUrl = configuration.GetSection("DataServiceUrl")?.Get<string>() ?? throw new InvalidOperationException("DataServiceUrl not found.");
+		}
 
 		var serviceCollection = new ServiceCollection();
 		var map = new Najlot.Map.Map()

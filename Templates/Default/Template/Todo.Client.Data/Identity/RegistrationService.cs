@@ -3,7 +3,8 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using <# Project.Namespace#>.Contracts.Commands;
+using <# Project.Namespace#>.Client.Data.Serialization;
+using <# Project.Namespace#>.Contracts.Users;
 
 namespace <# Project.Namespace#>.Client.Data.Identity;
 
@@ -25,7 +26,7 @@ public class RegistrationService(IHttpClientFactory httpClientFactory, ILogger<R
 				Password = password
 			};
 
-			var result = await client.PostAsJsonAsync("api/Auth/Register", command);
+			var result = await client.PostAsJsonAsync("api/Auth/Register", command, ClientDataJsonSerializer.Options);
 
 			if (result.IsSuccessStatusCode)
 			{

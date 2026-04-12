@@ -1,10 +1,7 @@
 using Najlot.Map;
 using Najlot.Map.Attributes;
 using System.Linq.Expressions;
-using Todo.Contracts;
-using Todo.Contracts.Commands;
-using Todo.Contracts.Events;
-using Todo.Contracts.ListItems;
+using Todo.Contracts.TodoItems;
 
 namespace Todo.Service.Features.TodoItems;
 

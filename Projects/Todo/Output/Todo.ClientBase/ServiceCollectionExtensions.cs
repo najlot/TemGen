@@ -1,6 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using Todo.ClientBase.ViewModels;
+using Todo.ClientBase.GlobalSearch;
+using Todo.ClientBase.History;
+using Todo.ClientBase.Identity;
+using Todo.ClientBase.Shared;
+using Todo.ClientBase.TodoItems;
+using Todo.ClientBase.Notes;
+using Todo.ClientBase.Trash;
 
 namespace Todo.ClientBase;
 

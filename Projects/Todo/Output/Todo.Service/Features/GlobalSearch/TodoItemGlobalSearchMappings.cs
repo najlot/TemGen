@@ -1,6 +1,8 @@
 using Najlot.Map.Attributes;
 using System.Linq.Expressions;
-using Todo.Contracts;
+using Todo.Contracts.GlobalSearch;
+using Todo.Contracts.Trash;
+using Todo.Contracts.Shared;
 using Todo.Service.Features.TodoItems;
 
 namespace Todo.Service.Features.GlobalSearch;

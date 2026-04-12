@@ -3,11 +3,28 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using <# Project.Namespace#>.Avalonia.Views;
 using <# Project.Namespace#>.Client.MVVM;
 using <# Project.Namespace#>.ClientBase;
-using <# Project.Namespace#>.ClientBase.ViewModels;
-using <# Project.Namespace#>.Avalonia.Views;
+using <# Project.Namespace#>.ClientBase.GlobalSearch;
+using <# Project.Namespace#>.ClientBase.History;
+using <# Project.Namespace#>.ClientBase.Identity;
+using <# Project.Namespace#>.ClientBase.Shared;
+using <# Project.Namespace#>.ClientBase.Trash;
+<#cs 
+var features = Definitions
+	.Where(e => !(e.IsArray 
+				|| e.IsEnumeration 
+				|| e.IsOwnedType 
+				|| e.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
+	.Distinct()
+	.OrderByDescending(d => d.Name);
 
+foreach (var feature in features)
+{
+	WriteLine($"using {Project.Namespace}.ClientBase.{feature.Name}s;");
+}
+#>
 namespace <# Project.Namespace#>.Avalonia;
 
 public class ViewManager(IServiceProvider serviceProvider) : IViewManager<Control>

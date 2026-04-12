@@ -6,7 +6,7 @@
              xmlns:local="using:Todo.Avalonia.Views"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vms="clr-namespace:Todo.ClientBase.ViewModels;assembly=Todo.ClientBase"
+             xmlns:vms="clr-namespace:Todo.ClientBase.Notes;assembly=Todo.ClientBase"
              d:DesignHeight="700"
              d:DesignWidth="1000"
              x:DataType="vms:NotesViewModel"

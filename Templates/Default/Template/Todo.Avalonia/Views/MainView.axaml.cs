@@ -3,12 +3,12 @@ using Avalonia.Interactivity;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.Security.Authentication;
 using System.Threading.Tasks;
 using <# Project.Namespace#>.Client.Data.Identity;
 using <# Project.Namespace#>.Client.MVVM;
 using <# Project.Namespace#>.ClientBase;
-using <# Project.Namespace#>.ClientBase.ViewModels;
+using <# Project.Namespace#>.ClientBase.Identity;
+using <# Project.Namespace#>.ClientBase.Shared;
 
 namespace <# Project.Namespace#>.Avalonia.Views;
 
@@ -62,7 +62,7 @@ public partial class MainView : UserControl, INavigationService, INotificationSe
 			var token = await _tokenProvider.GetToken();
 			return !string.IsNullOrWhiteSpace(token);
 		}
-		catch (AuthenticationException)
+		catch (SessionUnavailableException)
 		{
 			_tokenProvider.ClearCache();
 			await _userDataStore.SetUserData(string.Empty, string.Empty);

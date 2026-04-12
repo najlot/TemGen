@@ -2,8 +2,9 @@ using System.Globalization;
 using System.Text.Json;
 using Najlot.Audit;
 using Najlot.Map;
-using <# Project.Namespace#>.Contracts;
+using <# Project.Namespace#>.Contracts.History;
 using <# Project.Namespace#>.Service.Features.Auth;
+using <# Project.Namespace#>.Service.Serialization;
 using <# Project.Namespace#>.Service.Shared.Results;
 
 namespace <# Project.Namespace#>.Service.Features.History;
@@ -57,7 +58,7 @@ public class HistoryService(
 			UserId = GetCurrentUserId(),
 			Username = GetCurrentUsername(),
 			TimeStamp = DateTime.UtcNow,
-			Changes = JsonSerializer.Serialize(historyChanges)
+			Changes = JsonSerializer.Serialize(historyChanges, ServiceJsonSerializer.Options)
 		};
 
 		await repository.Insert(entry).ConfigureAwait(false);

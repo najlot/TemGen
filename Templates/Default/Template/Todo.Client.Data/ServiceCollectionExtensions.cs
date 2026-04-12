@@ -1,9 +1,26 @@
 using Microsoft.Extensions.DependencyInjection;
+using <# Project.Namespace#>.Client.Data.GlobalSearch;
+using <# Project.Namespace#>.Client.Data.History;
 using <# Project.Namespace#>.Client.Data.Identity;
-using <# Project.Namespace#>.Client.Data.Repositories;
-using <# Project.Namespace#>.Client.Data.Repositories.Implementation;
-using <# Project.Namespace#>.Client.Data.Services;
-using <# Project.Namespace#>.Client.Data.Services.Implementation;
+<#cs
+foreach (var contractNamespace in Definitions
+	.Where(d => !d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))
+	.Select(definition => 
+	{
+		if (definition.IsEnumeration || definition.IsOwnedType || definition.IsArray)
+		{
+			return $"{Project.Namespace}.Client.Data.{GetChildFeatureFolderName(definition.Name)}";
+		}
+		
+		return $"{Project.Namespace}.Client.Data.{definition.Name}s";
+	})
+	.Distinct()
+	.OrderBy(contractNamespace => contractNamespace))
+{
+	WriteLine($"using {contractNamespace};");
+}
+#>using <# Project.Namespace#>.Client.Data.Trash;
+using <# Project.Namespace#>.Client.Data.Users;
 
 namespace <# Project.Namespace#>.Client.Data;
 

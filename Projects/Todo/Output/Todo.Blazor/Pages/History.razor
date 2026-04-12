@@ -2,9 +2,9 @@
 @using System.Linq
 @using Todo.Blazor.Pages;
 @using Todo.Blazor.Services;
-@using Todo.Client.Data.Services;
+@using Todo.Client.Data.History;
 @using Todo.Client.Localisation;
-@using Todo.Contracts;
+@using Todo.Contracts.History
 @inject ILogger<History> Log
 @inject IHistoryService HistoryService
 @inject NavigationManager NavigationManager
@@ -113,7 +113,7 @@
 			historyEntries = await HistoryService.GetItemsAsync(Id);
 			expandedHistoryEntryId = historyEntries.FirstOrDefault()?.Id;
 		}
-		catch (System.Security.Authentication.AuthenticationException)
+		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
 			NavigationManager.NavigateTo(url);

@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Todo.Service.Serialization;
 using Todo.Service.Shared.Configuration;
 using Todo.Service.Features.TodoItems;
 
@@ -13,7 +13,6 @@ namespace Todo.Service.Features.TodoItems.Persistence;
 
 public class FileTodoItemRepository : ITodoItemRepository
 {
-	private static readonly JsonSerializerOptions _options = new() { PropertyNameCaseInsensitive = true };
 	private readonly string _storagePath;
 
 	public FileTodoItemRepository(FileConfiguration configuration)
@@ -29,8 +28,7 @@ public class FileTodoItemRepository : ITodoItemRepository
 		foreach (var path in Directory.GetFiles(_storagePath))
 		{
 			var bytes = File.ReadAllBytes(path);
-			var text = Encoding.UTF8.GetString(bytes);
-			var item = JsonSerializer.Deserialize<TodoItemModel>(text, _options);
+			var item = JsonSerializer.Deserialize<TodoItemModel>(bytes, ServiceJsonSerializer.Options);
 			if (item is not null)
 			{
 				items.Add(item);
@@ -50,7 +48,7 @@ public class FileTodoItemRepository : ITodoItemRepository
 		}
 
 		var bytes = await File.ReadAllBytesAsync(path).ConfigureAwait(false);
-		var item = JsonSerializer.Deserialize<TodoItemModel>(bytes, _options);
+		var item = JsonSerializer.Deserialize<TodoItemModel>(bytes, ServiceJsonSerializer.Options);
 
 		return item;
 	}
@@ -63,7 +61,7 @@ public class FileTodoItemRepository : ITodoItemRepository
 	public async Task Update(TodoItemModel model)
 	{
 		var path = Path.Combine(_storagePath, model.Id.ToString());
-		var bytes = JsonSerializer.SerializeToUtf8Bytes(model);
+		var bytes = JsonSerializer.SerializeToUtf8Bytes(model, ServiceJsonSerializer.Options);
 		await File.WriteAllBytesAsync(path, bytes).ConfigureAwait(false);
 	}
 

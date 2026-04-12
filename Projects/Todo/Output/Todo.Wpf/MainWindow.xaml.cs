@@ -1,14 +1,14 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.Security.Authentication;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Todo.Client.Data.Identity;
 using Todo.Client.MVVM;
 using Todo.ClientBase;
-using Todo.ClientBase.ViewModels;
+using Todo.ClientBase.Identity;
+using Todo.ClientBase.Shared;
 
 namespace Todo.Wpf;
 
@@ -57,7 +57,7 @@ public partial class MainWindow : Window, INavigationService, INotificationServi
 			var token = await _tokenProvider.GetToken();
 			return !string.IsNullOrWhiteSpace(token);
 		}
-		catch (AuthenticationException)
+		catch (SessionUnavailableException)
 		{
 			_tokenProvider.ClearCache();
 			await _userDataStore.SetUserData(string.Empty, string.Empty);

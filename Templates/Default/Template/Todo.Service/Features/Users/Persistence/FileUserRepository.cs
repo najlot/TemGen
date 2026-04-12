@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using <# Project.Namespace#>.Service.Serialization;
 using <# Project.Namespace#>.Service.Shared.Configuration;
 using <# Project.Namespace#>.Service.Features.Users;
 
@@ -13,7 +13,6 @@ namespace <# Project.Namespace#>.Service.Features.Users.Persistence;
 
 public class FileUserRepository : IUserRepository
 {
-	private static readonly JsonSerializerOptions _options = new() { PropertyNameCaseInsensitive = true };
 	private readonly string _storagePath;
 
 	public FileUserRepository(FileConfiguration configuration)
@@ -29,8 +28,7 @@ public class FileUserRepository : IUserRepository
 		foreach (var path in Directory.GetFiles(_storagePath))
 		{
 			var bytes = File.ReadAllBytes(path);
-			var text = Encoding.UTF8.GetString(bytes);
-			var item = JsonSerializer.Deserialize<UserModel>(text, _options);
+			var item = JsonSerializer.Deserialize<UserModel>(bytes, ServiceJsonSerializer.Options);
 			if (item is not null)
 			{
 				items.Add(item);
@@ -50,7 +48,7 @@ public class FileUserRepository : IUserRepository
 		}
 
 		var bytes = await File.ReadAllBytesAsync(path).ConfigureAwait(false);
-		var item = JsonSerializer.Deserialize<UserModel>(bytes, _options);
+		var item = JsonSerializer.Deserialize<UserModel>(bytes, ServiceJsonSerializer.Options);
 
 		return item;
 	}
@@ -60,8 +58,7 @@ public class FileUserRepository : IUserRepository
 		foreach (var path in Directory.GetFiles(_storagePath))
 		{
 			var bytes = await File.ReadAllBytesAsync(path).ConfigureAwait(false);
-			var text = Encoding.UTF8.GetString(bytes);
-			var item = JsonSerializer.Deserialize<UserModel>(text, _options);
+			var item = JsonSerializer.Deserialize<UserModel>(bytes, ServiceJsonSerializer.Options);
 
 			if (item is not null && item.DeletedAt == null && item.Username == username)
 			{
@@ -80,7 +77,7 @@ public class FileUserRepository : IUserRepository
 	public async Task Update(UserModel model)
 	{
 		var path = Path.Combine(_storagePath, model.Id.ToString());
-		var bytes = JsonSerializer.SerializeToUtf8Bytes(model);
+		var bytes = JsonSerializer.SerializeToUtf8Bytes(model, ServiceJsonSerializer.Options);
 		await File.WriteAllBytesAsync(path, bytes).ConfigureAwait(false);
 	}
 

@@ -1,19 +1,17 @@
-@page "/todoitem/{id:guid}"
+@page "/TodoItem/{id:guid}"
 @using Microsoft.Extensions.Localization;
 @using Todo.Blazor.Identity;
 @using Todo.Blazor.Services;
-@using Todo.Client.Data.Mappings;
-@using Todo.Client.Data.Models;
-@using Todo.Client.Data.Services;
 @using Todo.Client.Data;
+@using Todo.Client.Data.TodoItems;
+@using Todo.Client.Data.Users;
 @using Todo.Client.Localisation;
-@using Todo.Contracts;
-@using Todo.Contracts.Events;
+@using Todo.Contracts.TodoItems;
+
 @inject ILogger<TodoItem> Log
 @inject Najlot.Map.IMap Map;
 @inject ITodoItemService TodoItemService
 @inject IUserService UserService
-
 @inject NavigationManager NavigationManager
 @inject IStringLocalizer<TodoItemStatusLoc> TodoItemStatusLocalizer
 
@@ -137,9 +135,9 @@ else
 							<label class="form-label" for="StatusInput">@TodoItemLoc.Status</label>
 							<InputSelect id="StatusInput" class="form-select"
 								 Value="@Model.Status"
-								 ValueChanged="@((Contracts.TodoItemStatus v) => _changeTracker.TrackChange(Model, nameof(Model.Status), Model.Status, v))"
+								 ValueChanged="@((TodoItemStatus v) => _changeTracker.TrackChange(Model, nameof(Model.Status), Model.Status, v))"
 								 ValueExpression="@(() => Model.Status)" >
-						@foreach (var value in Enum.GetValues(typeof(Contracts.TodoItemStatus)))
+						@foreach (var value in Enum.GetValues(typeof(TodoItemStatus)))
 						{
 							<option value="@value">@TodoItemStatusLocalizer[$"{@value}"]</option>
 						}
@@ -262,7 +260,7 @@ else
 
 			await TodoItemService.StartEventListener();
 		}
-		catch (System.Security.Authentication.AuthenticationException)
+		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
 			NavigationManager.NavigateTo(url);
@@ -298,7 +296,7 @@ else
 
 			_changeTracker.Clear();
 		}
-		catch (System.Security.Authentication.AuthenticationException)
+		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
 			NavigationManager.NavigateTo(url);
@@ -328,7 +326,7 @@ else
 			_changeTracker.Clear();
 			NavigationManager.NavigateTo("/todoitems");
 		}
-		catch (System.Security.Authentication.AuthenticationException)
+		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
 			NavigationManager.NavigateTo(url);

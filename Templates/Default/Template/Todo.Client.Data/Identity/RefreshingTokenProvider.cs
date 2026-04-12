@@ -1,7 +1,6 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
-using System.Security.Authentication;
 using System.Threading.Tasks;
 
 namespace <# Project.Namespace#>.Client.Data.Identity;
@@ -25,7 +24,7 @@ public class RefreshingTokenProvider(IHttpClientFactory httpClientFactory, IUser
 
 		if (string.IsNullOrEmpty(_token))
 		{
-			throw new AuthenticationException();
+			throw new SessionUnavailableException();
 		}
 
 		var securityToken = new JwtSecurityToken(_token);
@@ -58,6 +57,6 @@ public class RefreshingTokenProvider(IHttpClientFactory httpClientFactory, IUser
 			}
 		}
 
-		throw new AuthenticationException();
+		throw new SessionUnavailableException();
 	}
 }<#cs SetOutputPathAndSkipOtherDefinitions()#>

@@ -1,6 +1,6 @@
 using Najlot.Audit;
 using Najlot.Audit.Attributes;
-using Todo.Contracts;
+using Todo.Contracts.TodoItems;
 
 namespace Todo.Service.Features.TodoItems;
 

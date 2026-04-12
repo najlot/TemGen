@@ -1,7 +1,8 @@
 using Najlot.Map;
 using Najlot.Map.Attributes;
 using System.Text.Json;
-using Todo.Contracts;
+using Todo.Contracts.History;
+using Todo.Service.Serialization;
 
 namespace Todo.Service.Features.History;
 
@@ -19,7 +20,7 @@ internal partial class HistoryMappings
 		}
 		else
 		{
-			to.Changes = JsonSerializer.Deserialize<HistoryChange[]>(from.Changes) ?? [];
+			to.Changes = JsonSerializer.Deserialize<HistoryChange[]>(from.Changes, ServiceJsonSerializer.Options) ?? [];
 		}
 	}
 }

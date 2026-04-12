@@ -2,8 +2,9 @@ using System.Globalization;
 using System.Text.Json;
 using Najlot.Audit;
 using Najlot.Map;
-using Todo.Contracts;
+using Todo.Contracts.History;
 using Todo.Service.Features.Auth;
+using Todo.Service.Serialization;
 using Todo.Service.Shared.Results;
 
 namespace Todo.Service.Features.History;
@@ -57,7 +58,7 @@ public class HistoryService(
 			UserId = GetCurrentUserId(),
 			Username = GetCurrentUsername(),
 			TimeStamp = DateTime.UtcNow,
-			Changes = JsonSerializer.Serialize(historyChanges)
+			Changes = JsonSerializer.Serialize(historyChanges, ServiceJsonSerializer.Options)
 		};
 
 		await repository.Insert(entry).ConfigureAwait(false);

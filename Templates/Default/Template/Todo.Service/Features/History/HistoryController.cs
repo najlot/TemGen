@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using <# Project.Namespace#>.Contracts;
+using <# Project.Namespace#>.Contracts.History;
 using <# Project.Namespace#>.Service.Shared.Results;
 
 namespace <# Project.Namespace#>.Service.Features.History;

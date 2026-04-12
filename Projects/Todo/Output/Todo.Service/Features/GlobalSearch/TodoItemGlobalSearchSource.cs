@@ -1,5 +1,5 @@
 using Najlot.Map;
-using Todo.Contracts;
+using Todo.Contracts.GlobalSearch;
 using Todo.Service.Features.Auth;
 using Todo.Service.Features.TodoItems;
 

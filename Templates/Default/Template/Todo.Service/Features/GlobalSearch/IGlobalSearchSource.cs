@@ -1,4 +1,4 @@
-using <# Project.Namespace#>.Contracts;
+using <# Project.Namespace#>.Contracts.GlobalSearch;
 
 namespace <# Project.Namespace#>.Service.Features.GlobalSearch;
 

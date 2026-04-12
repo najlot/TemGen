@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:loc="clr-namespace:Todo.Client.Localisation;assembly=Todo.Client.Localisation"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vms="clr-namespace:Todo.ClientBase.ViewModels;assembly=Todo.ClientBase"
+             xmlns:vms="clr-namespace:Todo.ClientBase.Shared;assembly=Todo.ClientBase"
              x:DataType="vms:DeleteConfirmationDialogViewModel"
              mc:Ignorable="d">
 	<Grid Background="#80000000" IsVisible="{Binding IsVisible}">

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Todo.Contracts;
+using Todo.Contracts.GlobalSearch;
 
 namespace Todo.Service.Features.GlobalSearch;
 

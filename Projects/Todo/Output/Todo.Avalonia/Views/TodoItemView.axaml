@@ -7,7 +7,7 @@
              xmlns:local="using:Todo.Avalonia.Views"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vms="clr-namespace:Todo.ClientBase.ViewModels;assembly=Todo.ClientBase"
+             xmlns:vms="clr-namespace:Todo.ClientBase.TodoItems;assembly=Todo.ClientBase"
              d:DesignHeight="750"
              d:DesignWidth="1000"
              x:DataType="vms:TodoItemViewModel"
@@ -43,79 +43,52 @@
 				            Margin="2,0"
 				            HorizontalAlignment="Center"
 				            VerticalAlignment="Center">
-					<DockPanel Margin="5">
-						<TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.Title}" />
-						<TextBox Text="{Binding Title, Mode=TwoWay}" />
-					</DockPanel>
-					<DockPanel Margin="5">
-						<TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.Content}" />
-						<TextBox Text="{Binding Content, Mode=TwoWay}" />
-					</DockPanel>
-					<DockPanel Margin="5">
-						<TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.CreatedAt}" />
-						<StackPanel Orientation="Horizontal">
-							<DatePicker SelectedDate="{Binding CreatedAtDate, Mode=TwoWay}" />
-							<TimePicker Width="110"
-							            Margin="8,0,0,0"
-							            ClockIdentifier="24HourClock"
-							            SelectedTime="{Binding CreatedAtTime, Mode=TwoWay}" />
-						</StackPanel>
-					</DockPanel>
-					<DockPanel Margin="5">
-						<TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.CreatedBy}" />
-						<TextBox Text="{Binding CreatedBy, Mode=TwoWay}" />
-					</DockPanel>
-					<DockPanel Margin="5">
-						<TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.AssignedTo}" />
-						<ComboBox ItemsSource="{Binding AvailableUsers}" SelectedValue="{Binding AssignedToId}" SelectedValueBinding="{Binding Id}">
-							<ComboBox.ItemTemplate>
-								<DataTemplate>
-									<TextBlock Text="{Binding Username}" />
-								</DataTemplate>
-							</ComboBox.ItemTemplate>
-						</ComboBox>
-					</DockPanel>
-					<DockPanel Margin="5">
-						<TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.Status}" />
-						<ComboBox ItemsSource="{Binding AvailableTodoItemStatus}" SelectedItem="{Binding Status}" />
-					</DockPanel>
-					<DockPanel Margin="5">
-						<TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.ChangedAt}" />
-						<StackPanel Orientation="Horizontal">
-							<DatePicker SelectedDate="{Binding ChangedAtDate, Mode=TwoWay}" />
-							<TimePicker Width="110"
-							            Margin="8,0,0,0"
-							            ClockIdentifier="24HourClock"
-							            SelectedTime="{Binding ChangedAtTime, Mode=TwoWay}" />
-						</StackPanel>
-					</DockPanel>
-					<DockPanel Margin="5">
-						<TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.ChangedBy}" />
-						<TextBox Text="{Binding ChangedBy, Mode=TwoWay}" />
-					</DockPanel>
-					<DockPanel Margin="5">
-						<TextBlock MinWidth="75" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.Priority}" />
-						<TextBox Text="{Binding Priority, Mode=TwoWay}" />
-					</DockPanel>
-					<DockPanel>
-						<DockPanel DockPanel.Dock="Top">
-							<Button Margin="5" Command="{Binding AddChecklistTaskCommand}" DockPanel.Dock="Right">
-								<materialIcons:MaterialIcon Width="18" Height="18" Kind="Add" />
-							</Button>
+					<TextBlock Text="{x:Static loc:TodoItemLoc.Title}" />
+					<TextBox Margin="0,0,0,8" VerticalAlignment="Stretch" Text="{Binding Title, Mode=TwoWay}" />
+					<TextBlock Text="{x:Static loc:TodoItemLoc.Content}" />
+					<TextBox Margin="0,0,0,8" VerticalAlignment="Stretch" Text="{Binding Content, Mode=TwoWay}" />
+					<TextBlock Text="{x:Static loc:TodoItemLoc.CreatedAt}" />
+					<DatePicker Margin="0,0,0,8" SelectedDate="{Binding CreatedAtDate, Mode=TwoWay}" />
+					<TimePicker ClockIdentifier="24HourClock" Margin="0,0,0,8"
+							    SelectedTime="{Binding CreatedAtTime, Mode=TwoWay}" />
+					<TextBlock Text="{x:Static loc:TodoItemLoc.CreatedBy}" />
+					<TextBox Margin="0,0,0,8" VerticalAlignment="Stretch" Text="{Binding CreatedBy, Mode=TwoWay}" />
+					<TextBlock Text="{x:Static loc:TodoItemLoc.AssignedTo}" />
+					<ComboBox Margin="0,0,0,8" ItemsSource="{Binding AvailableUsers}" SelectedValue="{Binding AssignedToId}" SelectedValueBinding="{Binding Id}">
+						<ComboBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Username}" />
+							</DataTemplate>
+						</ComboBox.ItemTemplate>
+					</ComboBox>
+					<TextBlock Text="{x:Static loc:TodoItemLoc.Status}" />
+					<ComboBox Margin="0,0,0,8" ItemsSource="{Binding AvailableTodoItemStatus}" SelectedItem="{Binding Status}" />
+					<TextBlock Text="{x:Static loc:TodoItemLoc.ChangedAt}" />
+					<DatePicker Margin="0,0,0,8" SelectedDate="{Binding ChangedAtDate, Mode=TwoWay}" />
+					<TimePicker ClockIdentifier="24HourClock" Margin="0,0,0,8"
+							    SelectedTime="{Binding ChangedAtTime, Mode=TwoWay}" />
+					<TextBlock Text="{x:Static loc:TodoItemLoc.ChangedBy}" />
+					<TextBox Margin="0,0,0,8" VerticalAlignment="Stretch" Text="{Binding ChangedBy, Mode=TwoWay}" />
+					<TextBlock Text="{x:Static loc:TodoItemLoc.Priority}" />
+					<TextBox Margin="0,0,0,8" VerticalAlignment="Stretch" Text="{Binding Priority, Mode=TwoWay}" />
+					<DockPanel DockPanel.Dock="Top">
+						<Button Margin="5" Command="{Binding AddChecklistTaskCommand}" DockPanel.Dock="Right">
+							<materialIcons:MaterialIcon Width="24" Height="24" Kind="Add" />
+						</Button>
 
-							<Border Margin="0,5" Padding="5" Background="{StaticResource BackgroundColor}">
-								<TextBlock Foreground="{StaticResource ForegroundColor}" Text="{x:Static loc:TodoItemLoc.Checklist}" />
-							</Border>
-						</DockPanel>
+						<Border Margin="0,8" Padding="5" Background="{StaticResource BackgroundColor}">
+							<TextBlock Foreground="{StaticResource ForegroundColor}" Text="{x:Static loc:TodoItemLoc.Checklist}" />
+						</Border>
+					</DockPanel>
 
-						<ItemsControl ItemsSource="{Binding Checklist}">
-							<ItemsControl.ItemTemplate>
-								<DataTemplate x:DataType="vms:ChecklistTaskViewModel">
-									<Border Margin="0,0,5,8"
-									        Padding="8"
-									        BorderBrush="LightGray"
-									        BorderThickness="1">
-										<StackPanel>
+					<ItemsControl ItemsSource="{Binding Checklist}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate x:DataType="vms:ChecklistTaskViewModel">
+								<Border Margin="0,0,5,8"
+										Padding="8"
+										BorderBrush="LightGray"
+										BorderThickness="1">
+									<StackPanel>
 											<DockPanel Margin="5">
 												<TextBlock MinWidth="75" />
 												<CheckBox Content="{x:Static loc:ChecklistTaskLoc.IsDone}" IsChecked="{Binding IsDone}" />
@@ -126,19 +99,18 @@
 											</DockPanel>
 
 											<Button HorizontalAlignment="Right"
-											        Background="Transparent"
-											        BorderThickness="0"
-											        Command="{Binding $parent[ItemsControl].((vms:TodoItemViewModel)DataContext).DeleteChecklistTaskCommand}"
-											        CommandParameter="{Binding .}"
-											        Foreground="{StaticResource BackgroundColor}">
-												<materialIcons:MaterialIcon Width="14" Height="14" Kind="Delete" />
+													Background="Transparent"
+													BorderThickness="0"
+													Command="{Binding $parent[ItemsControl].((vms:TodoItemViewModel)DataContext).DeleteChecklistTaskCommand}"
+													CommandParameter="{Binding .}"
+													Foreground="{StaticResource BackgroundColor}">
+												<materialIcons:MaterialIcon Width="24" Height="24" Kind="Delete" />
 											</Button>
-										</StackPanel>
-									</Border>
-								</DataTemplate>
-							</ItemsControl.ItemTemplate>
-						</ItemsControl>
-					</DockPanel>
+									</StackPanel>
+								</Border>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
 
 				</StackPanel>
 			</ScrollViewer>

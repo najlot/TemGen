@@ -11,6 +11,8 @@ public abstract class AbstractValidationViewModel : AbstractViewModel, INotifyDa
 {
 	public record ValidationResult(string PropertyName, string Text);
 
+	public IPropertyChangeVisitor? ChangeVisitor { get; set; }
+
 	public bool HasErrors { get; private set => base.Set(ref field, value, RaiseHasErrorsChanged); }
 
 	public event Action? HasErrorsChanged;
@@ -33,10 +35,16 @@ public abstract class AbstractValidationViewModel : AbstractViewModel, INotifyDa
 
 	protected override bool Set<T>(ref T oldValue, T newValue, [CallerMemberName] string? propertyName = null)
 	{
+		var previous = oldValue;
 		if (base.Set(ref oldValue, newValue, propertyName))
 		{
 			if (!ShouldIgnorePropertyForChangesAndValidation(propertyName))
 			{
+				if (ChangeVisitor is { IsApplyingChange: false } visitor && !string.IsNullOrEmpty(propertyName))
+				{
+					visitor.Visit(this, propertyName, previous, newValue);
+				}
+
 				RunValidation(propertyName);
 			}
 
@@ -55,9 +63,6 @@ public abstract class AbstractValidationViewModel : AbstractViewModel, INotifyDa
 		=> string.IsNullOrWhiteSpace(propertyName) || propertiesToValidate.Any(p => p == propertyName);
 
 	protected virtual bool ShouldIgnorePropertyForChangesAndValidation(string? propertyName) => propertyName is nameof(HasErrors);
-
-	protected override bool ShouldTrackChange(string? propertyName)
-		=> !ShouldIgnorePropertyForChangesAndValidation(propertyName);
 
 	private void RunValidation(string? propertyName)
 	{

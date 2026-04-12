@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Text.Json;
+using Todo.Service.Serialization;
 
 namespace Todo.Service.Shared.Realtime;
 
@@ -29,14 +30,14 @@ public class Publisher(IHubContext<MessageHub> hub) : IPublisher, IOutboxPublish
 
 	public Task PublishAsync<T>(T message) where T : notnull
 	{
-		var json = JsonSerializer.Serialize(message);
+		var json = JsonSerializer.Serialize(message, ServiceJsonSerializer.Options);
 		_messages.Add(new OutboxMessage(typeof(T).Name, json));
 		return Task.CompletedTask;
 	}
 
 	public Task PublishToUserAsync<T>(string userId, T message) where T : notnull
 	{
-		var json = JsonSerializer.Serialize(message);
+		var json = JsonSerializer.Serialize(message, ServiceJsonSerializer.Options);
 		_messages.Add(new OutboxMessage(typeof(T).Name, json, userId));
 		return Task.CompletedTask;
 	}

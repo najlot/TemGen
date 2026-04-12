@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using <# Project.Namespace#>.Contracts;
-using <# Project.Namespace#>.Contracts.Commands;
-using <# Project.Namespace#>.Contracts.ListItems;
+using <# Project.Namespace#>.Contracts.Users;
 using <# Project.Namespace#>.Service.Infrastructure.Persistence;
 using <# Project.Namespace#>.Service.Shared.Results;
 

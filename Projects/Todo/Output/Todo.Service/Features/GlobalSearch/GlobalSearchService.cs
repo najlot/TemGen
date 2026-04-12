@@ -1,4 +1,4 @@
-using Todo.Contracts;
+using Todo.Contracts.GlobalSearch;
 
 namespace Todo.Service.Features.GlobalSearch;
 

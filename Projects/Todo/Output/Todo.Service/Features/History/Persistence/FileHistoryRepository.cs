@@ -1,12 +1,11 @@
-using System.Text;
 using System.Text.Json;
+using Todo.Service.Serialization;
 using Todo.Service.Shared.Configuration;
 
 namespace Todo.Service.Features.History.Persistence;
 
 public class FileHistoryRepository : IHistoryRepository
 {
-	private static readonly JsonSerializerOptions _options = new() { PropertyNameCaseInsensitive = true };
 	private readonly string _storagePath;
 
 	public FileHistoryRepository(FileConfiguration configuration)
@@ -22,8 +21,7 @@ public class FileHistoryRepository : IHistoryRepository
 		foreach (var path in Directory.GetFiles(_storagePath))
 		{
 			var bytes = File.ReadAllBytes(path);
-			var text = Encoding.UTF8.GetString(bytes);
-			var item = JsonSerializer.Deserialize<HistoryModel>(text, _options);
+			var item = JsonSerializer.Deserialize<HistoryModel>(bytes, ServiceJsonSerializer.Options);
 			if (item is not null)
 			{
 				items.Add(item);
@@ -64,7 +62,7 @@ public class FileHistoryRepository : IHistoryRepository
 		}
 
 		var bytes = await File.ReadAllBytesAsync(path).ConfigureAwait(false);
-		return JsonSerializer.Deserialize<HistoryModel>(bytes, _options);
+		return JsonSerializer.Deserialize<HistoryModel>(bytes, ServiceJsonSerializer.Options);
 	}
 
 	public Task Insert(HistoryModel model)
@@ -75,7 +73,7 @@ public class FileHistoryRepository : IHistoryRepository
 	public async Task Update(HistoryModel model)
 	{
 		var path = Path.Combine(_storagePath, model.Id.ToString());
-		var bytes = JsonSerializer.SerializeToUtf8Bytes(model);
+		var bytes = JsonSerializer.SerializeToUtf8Bytes(model, ServiceJsonSerializer.Options);
 		await File.WriteAllBytesAsync(path, bytes).ConfigureAwait(false);
 	}
 

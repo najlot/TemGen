@@ -1,4 +1,5 @@
-using <# Project.Namespace#>.Contracts;
+using <# Project.Namespace#>.Contracts.Trash;
+using <# Project.Namespace#>.Contracts.Shared;
 using <# Project.Namespace#>.Service.Shared.Results;
 
 namespace <# Project.Namespace#>.Service.Features.Trash;

@@ -1,10 +1,9 @@
 @page "/trash"
 @using Todo.Blazor.Services;
-@using Todo.Client.Data.Models;
-@using Todo.Client.Data.Services;
+@using Todo.Client.Data.Trash;
 @using Todo.Client.Localisation;
-@using Todo.Contracts;
-@using Todo.Contracts.Events;
+@using Todo.Contracts.Trash
+@using Todo.Contracts.Shared
 @inject ILogger<Trash> Log
 @inject ITrashService TrashService
 @inject NavigationManager NavigationManager
@@ -90,7 +89,7 @@ else
 			items = [.. await TrashService.GetItemsAsync().ConfigureAwait(false)];
 			await TrashService.StartEventListener().ConfigureAwait(false);
 		}
-		catch (System.Security.Authentication.AuthenticationException)
+		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
 			NavigationManager.NavigateTo(url);

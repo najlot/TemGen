@@ -6,7 +6,7 @@
              xmlns:local="using:<#cs Write(Project.Namespace)#>.Avalonia.Views"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vms="clr-namespace:<#cs Write(Project.Namespace)#>.ClientBase.ViewModels;assembly=<#cs Write(Project.Namespace)#>.ClientBase"
+             xmlns:vms="clr-namespace:<#cs Write(Project.Namespace)#>.ClientBase.GlobalSearch;assembly=<#cs Write(Project.Namespace)#>.ClientBase"
              d:DesignHeight="700"
              d:DesignWidth="1000"
              x:DataType="vms:GlobalSearchViewModel"

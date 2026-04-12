@@ -1,21 +1,21 @@
 @page "/<#cs 
-if (!Definition.Name.ToLower().EndsWith("entry"))
+if (!Definition.Name.EndsWith("entry"))
 {
-	Write(Definition.Name.ToLower());
+	Write(Definition.Name);
 }
 else
 {
-	Write(Definition.Name.ToLower()[0..^5] + "entrie");
+	Write(Definition.Name[0..^5] + "entrie");
 }
 #>s"
 @using Microsoft.Extensions.Localization;
 @using <# Project.Namespace#>.Blazor.Identity;
 @using <# Project.Namespace#>.Blazor.Services;
-@using <# Project.Namespace#>.Client.Data.Models;
-@using <# Project.Namespace#>.Client.Data.Services;
 @using <# Project.Namespace#>.Client.Data;
+@using <# Project.Namespace#>.Client.Data.<# Definition.Name#>s;
 @using <# Project.Namespace#>.Client.Localisation;
-@using <# Project.Namespace#>.Contracts.Events;
+@using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
+
 @inject ILogger<<# Definition.Name#>s> Log
 @inject Najlot.Map.IMap Map
 @inject I<# Definition.Name#>Service <# Definition.Name#>Service
@@ -94,7 +94,7 @@ else
 
 			await <# Definition.Name#>Service.StartEventListener();
 		}
-		catch (System.Security.Authentication.AuthenticationException)
+		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
 			NavigationManager.NavigateTo(url);

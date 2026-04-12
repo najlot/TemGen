@@ -1,9 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
+using Todo.Client.Data.GlobalSearch;
+using Todo.Client.Data.History;
 using Todo.Client.Data.Identity;
-using Todo.Client.Data.Repositories;
-using Todo.Client.Data.Repositories.Implementation;
-using Todo.Client.Data.Services;
-using Todo.Client.Data.Services.Implementation;
+using Todo.Client.Data.Notes;
+using Todo.Client.Data.TodoItems;
+using Todo.Client.Data.Trash;
+using Todo.Client.Data.Users;
 
 namespace Todo.Client.Data;
 

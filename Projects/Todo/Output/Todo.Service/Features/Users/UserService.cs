@@ -1,10 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Najlot.Map;
-using Todo.Contracts;
-using Todo.Contracts.Commands;
-using Todo.Contracts.Events;
-using Todo.Contracts.ListItems;
+using Todo.Contracts.Users;
 using Todo.Service.Features.Auth;
 using Todo.Service.Features.History;
 using Todo.Service.Shared.Realtime;

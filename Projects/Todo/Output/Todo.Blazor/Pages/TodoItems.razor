@@ -1,12 +1,12 @@
-@page "/todoitems"
+@page "/TodoItems"
 @using Microsoft.Extensions.Localization;
 @using Todo.Blazor.Identity;
 @using Todo.Blazor.Services;
-@using Todo.Client.Data.Models;
-@using Todo.Client.Data.Services;
 @using Todo.Client.Data;
+@using Todo.Client.Data.TodoItems;
 @using Todo.Client.Localisation;
-@using Todo.Contracts.Events;
+@using Todo.Contracts.TodoItems;
+
 @inject ILogger<TodoItems> Log
 @inject Najlot.Map.IMap Map
 @inject ITodoItemService TodoItemService
@@ -80,7 +80,7 @@ else
 
 			await TodoItemService.StartEventListener();
 		}
-		catch (System.Security.Authentication.AuthenticationException)
+		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
 			NavigationManager.NavigateTo(url);

@@ -1,6 +1,4 @@
-using Todo.Contracts;
-using Todo.Contracts.Commands;
-using Todo.Contracts.ListItems;
+using Todo.Contracts.Users;
 using Todo.Service.Shared.Results;
 
 namespace Todo.Service.Features.Users;
