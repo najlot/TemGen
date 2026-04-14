@@ -1,6 +1,8 @@
 using MongoDB.Bson.Serialization.Attributes;
 using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
-using <# Project.Namespace#>.Service.Infrastructure.Persistence;
+<#if NeedsSharedOwnedChildren() || NeedsSharedArrayChildren() || NeedsSharedEnumerationChildren()
+#>using <# Project.Namespace#>.Contracts.Shared;
+<#end#>using <# Project.Namespace#>.Service.Infrastructure.Persistence;
 
 namespace <# Project.Namespace#>.Service.Features.<# Definition.Name#>s;
 

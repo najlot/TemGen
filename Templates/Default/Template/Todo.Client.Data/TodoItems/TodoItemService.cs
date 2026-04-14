@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using <# Project.Namespace#>.Client.Data.Serialization;
 using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
 
 namespace <# Project.Namespace#>.Client.Data.<# Definition.Name#>s;
@@ -42,7 +43,7 @@ public sealed class <# Definition.Name#>Service(
 
 			_subscriptions.Add(connection.On<string>(typeof(<# Definition.Name#>Created).Name, async param =>
 			{
-				if (ItemCreated is { } handler && JsonSerializer.Deserialize<<# Definition.Name#>Created>(param) is { } message)
+				if (ItemCreated is { } handler && JsonSerializer.Deserialize<<# Definition.Name#>Created>(param, ClientDataJsonSerializer.Options) is { } message)
 				{
 					foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<<# Definition.Name#>Created>>())
 					{
@@ -53,7 +54,7 @@ public sealed class <# Definition.Name#>Service(
 
 			_subscriptions.Add(connection.On<string>(typeof(<# Definition.Name#>Updated).Name, async param =>
 			{
-				if (ItemUpdated is { } handler && JsonSerializer.Deserialize<<# Definition.Name#>Updated>(param) is { } message)
+				if (ItemUpdated is { } handler && JsonSerializer.Deserialize<<# Definition.Name#>Updated>(param, ClientDataJsonSerializer.Options) is { } message)
 				{
 					foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<<# Definition.Name#>Updated>>())
 					{
@@ -64,7 +65,7 @@ public sealed class <# Definition.Name#>Service(
 
 			_subscriptions.Add(connection.On<string>(typeof(<# Definition.Name#>Deleted).Name, async param =>
 			{
-				if (ItemDeleted is { } handler && JsonSerializer.Deserialize<<# Definition.Name#>Deleted>(param) is { } message)
+				if (ItemDeleted is { } handler && JsonSerializer.Deserialize<<# Definition.Name#>Deleted>(param, ClientDataJsonSerializer.Options) is { } message)
 				{
 					foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<<# Definition.Name#>Deleted>>())
 					{

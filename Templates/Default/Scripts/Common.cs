@@ -95,12 +95,24 @@ void MoveChildToFeatureFolder()
     RelativePath = RelativePath.Replace(toReplace, replaced);
 }
 
-IEnumerable<string> GetDefinitionUsageNames(string definitionName)
+IEnumerable<string> GetDefinitionUsageNames(string definitionName, int depth = 0)
 {
-    return Definitions
+    var usages = Definitions
         .Where(d => d.Name != definitionName)
-        .Where(d => d.Entries.Any(entry => entry.EntryType == definitionName))
-        .Select(d => d.Name);
+        .Where(d => d.Entries.Any(entry => entry.EntryType == definitionName));
+
+    foreach (var usage in usages)
+    {
+        if (usage.IsOwnedType || usage.IsArray)
+        {
+            foreach (var parentUsage in GetDefinitionUsageNames(usage.Name, depth + 1))
+            {
+                yield return parentUsage;
+            }
+        }
+
+        yield return usage.Name;
+    }
 }
 
 string GetChildFeatureFolderName(string definitionName)
@@ -110,3 +122,18 @@ string GetChildFeatureFolderName(string definitionName)
         ? FixPathPluralization(usages[0] + "s")
         : "Shared";
 }
+
+bool NeedsSharedOwnedChildren() => Entries
+    .Where(e => e.IsOwnedType)
+    .Where(e => GetDefinitionUsageNames(e.EntryType).Count() > 1)
+    .Any();
+
+bool NeedsSharedArrayChildren() => Entries
+    .Where(e => e.IsArray)
+    .Where(e => GetDefinitionUsageNames(e.EntryType).Count() > 1)
+    .Any();
+
+bool NeedsSharedEnumerationChildren() => Entries
+    .Where(e => e.IsEnumeration)
+    .Where(e => GetDefinitionUsageNames(e.EntryType).Count() > 1)
+    .Any();

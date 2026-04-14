@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+<#cs#>
 namespace <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
 
 public sealed class <# Definition.Name#>ListItem

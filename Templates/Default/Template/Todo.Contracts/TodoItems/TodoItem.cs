@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-
+<#if !Definition.IsEnumeration
+	&& (NeedsSharedEnumerationChildren() || NeedsSharedOwnedChildren() || NeedsSharedArrayChildren())
+#>using <# Project.Namespace#>.Contracts.Shared;
+<#end#>
 namespace <# Project.Namespace#>.Contracts.<#if
 Definition.IsOwnedType || Definition.IsArray || Definition.IsEnumeration
 #><#cs Write(GetChildFeatureFolderName(Definition.Name))#><#else#><# Definition.Name#>s<#end#>;

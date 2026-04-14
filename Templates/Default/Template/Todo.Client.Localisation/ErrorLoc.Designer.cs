@@ -39,7 +39,7 @@ namespace <# Project.Namespace#>.Client.Localisation {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Todo.Client.Localisation.ErrorLoc", typeof(ErrorLoc).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("<# Project.Namespace#>.Client.Localisation.ErrorLoc", typeof(ErrorLoc).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

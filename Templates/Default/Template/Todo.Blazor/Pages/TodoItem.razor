@@ -9,7 +9,9 @@
 #>@using <# Project.Namespace#>.Client.Data.<# entry.ReferenceType#>s;
 <#end#><#end#>@using <# Project.Namespace#>.Client.Localisation;
 @using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
-
+<#if NeedsSharedOwnedChildren() || NeedsSharedArrayChildren() || NeedsSharedEnumerationChildren()
+#>@using <# Project.Namespace#>.Contracts.Shared;
+<#end#>
 @inject ILogger<<# Definition.Name#>> Log
 @inject Najlot.Map.IMap Map;
 @inject I<# Definition.Name#>Service <# Definition.Name#>Service<#if Entries.Any(e => e.IsReference)
@@ -214,7 +216,7 @@ else
 	private <# Definition.Name#>Model? Model;
 	private readonly ChangeTracker _changeTracker = new();
 
-<#for entry in Entries.Where(e => e.IsReference)
+<#for entry in Entries.Where(e => e.IsReference).DistinctBy(e => e.ReferenceType)
 #>	private IEnumerable<<# entry.ReferenceType#>ListItemModel> _<# entry.ReferenceTypeLow#>s = [];
 <#end#>
 	private void NavigateToHistory()
@@ -241,7 +243,7 @@ else
 				Model = await <# Definition.Name#>Service.GetItemAsync(Id);
 			}
 
-<#for entry in Entries.Where(e => e.IsReference)
+<#for entry in Entries.Where(e => e.IsReference).DistinctBy(e => e.ReferenceType)
 #>			_<# entry.ReferenceTypeLow#>s = await <# entry.ReferenceType#>Service.GetItemsAsync();
 <#end#>
 			<# Definition.Name#>Service.ItemUpdated += Handle;

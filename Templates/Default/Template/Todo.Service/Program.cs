@@ -1,21 +1,12 @@
 using Najlot.Audit;
 using Najlot.Log;
-using <# Project.Namespace#>.Service.Features.History;
-using <# Project.Namespace#>.Service.Features.Users;
 using <# Project.Namespace#>.Service.Shared.Configuration;
 using <# Project.Namespace#>.Service.Infrastructure.Persistence;
 using <# Project.Namespace#>.Service.Infrastructure.Persistence.File;
 using <# Project.Namespace#>.Service.Infrastructure.Persistence.LiteDb;
 using <# Project.Namespace#>.Service.Infrastructure.Persistence.MongoDb;
 using <# Project.Namespace#>.Service.Infrastructure.Persistence.MySql;
-<#cs foreach (var definition in Definitions.Where(d => !(d.IsEnumeration
-|| d.IsArray
-|| d.IsOwnedType
-|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))).OrderBy(d => d.Name))
-{
-	WriteLine($"using {Project.Namespace}.Service.Features.{definition.Name}s;");
-}
-#>
+
 namespace <# Project.Namespace#>.Service;
 
 internal static class Program

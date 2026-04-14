@@ -1,16 +1,18 @@
 @using Microsoft.Extensions.Localization;
 @using <# Project.Namespace#>.Blazor.Services;
-@using <# Project.Namespace#>.Client.Data.Models;
-@using <# Project.Namespace#>.Client.Data.Services;
+@using <# Project.Namespace#>.Client.Data.<#if
+Definition.IsOwnedType || Definition.IsArray
+#><#cs Write(GetChildFeatureFolderName(Definition.Name))#><#else#><# Definition.Name#>s<#end#>;
 @using <# Project.Namespace#>.Client.Localisation;
-@using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
+<#if NeedsSharedEnumerationChildren()
+#>@using <# Project.Namespace#>.Contracts.Shared;
+<#end#>
 @inject ILogger<<# Definition.Name#>Editor> Log
-<#for entry in Entries.Where(e => e.IsReference)
+<#for entry in Entries.Where(e => e.IsReference).DistinctBy(e => e.ReferenceType)
 #>@inject I<# entry.ReferenceType#>Service <# entry.ReferenceType#>Service
-<#end#><#for entry in Entries.Where(e => e.IsEnumeration)
+<#end#><#for entry in Entries.Where(e => e.IsEnumeration).DistinctBy(e => e.EntryType)
 #>@inject IStringLocalizer<<# entry.EntryType#>Loc> <# entry.EntryType#>Localizer
 <#end#>
-
 @if (Model is not null)
 {
 <#for entry in Entries.Where(e => !e.IsArray)
@@ -127,17 +129,17 @@
 #>	private IEnumerable<<# entry.ReferenceType#>ListItemModel> _<# entry.ReferenceTypeLow#>s = [];
 <#end#>
 	protected override async Task OnInitializedAsync()
-	{
+	{<#if Entries.Any(e => e.IsReference)#>
 		try
 		{
-<#for entry in Entries.Where(e => e.IsReference)
+<#for entry in Entries.Where(e => e.IsReference).DistinctBy(e => e.ReferenceType)
 #>			_<# entry.ReferenceTypeLow#>s = await <# entry.ReferenceType#>Service.GetItemsAsync();
 <#end#>		}
 		catch (Exception ex)
 		{
 			Log.LogError(ex, "Error loading owned type editor for <# Definition.Name#>.");
 			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotLoad);
-		}
+		}<#end#>
 	}
 <#for entry in Entries.Where(e => e.IsArray)
 #>

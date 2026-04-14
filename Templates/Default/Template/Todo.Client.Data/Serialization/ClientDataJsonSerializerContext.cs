@@ -36,7 +36,10 @@ namespace <# Project.Namespace#>.Client.Data.Serialization;
 <#end#><#for definition in Definitions.Where(d => !(d.IsArray || d.IsEnumeration || d.IsOwnedType))
 #>[JsonSerializable(typeof(<# definition.Name#>ListItem[]))]
 [JsonSerializable(typeof(Create<# definition.Name#>))]
+[JsonSerializable(typeof(<# definition.Name#>Created))]
 [JsonSerializable(typeof(Update<# definition.Name#>))]
+[JsonSerializable(typeof(<# definition.Name#>Updated))]
+[JsonSerializable(typeof(<# definition.Name#>Deleted))]
 <#end#><#for definition in Definitions.Where(d => !(d.IsArray || d.IsEnumeration || d.IsOwnedType || d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
 #>[JsonSerializable(typeof(<# definition.Name#>Filter))]
 <#end#>public partial class ClientDataJsonSerializerContext : JsonSerializerContext

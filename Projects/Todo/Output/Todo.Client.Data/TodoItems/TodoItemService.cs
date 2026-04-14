@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Todo.Client.Data.Serialization;
 using Todo.Contracts.TodoItems;
 
 namespace Todo.Client.Data.TodoItems;
@@ -42,7 +43,7 @@ public sealed class TodoItemService(
 
 			_subscriptions.Add(connection.On<string>(typeof(TodoItemCreated).Name, async param =>
 			{
-				if (ItemCreated is { } handler && JsonSerializer.Deserialize<TodoItemCreated>(param) is { } message)
+				if (ItemCreated is { } handler && JsonSerializer.Deserialize<TodoItemCreated>(param, ClientDataJsonSerializer.Options) is { } message)
 				{
 					foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<TodoItemCreated>>())
 					{
@@ -53,7 +54,7 @@ public sealed class TodoItemService(
 
 			_subscriptions.Add(connection.On<string>(typeof(TodoItemUpdated).Name, async param =>
 			{
-				if (ItemUpdated is { } handler && JsonSerializer.Deserialize<TodoItemUpdated>(param) is { } message)
+				if (ItemUpdated is { } handler && JsonSerializer.Deserialize<TodoItemUpdated>(param, ClientDataJsonSerializer.Options) is { } message)
 				{
 					foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<TodoItemUpdated>>())
 					{
@@ -64,7 +65,7 @@ public sealed class TodoItemService(
 
 			_subscriptions.Add(connection.On<string>(typeof(TodoItemDeleted).Name, async param =>
 			{
-				if (ItemDeleted is { } handler && JsonSerializer.Deserialize<TodoItemDeleted>(param) is { } message)
+				if (ItemDeleted is { } handler && JsonSerializer.Deserialize<TodoItemDeleted>(param, ClientDataJsonSerializer.Options) is { } message)
 				{
 					foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<TodoItemDeleted>>())
 					{

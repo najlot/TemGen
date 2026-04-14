@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using <# Project.Namespace#>.Client.MVVM;
-
+<#if NeedsSharedEnumerationChildren()
+#>using <# Project.Namespace#>.Contracts.Shared;
+<#end#>
 namespace <# Project.Namespace#>.ClientBase.<#if Definition.IsArray
 #><#cs Write(GetChildFeatureFolderName(Definition.Name))#><#else#><# Definition.Name#>s<#end#>;
 

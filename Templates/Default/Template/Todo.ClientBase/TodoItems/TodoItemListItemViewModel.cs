@@ -1,6 +1,8 @@
 using System;
 using <# Project.Namespace#>.Client.MVVM;
-
+<#if Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2).Any(e => e.IsEnumeration)
+#>using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
+<#end#>
 namespace <# Project.Namespace#>.ClientBase.<# Definition.Name#>s;
 
 public class <# Definition.Name#>ListItemViewModel : AbstractViewModel

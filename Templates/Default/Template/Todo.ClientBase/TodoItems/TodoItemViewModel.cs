@@ -16,7 +16,9 @@ using <# Project.Namespace#>.Client.MVVM;
 using <# Project.Namespace#>.ClientBase.History;
 using <# Project.Namespace#>.ClientBase.Shared;
 using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
-
+<#if NeedsSharedEnumerationChildren()
+#>using <# Project.Namespace#>.Contracts.Shared;
+<#end#>
 namespace <# Project.Namespace#>.ClientBase.<# Definition.Name#>s;
 
 public <#if Entries.Any(e => e.IsArray)

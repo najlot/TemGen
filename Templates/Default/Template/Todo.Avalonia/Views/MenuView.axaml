@@ -65,29 +65,22 @@
 					</Border>
 
 					<!--  Navigation Items  -->
-					<Button Classes="NavMenuItem" Command="{Binding NavigateToTodoItems}">
+<#csfor definition in Definitions.Where(d => !d.IsOwnedType
+&& !d.IsArray
+&& !d.IsEnumeration
+&& !d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))
+#>					<Button Classes="NavMenuItem" Command="{Binding NavigateTo<#cs Write(definition.Name)#>s}">
 						<Grid ColumnDefinitions="Auto,*">
 							<materialIcons:MaterialIcon Grid.Column="0"
 							                            Width="24"
 							                            Height="24"
 							                            Margin="0,0,12,0"
 							                            Kind="Note" />
-							<TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Static loc:TodoItemLoc.TodoItems}" />
+							<TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Static loc:<#cs Write(definition.Name)#>Loc.<#cs Write(definition.Name)#>s}" />
 						</Grid>
 					</Button>
-
-					<Button Classes="NavMenuItem" Command="{Binding NavigateToNotes}">
-						<Grid ColumnDefinitions="Auto,*">
-							<materialIcons:MaterialIcon Grid.Column="0"
-							                            Width="24"
-							                            Height="24"
-							                            Margin="0,0,12,0"
-							                            Kind="Note" />
-							<TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Static loc:NoteLoc.Notes}" />
-						</Grid>
-					</Button>
-
-					<Button Classes="NavMenuItem" Command="{Binding NavigateToTrash}">
+<#end
+#>					<Button Classes="NavMenuItem" Command="{Binding NavigateToTrash}">
 						<Grid ColumnDefinitions="Auto,*">
 							<materialIcons:MaterialIcon Grid.Column="0"
 							                            Width="24"

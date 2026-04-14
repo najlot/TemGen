@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using <# Project.Namespace#>.Contracts.<#if
+<#if NeedsSharedOwnedChildren() || NeedsSharedArrayChildren()
+#>using <# Project.Namespace#>.Client.Data.Shared;
+<#end#>using <# Project.Namespace#>.Contracts.<#if
 Definition.IsOwnedType || Definition.IsArray
 #><#cs Write(GetChildFeatureFolderName(Definition.Name))#><#else#><# Definition.Name#>s<#end#>;
-
+<#if NeedsSharedEnumerationChildren()
+#>using <# Project.Namespace#>.Contracts.Shared;
+<#end#>
 namespace <# Project.Namespace#>.Client.Data.<#if
 Definition.IsOwnedType || Definition.IsArray
 #><#cs Write(GetChildFeatureFolderName(Definition.Name))#><#else#><# Definition.Name#>s<#end#>;

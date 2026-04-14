@@ -1,15 +1,11 @@
 using Najlot.Audit;
 using Najlot.Log;
-using Todo.Service.Features.History;
-using Todo.Service.Features.Users;
 using Todo.Service.Shared.Configuration;
 using Todo.Service.Infrastructure.Persistence;
 using Todo.Service.Infrastructure.Persistence.File;
 using Todo.Service.Infrastructure.Persistence.LiteDb;
 using Todo.Service.Infrastructure.Persistence.MongoDb;
 using Todo.Service.Infrastructure.Persistence.MySql;
-using Todo.Service.Features.Notes;
-using Todo.Service.Features.TodoItems;
 
 namespace Todo.Service;
 
