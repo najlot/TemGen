@@ -36,7 +36,7 @@
 						<TextBox Classes="revealPasswordButton"
 						         PasswordChar="•"
 						         Text="{Binding Password, Mode=TwoWay}"
-						         Watermark="{x:Static loc:UserLoc.NewPassword}" />
+						         PlaceholderText="{x:Static loc:UserLoc.NewPassword}" />
 					</StackPanel>
 
 					<!--  Confirm Password  -->
@@ -45,7 +45,7 @@
 						<TextBox Classes="revealPasswordButton"
 						         PasswordChar="•"
 						         Text="{Binding PasswordConfirm, Mode=TwoWay}"
-						         Watermark="{x:Static loc:UserLoc.ConfirmNewPassword}" />
+						         PlaceholderText="{x:Static loc:UserLoc.ConfirmNewPassword}" />
 					</StackPanel>
 
 					<!--  Save Button  -->

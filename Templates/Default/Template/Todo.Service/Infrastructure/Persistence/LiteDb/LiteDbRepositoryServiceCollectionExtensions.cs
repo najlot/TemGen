@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using <# Project.Namespace#>.Service.Features.Filters;
+using <# Project.Namespace#>.Service.Features.Filters.Persistence;
 using <# Project.Namespace#>.Service.Features.History;
 using <# Project.Namespace#>.Service.Features.History.Persistence;
 using <# Project.Namespace#>.Service.Features.Users;
@@ -30,6 +32,7 @@ public static class LiteDbRepositoryServiceCollectionExtensions
 			services.AddSingleton(configuration);
 			services.AddSingleton<LiteDbContext>();
 			services.AddScoped<IUnitOfWork, LiteDbUnitOfWork>();
+			services.RegisterLiteDbFilterPersistence();
 			services.RegisterLiteDbHistoryPersistence();
 			services.RegisterLiteDbUserPersistence();
 <#for definition in Definitions.Where(d => !(d.IsEnumeration
@@ -47,6 +50,7 @@ public static class LiteDbRepositoryServiceCollectionExtensions
 			new LiteDbContext(serviceProvider.GetRequiredKeyedService<LiteDbConfiguration>(key)));
 		services.AddKeyedScoped<IUnitOfWork>(serviceKey, static (serviceProvider, key) =>
 			new LiteDbUnitOfWork(serviceProvider.GetRequiredKeyedService<LiteDbContext>(key)));
+		services.RegisterLiteDbFilterPersistence(serviceKey);
 		services.RegisterLiteDbHistoryPersistence(serviceKey);
 		services.RegisterLiteDbUserPersistence(serviceKey);
 <#for definition in Definitions.Where(d => !(d.IsEnumeration

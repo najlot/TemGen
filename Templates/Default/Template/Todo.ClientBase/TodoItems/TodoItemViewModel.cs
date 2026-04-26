@@ -4,10 +4,7 @@ using System.Linq;
 <#if Entries.Any(e => e.IsArray)
 #>using System.Threading;
 <#end#>using System.Threading.Tasks;
-<#if Entries.Any(e => e.IsArray)
-#>using System.Windows.Input;
-<#end
-#>using <# Project.Namespace#>.Client.Data.<# Definition.Name#>s;
+using <# Project.Namespace#>.Client.Data.<# Definition.Name#>s;
 <#for definition in Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n))
 #>using <# Project.Namespace#>.Client.Data.<# definition.Name#>s;
 <#end

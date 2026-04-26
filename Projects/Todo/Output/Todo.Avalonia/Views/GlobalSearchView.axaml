@@ -22,7 +22,7 @@
 					 Margin="8,0"
 					 Text="{Binding QueryText, Mode=TwoWay}"
 					 HorizontalAlignment="Stretch"
-					 Watermark="{x:Static loc:GlobalSearchLoc.Search}" />
+					 PlaceholderText="{x:Static loc:GlobalSearchLoc.Search}" />
 
 			<Button Grid.Column="2" Margin="0,0,0,0" HorizontalAlignment="Right" Command="{Binding SearchCommand}">
 				<materialIcons:MaterialIcon Width="24" Height="24" Kind="Magnify" />

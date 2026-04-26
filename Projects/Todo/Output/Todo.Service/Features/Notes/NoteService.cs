@@ -1,9 +1,11 @@
 using Najlot.Map;
+using Todo.Contracts.Filters;
 using Todo.Contracts.Notes;
 using Todo.Contracts.Trash;
 using Todo.Contracts.Shared;
 using Todo.Service.Features.Auth;
 using Todo.Service.Features.History;
+using Todo.Service.Features.Filters;
 using Todo.Service.Shared.Realtime;
 using Todo.Service.Shared.Results;
 
@@ -16,6 +18,13 @@ public class NoteService(
 	IMap map,
 	IPermissionQueryFilter permissionQueryFilter)
 {
+	private static readonly HashSet<string> FilterableProperties = new(StringComparer.Ordinal)
+	{
+		nameof(NoteModel.Title),
+		nameof(NoteModel.Content),
+		nameof(NoteModel.Color),
+	};
+
 	public async Task<Result> CreateNote(CreateNote command)
 	{
 		var item = new NoteModel();
@@ -102,19 +111,27 @@ public class NoteService(
 		return Result<Note>.Success(map.From(item).To<Note>());
 	}
 
-	public IAsyncEnumerable<NoteListItem> GetItemsForUserAsync(NoteFilter filter)
+	public IAsyncEnumerable<NoteListItem> GetItemsForUserAsync(EntityFilter filter)
 	{
+		if (filter.Conditions.Count == 0)
+		{
+			return GetItemsForUserAsync();
+		}
+
 		var query = noteRepository.GetAllQueryable();
 
 		query = query.Where(e => e.DeletedAt == null);
 		query = permissionQueryFilter.ApplyReadFilter(query);
 
-		if (!string.IsNullOrEmpty(filter.Title))
-			query = query.Where(e => e.Title.Contains(filter.Title));
-		if (!string.IsNullOrEmpty(filter.Content))
-			query = query.Where(e => e.Content.Contains(filter.Content));
-		if (filter.Color != null)
-			query = query.Where(e => e.Color == filter.Color);
+		foreach (var condition in filter.Conditions)
+		{
+			if (!FilterableProperties.Contains(condition.Field))
+			{
+				continue;
+			}
+
+			query = query.ApplyFilter(condition.Field, condition);
+		}
 
 		return map.From(query).To<NoteListItem>().ToAsyncEnumerable();
 	}

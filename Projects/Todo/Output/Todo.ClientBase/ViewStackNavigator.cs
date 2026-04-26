@@ -64,11 +64,6 @@ public sealed class ViewStackNavigator<TView>(ServiceProvider serviceProvider)
 			parameterizable.SetParameters(parameters);
 		}
 
-		if (vm is IAsyncInitializable asyncInitializable)
-		{
-			await asyncInitializable.InitializeAsync();
-		}
-
 		await _dispatcherHelper.InvokeOnUIThread(() =>
 		{
 			if (CurrentView is TView view)
@@ -78,6 +73,11 @@ public sealed class ViewStackNavigator<TView>(ServiceProvider serviceProvider)
 
 			CurrentView = _viewManager.GetView(vm);
 		});
+
+		if (vm is IAsyncInitializable asyncInitializable)
+		{
+			await asyncInitializable.InitializeAsync();
+		}
 
 		if (isSessionStart)
 		{

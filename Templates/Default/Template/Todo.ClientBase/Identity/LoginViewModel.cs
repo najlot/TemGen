@@ -20,6 +20,7 @@ public class LoginViewModel : AbstractValidationViewModel, IAsyncInitializable, 
 	private readonly ILogger<LoginViewModel> _logger;
 
 	public AsyncCommand LoginCommand { get; }
+	public ICommand NavigateToForgotPasswordCommand { get; }
 	public ICommand NavigateToRegisterCommand { get; }
 
 	public LoginViewModel(
@@ -38,6 +39,7 @@ public class LoginViewModel : AbstractValidationViewModel, IAsyncInitializable, 
 		_logger = logger;
 
 		LoginCommand = new AsyncCommand(TryLoginAsync, OnError, () => !IsSubmitting && !HasErrors);
+		NavigateToForgotPasswordCommand = new AsyncCommand(() => _navigationService.NavigateForward<ForgotPasswordViewModel>(), OnError);
 		NavigateToRegisterCommand = new AsyncCommand(() => _navigationService.NavigateForward<RegisterViewModel>(), OnError);
 
 		ErrorsChanged += (s, e) => LoginCommand.RaiseCanExecuteChanged();

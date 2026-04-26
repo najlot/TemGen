@@ -1,5 +1,6 @@
 using LiteDB;
 using System.IO;
+using <# Project.Namespace#>.Service.Features.Filters;
 using <# Project.Namespace#>.Service.Features.History;
 using <# Project.Namespace#>.Service.Features.Users;
 using <# Project.Namespace#>.Service.Shared.Configuration;
@@ -45,6 +46,11 @@ public sealed class LiteDbContext : IDisposable
 
 	public void EnsureCreated()
 	{
+		var filtersCollection = GetCollection<FilterModel>("Filters");
+		filtersCollection.EnsureIndex(item => item.Id, true);
+		filtersCollection.EnsureIndex(item => item.UserId);
+		filtersCollection.EnsureIndex(item => item.TargetType);
+
 		var historyCollection = GetCollection<HistoryModel>("HistoryEntries");
 		historyCollection.EnsureIndex(item => item.Id, true);
 		historyCollection.EnsureIndex(item => item.EntityId);

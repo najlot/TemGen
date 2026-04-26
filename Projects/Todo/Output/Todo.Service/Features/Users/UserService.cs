@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using Najlot.Map;
 using Todo.Contracts.Users;
 using Todo.Service.Features.Auth;
@@ -19,7 +17,7 @@ public class UserService(
 {
 	public async Task<Result> CreateUser(CreateUser command)
 	{
-		var username = command.Username.Normalize().ToLower();
+		var username = command.Username.Normalize().ToLowerInvariant();
 
 		var user = await userRepository.Get(username).ConfigureAwait(false);
 		if (user != null)
@@ -32,8 +30,7 @@ public class UserService(
 			return Result.Validation("Password too short!");
 		}
 
-		var passwordBytes = Encoding.UTF8.GetBytes(command.Password);
-		var passwordHash = SHA256.HashData(passwordBytes);
+		var passwordHash = PasswordHasher.HashPassword(command.Password);
 
 		var item = new UserModel();
 		var snapshot = historyService.CreateSnapshot(item);
@@ -51,7 +48,7 @@ public class UserService(
 	public async Task<Result> UpdateUser(UpdateUser command)
 	{
 		var userId = userIdProvider.GetRequiredUserId();
-		var username = command.Username.Normalize().ToLower();
+		var username = command.Username.Normalize().ToLowerInvariant();
 
 		var item = await userRepository.Get(command.Id).ConfigureAwait(false);
 
@@ -80,8 +77,9 @@ public class UserService(
 				return Result.Validation("Password too short!");
 			}
 
-			var passwordBytes = Encoding.UTF8.GetBytes(command.Password);
-			item.PasswordHash = SHA256.HashData(passwordBytes);
+			item.PasswordHash = PasswordHasher.HashPassword(command.Password);
+			item.PasswordResetCodeHash = null;
+			item.PasswordResetCodeExpiresAt = null;
 		}
 
 		await userRepository.Update(item).ConfigureAwait(false);
@@ -155,7 +153,7 @@ public class UserService(
 
 	public async Task<UserModel?> GetUserModelFromName(string username)
 	{
-		username = username.Normalize().ToLower();
+		username = username.Normalize().ToLowerInvariant();
 		var user = await userRepository.Get(username).ConfigureAwait(false);
 		return user;
 	}

@@ -5,7 +5,8 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Todo.Client.Data.Serialization;
+using Todo.Client.Data;
+using Todo.Contracts.Filters;
 using Todo.Contracts.Notes;
 
 namespace Todo.Client.Data.Notes;
@@ -112,7 +113,7 @@ public sealed class NoteService(
 		return await repository.GetItemsAsync();
 	}
 
-	public async Task<NoteListItemModel[]> GetItemsAsync(NoteFilter filter)
+	public async Task<NoteListItemModel[]> GetItemsAsync(EntityFilter filter)
 	{
 		return await repository.GetItemsAsync(filter);
 	}

@@ -33,6 +33,15 @@ public class LiteDbUserRepository : IUserRepository
 		return Task.FromResult<UserModel?>(user);
 	}
 
+	public Task<UserModel?> GetByEmail(string email)
+	{
+		email = email.Trim();
+		var user = _collection
+			.FindAll()
+			.FirstOrDefault(item => item.DeletedAt == null && string.Equals(item.EMail, email, StringComparison.OrdinalIgnoreCase));
+		return Task.FromResult<UserModel?>(user);
+	}
+
 	public Task Insert(UserModel model)
 	{
 		_collection.Insert(model);

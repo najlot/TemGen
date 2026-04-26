@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using Todo.Service.Features.Filters;
+using Todo.Service.Features.Filters.Persistence;
 using Todo.Service.Features.History;
 using Todo.Service.Features.History.Persistence;
 using Todo.Service.Features.Users;
@@ -25,6 +27,7 @@ public static class FileRepositoryServiceCollectionExtensions
 		{
 			services.AddSingleton(configuration);
 			services.AddScoped<IUnitOfWork, FileUnitOfWork>();
+			services.RegisterFileFilterPersistence();
 			services.RegisterFileHistoryPersistence();
 			services.RegisterFileUserPersistence();
 			services.RegisterFileNotePersistence();
@@ -35,6 +38,7 @@ public static class FileRepositoryServiceCollectionExtensions
 
 		services.AddKeyedSingleton(serviceKey, configuration);
 		services.AddKeyedScoped<IUnitOfWork>(serviceKey, static (_, _) => new FileUnitOfWork());
+		services.RegisterFileFilterPersistence(serviceKey);
 		services.RegisterFileHistoryPersistence(serviceKey);
 		services.RegisterFileUserPersistence(serviceKey);
 		services.RegisterFileNotePersistence(serviceKey);

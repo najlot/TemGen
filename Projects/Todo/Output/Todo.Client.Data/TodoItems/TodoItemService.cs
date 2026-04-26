@@ -5,7 +5,8 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Todo.Client.Data.Serialization;
+using Todo.Client.Data;
+using Todo.Contracts.Filters;
 using Todo.Contracts.TodoItems;
 
 namespace Todo.Client.Data.TodoItems;
@@ -116,7 +117,7 @@ public sealed class TodoItemService(
 		return await repository.GetItemsAsync();
 	}
 
-	public async Task<TodoItemListItemModel[]> GetItemsAsync(TodoItemFilter filter)
+	public async Task<TodoItemListItemModel[]> GetItemsAsync(EntityFilter filter)
 	{
 		return await repository.GetItemsAsync(filter);
 	}

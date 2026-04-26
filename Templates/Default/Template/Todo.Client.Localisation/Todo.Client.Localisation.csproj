@@ -15,6 +15,16 @@
 			<AutoGen>True</AutoGen>
 			<DependentUpon>ErrorLoc.resx</DependentUpon>
 		</Compile>
+		<Compile Update="FilterOperatorLoc.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>FilterOperatorLoc.resx</DependentUpon>
+		</Compile>
+		<Compile Update="FilterLoc.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>FilterLoc.resx</DependentUpon>
+		</Compile>
 		<Compile Update="GlobalSearchLoc.Designer.cs">
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>
@@ -47,6 +57,14 @@
 		<EmbeddedResource Update="ErrorLoc.resx">
 			<Generator>PublicResXFileCodeGenerator</Generator>
 			<LastGenOutput>ErrorLoc.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="FilterOperatorLoc.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>FilterOperatorLoc.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="FilterLoc.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>FilterLoc.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
 		<EmbeddedResource Update="GlobalSearchLoc.resx">
 			<Generator>PublicResXFileCodeGenerator</Generator>

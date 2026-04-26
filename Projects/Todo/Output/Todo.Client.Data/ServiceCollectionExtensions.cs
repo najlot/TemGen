@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Todo.Client.Data.Filters;
 using Todo.Client.Data.GlobalSearch;
 using Todo.Client.Data.History;
 using Todo.Client.Data.Identity;
@@ -22,6 +23,7 @@ public static class ServiceCollectionExtensions
 
 		public void RegisterClientDataIdentity()
 		{
+			serviceCollection.AddScoped<IPasswordResetService, PasswordResetService>();
 			serviceCollection.AddScoped<IRegistrationService, RegistrationService>();
 			serviceCollection.AddScoped<ITokenProvider, RefreshingTokenProvider>();
 			serviceCollection.AddScoped<ITokenService, TokenService>();
@@ -29,6 +31,7 @@ public static class ServiceCollectionExtensions
 
 		public void RegisterClientDataRepositories()
 		{
+			serviceCollection.AddScoped<IFilterRepository, FilterRepository>();
 			serviceCollection.AddScoped<IGlobalSearchRepository, GlobalSearchRepository>();
 			serviceCollection.AddScoped<IHistoryRepository, HistoryRepository>();
 			serviceCollection.AddScoped<ITrashRepository, TrashRepository>();
@@ -40,6 +43,7 @@ public static class ServiceCollectionExtensions
 		public void RegisterClientDataServices()
 		{
 			serviceCollection.AddScoped<IApiEventConnectionProvider, ApiEventConnectionProvider>();
+			serviceCollection.AddScoped<IFilterService, FilterService>();
 			serviceCollection.AddScoped<IGlobalSearchService, GlobalSearchService>();
 			serviceCollection.AddScoped<IHistoryService, HistoryService>();
 			serviceCollection.AddScoped<ITrashService, TrashService>();

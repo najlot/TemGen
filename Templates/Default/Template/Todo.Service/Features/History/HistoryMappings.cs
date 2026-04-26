@@ -2,7 +2,7 @@ using Najlot.Map;
 using Najlot.Map.Attributes;
 using System.Text.Json;
 using <# Project.Namespace#>.Contracts.History;
-using <# Project.Namespace#>.Service.Serialization;
+using <# Project.Namespace#>.Service;
 
 namespace <# Project.Namespace#>.Service.Features.History;
 

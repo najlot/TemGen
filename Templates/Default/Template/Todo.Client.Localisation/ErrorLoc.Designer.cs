@@ -131,6 +131,15 @@ namespace <# Project.Namespace#>.Client.Localisation {
                 return ResourceManager.GetString("ErrorInvalidUsernamePassword", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid or expired password reset code..
+        /// </summary>
+        public static string ErrorInvalidResetCode {
+            get {
+                return ResourceManager.GetString("ErrorInvalidResetCode", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Error loading:.
@@ -210,6 +219,15 @@ namespace <# Project.Namespace#>.Client.Localisation {
         public static string PasswordTooShort {
             get {
                 return ResourceManager.GetString("PasswordTooShort", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Reset code is required..
+        /// </summary>
+        public static string ResetCodeRequired {
+            get {
+                return ResourceManager.GetString("ResetCodeRequired", resourceCulture);
             }
         }
         

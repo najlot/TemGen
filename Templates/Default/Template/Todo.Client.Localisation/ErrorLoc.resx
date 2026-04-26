@@ -141,6 +141,9 @@
   <data name="ErrorDeleting" xml:space="preserve">
     <value>Error deleting:</value>
   </data>
+  <data name="ErrorInvalidResetCode" xml:space="preserve">
+    <value>Invalid or expired password reset code.</value>
+  </data>
   <data name="ErrorLoading" xml:space="preserve">
     <value>Error loading:</value>
   </data>
@@ -161,6 +164,9 @@
   </data>
   <data name="PasswordTooShort" xml:space="preserve">
     <value>Password too short</value>
+  </data>
+  <data name="ResetCodeRequired" xml:space="preserve">
+    <value>Reset code is required.</value>
   </data>
   <data name="ParsingErrorMustBeDate" xml:space="preserve">
     <value>Must be a date</value>

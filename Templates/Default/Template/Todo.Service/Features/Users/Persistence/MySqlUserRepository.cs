@@ -41,6 +41,19 @@ public class MySqlUserRepository(MySqlDbContext context) : IUserRepository
 		return e;
 	}
 
+	public async Task<UserModel?> GetByEmail(string email)
+	{
+		email = email.Trim().Normalize().ToLowerInvariant();
+		var e = await context.Users.FirstOrDefaultAsync(i => i.DeletedAt == null && i.EMail.ToLower() == email).ConfigureAwait(false);
+
+		if (e == null)
+		{
+			return null;
+		}
+
+		return e;
+	}
+
 	public async Task Insert(UserModel model)
 	{
 		await context.Users.AddAsync(model).ConfigureAwait(false);

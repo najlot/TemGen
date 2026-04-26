@@ -5,7 +5,8 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using <# Project.Namespace#>.Client.Data.Serialization;
+using <# Project.Namespace#>.Client.Data;
+using <# Project.Namespace#>.Contracts.Filters;
 using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
 
 namespace <# Project.Namespace#>.Client.Data.<# Definition.Name#>s;
@@ -118,7 +119,7 @@ public sealed class <# Definition.Name#>Service(
 		return await repository.GetItemsAsync();
 	}
 
-	public async Task<<# Definition.Name#>ListItemModel[]> GetItemsAsync(<# Definition.Name#>Filter filter)
+	public async Task<<# Definition.Name#>ListItemModel[]> GetItemsAsync(EntityFilter filter)
 	{
 		return await repository.GetItemsAsync(filter);
 	}

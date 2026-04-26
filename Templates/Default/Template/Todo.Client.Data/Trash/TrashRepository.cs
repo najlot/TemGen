@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using <# Project.Namespace#>.Client.Data.Identity;
-using <# Project.Namespace#>.Client.Data.Serialization;
+using <# Project.Namespace#>.Client.Data;
 using <# Project.Namespace#>.Contracts.Trash;
 using <# Project.Namespace#>.Contracts.Shared;
 

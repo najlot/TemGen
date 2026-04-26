@@ -12,6 +12,8 @@ internal partial class UserMappings
 	public static partial void MapToUpdated(UserModel from, UserUpdated to);
 
 	[MapIgnoreProperty(nameof(to.PasswordHash))]
+	[MapIgnoreProperty(nameof(to.PasswordResetCodeHash))]
+	[MapIgnoreProperty(nameof(to.PasswordResetCodeExpiresAt))]
 	[MapIgnoreProperty(nameof(to.DeletedAt))]
 	public static void MapToModel(CreateUser from, UserModel to)
 	{

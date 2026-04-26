@@ -7,6 +7,10 @@ namespace <# Project.Namespace#>.Blazor.Identity;
 
 public class AuthenticationService : AuthenticationStateProvider, IAuthenticationService
 {
+	private const string AuthenticationType = "Bearer";
+	private const string TokenIssuer = "<# Project.Namespace#>.Service";
+	private const string TokenAudience = TokenIssuer;
+
 	private readonly IUserDataStore _userDataStore;
 	private readonly ILogger _logger;
 
@@ -20,56 +24,97 @@ public class AuthenticationService : AuthenticationStateProvider, IAuthenticatio
 	{
 		try
 		{
-			var username = await _userDataStore.GetUsername();
 			var token = await _userDataStore.GetAccessToken();
 
-			if (!string.IsNullOrWhiteSpace(token) && !string.IsNullOrWhiteSpace(username))
+			if (TryCreateAuthenticationState(token, out var authenticationState, out _))
 			{
-				var securityToken = new JwtSecurityToken(token);
-				var validTo = securityToken.Payload.ValidTo;
+				return authenticationState;
+			}
 
-				if (validTo > DateTime.UtcNow)
-				{
-					return await GenerateAuthenticationState(username);
-				}
+			if (!string.IsNullOrWhiteSpace(token))
+			{
+				await _userDataStore.SetUserData(string.Empty, string.Empty);
 			}
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Could not retrieve authentication state.");
-			await LogoutAsync();
+			await _userDataStore.SetUserData(string.Empty, string.Empty);
 		}
 
-		return await GenerateEmptyAuthenticationState();
+		return GenerateEmptyAuthenticationState();
 	}
 
 	public async Task LoginAsync(string username, string token)
 	{
-		await _userDataStore.SetUserData(username, token);
+		if (!TryCreateAuthenticationState(token, out var authenticationState, out var tokenUsername))
+		{
+			throw new InvalidOperationException("Authentication token is invalid.");
+		}
 
-		NotifyAuthenticationStateChanged(GenerateAuthenticationState(username));
+		await _userDataStore.SetUserData(tokenUsername ?? username, token);
+
+		NotifyAuthenticationStateChanged(Task.FromResult(authenticationState));
 	}
 
 	public async Task LogoutAsync()
 	{
 		await _userDataStore.SetUserData("", "");
 
-		NotifyAuthenticationStateChanged(GenerateEmptyAuthenticationState());
+		NotifyAuthenticationStateChanged(Task.FromResult(GenerateEmptyAuthenticationState()));
 	}
 
-	private Task<AuthenticationState> GenerateAuthenticationState(string username)
+	private static bool TryCreateAuthenticationState(string? token, out AuthenticationState authenticationState, out string? username)
 	{
-		var claimsIdentity = new ClaimsIdentity(new[]
+		authenticationState = GenerateEmptyAuthenticationState();
+		username = null;
+
+		if (string.IsNullOrWhiteSpace(token))
 		{
-			new Claim(ClaimTypes.Name, username),
-		}, "auth");
+			return false;
+		}
 
-		var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
-		return Task.FromResult(new AuthenticationState(claimsPrincipal));
+		var securityToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
+
+		if (securityToken.ValidTo <= DateTime.UtcNow)
+		{
+			return false;
+		}
+
+		if (!string.Equals(securityToken.Issuer, TokenIssuer, StringComparison.Ordinal))
+		{
+			return false;
+		}
+
+		if (!securityToken.Audiences.Contains(TokenAudience, StringComparer.Ordinal))
+		{
+			return false;
+		}
+
+		var claims = securityToken.Claims.ToList();
+		username = claims
+			.FirstOrDefault(claim => claim.Type == ClaimTypes.Name)?.Value
+			?? claims.FirstOrDefault(claim => claim.Type == JwtRegisteredClaimNames.UniqueName)?.Value
+			?? claims.FirstOrDefault(claim => claim.Type == JwtRegisteredClaimNames.Name)?.Value
+			?? claims.FirstOrDefault(claim => claim.Type == "name")?.Value;
+
+		if (string.IsNullOrWhiteSpace(username))
+		{
+			return false;
+		}
+
+		if (!claims.Any(claim => claim.Type == ClaimTypes.Name))
+		{
+			claims.Add(new Claim(ClaimTypes.Name, username));
+		}
+
+		var claimsIdentity = new ClaimsIdentity(claims, AuthenticationType, ClaimTypes.Name, ClaimTypes.Role);
+		authenticationState = new AuthenticationState(new ClaimsPrincipal(claimsIdentity));
+		return true;
 	}
 
-	private Task<AuthenticationState> GenerateEmptyAuthenticationState()
+	private static AuthenticationState GenerateEmptyAuthenticationState()
 	{
-		return Task.FromResult(new AuthenticationState(new ClaimsPrincipal()));
+		return new AuthenticationState(new ClaimsPrincipal());
 	}
 }<#cs SetOutputPathAndSkipOtherDefinitions()#>

@@ -88,22 +88,16 @@ public sealed class GeneratedOutputManifest
 
 }
 
-public sealed class GeneratedOutputCleanupResult
-{
-	public int DeletedCount { get; init; }
-}
-
 public static class GeneratedOutputCleaner
 {
-	public static async Task<GeneratedOutputCleanupResult> CleanupAsync(
+	public static int Cleanup(
 		string outputPath,
 		GeneratedOutputManifest previousManifest,
-		GeneratedOutputManifest currentManifest,
-		CancellationToken cancellationToken = default)
+		GeneratedOutputManifest currentManifest)
 	{
 		if (previousManifest == null)
 		{
-			return new GeneratedOutputCleanupResult();
+			return 0;
 		}
 
 		var currentFiles = new HashSet<string>(currentManifest.Files, StringComparer.Ordinal);
@@ -128,10 +122,7 @@ public static class GeneratedOutputCleaner
 			DeleteEmptyDirectories(outputPath, Path.GetDirectoryName(absolutePath));
 		}
 
-		return new GeneratedOutputCleanupResult
-		{
-			DeletedCount = deletedCount,
-		};
+		return deletedCount;
 	}
 
 	private static void DeleteEmptyDirectories(string outputPath, string directoryPath)

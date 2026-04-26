@@ -9,7 +9,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Content Include="Templates\**\*.md" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="LiteDB" />
+		<PackageReference Include="Markdig" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
 		<PackageReference Include="Microsoft.IdentityModel.Tokens" />
 		<PackageReference Include="MongoDB.Driver" />

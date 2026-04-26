@@ -1,5 +1,5 @@
 using System.Text.Json;
-using <# Project.Namespace#>.Service.Serialization;
+using <# Project.Namespace#>.Service;
 using <# Project.Namespace#>.Service.Shared.Configuration;
 
 namespace <# Project.Namespace#>.Service.Features.History.Persistence;

@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Todo.Service.Serialization;
+using Todo.Service;
 using Todo.Service.Shared.Configuration;
 using Todo.Service.Features.Users;
 
@@ -61,6 +61,26 @@ public class FileUserRepository : IUserRepository
 			var item = JsonSerializer.Deserialize<UserModel>(bytes, ServiceJsonSerializer.Options);
 
 			if (item is not null && item.DeletedAt == null && item.Username == username)
+			{
+				return item;
+			}
+		}
+
+		return null;
+	}
+
+	public async Task<UserModel?> GetByEmail(string email)
+	{
+		email = email.Trim();
+
+		foreach (var path in Directory.GetFiles(_storagePath))
+		{
+			var bytes = await File.ReadAllBytesAsync(path).ConfigureAwait(false);
+			var item = JsonSerializer.Deserialize<UserModel>(bytes, ServiceJsonSerializer.Options);
+
+			if (item is not null
+				&& item.DeletedAt == null
+				&& string.Equals(item.EMail, email, StringComparison.OrdinalIgnoreCase))
 			{
 				return item;
 			}

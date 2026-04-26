@@ -12,6 +12,7 @@ namespace <# Project.Namespace#>.Service.Features.Auth;
 [ApiController]
 public class AuthController(
 	IUserService userService,
+	PasswordResetService passwordResetService,
 	TokenService tokenService) : ControllerBase
 {
 	[Authorize]
@@ -48,7 +49,7 @@ public class AuthController(
 
 		if (token == null)
 		{
-			return Forbid();
+			return Unauthorized();
 		}
 
 		return Ok(token);
@@ -66,6 +67,50 @@ public class AuthController(
 		}
 
 		var result = await userService.CreateUser(command).ConfigureAwait(false);
+		if (result.IsFailure)
+		{
+			return this.ToActionResult(result);
+		}
+
+		await unitOfWork.CommitAsync().ConfigureAwait(false);
+
+		return Ok();
+	}
+
+	[AllowAnonymous]
+	[HttpPost("RequestPasswordReset")]
+	public async Task<ActionResult> RequestPasswordReset(
+		[FromBody] RequestPasswordReset request,
+		[FromServices] IUnitOfWork unitOfWork)
+	{
+		if (!ModelState.IsValid)
+		{
+			return BadRequest();
+		}
+
+		var result = await passwordResetService.RequestPasswordReset(request).ConfigureAwait(false);
+		if (result.IsFailure)
+		{
+			return this.ToActionResult(result);
+		}
+
+		await unitOfWork.CommitAsync().ConfigureAwait(false);
+
+		return Ok();
+	}
+
+	[AllowAnonymous]
+	[HttpPost("ResetPassword")]
+	public async Task<ActionResult> ResetPassword(
+		[FromBody] ResetPassword request,
+		[FromServices] IUnitOfWork unitOfWork)
+	{
+		if (!ModelState.IsValid)
+		{
+			return BadRequest();
+		}
+
+		var result = await passwordResetService.ResetPassword(request).ConfigureAwait(false);
 		if (result.IsFailure)
 		{
 			return this.ToActionResult(result);

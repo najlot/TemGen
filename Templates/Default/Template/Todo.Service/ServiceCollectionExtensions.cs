@@ -1,4 +1,5 @@
 using <# Project.Namespace#>.Service.Features.Auth;
+using <# Project.Namespace#>.Service.Features.Filters;
 using <# Project.Namespace#>.Service.Features.GlobalSearch;
 using <# Project.Namespace#>.Service.Features.History;
 using <# Project.Namespace#>.Service.Features.Trash;
@@ -22,6 +23,7 @@ public static class ServiceCollectionExtensions
 	{
 		services.RegisterAuthFeature();
 		services.RegisterUsersFeature();
+		services.RegisterFiltersFeature();
 		services.RegisterHistoryFeature();
 
 <#cs foreach (var definition in Definitions.Where(d => !(d.IsEnumeration

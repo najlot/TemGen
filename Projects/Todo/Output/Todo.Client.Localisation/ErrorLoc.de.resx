@@ -141,6 +141,9 @@
   <data name="ErrorDeleting" xml:space="preserve">
     <value>Fehler beim Löschen:</value>
   </data>
+  <data name="ErrorInvalidResetCode" xml:space="preserve">
+    <value>Ungültiger oder abgelaufener Zurücksetzungscode.</value>
+  </data>
   <data name="ErrorLoading" xml:space="preserve">
     <value>Fehler beim Laden:</value>
   </data>
@@ -161,6 +164,9 @@
   </data>
   <data name="PasswordTooShort" xml:space="preserve">
     <value>Passwort ist zu kurz</value>
+  </data>
+  <data name="ResetCodeRequired" xml:space="preserve">
+    <value>Zurücksetzungscode ist erforderlich.</value>
   </data>
   <data name="ParsingErrorMustBeDate" xml:space="preserve">
     <value>Muss ein Datum sein</value>

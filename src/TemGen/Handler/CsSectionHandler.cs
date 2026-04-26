@@ -3,6 +3,8 @@ using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.Scripting.Hosting;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace TemGen.Handler;
@@ -59,11 +61,11 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 
 	#endregion Static Initialization
 
-	private static readonly ConcurrentDictionary<(int ScriptsKey, string Content), ScriptRunner<object>> _cache = new();
-	private static readonly ConcurrentDictionary<(int ScriptsKey, string Content), ScriptRunner<object>> _expressionCache = new();
+    private static readonly ConcurrentDictionary<(string ScriptsKey, string Content), ScriptRunner<object>> _cache = new();
+	private static readonly ConcurrentDictionary<(string ScriptsKey, string Content), ScriptRunner<object>> _expressionCache = new();
 
 	private readonly Script<object> _initialScript = null;
-	private readonly int _initialScriptsKey;
+    private readonly string _initialScriptsKey;
 
 	public CsSectionHandler(string[] initialScripts) : base(TemplateHandler.CSharp)
 	{
@@ -74,7 +76,7 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 			_initialScript = _initialScript.ContinueWith(script, _options);
 		}
 
-		_initialScriptsKey = string.Join('\n', initialScripts).GetHashCode();
+       _initialScriptsKey = GetStableCacheKey(initialScripts);
 	}
 
 	public async Task<object> EvaluateExpression(Globals globals, string expression)
@@ -115,5 +117,12 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 		}
 
 		return content + ";";
+	}
+
+	private static string GetStableCacheKey(string[] scripts)
+	{
+		var content = string.Join('\n', scripts);
+		var hash = SHA256.HashData(Encoding.UTF8.GetBytes(content));
+       return System.Convert.ToHexString(hash);
 	}
 }

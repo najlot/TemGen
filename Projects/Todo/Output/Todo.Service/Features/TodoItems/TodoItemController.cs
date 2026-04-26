@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Todo.Contracts.Filters;
 using Todo.Contracts.TodoItems;
 using Todo.Service.Infrastructure.Persistence;
 using Todo.Service.Shared.Results;
@@ -20,7 +21,7 @@ public class TodoItemController(TodoItemService todoItemService) : ControllerBas
 	}
 
 	[HttpPost("[action]")]
-	public async Task<ActionResult<List<TodoItemListItem>>> ListFiltered(TodoItemFilter filter)
+	public async Task<ActionResult<List<TodoItemListItem>>> ListFiltered(EntityFilter filter)
 	{
 		var query = todoItemService.GetItemsForUserAsync(filter);
 		var items = await query.ToListAsync().ConfigureAwait(false);

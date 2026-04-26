@@ -23,16 +23,20 @@ public static class ServiceCollectionExtensions
 		{
 			serviceCollection.AddTransient(typeof(ViewModelBaseParameters<>));
 
+			serviceCollection.AddTransient<ForgotPasswordViewModel>();
 			serviceCollection.AddTransient<LoginViewModel>();
 			serviceCollection.AddTransient<RegisterViewModel>();
 			serviceCollection.AddTransient<MenuViewModel>();
 			serviceCollection.AddTransient<ManageViewModel>();
+			serviceCollection.AddTransient<ResetPasswordViewModel>();
 			serviceCollection.AddTransient<GlobalSearchViewModel>();
 			serviceCollection.AddTransient<EntityHistoryViewModel>();
 			serviceCollection.AddTransient<TrashViewModel>();
 
 			serviceCollection.AddTransient<NotesViewModel>();
+			serviceCollection.AddTransient<NoteFilterViewModel>();
 			serviceCollection.AddTransient<TodoItemsViewModel>();
+			serviceCollection.AddTransient<TodoItemFilterViewModel>();
 
 			serviceCollection.AddTransient<ChecklistTaskViewModel>();
 			serviceCollection.AddTransient<NoteViewModel>();

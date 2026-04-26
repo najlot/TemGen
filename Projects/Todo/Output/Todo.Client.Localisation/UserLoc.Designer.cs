@@ -104,6 +104,15 @@ namespace Todo.Client.Localisation {
                 return ResourceManager.GetString("EmailAddress", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Forgot password?.
+        /// </summary>
+        public static string ForgotPassword {
+            get {
+                return ResourceManager.GetString("ForgotPassword", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to EMail:.
@@ -156,6 +165,33 @@ namespace Todo.Client.Localisation {
         public static string Register {
             get {
                 return ResourceManager.GetString("Register", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Reset code.
+        /// </summary>
+        public static string ResetCode {
+            get {
+                return ResourceManager.GetString("ResetCode", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Reset password.
+        /// </summary>
+        public static string ResetPassword {
+            get {
+                return ResourceManager.GetString("ResetPassword", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Send reset code.
+        /// </summary>
+        public static string SendResetCode {
+            get {
+                return ResourceManager.GetString("SendResetCode", resourceCulture);
             }
         }
         

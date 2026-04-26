@@ -1,9 +1,11 @@
 using Najlot.Map;
+using Todo.Contracts.Filters;
 using Todo.Contracts.TodoItems;
 using Todo.Contracts.Trash;
 using Todo.Contracts.Shared;
 using Todo.Service.Features.Auth;
 using Todo.Service.Features.History;
+using Todo.Service.Features.Filters;
 using Todo.Service.Shared.Realtime;
 using Todo.Service.Shared.Results;
 
@@ -16,6 +18,19 @@ public class TodoItemService(
 	IMap map,
 	IPermissionQueryFilter permissionQueryFilter)
 {
+	private static readonly HashSet<string> FilterableProperties = new(StringComparer.Ordinal)
+	{
+		nameof(TodoItemModel.Title),
+		nameof(TodoItemModel.Content),
+		nameof(TodoItemModel.CreatedAt),
+		nameof(TodoItemModel.CreatedBy),
+		nameof(TodoItemModel.AssignedToId),
+		nameof(TodoItemModel.Status),
+		nameof(TodoItemModel.ChangedAt),
+		nameof(TodoItemModel.ChangedBy),
+		nameof(TodoItemModel.Priority),
+	};
+
 	public async Task<Result> CreateTodoItem(CreateTodoItem command)
 	{
 		var item = new TodoItemModel();
@@ -102,35 +117,27 @@ public class TodoItemService(
 		return Result<TodoItem>.Success(map.From(item).To<TodoItem>());
 	}
 
-	public IAsyncEnumerable<TodoItemListItem> GetItemsForUserAsync(TodoItemFilter filter)
+	public IAsyncEnumerable<TodoItemListItem> GetItemsForUserAsync(EntityFilter filter)
 	{
+		if (filter.Conditions.Count == 0)
+		{
+			return GetItemsForUserAsync();
+		}
+
 		var query = todoItemRepository.GetAllQueryable();
 
 		query = query.Where(e => e.DeletedAt == null);
 		query = permissionQueryFilter.ApplyReadFilter(query);
 
-		if (!string.IsNullOrEmpty(filter.Title))
-			query = query.Where(e => e.Title.Contains(filter.Title));
-		if (!string.IsNullOrEmpty(filter.Content))
-			query = query.Where(e => e.Content.Contains(filter.Content));
-		if (filter.CreatedAtFrom != null)
-			query = query.Where(e => e.CreatedAt >= filter.CreatedAtFrom);
-		if (filter.CreatedAtTo != null)
-			query = query.Where(e => e.CreatedAt <= filter.CreatedAtTo);
-		if (!string.IsNullOrEmpty(filter.CreatedBy))
-			query = query.Where(e => e.CreatedBy.Contains(filter.CreatedBy));
-		if (filter.AssignedToId != null)
-			query = query.Where(e => e.AssignedToId == filter.AssignedToId);
-		if (filter.Status != null)
-			query = query.Where(e => e.Status == filter.Status);
-		if (filter.ChangedAtFrom != null)
-			query = query.Where(e => e.ChangedAt >= filter.ChangedAtFrom);
-		if (filter.ChangedAtTo != null)
-			query = query.Where(e => e.ChangedAt <= filter.ChangedAtTo);
-		if (!string.IsNullOrEmpty(filter.ChangedBy))
-			query = query.Where(e => e.ChangedBy.Contains(filter.ChangedBy));
-		if (!string.IsNullOrEmpty(filter.Priority))
-			query = query.Where(e => e.Priority.Contains(filter.Priority));
+		foreach (var condition in filter.Conditions)
+		{
+			if (!FilterableProperties.Contains(condition.Field))
+			{
+				continue;
+			}
+
+			query = query.ApplyFilter(condition.Field, condition);
+		}
 
 		return map.From(query).To<TodoItemListItem>().ToAsyncEnumerable();
 	}

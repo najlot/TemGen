@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using <# Project.Namespace#>.Service.Features.Filters;
+using <# Project.Namespace#>.Service.Features.Filters.Persistence;
 using <# Project.Namespace#>.Service.Features.History;
 using <# Project.Namespace#>.Service.Features.History.Persistence;
 using <# Project.Namespace#>.Service.Features.Users;
@@ -30,6 +32,7 @@ public static class MongoDbRepositoryServiceCollectionExtensions
 			services.AddSingleton(configuration);
 			services.AddSingleton<MongoDbContext>();
 			services.AddScoped<IUnitOfWork, MongoDbUnitOfWork>();
+			services.RegisterMongoDbFilterPersistence();
 			services.RegisterMongoDbHistoryPersistence();
 			services.RegisterMongoDbUserPersistence();
 <#for definition in Definitions.Where(d => !(d.IsEnumeration
@@ -46,6 +49,7 @@ public static class MongoDbRepositoryServiceCollectionExtensions
 		services.AddKeyedSingleton<MongoDbContext>(serviceKey, static (serviceProvider, key) =>
 			new MongoDbContext(serviceProvider.GetRequiredKeyedService<MongoDbConfiguration>(key)));
 		services.AddKeyedScoped<IUnitOfWork>(serviceKey, static (_, _) => new MongoDbUnitOfWork());
+		services.RegisterMongoDbFilterPersistence(serviceKey);
 		services.RegisterMongoDbHistoryPersistence(serviceKey);
 		services.RegisterMongoDbUserPersistence(serviceKey);
 <#for definition in Definitions.Where(d => !(d.IsEnumeration

@@ -1,3 +1,4 @@
+using <# Project.Namespace#>.Service.Features.Filters;
 using <# Project.Namespace#>.Service.Features.History;
 using <# Project.Namespace#>.Service.Features.Users;
 using <# Project.Namespace#>.Service.Infrastructure.Persistence;
@@ -87,6 +88,7 @@ public sealed class StorageBackupHostedService(
 
 		EnsureTargetStorageCreated(serviceProvider, backupConfiguration.Target);
 
+		await SynchronizeAsync<FilterModel>(serviceProvider, cancellationToken).ConfigureAwait(false);
 		await SynchronizeAsync<HistoryModel>(serviceProvider, cancellationToken).ConfigureAwait(false);
 		await SynchronizeAsync<UserModel>(serviceProvider, cancellationToken).ConfigureAwait(false);
 <#for definition in Definitions.Where(d => !(d.IsEnumeration
@@ -114,6 +116,7 @@ public sealed class StorageBackupHostedService(
 
 				var configuredPaths = new[]
 				{
+					fileConfiguration.FiltersPath,
 					fileConfiguration.HistoryPath,
 					fileConfiguration.UsersPath,
 <#for definition in Definitions.Where(d => !(d.IsEnumeration

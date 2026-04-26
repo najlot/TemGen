@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using <# Project.Namespace#>.Contracts.Filters;
 using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
 using <# Project.Namespace#>.Service.Infrastructure.Persistence;
 using <# Project.Namespace#>.Service.Shared.Results;
@@ -20,7 +21,7 @@ public class <# Definition.Name#>Controller(<# Definition.Name#>Service <# Defin
 	}
 
 	[HttpPost("[action]")]
-	public async Task<ActionResult<List<<# Definition.Name#>ListItem>>> ListFiltered(<# Definition.Name#>Filter filter)
+	public async Task<ActionResult<List<<# Definition.Name#>ListItem>>> ListFiltered(EntityFilter filter)
 	{
 		var query = <# Definition.NameLow#>Service.GetItemsForUserAsync(filter);
 		var items = await query.ToListAsync().ConfigureAwait(false);

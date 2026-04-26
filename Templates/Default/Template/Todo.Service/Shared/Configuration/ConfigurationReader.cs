@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using <# Project.Namespace#>.Service.Serialization;
+using <# Project.Namespace#>.Service;
 
 namespace <# Project.Namespace#>.Service.Shared.Configuration;
 

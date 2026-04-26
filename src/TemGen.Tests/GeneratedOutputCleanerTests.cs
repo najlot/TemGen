@@ -24,9 +24,9 @@ public class GeneratedOutputCleanerTests
 
 			var currentManifest = new GeneratedOutputManifest();
 
-			var result = await GeneratedOutputCleaner.CleanupAsync(outputPath, previousManifest, currentManifest);
+			var deletedCount = GeneratedOutputCleaner.Cleanup(outputPath, previousManifest, currentManifest);
 
-			Assert.Equal(1, result.DeletedCount);
+			Assert.Equal(1, deletedCount);
 			Assert.False(File.Exists(staleFilePath));
 			Assert.False(Directory.Exists(Path.Combine(outputPath, "Generated")));
 		}
@@ -57,9 +57,9 @@ public class GeneratedOutputCleanerTests
 			await File.WriteAllTextAsync(staleFilePath, "user changed this file");
 			var currentManifest = new GeneratedOutputManifest();
 
-			var result = await GeneratedOutputCleaner.CleanupAsync(outputPath, previousManifest, currentManifest);
+			var deletedCount = GeneratedOutputCleaner.Cleanup(outputPath, previousManifest, currentManifest);
 
-			Assert.Equal(1, result.DeletedCount);
+			Assert.Equal(1, deletedCount);
 			Assert.False(File.Exists(staleFilePath));
 		}
 		finally
@@ -88,9 +88,9 @@ public class GeneratedOutputCleanerTests
 
 			var currentManifest = new GeneratedOutputManifest();
 
-			var result = await GeneratedOutputCleaner.CleanupAsync(outputPath, previousManifest, currentManifest);
+			var deletedCount = GeneratedOutputCleaner.Cleanup(outputPath, previousManifest, currentManifest);
 
-			Assert.Equal(0, result.DeletedCount);
+			Assert.Equal(0, deletedCount);
 			Assert.True(File.Exists(customFilePath));
 		}
 		finally

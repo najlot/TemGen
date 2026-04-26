@@ -1,0 +1,175 @@
+<UserControl x:Class="Todo.Avalonia.Controls.EntityFilterEditorView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:loc="clr-namespace:Todo.Client.Localisation;assembly=Todo.Client.Localisation"
+             xmlns:dataFilters="clr-namespace:Todo.Client.Data.Filters;assembly=Todo.Client.Data"
+             xmlns:filterVm="clr-namespace:Todo.ClientBase.Filters;assembly=Todo.ClientBase"
+             xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             d:DesignWidth="600"
+             x:DataType="filterVm:EntityFilterEditorViewModel"
+             mc:Ignorable="d">
+
+    <Expander Header="{x:Static loc:FilterLoc.Filters}" Margin="12,0" IsExpanded="False" HorizontalAlignment="Stretch">
+        <StackPanel Margin="0,12,0,0">
+
+            <TextBlock Text="{x:Static loc:FilterLoc.ActiveConditions}" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,8" />
+
+            <ItemsControl ItemsSource="{Binding FilterConditions}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="filterVm:FilterConditionViewModel">
+                        <Border Background="Transparent" 
+                                BorderBrush="LightGray" 
+                                BorderThickness="1" 
+                                CornerRadius="6" 
+                                Padding="8,8,8,0" 
+                                Margin="0,0,0,8">
+
+                            <WrapPanel VerticalAlignment="Center">
+                                <ComboBox MinWidth="140" Margin="0,0,8,8"
+                                          ItemsSource="{Binding AvailableFields}"
+                                          SelectedValue="{Binding SelectedFieldKey}"
+                                          SelectedValueBinding="{Binding Key}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="dataFilters:FilterFieldOption">
+                                            <TextBlock Text="{Binding Label}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+
+                                <ComboBox MinWidth="120" Margin="0,0,8,8"
+                                          ItemsSource="{Binding AvailableOperators}"
+                                          SelectedItem="{Binding SelectedOperatorOption}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="dataFilters:FilterOperatorOption">
+                                            <TextBlock Text="{Binding Label}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+
+                                <TextBox MinWidth="160" Margin="0,0,8,8"
+                                         ToolTip.Tip="{x:Static loc:FilterLoc.Value}"
+                                         PlaceholderText="{x:Static loc:FilterLoc.Value}"
+                                         Text="{Binding Value, Mode=TwoWay}"
+                                         IsVisible="{Binding ShowTextValueEditor}" />
+
+                                <ComboBox MinWidth="160" Margin="0,0,8,8"
+                                          ItemsSource="{Binding AvailableValues}"
+                                          SelectedItem="{Binding SelectedValueOption}"
+                                          IsVisible="{Binding ShowOptionValueEditor}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="dataFilters:FilterValueOption">
+                                            <TextBlock Text="{Binding Label}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+
+                                <Button Margin="0,0,0,8"
+                                        ToolTip.Tip="{x:Static loc:FilterLoc.RemoveCondition}"
+                                        Background="Transparent"
+                                        BorderBrush="Transparent"
+                                        Command="{Binding $parent[UserControl].((filterVm:EntityFilterEditorViewModel)DataContext).RemoveFilterConditionCommand}"
+                                        CommandParameter="{Binding .}">
+                                    <material:MaterialIcon Kind="Close" Foreground="IndianRed" />
+                                </Button>
+                            </WrapPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <WrapPanel>
+                <Button MinWidth="200" Margin="0,0,8,8" Command="{Binding AddFilterConditionCommand}" HorizontalContentAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <material:MaterialIcon Kind="Plus" Margin="0,0,4,0"/>
+                        <TextBlock Text="{x:Static loc:FilterLoc.AddCondition}" />
+                    </StackPanel>
+                </Button>
+
+                <Button MinWidth="200" Margin="0,0,8,8" Command="{Binding ClearFiltersCommand}" HorizontalContentAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <material:MaterialIcon Kind="FilterRemove" Margin="0,0,4,0"/>
+                        <TextBlock Text="{x:Static loc:FilterLoc.ClearAllFilters}" />
+                    </StackPanel>
+                </Button>
+
+                <Button MinWidth="200" Margin="0,0,8,8" Command="{Binding SetDefaultFilterCommand}" HorizontalContentAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <material:MaterialIcon Kind="Star" Margin="0,0,4,0"/>
+                        <TextBlock Text="{x:Static loc:FilterLoc.SetAsDefault}" />
+                    </StackPanel>
+                </Button>
+                <Button MinWidth="200" Margin="0,0,8,8" Command="{Binding ClearDefaultFilterCommand}" HorizontalContentAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <material:MaterialIcon Kind="StarOffOutline" Margin="0,0,4,0"/>
+                        <TextBlock Text="{x:Static loc:FilterLoc.ClearDefault}" />
+                    </StackPanel>
+                </Button>
+
+                <Button MinWidth="200" Margin="0,0,8,8"
+                        Command="{Binding SearchCommand}" 
+                        FontWeight="Bold"
+                        Padding="24,4"
+                        HorizontalContentAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <material:MaterialIcon Kind="Magnify" Margin="0,0,4,0"/>
+                        <TextBlock Text="{x:Static loc:CommonLoc.Search}" />
+                    </StackPanel>
+                </Button>
+            </WrapPanel>
+
+            <Separator/>
+
+            <TextBlock Text="{x:Static loc:FilterLoc.SavedFilters}" FontWeight="SemiBold" FontSize="12" Margin="0,4,0,4" />
+
+            <Grid ColumnDefinitions="*, Auto, Auto" Margin="0,0,0,8">
+                <ComboBox Grid.Column="0"
+                          HorizontalAlignment="Stretch"
+                          Margin="0,0,8,0"
+                          ToolTip.Tip="{x:Static loc:FilterLoc.SelectFilter}"
+                          PlaceholderText="{x:Static loc:FilterLoc.SelectFilter}"
+                          ItemsSource="{Binding NamedFilters}"
+                          SelectedValue="{Binding SelectedNamedFilterName}"
+                          SelectedValueBinding="{Binding Name}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <Button Grid.Column="1" Margin="0,0,8,0" Command="{Binding ApplyNamedFilterCommand}" ToolTip.Tip="{x:Static loc:FilterLoc.Apply}">
+                    <StackPanel Orientation="Horizontal">
+                        <material:MaterialIcon Kind="Check" Margin="0,0,4,0"/>
+                        <TextBlock Text="{x:Static loc:FilterLoc.Apply}" />
+                    </StackPanel>
+                </Button>
+
+                <Button Grid.Column="2" Command="{Binding DeleteNamedFilterCommand}" ToolTip.Tip="{x:Static loc:CommonLoc.Delete}">
+                    <StackPanel Orientation="Horizontal">
+                        <material:MaterialIcon Kind="Delete" Margin="0,0,4,0"/>
+                        <TextBlock Text="{x:Static loc:CommonLoc.Delete}" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,8">
+                <TextBox Grid.Column="0" 
+                         Margin="0,0,8,0" 
+                         ToolTip.Tip="{x:Static loc:FilterLoc.FilterNamePlaceholder}" 
+                         PlaceholderText="{x:Static loc:FilterLoc.FilterNamePlaceholder}"
+                         Text="{Binding SaveFilterName, Mode=TwoWay}" />
+
+                <Button Grid.Column="1" Command="{Binding SaveCurrentFilterCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <material:MaterialIcon Kind="ContentSave" Margin="0,0,4,0"/>
+                        <TextBlock Text="{x:Static loc:CommonLoc.Save}" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <Separator/>
+        </StackPanel>
+    </Expander>
+</UserControl>

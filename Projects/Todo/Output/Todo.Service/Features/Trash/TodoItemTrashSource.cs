@@ -1,4 +1,3 @@
-using LiteDB;
 using Najlot.Map;
 using Todo.Contracts.TodoItems;
 using Todo.Contracts.Trash;
@@ -8,8 +7,6 @@ using Todo.Service.Features.History;
 using Todo.Service.Features.TodoItems;
 using Todo.Service.Shared.Realtime;
 using Todo.Service.Shared.Results;
-
-
 
 namespace Todo.Service.Features.Trash;
 

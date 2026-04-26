@@ -1,0 +1,494 @@
+@using Microsoft.AspNetCore.Components
+@using Todo.Blazor.Services
+@using Todo.Client.Data.Filters
+@using Todo.Client.Localisation
+@using Todo.Contracts.Filters
+@using Todo.Contracts.Shared
+
+@inject ILogger<EntityFilterEditor> Log
+@inject IFilterService FilterService
+
+<div class="entity-filter-editor">
+    <details class="mb-4">
+        <summary class="fw-bold fs-6 mb-2" style="cursor: pointer;">
+            Saved Filters &amp; Defaults
+        </summary>
+        <div class="card card-body bg-light border-0 shadow-sm mt-2">
+            
+            <div class="row g-2 mb-3 align-items-center">
+                <div class="col">
+                    <select class="form-select" @bind="selectedNamedFilterName">
+                        <option value="">Select a saved filter...</option>
+                        @foreach (var namedFilter in NamedFilters)
+                        {
+                            <option value="@namedFilter.Name">@namedFilter.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-outline-primary" @onclick="ApplyNamedFilterAsync" disabled="@(!CanApplyNamedFilter)">
+                        <i class="bi bi-check2"></i> Apply
+                    </button>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-outline-danger" @onclick="DeleteNamedFilterAsync" disabled="@(!CanDeleteNamedFilter)">
+                        <i class="bi bi-trash"></i> @CommonLoc.Delete
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-2 mb-3 align-items-center">
+                <div class="col">
+                    <input class="form-control" @bind="saveFilterName" placeholder="Name for new filter..." />
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-outline-primary" @onclick="SaveCurrentFilterAsync" disabled="@(!CanSaveFilter)">
+                        <i class="bi bi-save"></i> @CommonLoc.Save
+                    </button>
+                </div>
+            </div>
+
+            <hr class="mt-0 mb-3" />
+
+            <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-sm btn-outline-secondary" @onclick="SetDefaultFilterAsync" disabled="@(!CanSetDefaultFilter)">
+                    <i class="bi bi-star"></i> Set as Default
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" @onclick="ClearDefaultFilterAsync" disabled="@(!CanClearDefaultFilter)">
+                    <i class="bi bi-star-fill"></i> Clear Default
+                </button>
+            </div>
+        </div>
+    </details>
+
+    <div class="mb-4">
+        <h6 class="fw-bold mb-3">Active Filter Conditions</h6>
+        
+        @if (filterConditions.Count > 0)
+        {
+            <div class="d-grid gap-2 mb-2">
+                @foreach (var condition in filterConditions)
+                {
+                    <div class="border rounded px-3 py-2 border-light-subtle bg-white shadow-sm d-flex flex-wrap gap-2 align-items-center">
+                        
+                        <select class="form-select w-auto" value="@condition.Field" @onchange="e => ChangeConditionField(condition, e.Value?.ToString())">
+                            @foreach (var field in AvailableFields)
+                            {
+                                <option value="@field.Key">@field.Label</option>
+                            }
+                        </select>
+
+                        <select class="form-select w-auto" value="@condition.Operator" @onchange="e => ChangeConditionOperator(condition, e.Value?.ToString())">
+                            @foreach (var filterOperator in GetOperators(condition))
+                            {
+                                <option value="@filterOperator.Value">@filterOperator.Label</option>
+                            }
+                        </select>
+
+                        @if (ShowOptionEditor(condition))
+                        {
+                            <select class="form-select w-auto flex-grow-1" style="min-width: 150px;" @bind="condition.Value">
+                                @foreach (var option in GetValues(condition))
+                                {
+                                    <option value="@option.Value">@option.Label</option>
+                                }
+                            </select>
+                        }
+                        else if (ShowTextEditor(condition))
+                        {
+                            <input class="form-control w-auto flex-grow-1" style="min-width: 150px;" type="@GetInputType(condition)" @bind="condition.Value" placeholder="Value..." />
+                        }
+
+                        <button class="btn btn-link text-danger p-1 ms-auto" title="Remove condition" @onclick="() => RemoveCondition(condition)" disabled="@IsBusy">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                }
+            </div>
+        }
+
+        <div class="d-flex flex-wrap gap-2 mt-3">
+            <select class="form-select w-auto" value="@selectedNewFilterFieldKey" @onchange="OnNewFieldChanged">
+                @foreach (var field in AvailableFields)
+                {
+                    <option value="@field.Key">@field.Label</option>
+                }
+            </select>
+            <button class="btn btn-outline-secondary" @onclick="AddCondition" disabled="@(!CanAddCondition)">
+                <i class="bi bi-plus-lg"></i> Add condition
+            </button>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mt-4">
+        <button class="btn btn-outline-secondary" @onclick="ClearFiltersAsync" disabled="@IsBusy">
+            <i class="bi bi-funnel"></i> Clear All
+        </button>
+        
+        <button class="btn btn-primary fw-bold px-4 py-2" @onclick="SearchAsync" disabled="@IsBusy">
+            <i class="bi bi-search"></i> @CommonLoc.Search
+        </button>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter(Name = "ErrorService")]
+    protected IErrorService? ErrorService { get; set; }
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<FilterFieldOption> AvailableFields { get; set; } = [];
+
+    [Parameter, EditorRequired]
+    public ItemType TargetType { get; set; }
+
+    [Parameter]
+    public bool IsBusy { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<EntityFilter> ApplyFilter { get; set; }
+
+    private readonly List<FilterCondition> filterConditions = [];
+    private List<Filter> filters = [];
+    private EntityFilter appliedFilter = new();
+    
+    private string selectedNewFilterFieldKey = string.Empty;
+    private string? selectedNamedFilterName;
+    private string saveFilterName = string.Empty;
+    
+    private ItemType initializedTargetType;
+    private string[] initializedFieldKeys = [];
+
+    // Expression-bodied properties for concise state checks
+    private Filter? DefaultFilter => filters.FirstOrDefault(filter => filter.IsDefault);
+    private IEnumerable<Filter> NamedFilters => filters.Where(f => !f.IsDefault).OrderBy(f => f.Name, StringComparer.CurrentCultureIgnoreCase);
+    
+    private bool HasDefaultFilter => DefaultFilter?.Conditions.Count > 0;
+    private bool CanAddCondition => !IsBusy && !string.IsNullOrWhiteSpace(selectedNewFilterFieldKey);
+    private bool CanSaveFilter => !IsBusy && filterConditions.Count > 0 && !string.IsNullOrWhiteSpace(saveFilterName);
+    private bool CanApplyNamedFilter => !IsBusy && !string.IsNullOrWhiteSpace(selectedNamedFilterName);
+    private bool CanDeleteNamedFilter => !IsBusy && !string.IsNullOrWhiteSpace(selectedNamedFilterName);
+    private bool CanSetDefaultFilter => !IsBusy && filterConditions.Count > 0;
+    private bool CanClearDefaultFilter => !IsBusy && HasDefaultFilter;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (AvailableFields.Count == 0)
+        {
+            ResetState();
+            return;
+        }
+
+        if (!NeedsInitialization()) return;
+
+        initializedTargetType = TargetType;
+        initializedFieldKeys = [.. AvailableFields.Select(field => field.Key)];
+
+        if (AvailableFields.All(field => field.Key != selectedNewFilterFieldKey))
+        {
+            selectedNewFilterFieldKey = AvailableFields.FirstOrDefault()?.Key ?? string.Empty;
+        }
+
+        try
+        {
+            filters = [.. await FilterService.GetItemsAsync(TargetType)];
+            LoadDraftFilter(DefaultFilter is { } defaultFilter ? ToEntityFilter(defaultFilter) : new EntityFilter());
+            await ApplyFilterAsync(BuildDraftFilter(), updateAppliedFilter: true);
+        }
+        catch (Exception ex)
+        {
+            Log.LogError(ex, "Error loading filters for {TargetType}.", TargetType);
+            ErrorService?.ShowError(CommonLoc.Filter, ex.Message);
+        }
+    }
+
+    public async Task RefreshAppliedFilterAsync()
+    {
+        if (!IsBusy)
+        {
+            await ApplyFilterAsync(CloneFilter(appliedFilter), updateAppliedFilter: false);
+        }
+    }
+
+    private bool NeedsInitialization() =>
+        !initializedTargetType.Equals(TargetType) ||
+        !initializedFieldKeys.SequenceEqual(AvailableFields.Select(f => f.Key));
+
+    private void ResetState()
+    {
+        initializedFieldKeys = [];
+        filters.Clear();
+        filterConditions.Clear();
+        appliedFilter = new();
+        selectedNewFilterFieldKey = string.Empty;
+        selectedNamedFilterName = null;
+        saveFilterName = string.Empty;
+    }
+
+    private Task SearchAsync() => ApplyFilterAsync(BuildDraftFilter(), updateAppliedFilter: true);
+
+    private Task ClearFiltersAsync()
+    {
+        LoadDraftFilter(new EntityFilter());
+        return ApplyFilterAsync(new EntityFilter(), updateAppliedFilter: true);
+    }
+
+    private void AddCondition()
+    {
+        if (!CanAddCondition) return;
+
+        filterConditions.Add(new FilterCondition { Field = selectedNewFilterFieldKey, Operator = FilterOperator.Equals });
+        NormalizeCondition(filterConditions[^1]);
+    }
+
+    private void RemoveCondition(FilterCondition condition) => filterConditions.Remove(condition);
+    private void OnNewFieldChanged(ChangeEventArgs args) => selectedNewFilterFieldKey = args.Value?.ToString() ?? string.Empty;
+
+    private void ChangeConditionField(FilterCondition condition, string? fieldKey)
+    {
+        condition.Field = fieldKey ?? string.Empty;
+        NormalizeCondition(condition);
+    }
+
+    private void ChangeConditionOperator(FilterCondition condition, string? filterOperator)
+    {
+        if (Enum.TryParse<FilterOperator>(filterOperator, ignoreCase: true, out var parsedOperator))
+        {
+            condition.Operator = parsedOperator;
+            NormalizeCondition(condition);
+        }
+    }
+
+    private FilterFieldOption? GetField(FilterCondition condition) => AvailableFields.FirstOrDefault(field => field.Key == condition.Field);
+    private IReadOnlyList<FilterOperatorOption> GetOperators(FilterCondition condition) => GetField(condition)?.Operators ?? [];
+    private IReadOnlyList<FilterValueOption> GetValues(FilterCondition condition) => GetField(condition)?.Values ?? [];
+
+    private bool ShowTextEditor(FilterCondition condition) => condition.Operator.RequiresValue() && GetValues(condition).Count == 0;
+    private bool ShowOptionEditor(FilterCondition condition) => condition.Operator.RequiresValue() && GetValues(condition).Count > 0;
+
+    private string GetInputType(FilterCondition condition) => GetField(condition)?.Kind switch
+    {
+        FilterFieldKind.Number => "number",
+        FilterFieldKind.DateTime => "datetime-local",
+        _ => "text",
+    };
+
+    private void NormalizeCondition(FilterCondition condition)
+    {
+        var field = GetField(condition);
+        if (field is null)
+        {
+            condition.Field = AvailableFields.FirstOrDefault()?.Key ?? string.Empty;
+            field = GetField(condition);
+            if (field is null) return; // Fallback falls AvailableFields leer ist
+        }
+
+        if (field.Operators.All(op => op.Value != condition.Operator))
+        {
+            condition.Operator = field.Operators.FirstOrDefault()?.Value ?? FilterOperator.Equals;
+        }
+
+        if (!condition.Operator.RequiresValue())
+        {
+            condition.Value = null;
+            return;
+        }
+
+        if (field.Values.Count > 0 && field.Values.All(v => v.Value != condition.Value))
+        {
+            condition.Value = field.Values.FirstOrDefault()?.Value;
+        }
+        else
+        {
+            condition.Value ??= string.Empty;
+        }
+    }
+
+    private async Task SaveCurrentFilterAsync()
+    {
+        if (!CanSaveFilter)
+        {
+            ErrorService?.ShowError(CommonLoc.Filter, "Enter a filter name and add at least one condition before saving.");
+            return;
+        }
+
+        try
+        {
+            var filter = BuildDraftFilter();
+            var filterName = saveFilterName.Trim();
+            var existing = filters.FirstOrDefault(f => !f.IsDefault && string.Equals(f.Name, filterName, StringComparison.OrdinalIgnoreCase));
+
+            if (existing is null)
+            {
+                var newFilter = new Filter
+                {
+                    Id = Guid.NewGuid(),
+                    TargetType = TargetType,
+                    Name = filterName,
+                    Conditions = CloneConditions(filter.Conditions)
+                };
+                await FilterService.AddItemAsync(newFilter);
+                filters.Add(CloneFilter(newFilter));
+                selectedNamedFilterName = newFilter.Name;
+            }
+            else
+            {
+                existing.TargetType = TargetType;
+                existing.Name = filterName;
+                existing.IsDefault = false;
+                existing.Conditions = CloneConditions(filter.Conditions);
+
+                await FilterService.UpdateItemAsync(CloneFilter(existing));
+                ReplaceFilter(existing);
+                selectedNamedFilterName = existing.Name;
+            }
+
+            saveFilterName = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            Log.LogError(ex, "Error saving filter for {TargetType}.", TargetType);
+            ErrorService?.ShowError(CommonLoc.Filter, ex.Message);
+        }
+    }
+
+    private async Task ApplyNamedFilterAsync()
+    {
+        if (GetSelectedNamedFilter() is { } namedFilter)
+        {
+            var filter = ToEntityFilter(namedFilter);
+            LoadDraftFilter(filter);
+            await ApplyFilterAsync(CloneFilter(filter), updateAppliedFilter: true);
+        }
+    }
+
+    private async Task DeleteNamedFilterAsync()
+    {
+        if (GetSelectedNamedFilter() is { } namedFilter)
+        {
+            try
+            {
+                await FilterService.DeleteItemAsync(namedFilter.Id);
+                filters.RemoveAll(f => f.Id == namedFilter.Id);
+                selectedNamedFilterName = null;
+            }
+            catch (Exception ex)
+            {
+                Log.LogError(ex, "Error deleting filter for {TargetType}.", TargetType);
+                ErrorService?.ShowError(CommonLoc.Filter, ex.Message);
+            }
+        }
+    }
+
+    private async Task SetDefaultFilterAsync()
+    {
+        if (!CanSetDefaultFilter) return;
+
+        try
+        {
+            var filter = BuildDraftFilter();
+            if (DefaultFilter is null)
+            {
+                var newFilter = new Filter
+                {
+                    Id = Guid.NewGuid(),
+                    TargetType = TargetType,
+                    IsDefault = true,
+                    Conditions = CloneConditions(filter.Conditions)
+                };
+                await FilterService.AddItemAsync(newFilter);
+                filters.Add(CloneFilter(newFilter));
+            }
+            else
+            {
+                DefaultFilter.TargetType = TargetType;
+                DefaultFilter.IsDefault = true;
+                DefaultFilter.Conditions = CloneConditions(filter.Conditions);
+
+                await FilterService.UpdateItemAsync(CloneFilter(DefaultFilter));
+                ReplaceFilter(DefaultFilter);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.LogError(ex, "Error setting default filter for {TargetType}.", TargetType);
+            ErrorService?.ShowError(CommonLoc.Filter, ex.Message);
+        }
+    }
+
+    private async Task ClearDefaultFilterAsync()
+    {
+        if (DefaultFilter is { } defaultFilter)
+        {
+            try
+            {
+                await FilterService.DeleteItemAsync(defaultFilter.Id);
+                filters.RemoveAll(f => f.Id == defaultFilter.Id);
+            }
+            catch (Exception ex)
+            {
+                Log.LogError(ex, "Error clearing default filter for {TargetType}.", TargetType);
+                ErrorService?.ShowError(CommonLoc.Filter, ex.Message);
+            }
+        }
+    }
+
+    private async Task ApplyFilterAsync(EntityFilter filter, bool updateAppliedFilter)
+    {
+        if (updateAppliedFilter)
+        {
+            appliedFilter = CloneFilter(filter);
+        }
+        await ApplyFilter.InvokeAsync(CloneFilter(filter));
+    }
+
+    private EntityFilter BuildDraftFilter() => new()
+    {
+        Conditions =
+        [
+            .. filterConditions
+                .Where(c => AvailableFields.Any(f => f.Key == c.Field))
+                .Where(c => !c.Operator.RequiresValue() || !string.IsNullOrWhiteSpace(c.Value))
+                .Select(c => new FilterCondition { Field = c.Field, Operator = c.Operator, Value = c.Value })
+        ]
+    };
+
+    private void LoadDraftFilter(EntityFilter filter)
+    {
+        var knownFieldKeys = AvailableFields.Select(f => f.Key).ToHashSet(StringComparer.Ordinal);
+        filterConditions.Clear();
+        
+        filterConditions.AddRange(filter.Conditions
+            .Where(c => knownFieldKeys.Contains(c.Field))
+            .Select(c => new FilterCondition { Field = c.Field, Operator = c.Operator, Value = c.Value }));
+
+        foreach (var condition in filterConditions)
+        {
+            NormalizeCondition(condition);
+        }
+    }
+
+    private Filter? GetSelectedNamedFilter() =>
+        NamedFilters.FirstOrDefault(f => string.Equals(f.Name, selectedNamedFilterName, StringComparison.OrdinalIgnoreCase));
+
+    private void ReplaceFilter(Filter filter)
+    {
+        var index = filters.FindIndex(existing => existing.Id == filter.Id);
+        if (index >= 0) filters[index] = CloneFilter(filter);
+        else filters.Add(CloneFilter(filter));
+    }
+
+    private static Filter CloneFilter(Filter filter) => new()
+    {
+        Id = filter.Id,
+        TargetType = filter.TargetType,
+        Name = filter.Name,
+        IsDefault = filter.IsDefault,
+        Conditions = CloneConditions(filter.Conditions),
+    };
+
+    private static List<FilterCondition> CloneConditions(IEnumerable<FilterCondition> conditions) =>
+        [.. conditions.Select(c => new FilterCondition { Field = c.Field, Operator = c.Operator, Value = c.Value })];
+
+    private static EntityFilter ToEntityFilter(Filter filter) => new() { Conditions = CloneConditions(filter.Conditions) };
+    private static EntityFilter CloneFilter(EntityFilter filter) => new() { Conditions = CloneConditions(filter.Conditions) };
+}

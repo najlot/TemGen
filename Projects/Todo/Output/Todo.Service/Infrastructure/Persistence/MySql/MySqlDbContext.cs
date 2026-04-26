@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using Todo.Service.Features.Filters;
 using Todo.Service.Features.History;
 using Todo.Service.Features.Users;
 using Todo.Service.Shared.Configuration;
@@ -40,6 +41,7 @@ public class MySqlDbContext(
 		modelBuilder.ApplyConfigurationsFromAssembly(typeof(MySqlDbContext).Assembly);
 	}
 
+	public DbSet<FilterModel> Filters { get; set; }
 	public DbSet<HistoryModel> HistoryEntries { get; set; }
 	public DbSet<UserModel> Users { get; set; }
 	public DbSet<NoteModel> Notes { get; set; }

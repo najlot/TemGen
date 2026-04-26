@@ -2,6 +2,7 @@ namespace <# Project.Namespace#>.Service.Shared.Configuration;
 
 public class FileConfiguration
 {
+	public string FiltersPath { get; set; } = "Data/Filters";
 	public string UsersPath { get; set; } = "Data/Users";
 	public string HistoryPath { get; set; } = "Data/History";
 <#for definition in Definitions.Where(d => !(d.IsArray

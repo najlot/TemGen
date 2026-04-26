@@ -4,7 +4,8 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Net.Http.Json;
 using Todo.Client.Data.Identity;
-using Todo.Client.Data.Serialization;
+using Todo.Client.Data;
+using Todo.Contracts.Filters;
 using Todo.Contracts.Notes;
 
 namespace Todo.Client.Data.Notes;
@@ -19,7 +20,7 @@ public class NoteRepository(IHttpClientFactory httpClientFactory, ITokenProvider
 		return map.From<NoteListItem>(items).ToArray<NoteListItemModel>();
 	}
 
-	public async Task<NoteListItemModel[]> GetItemsAsync(NoteFilter filter)
+	public async Task<NoteListItemModel[]> GetItemsAsync(EntityFilter filter)
 	{
 		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
 		var response = await client.PostAsJsonAsync("api/Note/ListFiltered", filter, ClientDataJsonSerializer.Options).ConfigureAwait(false);

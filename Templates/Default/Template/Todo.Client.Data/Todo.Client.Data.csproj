@@ -17,6 +17,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\<#cs Write(Project.Namespace)#>.Client.Localisation\<#cs Write(Project.Namespace)#>.Client.Localisation.csproj" />
 		<ProjectReference Include="..\<#cs Write(Project.Namespace)#>.Contracts\<#cs Write(Project.Namespace)#>.Contracts.csproj" />
 	</ItemGroup>
 

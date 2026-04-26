@@ -1,3 +1,4 @@
+using Todo.Service.Features.Filters;
 using Todo.Service.Features.History;
 using Todo.Service.Features.Users;
 using Todo.Service.Infrastructure.Persistence;
@@ -82,6 +83,7 @@ public sealed class StorageBackupHostedService(
 
 		EnsureTargetStorageCreated(serviceProvider, backupConfiguration.Target);
 
+		await SynchronizeAsync<FilterModel>(serviceProvider, cancellationToken).ConfigureAwait(false);
 		await SynchronizeAsync<HistoryModel>(serviceProvider, cancellationToken).ConfigureAwait(false);
 		await SynchronizeAsync<UserModel>(serviceProvider, cancellationToken).ConfigureAwait(false);
 		await SynchronizeAsync<NoteModel>(serviceProvider, cancellationToken).ConfigureAwait(false);
@@ -106,6 +108,7 @@ public sealed class StorageBackupHostedService(
 
 				var configuredPaths = new[]
 				{
+					fileConfiguration.FiltersPath,
 					fileConfiguration.HistoryPath,
 					fileConfiguration.UsersPath,
 					fileConfiguration.NotesPath,

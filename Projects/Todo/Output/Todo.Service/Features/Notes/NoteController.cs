@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Todo.Contracts.Filters;
 using Todo.Contracts.Notes;
 using Todo.Service.Infrastructure.Persistence;
 using Todo.Service.Shared.Results;
@@ -20,7 +21,7 @@ public class NoteController(NoteService noteService) : ControllerBase
 	}
 
 	[HttpPost("[action]")]
-	public async Task<ActionResult<List<NoteListItem>>> ListFiltered(NoteFilter filter)
+	public async Task<ActionResult<List<NoteListItem>>> ListFiltered(EntityFilter filter)
 	{
 		var query = noteService.GetItemsForUserAsync(filter);
 		var items = await query.ToListAsync().ConfigureAwait(false);

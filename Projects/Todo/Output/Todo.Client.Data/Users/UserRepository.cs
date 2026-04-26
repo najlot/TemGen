@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Net.Http.Json;
 using Todo.Client.Data.Identity;
-using Todo.Client.Data.Serialization;
+using Todo.Client.Data;
 using Todo.Contracts.Users;
 
 namespace Todo.Client.Data.Users;

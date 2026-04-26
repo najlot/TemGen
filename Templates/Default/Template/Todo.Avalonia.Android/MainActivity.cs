@@ -3,7 +3,6 @@ using Android.OS;
 using Android.Content.PM;
 using Android.Util;
 using Android.Views;
-using Avalonia;
 using Avalonia.Android;
 using System;
 using <# Project.Namespace#>.Avalonia.Android.Identity;
@@ -18,18 +17,12 @@ namespace <# Project.Namespace#>.Avalonia.Android;
 	MainLauncher = true,
 	WindowSoftInputMode = SoftInput.AdjustResize,
 	ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
-public class MainActivity : AvaloniaMainActivity<App>
+public class MainActivity : AvaloniaMainActivity
 {
 	protected override void OnCreate(Bundle? savedInstanceState)
 	{
 		ServiceProviderFactory.PlatformUserDataStoreFactory ??= () => new SecureUserDataStore(this);
 		base.OnCreate(savedInstanceState);
-	}
-
-	protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
-	{
-		return base.CustomizeAppBuilder(builder)
-			.WithInterFont();
 	}
 
 	public override async void OnBackPressed()
@@ -51,9 +44,17 @@ public class MainActivity : AvaloniaMainActivity<App>
 			Log.Error(typeof(MainActivity).FullName, $"OnBackPressed error {ex}");
 		}
 
+		if (Build.VERSION.SdkInt >= BuildVersionCodes.N)
+		{
+#pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1422 // Validate platform compatibility
-		base.OnBackPressed();
+			base.OnBackPressed();
 #pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+			return;
+		}
+
+		Finish();
 	}
 }
 <#cs SetOutputPathAndSkipOtherDefinitions()#>

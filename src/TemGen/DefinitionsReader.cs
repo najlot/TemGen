@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -14,7 +15,7 @@ public static class DefinitionsReader
 		{
 			foreach (var e in d.Entries)
 			{
-				if (!(e.IsEnumeration || e.IsArray || e.IsEnumeration) && e.EntryType == definition.Name)
+				if (!(e.IsEnumeration || e.IsArray) && e.EntryType == definition.Name)
 				{
 					e.IsOwnedType = true;
 					result = true;
@@ -73,7 +74,7 @@ public static class DefinitionsReader
 		return "Guid";
 	}
 
-	private static string GetLowName(string from) => from[0].ToString().ToLower() + from.Substring(1);
+	private static string GetLowName(string from) => string.Concat(from[0].ToString().ToLower(), from.AsSpan(1));
 
 	public static List<Definition> ReadDefinitions(string definitionPath)
 	{

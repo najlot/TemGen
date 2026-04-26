@@ -4,7 +4,8 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Net.Http.Json;
 using Todo.Client.Data.Identity;
-using Todo.Client.Data.Serialization;
+using Todo.Client.Data;
+using Todo.Contracts.Filters;
 using Todo.Contracts.TodoItems;
 
 namespace Todo.Client.Data.TodoItems;
@@ -19,7 +20,7 @@ public class TodoItemRepository(IHttpClientFactory httpClientFactory, ITokenProv
 		return map.From<TodoItemListItem>(items).ToArray<TodoItemListItemModel>();
 	}
 
-	public async Task<TodoItemListItemModel[]> GetItemsAsync(TodoItemFilter filter)
+	public async Task<TodoItemListItemModel[]> GetItemsAsync(EntityFilter filter)
 	{
 		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
 		var response = await client.PostAsJsonAsync("api/TodoItem/ListFiltered", filter, ClientDataJsonSerializer.Options).ConfigureAwait(false);

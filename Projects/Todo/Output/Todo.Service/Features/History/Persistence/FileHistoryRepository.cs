@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Todo.Service.Serialization;
+using Todo.Service;
 using Todo.Service.Shared.Configuration;
 
 namespace Todo.Service.Features.History.Persistence;

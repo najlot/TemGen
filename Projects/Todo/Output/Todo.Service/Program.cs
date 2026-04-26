@@ -21,6 +21,7 @@ internal static class Program
 		var services = builder.Services;
 		services.AddSingleton(startupConfiguration);
 		services.AddSingleton(startupConfiguration.ServiceConfiguration);
+		services.AddSingleton(startupConfiguration.SmtpConfiguration);
 
 		switch (startupConfiguration.PrimaryStorage)
 		{

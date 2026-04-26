@@ -17,6 +17,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Todo.Client.Localisation\Todo.Client.Localisation.csproj" />
 		<ProjectReference Include="..\Todo.Contracts\Todo.Contracts.csproj" />
 	</ItemGroup>
 

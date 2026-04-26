@@ -1,15 +1,20 @@
 @page "/TodoItems"
-@using Microsoft.Extensions.Localization;
-@using Todo.Blazor.Identity;
-@using Todo.Blazor.Services;
-@using Todo.Client.Data;
-@using Todo.Client.Data.TodoItems;
-@using Todo.Client.Localisation;
-@using Todo.Contracts.TodoItems;
+@using Humanizer
+@using Microsoft.AspNetCore.Components
+@using Todo.Blazor.Services
+@using Todo.Client.Data
+@using Todo.Client.Data.Filters
+@using Todo.Client.Data.TodoItems
+@using Todo.Client.Data.Users
+@using Todo.Client.Localisation
+@using Todo.Contracts.Filters
+@using Todo.Contracts.Shared
+@using Todo.Contracts.TodoItems
 
 @inject ILogger<TodoItems> Log
 @inject Najlot.Map.IMap Map
 @inject ITodoItemService TodoItemService
+@inject IUserService UserService
 @inject NavigationManager NavigationManager
 
 @attribute [Authorize]
@@ -17,17 +22,24 @@
 
 <PageTitle>@TodoItemLoc.TodoItems</PageTitle>
 
-@if (todoItems == null)
-{
-	<p><em>@CommonLoc.Loading...</em></p>
-}
-else
-{
- 	<section class="d-grid gap-3">
-		<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-			<h1 class="mb-0">@TodoItemLoc.TodoItems</h1>
-			<a href="/TodoItem/@Guid.Empty" class="btn btn-success material-symbols-sharp">add</a>
-		</div>
+<section class="d-grid gap-3">
+	<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+		<h1 class="mb-0">@TodoItemLoc.TodoItems</h1>
+		<a href="/TodoItem/@Guid.Empty" class="btn btn-success material-symbols-sharp">add</a>
+	</div>
+
+	<EntityFilterEditor @ref="filterEditor"
+						AvailableFields="availableFilterFields"
+						TargetType="ItemType.TodoItem"
+						IsBusy="isLoading"
+						ApplyFilter="HandleFilterAppliedAsync" />
+
+	@if (todoItems is null)
+	{
+		<p><em>@CommonLoc.Loading...</em></p>
+	}
+	else
+	{
 		<div class="card shadow-sm border-0">
 			<div class="table-responsive">
 				<table class="table table-hover align-middle mb-0">
@@ -42,8 +54,8 @@ else
 						@foreach (var todoItem in todoItems)
 						{
 							<tr scope="row">
-								<td class="text-break">@LimitDisplayLength(todoItem.Title, 75)</td>
-								<td class="text-break">@LimitDisplayLength(todoItem.Content, 75)</td>
+								<td class="text-break">@todoItem.Title.Truncate(75)</td>
+								<td class="text-break">@todoItem.Content.Truncate(75)</td>
 								<td class="text-end"><a href="/TodoItem/@todoItem.Id" class="btn btn-outline-primary btn-sm">@CommonLoc.Edit</a></td>
 							</tr>
 						}
@@ -51,28 +63,25 @@ else
 				</table>
 			</div>
 		</div>
-	</section>
-}
+	}
+</section>
 
 @code {
 	[CascadingParameter(Name = "ErrorService")]
 	protected IErrorService? ErrorService { get; set; }
 
+	private EntityFilterEditor? filterEditor;
 	private List<TodoItemListItemModel>? todoItems;
-
-	private string LimitDisplayLength(string? value, int maxLength)
-	{
-		if (maxLength < 3) throw new InvalidOperationException("MaxLength must be greater than 3");
-		if (string.IsNullOrWhiteSpace(value)) return "";
-		if (value.Length <= maxLength) return value;
-		return value.Substring(0, maxLength - 3) + "...";
-	}
+	private IReadOnlyList<FilterFieldOption> availableFilterFields = [];
+	private bool isLoading;
+	private EntityFilter? _lastFilter;
 
 	protected override async Task OnInitializedAsync()
 	{
 		try
 		{
-			todoItems = new List<TodoItemListItemModel>(await TodoItemService.GetItemsAsync());
+			var users = await UserService.GetItemsAsync();
+			availableFilterFields = BuildFilterFieldOptions(users);
 
 			TodoItemService.ItemCreated += Handle;
 			TodoItemService.ItemUpdated += Handle;
@@ -88,13 +97,143 @@ else
 		catch (Exception ex)
 		{
 			Log.LogError(ex, "Error loading TodoItems.");
+			todoItems = [];
 			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotLoad);
 		}
 	}
 
+	private Task HandleFilterAppliedAsync(EntityFilter filter)
+		=> LoadItemsAsync(filter);
+
+	private async Task RefreshAppliedFilterAsync()
+	{
+		if (filterEditor is null || isLoading)
+		{
+			return;
+		}
+
+		await filterEditor.RefreshAppliedFilterAsync();
+	}
+
+	private async Task LoadItemsAsync(EntityFilter filter)
+	{
+		try
+		{
+			isLoading = true;
+			_lastFilter = filter;
+
+			todoItems = filter.Conditions.Count == 0
+				? [.. await TodoItemService.GetItemsAsync().ConfigureAwait(false)]
+				: [.. await TodoItemService.GetItemsAsync(filter).ConfigureAwait(false)];
+		}
+		catch (Todo.Client.Data.Identity.SessionUnavailableException)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigationManager.NavigateTo(url);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error loading filtered TodoItems.");
+			ErrorService?.ShowError(ErrorLoc.Error, ex.Message);
+		}
+		finally
+		{
+			isLoading = false;
+		}
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private IReadOnlyList<FilterFieldOption> BuildFilterFieldOptions(UserListItemModel[] users)
+	{
+		return
+		[
+			new FilterFieldOption
+			{
+				Key = "Title",
+				Label = TodoItemLoc.Title,
+				Kind = FilterFieldKind.Text,
+				Operators = FilterOperatorCatalog.CreateTextOptions(),
+				Values = [],
+			},
+			new FilterFieldOption
+			{
+				Key = "Content",
+				Label = TodoItemLoc.Content,
+				Kind = FilterFieldKind.Text,
+				Operators = FilterOperatorCatalog.CreateTextOptions(),
+				Values = [],
+			},
+			new FilterFieldOption
+			{
+				Key = "CreatedAt",
+				Label = TodoItemLoc.CreatedAt,
+				Kind = FilterFieldKind.DateTime,
+				Operators = FilterOperatorCatalog.CreateComparableOptions(false),
+				Values = [],
+			},
+			new FilterFieldOption
+			{
+				Key = "CreatedBy",
+				Label = TodoItemLoc.CreatedBy,
+				Kind = FilterFieldKind.Text,
+				Operators = FilterOperatorCatalog.CreateTextOptions(),
+				Values = [],
+			},
+			new FilterFieldOption
+			{
+				Key = "AssignedToId",
+				Label = TodoItemLoc.AssignedTo,
+				Kind = FilterFieldKind.Option,
+				Operators = FilterOperatorCatalog.CreateEqualityOptions(false),
+				Values = [.. users.Select(item => new FilterValueOption
+				{
+					Value = item.Id.ToString(),
+					Label = Convert.ToString(item.Username) ?? CommonLoc.Untitled,
+				})],
+			},
+			new FilterFieldOption
+			{
+				Key = "Status",
+				Label = TodoItemLoc.Status,
+				Kind = FilterFieldKind.Option,
+				Operators = FilterOperatorCatalog.CreateEqualityOptions(false),
+				Values = [.. Enum.GetValues<TodoItemStatus>().Select(value => new FilterValueOption
+				{
+					Value = value.ToString(),
+					Label = value.ToString(),
+				})],
+			},
+			new FilterFieldOption
+			{
+				Key = "ChangedAt",
+				Label = TodoItemLoc.ChangedAt,
+				Kind = FilterFieldKind.DateTime,
+				Operators = FilterOperatorCatalog.CreateComparableOptions(false),
+				Values = [],
+			},
+			new FilterFieldOption
+			{
+				Key = "ChangedBy",
+				Label = TodoItemLoc.ChangedBy,
+				Kind = FilterFieldKind.Text,
+				Operators = FilterOperatorCatalog.CreateTextOptions(),
+				Values = [],
+			},
+			new FilterFieldOption
+			{
+				Key = "Priority",
+				Label = TodoItemLoc.Priority,
+				Kind = FilterFieldKind.Text,
+				Operators = FilterOperatorCatalog.CreateTextOptions(),
+				Values = [],
+			},
+		];
+	}
+
 	private async Task Handle(object? sender, TodoItemCreated message)
 	{
-		if (todoItems is null)
+		if (todoItems is null || _lastFilter is { Conditions.Count: > 0 })
 		{
 			return;
 		}

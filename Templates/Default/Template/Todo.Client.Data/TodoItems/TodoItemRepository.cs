@@ -4,7 +4,8 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Net.Http.Json;
 using <# Project.Namespace#>.Client.Data.Identity;
-using <# Project.Namespace#>.Client.Data.Serialization;
+using <# Project.Namespace#>.Client.Data;
+using <# Project.Namespace#>.Contracts.Filters;
 using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
 
 namespace <# Project.Namespace#>.Client.Data.<# Definition.Name#>s;
@@ -19,7 +20,7 @@ public class <# Definition.Name#>Repository(IHttpClientFactory httpClientFactory
 		return map.From<<# Definition.Name#>ListItem>(items).ToArray<<# Definition.Name#>ListItemModel>();
 	}
 
-	public async Task<<# Definition.Name#>ListItemModel[]> GetItemsAsync(<# Definition.Name#>Filter filter)
+	public async Task<<# Definition.Name#>ListItemModel[]> GetItemsAsync(EntityFilter filter)
 	{
 		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
 		var response = await client.PostAsJsonAsync("api/<# Definition.Name#>/ListFiltered", filter, ClientDataJsonSerializer.Options).ConfigureAwait(false);

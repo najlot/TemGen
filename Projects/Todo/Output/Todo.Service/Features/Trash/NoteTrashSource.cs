@@ -1,3 +1,4 @@
+using Najlot.Map;
 using Todo.Contracts.Notes;
 using Todo.Contracts.Trash;
 using Todo.Contracts.Shared;
@@ -6,9 +7,6 @@ using Todo.Service.Features.History;
 using Todo.Service.Features.Notes;
 using Todo.Service.Shared.Realtime;
 using Todo.Service.Shared.Results;
-
-using Najlot.Map;
-
 
 namespace Todo.Service.Features.Trash;
 

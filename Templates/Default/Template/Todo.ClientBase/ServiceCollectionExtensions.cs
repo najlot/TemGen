@@ -34,10 +34,12 @@ public static class ServiceCollectionExtensions
 		{
 			serviceCollection.AddTransient(typeof(ViewModelBaseParameters<>));
 
+			serviceCollection.AddTransient<ForgotPasswordViewModel>();
 			serviceCollection.AddTransient<LoginViewModel>();
 			serviceCollection.AddTransient<RegisterViewModel>();
 			serviceCollection.AddTransient<MenuViewModel>();
 			serviceCollection.AddTransient<ManageViewModel>();
+			serviceCollection.AddTransient<ResetPasswordViewModel>();
 			serviceCollection.AddTransient<GlobalSearchViewModel>();
 			serviceCollection.AddTransient<EntityHistoryViewModel>();
 			serviceCollection.AddTransient<TrashViewModel>();
@@ -47,6 +49,7 @@ public static class ServiceCollectionExtensions
 	|| d.IsOwnedType
 	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
 #>			serviceCollection.AddTransient<<# definition.Name#>sViewModel>();
+			serviceCollection.AddTransient<<# definition.Name#>FilterViewModel>();
 <#end#>
 <#for definition in Definitions.Where(d => !(d.IsEnumeration
 	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))

@@ -1,5 +1,4 @@
-﻿using Najlot.Log;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.CommandLine;
@@ -18,12 +17,11 @@ internal class Program
 		=> ex is TemplateReadException
 			|| ex is AggregateException aggregate && aggregate.InnerExceptions.All(e => IsTemplateReadFailure(e));
 
-	private static async Task Generate(LogAdministrator admin, string path)
+	private static async Task Generate(string path)
 	{
 		var sw = Stopwatch.StartNew();
 
-		var log = admin.GetLogger("Main");
-		log.Info("Starting execution...");
+		Console.WriteLine("Starting execution...");
 
 		var project = ProjectReader.ReadProject(path);
 		var definitions = DefinitionsReader.ReadDefinitions(project.DefinitionsPath);
@@ -36,10 +34,10 @@ internal class Program
 		if (!string.IsNullOrWhiteSpace(project.ScriptsPath))
 		{
 			var scripts = TemplatesReader.ReadScripts(project.ScriptsPath);
-			csScripts = scripts.Where(script => script.Sections[0].Handler == TemplateHandler.CSharp).Select(s => s.Sections[0].Content).ToArray();
-			jsScripts = scripts.Where(script => script.Sections[0].Handler == TemplateHandler.JavaScript).Select(s => s.Sections[0].Content).ToArray();
-			pyScripts = scripts.Where(script => script.Sections[0].Handler == TemplateHandler.Python).Select(s => s.Sections[0].Content).ToArray();
-			luaScripts = scripts.Where(script => script.Sections[0].Handler == TemplateHandler.Lua).Select(s => s.Sections[0].Content).ToArray();
+			csScripts = scripts.Where(script => script.Handler == TemplateHandler.CSharp).Select(s => s.Content).ToArray();
+			jsScripts = scripts.Where(script => script.Handler == TemplateHandler.JavaScript).Select(s => s.Content).ToArray();
+			pyScripts = scripts.Where(script => script.Handler == TemplateHandler.Python).Select(s => s.Content).ToArray();
+			luaScripts = scripts.Where(script => script.Handler == TemplateHandler.Lua).Select(s => s.Content).ToArray();
 		}
 
 		var processor = new TemplateProcessor([
@@ -60,22 +58,26 @@ internal class Program
 		}
 		catch (JsonException ex)
 		{
-			log.Error(ex, "Could not read generation manifest {ManifestPath}. Stale-file cleanup will be skipped for this run.", GeneratedOutputManifest.GetManifestPath(project.OutputPath));
+			Console.Error.WriteLine($"Could not read generation manifest {GeneratedOutputManifest.GetManifestPath(project.OutputPath)}. Stale-file cleanup will be skipped for this run. {ex}");
 		}
 
 		if (!string.IsNullOrWhiteSpace(project.ResourcesScriptPath))
 		{
-			var resourcesScript = TemplatesReader.ReadScript(path, project.ResourcesScriptPath);
+			var (handler, content) = TemplatesReader.ReadScript(path, project.ResourcesScriptPath);
 
 			try
 			{
-				log.Debug("Processing resources script {ScriptPath}...", project.ResourcesScriptPath);
-				await processor.Handle(resourcesScript, new Definition() { Entries = [] }, null).ConfigureAwait(false);
+				await processor.Handle(new Template
+				{
+					RelativePath = project.ResourcesScriptPath,
+					Sections = [new TemplateSection { Handler = handler, Content = content }],
+					Encoding = System.Text.Encoding.UTF8,
+				}, new Definition() { Entries = [] }, null).ConfigureAwait(false);
 			}
 			catch (Exception ex)
 			{
 				hasProcessingErrors = true;
-				log.Error(ex, "Error processing script {ScriptPath}: ", project.ResourcesScriptPath);
+				Console.Error.WriteLine($"Error processing script {project.ResourcesScriptPath}: {ex}");
 			}
 		}
 
@@ -91,7 +93,7 @@ internal class Program
 			{
 				foreach (var error in ex.InnerExceptions.Cast<TemplateReadException>())
 				{
-					log.Error("Error reading template {TemplatePath}: {Message}", error.TemplatePath, error.InnerException?.Message ?? error.Message);
+					Console.Error.WriteLine($"Error reading template {error.TemplatePath}: {error.InnerException?.Message ?? error.Message}");
 				}
 
 				throw;
@@ -129,14 +131,14 @@ internal class Program
 				catch (Exception ex)
 				{
 					hasProcessingErrors = true;
-					log.Error(ex, "Error processing {TemplatePath}: ", template.RelativePath);
+					Console.Error.WriteLine($"Error processing {template.RelativePath}: {ex}");
 				}
 			}).ConfigureAwait(false);
 		}
 
 		if (hasProcessingErrors)
 		{
-			log.Info("Skipping stale-file cleanup because generation completed with errors.");
+			Console.WriteLine("Skipping stale-file cleanup because generation completed with errors.");
 		}
 		else
 		{
@@ -145,31 +147,21 @@ internal class Program
 				Files = generatedFiles.OrderBy(f => f, StringComparer.Ordinal).ToHashSet(StringComparer.Ordinal)
 			};
 
-			var cleanupResult = await GeneratedOutputCleaner
-				.CleanupAsync(project.OutputPath, previousManifest, currentManifest)
-				.ConfigureAwait(false);
+			var deletedCount = GeneratedOutputCleaner.Cleanup(project.OutputPath, previousManifest, currentManifest);
 
-			if (cleanupResult.DeletedCount > 0)
+			if (deletedCount > 0)
 			{
-				log.Info("Stale-file cleanup removed {DeletedCount} file(s).", cleanupResult.DeletedCount);
+				Console.WriteLine($"Stale-file cleanup removed {deletedCount} file(s).");
 			}
 
 			await currentManifest.SaveAsync(project.OutputPath).ConfigureAwait(false);
 		}
 		
-		log.Info("Done after {Elapsed}.", sw.Elapsed);
+		Console.WriteLine($"Done after {sw.Elapsed}.");
 	}
 
 	private static async Task<int> Main(string[] args)
 	{
-		var appdataDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-		appdataDir = Path.Combine(appdataDir, typeof(Program).Namespace);
-		Directory.CreateDirectory(appdataDir);
-
-		using var admin = LogAdministrator.Instance
-			.AddConsoleDestination(true)
-			.SetCollectMiddleware<Najlot.Log.Middleware.ConcurrentCollectMiddleware, Najlot.Log.Destinations.ConsoleDestination>();
-
 		var rootCommand = new RootCommand("TemGen - Template based code generator");
 
 		var pathOption = new Option<string>("--path", "-p")
@@ -185,27 +177,16 @@ internal class Program
 		};
 		rootCommand.Add(loopOption);
 
-		var logLevelOption = new Option<LogLevel>("--log-level")
-		{
-			Description = "Log level to use.",
-			DefaultValueFactory = (r) => LogLevel.Info
-		};
-		rootCommand.Add(logLevelOption);
-
 		rootCommand.SetAction(async r =>
 		{
 			var path = r.GetValue(pathOption);
 			var repeat = r.GetValue(loopOption);
-			var logLevel = r.GetValue(logLevelOption);
-
-			admin.SetLogLevel(logLevel);
 
 			try
 			{
 				do
 				{
-					await Generate(admin, path).ConfigureAwait(false);
-					admin.Flush();
+					await Generate(path).ConfigureAwait(false);
 
 					if (repeat)
 					{
@@ -222,13 +203,11 @@ internal class Program
 			catch (Exception ex) when (IsTemplateReadFailure(ex))
 			{
 				Environment.ExitCode = 1;
-				admin.Flush();
 			}
 			catch (Exception ex)
 			{
 				Environment.ExitCode = 1;
-				admin.GetLogger("Main").Error(ex, "Execution failed.");
-				admin.Flush();
+				Console.Error.WriteLine($"Execution failed: {ex}");
 			}
 		});
 
@@ -238,13 +217,11 @@ internal class Program
 		}
 		catch (Exception ex) when (IsTemplateReadFailure(ex))
 		{
-			admin.Flush();
 			return 1;
 		}
 		catch (Exception ex)
 		{
-			admin.GetLogger("Main").Error(ex, "Execution failed.");
-			admin.Flush();
+			Console.Error.WriteLine($"Execution failed: {ex}");
 			return 1;
 		}
 	}

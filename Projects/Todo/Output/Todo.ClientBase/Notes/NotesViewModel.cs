@@ -1,9 +1,11 @@
 using System;
-using System.Collections.ObjectModel;
 using System.Linq;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Todo.Client.Localisation;
 using Todo.Client.MVVM;
+using Todo.ClientBase.Filters;
+using Todo.Contracts.Filters;
 using Todo.Contracts.Notes;
 using Todo.Client.Data.Notes;
 
@@ -13,65 +15,77 @@ public class NotesViewModel : ViewModelBase, IAsyncInitializable, IDisposable
 {
 	private readonly INoteService _noteService;
 
-	public bool IsBusy { get; set => Set(ref field, value); }
-
-	public string Filter
-	{
-		get;
-		set => Set(ref field, value, () => NotesView.Refresh());
-	} = string.Empty;
-
-	public ObservableCollectionView<NoteListItemViewModel> NotesView { get; }
+	public bool IsBusy { get; set => Set(ref field, value, () => Filters.IsBusy = value); }
+	public EntityFilterEditorViewModel Filters { get; }
 	public ObservableCollection<NoteListItemViewModel> Notes { get; } = [];
 
 	public NotesViewModel(
 		INoteService noteService,
-		ViewModelBaseParameters <NoteViewModel> parameters) : base(parameters)
+		NoteFilterViewModel filters,
+		ViewModelBaseParameters<NotesViewModel> parameters) : base(parameters)
 	{
 		_noteService = noteService;
+		Filters = filters;
 
-		NotesView = new ObservableCollectionView<NoteListItemViewModel>(Notes, FilterNote);
+		Filters.FilterChanged += async (s, e) => await LoadItemsAsync(e);
+
+		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
+		AddNoteCommand = new AsyncCommand(AddNoteAsync, t => HandleError(t.Exception));
+		EditNoteCommand = new AsyncCommand<NoteListItemViewModel>(EditNoteAsync, t => HandleError(t.Exception));
 
 		_noteService.ItemCreated += Handle;
 		_noteService.ItemUpdated += Handle;
 		_noteService.ItemDeleted += Handle;
-
-		NavigateBackCommand = new AsyncCommand(NavigationService.NavigateBack, t => HandleError(t.Exception));
-		AddNoteCommand = new AsyncCommand(AddNoteAsync, t => HandleError(t.Exception));
-		EditNoteCommand = new AsyncCommand<NoteListItemViewModel>(EditNoteAsync, t => HandleError(t.Exception));
 	}
+
+	public AsyncCommand NavigateBackCommand { get; }
+	public AsyncCommand<NoteListItemViewModel> EditNoteCommand { get; }
+	public AsyncCommand AddNoteCommand { get; }
 
 	public async Task InitializeAsync()
 	{
-		await RefreshNotesAsync();
+		await Filters.InitializeAsync();
 		await _noteService.StartEventListener();
 	}
 
-	private bool FilterNote(NoteListItemViewModel item)
+	private async Task LoadItemsAsync(EntityFilter? filter)
 	{
-		if (string.IsNullOrEmpty(Filter))
+		try
 		{
-			return true;
-		}
+			IsBusy = true;
+			_lastFilter = filter;
 
-		var title = item.Title;
-		if (!string.IsNullOrEmpty(title) && title.IndexOf(Filter, StringComparison.OrdinalIgnoreCase) != -1)
+			var items = filter is null || filter.Conditions.Count == 0
+				? await _noteService.GetItemsAsync()
+				: await _noteService.GetItemsAsync(filter);
+
+			var viewModels = Map.From<NoteListItemModel>(items).To<NoteListItemViewModel>();
+			Notes.Clear();
+			foreach (var item in viewModels)
+			{
+				Notes.Add(item);
+			}
+		}
+		catch (Exception ex)
 		{
-			return true;
+			await NotificationService.ShowErrorAsync($"{ErrorLoc.ErrorLoadingData} {ex.Message}");
 		}
-
-		var content = item.Content;
-		if (!string.IsNullOrEmpty(content) && content.IndexOf(Filter, StringComparison.OrdinalIgnoreCase) != -1)
+		finally
 		{
-			return true;
+			IsBusy = false;
 		}
-
-		return false;
 	}
+
+	private EntityFilter? _lastFilter;
 
 	private async Task Handle(object? sender, NoteCreated obj)
 		=> await DispatcherHelper.InvokeOnUIThread(() =>
 		{
+			if (_lastFilter is { Conditions.Count: > 0 })
+			{
+				return;
+			}
+
 			var item = Map.From(obj).To<NoteListItemViewModel>();
 			Notes.Insert(0, item);
 		});
@@ -94,8 +108,6 @@ public class NotesViewModel : ViewModelBase, IAsyncInitializable, IDisposable
 			}
 		});
 
-	public AsyncCommand NavigateBackCommand { get; }
-	public AsyncCommand<NoteListItemViewModel> EditNoteCommand { get; }
 	public async Task EditNoteAsync(NoteListItemViewModel? model)
 	{
 		if (IsBusy || model is null)
@@ -118,7 +130,6 @@ public class NotesViewModel : ViewModelBase, IAsyncInitializable, IDisposable
 		}
 	}
 
-	public AsyncCommand AddNoteCommand { get; }
 	public async Task AddNoteAsync()
 	{
 		if (IsBusy)
@@ -137,40 +148,6 @@ public class NotesViewModel : ViewModelBase, IAsyncInitializable, IDisposable
 		}
 		finally
 		{
-			IsBusy = false;
-		}
-	}
-
-	public async Task RefreshNotesAsync()
-	{
-		if (IsBusy)
-		{
-			return;
-		}
-
-		try
-		{
-			IsBusy = true;
-			NotesView.Disable();
-			Filter = "";
-
-			Notes.Clear();
-
-			var notes = await _noteService.GetItemsAsync();
-			var viewModels = Map.From<NoteListItemModel>(notes).To<NoteListItemViewModel>();
-
-			foreach (var item in viewModels)
-			{
-				Notes.Add(item);
-			}
-		}
-		catch (Exception ex)
-		{
-			await NotificationService.ShowErrorAsync($"{ErrorLoc.ErrorLoadingData} {ex.Message}");
-		}
-		finally
-		{
-			NotesView.Enable();
 			IsBusy = false;
 		}
 	}

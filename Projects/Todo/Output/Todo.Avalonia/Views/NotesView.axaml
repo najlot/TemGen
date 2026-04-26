@@ -1,47 +1,50 @@
 <UserControl x:Class="Todo.Avalonia.Views.NotesView"
-             xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:loc="clr-namespace:Todo.Client.Localisation;assembly=Todo.Client.Localisation"
-             xmlns:local="using:Todo.Avalonia.Views"
-             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vms="clr-namespace:Todo.ClientBase.Notes;assembly=Todo.ClientBase"
-             d:DesignHeight="700"
-             d:DesignWidth="1000"
-             x:DataType="vms:NotesViewModel"
-             mc:Ignorable="d">
+			 xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:controls="using:Todo.Avalonia.Controls"
+			 xmlns:loc="clr-namespace:Todo.Client.Localisation;assembly=Todo.Client.Localisation"
+			 xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vms="clr-namespace:Todo.ClientBase.Notes;assembly=Todo.ClientBase"
+			 d:DesignHeight="800"
+			 d:DesignWidth="1000"
+			 x:DataType="vms:NotesViewModel"
+			 mc:Ignorable="d">
 
 	<Grid RowDefinitions="Auto,*">
-		<!--  Header  -->
-		<Grid Margin="16" ColumnDefinitions="Auto,*,Auto">
-			<Button Grid.Column="0" Command="{Binding NavigateBackCommand}">
-				<materialIcons:MaterialIcon Width="24" Height="24" Kind="ArrowBack" />
-			</Button>
-			<TextBox Grid.Column="1"
-			         Margin="8,0"
-			         VerticalAlignment="Center"
-			         Text="{Binding Filter, Mode=TwoWay}"
-			         Watermark="{x:Static loc:CommonLoc.Search}" />
-			<Button Grid.Column="2" Command="{Binding AddNoteCommand}">
-				<materialIcons:MaterialIcon Width="24" Height="24" Kind="Add" />
-			</Button>
-		</Grid>
+		<StackPanel Margin="16" Spacing="12">
+			<Grid ColumnDefinitions="Auto,*,Auto">
+				<Button Grid.Column="0" Command="{Binding NavigateBackCommand}">
+					<materialIcons:MaterialIcon Width="24" Height="24" Kind="ArrowBack" />
+				</Button>
+				<TextBlock Grid.Column="1"
+						   Margin="12,0"
+						   VerticalAlignment="Center"
+						   FontSize="24"
+						   FontWeight="SemiBold"
+						   Text="{x:Static loc:NoteLoc.Notes}" />
+				<Button Grid.Column="2" Command="{Binding AddNoteCommand}">
+					<materialIcons:MaterialIcon Width="24" Height="24" Kind="Add" />
+				</Button>
+			</Grid>
 
-		<!--  Main Content  -->
+			<controls:EntityFilterEditorView DataContext="{Binding Filters}" />
+		</StackPanel>
+
 		<ScrollViewer Grid.Row="1">
-			<ItemsControl ItemsSource="{Binding NotesView}">
+			<ItemsControl ItemsSource="{Binding Notes}">
 				<ItemsControl.ItemTemplate>
 					<DataTemplate x:DataType="vms:NoteListItemViewModel">
 						<Button Margin="16,8"
-						        Padding="0"
-						        HorizontalAlignment="Stretch"
-						        HorizontalContentAlignment="Stretch"
-						        Background="Transparent"
-						        BorderThickness="0"
-						        Command="{Binding $parent[ItemsControl].((vms:NotesViewModel)DataContext).EditNoteCommand}"
-						        CommandParameter="{Binding .}"
-						        Foreground="{StaticResource BackgroundColor}">
+								Padding="0"
+								HorizontalAlignment="Stretch"
+								HorizontalContentAlignment="Stretch"
+								Background="Transparent"
+								BorderThickness="0"
+								Command="{Binding $parent[ItemsControl].((vms:NotesViewModel)DataContext).EditNoteCommand}"
+								CommandParameter="{Binding .}"
+								Foreground="{StaticResource BackgroundColor}">
 							<StackPanel Margin="5">
 								<TextBlock Margin="5,5,5,0" Text="{Binding Title}" />
 								<TextBlock Margin="5,5,5,0" Text="{Binding Content}" TextWrapping="Wrap" />

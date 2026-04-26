@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using <# Project.Namespace#>.Service.Features.Filters;
+using <# Project.Namespace#>.Service.Features.Filters.Persistence;
 using <# Project.Namespace#>.Service.Features.History;
 using <# Project.Namespace#>.Service.Features.History.Persistence;
 using <# Project.Namespace#>.Service.Features.Users;
@@ -32,6 +34,7 @@ public static class MySqlRepositoryServiceCollectionExtensions
 			services.AddSingleton(configuration);
 			services.AddScoped<MySqlDbContext>();
 			services.AddScoped<IUnitOfWork, MySqlUnitOfWork>();
+			services.RegisterMySqlFilterPersistence();
 			services.RegisterMySqlHistoryPersistence();
 			services.RegisterMySqlUserPersistence();
 <#for definition in Definitions.Where(d => !(d.IsEnumeration
@@ -51,6 +54,7 @@ public static class MySqlRepositoryServiceCollectionExtensions
 				serviceProvider.GetRequiredService<ILoggerFactory>()));
 		services.AddKeyedScoped<IUnitOfWork>(serviceKey, static (serviceProvider, key) =>
 			new MySqlUnitOfWork(serviceProvider.GetRequiredKeyedService<MySqlDbContext>(key)));
+		services.RegisterMySqlFilterPersistence(serviceKey);
 		services.RegisterMySqlHistoryPersistence(serviceKey);
 		services.RegisterMySqlUserPersistence(serviceKey);
 <#for definition in Definitions.Where(d => !(d.IsEnumeration

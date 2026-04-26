@@ -18,7 +18,7 @@
 				<materialIcons:MaterialIcon Width="24" Height="24" Kind="ArrowBack" />
 			</Button>
 
-			<TextBox Margin="8,0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Filter, Mode=TwoWay}" Watermark="{x:Static loc:CommonLoc.Search}" />
+			<TextBox Margin="8,0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Filter, Mode=TwoWay}" PlaceholderText="{x:Static loc:CommonLoc.Search}" />
 
 			<Button Grid.Column="2"
 					HorizontalAlignment="Right"

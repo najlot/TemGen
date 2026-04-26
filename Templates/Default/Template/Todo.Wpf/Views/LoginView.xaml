@@ -45,6 +45,10 @@
 						Command="{Binding LoginCommand}"
 						Content="{x:Static loc:UserLoc.Login}" />
 
+				<Button Margin="0,8,0,0" Command="{Binding NavigateToForgotPasswordCommand}">
+					<TextBlock Text="{x:Static loc:UserLoc.ForgotPassword}" />
+				</Button>
+
 				<!--  Navigate to Register Link  -->
 				<Button Margin="0,8,0,0" Command="{Binding NavigateToRegisterCommand}">
 					<TextBlock Text="{x:Static loc:UserLoc.Register}" />

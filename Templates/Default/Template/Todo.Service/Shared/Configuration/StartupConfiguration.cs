@@ -15,4 +15,6 @@ public sealed class StartupConfiguration
 	public BackupConfiguration? BackupConfiguration { get; init; }
 
 	public required ServiceConfiguration ServiceConfiguration { get; init; }
+
+	public required SmtpConfiguration SmtpConfiguration { get; init; }
 }<#cs SetOutputPathAndSkipOtherDefinitions()#>

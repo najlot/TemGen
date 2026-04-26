@@ -17,7 +17,7 @@ public static class TemplatesReader
 	private static List<TemplateSection> ReadSections(string content)
 	{
 		var sections = new List<TemplateSection>();
-		Span<char> buffer = content.ToCharArray();
+		var buffer = content.AsSpan();
 
 		while (true)
 		{
@@ -242,7 +242,7 @@ public static class TemplatesReader
 		};
 	}
 
-	public static Template ReadScript(string path, string resourcesScriptPath)
+	public static (TemplateHandler Handler, string Content) ReadScript(string path, string resourcesScriptPath)
 	{
 		path = Path.GetFullPath(path);
 		resourcesScriptPath = Path.Combine(path, resourcesScriptPath);
@@ -251,14 +251,10 @@ public static class TemplatesReader
 		var handler = GetHandlerFromLanguage(extension);
 		var content = File.ReadAllText(resourcesScriptPath);
 
-		return new Template()
-		{
-			RelativePath = Path.GetRelativePath(path, resourcesScriptPath),
-			Sections = [new() { Content = content, Handler = handler }]
-		};
+		return (handler, content);
 	}
 
-	public static List<Template> ReadScripts(string scriptsPath)
+	public static List<(TemplateHandler Handler, string Content)> ReadScripts(string scriptsPath)
 	{
 		var files = Directory.GetFiles(scriptsPath, "*", SearchOption.AllDirectories);
 		var templates = files.Select(file => ReadScript(scriptsPath, file)).ToList();

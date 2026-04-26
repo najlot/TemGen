@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using <# Project.Namespace#>.Service.Serialization;
+using <# Project.Namespace#>.Service;
 using <# Project.Namespace#>.Service.Shared.Configuration;
 using <# Project.Namespace#>.Service.Features.<# Definition.Name#>s;
 

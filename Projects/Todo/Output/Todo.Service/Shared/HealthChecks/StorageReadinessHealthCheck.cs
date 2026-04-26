@@ -40,6 +40,7 @@ public sealed class StorageReadinessHealthCheck(IServiceProvider serviceProvider
 			{
 				var configuredPaths = new[]
 				{
+					fileConfiguration.FiltersPath,
 					fileConfiguration.HistoryPath,
 					fileConfiguration.UsersPath,
 					fileConfiguration.NotesPath,

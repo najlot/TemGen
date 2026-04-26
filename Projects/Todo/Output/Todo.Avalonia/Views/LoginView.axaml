@@ -23,7 +23,7 @@
 			<!--  Username  -->
 			<StackPanel HorizontalAlignment="Stretch" Spacing="4">
 				<TextBlock Text="{x:Static loc:UserLoc.Username}" />
-				<TextBox Classes="clearButton" Text="{Binding Username, Mode=TwoWay}" Watermark="{x:Static loc:UserLoc.Username}" />
+				<TextBox Classes="clearButton" Text="{Binding Username, Mode=TwoWay}" PlaceholderText="{x:Static loc:UserLoc.Username}" />
 			</StackPanel>
 
 			<!--  Password  -->
@@ -32,7 +32,7 @@
 				<TextBox Classes="revealPasswordButton"
 				         PasswordChar="•"
 				         Text="{Binding Password, Mode=TwoWay}"
-				         Watermark="{x:Static loc:UserLoc.Password}" />
+				         PlaceholderText="{x:Static loc:UserLoc.Password}" />
 			</StackPanel>
 
 			<!--  Login Button  -->
@@ -42,13 +42,12 @@
 			        Command="{Binding LoginCommand}"
 			        Content="{x:Static loc:UserLoc.Login}" />
 
-			<!--  Forgot Password Link
 			<Button Margin="0,8,0,0"
 					HorizontalAlignment="Stretch"
 					HorizontalContentAlignment="Center"
 					Classes="hyperlink"
 					Command="{Binding NavigateToForgotPasswordCommand}"
-					Content="{x:Static loc:UserLoc.ForgotPassword}" />-->
+					Content="{x:Static loc:UserLoc.ForgotPassword}" />
 
 			<!--  Navigate to Register Link  -->
 			<Button HorizontalAlignment="Stretch"

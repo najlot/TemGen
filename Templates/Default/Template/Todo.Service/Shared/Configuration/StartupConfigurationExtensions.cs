@@ -11,6 +11,7 @@ public static class StartupConfigurationExtensions
 		var mongoDbConfigFound = configuration.TryReadConfiguration<MongoDbConfiguration>(out var mongoDbConfig);
 		var mysqlConfigFound = configuration.TryReadConfiguration<MySqlConfiguration>(out var mysqlConfig);
 		var serviceConfigFound = configuration.TryReadConfiguration<ServiceConfiguration>(out var serviceConfig);
+		configuration.TryReadConfiguration<SmtpConfiguration>(out var smtpConfig);
 
 		if (!(fileConfigFound || liteDbConfigFound || mongoDbConfigFound || mysqlConfigFound))
 		{
@@ -27,7 +28,10 @@ public static class StartupConfigurationExtensions
 			ConfigurationReader.WriteConfigurationExample<ServiceConfiguration>();
 		}
 
-		if (string.IsNullOrWhiteSpace(serviceConfig?.Secret))
+		var resolvedServiceConfig = serviceConfig ?? throw new InvalidOperationException($"{nameof(ServiceConfiguration)} is missing.");
+		var resolvedSmtpConfig = smtpConfig ?? new SmtpConfiguration();
+
+		if (string.IsNullOrWhiteSpace(resolvedServiceConfig.Secret))
 		{
 			throw new Exception($"Please set {nameof(ServiceConfiguration.Secret)} in the {nameof(ServiceConfiguration)}!");
 		}
@@ -54,7 +58,8 @@ public static class StartupConfigurationExtensions
 			MongoDbConfiguration = mongoDbConfig,
 			MySqlConfiguration = mysqlConfig,
 			BackupConfiguration = backupConfigFound ? backupConfig : null,
-			ServiceConfiguration = serviceConfig,
+			ServiceConfiguration = resolvedServiceConfig,
+			SmtpConfiguration = resolvedSmtpConfig,
 		};
 	}
 

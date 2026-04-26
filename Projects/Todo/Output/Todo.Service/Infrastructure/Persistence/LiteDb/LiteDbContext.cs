@@ -1,5 +1,6 @@
 using LiteDB;
 using System.IO;
+using Todo.Service.Features.Filters;
 using Todo.Service.Features.History;
 using Todo.Service.Features.Users;
 using Todo.Service.Shared.Configuration;
@@ -40,6 +41,11 @@ public sealed class LiteDbContext : IDisposable
 
 	public void EnsureCreated()
 	{
+		var filtersCollection = GetCollection<FilterModel>("Filters");
+		filtersCollection.EnsureIndex(item => item.Id, true);
+		filtersCollection.EnsureIndex(item => item.UserId);
+		filtersCollection.EnsureIndex(item => item.TargetType);
+
 		var historyCollection = GetCollection<HistoryModel>("HistoryEntries");
 		historyCollection.EnsureIndex(item => item.Id, true);
 		historyCollection.EnsureIndex(item => item.EntityId);

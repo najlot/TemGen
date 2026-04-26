@@ -2,7 +2,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using System.Security.Cryptography;
 using <# Project.Namespace#>.Service.Features.Users;
 using <# Project.Namespace#>.Service.Shared.Configuration;
 
@@ -13,19 +12,23 @@ public class TokenService(
 	IUserIdProvider userIdProvider,
 	ServiceConfiguration serviceConfiguration)
 {
+	private const string TokenIssuer = "<# Project.Namespace#>.Service";
+	private const string TokenAudience = TokenIssuer;
+
 	public static TokenValidationParameters GetValidationParameters(string secret)
 	{
 		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
 
 		return new TokenValidationParameters
 		{
+			RequireSignedTokens = true,
+			RequireExpirationTime = true,
 			ValidateLifetime = true,
-			LifetimeValidator = (before, expires, token, param) =>
-			{
-				return expires > DateTime.UtcNow;
-			},
-			ValidateAudience = false,
-			ValidateIssuer = false,
+			ClockSkew = TimeSpan.Zero,
+			ValidateAudience = true,
+			ValidAudience = TokenAudience,
+			ValidateIssuer = true,
+			ValidIssuer = TokenIssuer,
 			ValidateActor = false,
 			ValidateIssuerSigningKey = true,
 			IssuerSigningKey = key
@@ -50,8 +53,8 @@ public class TokenService(
 		var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
 		var jwtToken = new JwtSecurityToken(
-			issuer: "<# Project.Namespace#>.Service",
-			audience: "<# Project.Namespace#>.Service",
+			issuer: TokenIssuer,
+			audience: TokenAudience,
 			claims: claim,
 			expires: DateTime.UtcNow.AddDays(7),
 			signingCredentials: credentials
@@ -70,17 +73,14 @@ public class TokenService(
 			return null;
 		}
 
-		var bytes = Encoding.UTF8.GetBytes(password);
-		var userUasswordHash = SHA256.HashData(bytes);
-
-		if (!Enumerable.SequenceEqual(user.PasswordHash, userUasswordHash))
+		if (!PasswordHasher.VerifyPassword(password, user.PasswordHash))
 		{
 			return null;
 		}
 
 		var claim = new[]
 		{
-			new Claim(ClaimTypes.Name, username),
+			new Claim(ClaimTypes.Name, user.Username),
 			new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
 		};
 
@@ -88,8 +88,8 @@ public class TokenService(
 		var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
 		var jwtToken = new JwtSecurityToken(
-			issuer: "<# Project.Namespace#>.Service",
-			audience: "<# Project.Namespace#>.Service",
+			issuer: TokenIssuer,
+			audience: TokenAudience,
 			claims: claim,
 			expires: DateTime.UtcNow.AddDays(7),
 			signingCredentials: credentials

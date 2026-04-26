@@ -31,10 +31,12 @@ public class ViewManager(IServiceProvider serviceProvider) : IViewManager<Contro
 {
 	private readonly Dictionary<Type, Type> _knownControls = new()
 	{
+		[typeof(ForgotPasswordViewModel)] = typeof(ForgotPasswordView),
 		[typeof(LoginViewModel)] = typeof(LoginView),
 		[typeof(RegisterViewModel)] = typeof(RegisterView),
 		[typeof(MenuViewModel)] = typeof(MenuView),
 		[typeof(ManageViewModel)] = typeof(ManageView),
+		[typeof(ResetPasswordViewModel)] = typeof(ResetPasswordView),
 		[typeof(GlobalSearchViewModel)] = typeof(GlobalSearchView),
 		[typeof(EntityHistoryViewModel)] = typeof(HistoryView),
 		[typeof(TrashViewModel)] = typeof(TrashView),

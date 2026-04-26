@@ -4,7 +4,7 @@ using Najlot.Audit;
 using Najlot.Map;
 using <# Project.Namespace#>.Contracts.History;
 using <# Project.Namespace#>.Service.Features.Auth;
-using <# Project.Namespace#>.Service.Serialization;
+using <# Project.Namespace#>.Service;
 using <# Project.Namespace#>.Service.Shared.Results;
 
 namespace <# Project.Namespace#>.Service.Features.History;

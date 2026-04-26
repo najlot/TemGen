@@ -1,9 +1,11 @@
 using Najlot.Map;
+using <# Project.Namespace#>.Contracts.Filters;
 using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
 using <# Project.Namespace#>.Contracts.Trash;
 using <# Project.Namespace#>.Contracts.Shared;
 using <# Project.Namespace#>.Service.Features.Auth;
 using <# Project.Namespace#>.Service.Features.History;
+using <# Project.Namespace#>.Service.Features.Filters;
 using <# Project.Namespace#>.Service.Shared.Realtime;
 using <# Project.Namespace#>.Service.Shared.Results;
 
@@ -16,6 +18,12 @@ public class <# Definition.Name#>Service(
 	IMap map,
 	IPermissionQueryFilter permissionQueryFilter)
 {
+	private static readonly HashSet<string> FilterableProperties = new(StringComparer.Ordinal)
+	{
+<#for entry in Entries.Where(e => !(e.IsKey || e.IsArray || e.IsOwnedType))
+#>		nameof(<# Definition.Name#>Model.<#cs Write(GetFieldPropertyName(entry.Field, entry.IsReference))#>),
+<#end#>	};
+
 	public async Task<Result> Create<# Definition.Name#>(Create<# Definition.Name#> command)
 	{
 		var item = new <# Definition.Name#>Model();
@@ -102,36 +110,28 @@ public class <# Definition.Name#>Service(
 		return Result<<# Definition.Name#>>.Success(map.From(item).To<<# Definition.Name#>>());
 	}
 
-	public IAsyncEnumerable<<# Definition.Name#>ListItem> GetItemsForUserAsync(<# Definition.Name#>Filter filter)
+	public IAsyncEnumerable<<# Definition.Name#>ListItem> GetItemsForUserAsync(EntityFilter filter)
 	{
+		if (filter.Conditions.Count == 0)
+		{
+			return GetItemsForUserAsync();
+		}
+
 		var query = <# Definition.NameLow#>Repository.GetAllQueryable();
 
 		query = query.Where(e => e.DeletedAt == null);
 		query = permissionQueryFilter.ApplyReadFilter(query);
 
-<#for entry in Entries
-#><#if entry.IsReference
-#>		if (filter.<# entry.Field#>Id != null)
-			query = query.Where(e => e.<# entry.Field#>Id == filter.<# entry.Field#>Id);
-<#elseif entry.EntryType == "long"
-		|| entry.EntryType == "short"
-		|| entry.EntryType == "int"
-		|| entry.EntryType == "ulong"
-		|| entry.EntryType == "ushort"
-		|| entry.EntryType == "uint"
-		|| entry.EntryType == "DateTime"
-        
-#>		if (filter.<# entry.Field#>From != null)
-			query = query.Where(e => e.<# entry.Field#> >= filter.<# entry.Field#>From);
-		if (filter.<# entry.Field#>To != null)
-			query = query.Where(e => e.<# entry.Field#> <= filter.<# entry.Field#>To);
-<#elseif entry.EntryType.ToLower() == "string"
-#>		if (!string.IsNullOrEmpty(filter.<# entry.Field#>))
-			query = query.Where(e => e.<# entry.Field#>.Contains(filter.<# entry.Field#>));
-<#elseif !(entry.IsArray || entry.IsOwnedType)
-#>		if (filter.<# entry.Field#> != null)
-			query = query.Where(e => e.<# entry.Field#> == filter.<# entry.Field#>);
-<#end#><#end#>
+		foreach (var condition in filter.Conditions)
+		{
+			if (!FilterableProperties.Contains(condition.Field))
+			{
+				continue;
+			}
+
+			query = query.ApplyFilter(condition.Field, condition);
+		}
+
 		return map.From(query).To<<# Definition.Name#>ListItem>().ToAsyncEnumerable();
 	}
 

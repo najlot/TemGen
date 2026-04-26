@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Todo.Contracts.Filters;
 using Todo.Contracts.TodoItems;
 
 namespace Todo.Client.Data.TodoItems;
@@ -15,7 +16,7 @@ public interface ITodoItemService
 	TodoItemModel CreateTodoItem();
 	Task AddItemAsync(TodoItemModel item);
 	Task<TodoItemListItemModel[]> GetItemsAsync();
-	Task<TodoItemListItemModel[]> GetItemsAsync(TodoItemFilter filter);
+	Task<TodoItemListItemModel[]> GetItemsAsync(EntityFilter filter);
 	Task<TodoItemModel> GetItemAsync(Guid id);
 	Task UpdateItemAsync(TodoItemModel item);
 	Task DeleteItemAsync(Guid id);

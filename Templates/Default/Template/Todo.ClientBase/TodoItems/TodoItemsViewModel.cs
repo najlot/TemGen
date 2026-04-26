@@ -1,85 +1,91 @@
 using System;
-using System.Collections.ObjectModel;
 using System.Linq;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using <# Project.Namespace#>.Client.Localisation;
 using <# Project.Namespace#>.Client.MVVM;
+using <# Project.Namespace#>.ClientBase.Filters;
+using <# Project.Namespace#>.Contracts.Filters;
 using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
 using <# Project.Namespace#>.Client.Data.<# Definition.Name#>s;
-<#for definition in Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n))
-#>using <# Project.Namespace#>.Client.Data.<# definition.Name#>s;
-<#end#>
+
 namespace <# Project.Namespace#>.ClientBase.<# Definition.Name#>s;
 
 public class <# Definition.Name#>sViewModel : ViewModelBase, IAsyncInitializable, IDisposable
 {
-<#for definition in Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n))
-#>	private readonly I<# definition.Name#>Service _<# definition.NameLow#>Service;
-<#end#>	private readonly I<# Definition.Name#>Service _<# Definition.NameLow#>Service;
+	private readonly I<# Definition.Name#>Service _<# Definition.NameLow#>Service;
 
-	public bool IsBusy { get; set => Set(ref field, value); }
-
-	public string Filter
-	{
-		get;
-		set => Set(ref field, value, () => <# Definition.Name#>sView.Refresh());
-	} = string.Empty;
-
-	public ObservableCollectionView<<# Definition.Name#>ListItemViewModel> <# Definition.Name#>sView { get; }
+	public bool IsBusy { get; set => Set(ref field, value, () => Filters.IsBusy = value); }
+	public EntityFilterEditorViewModel Filters { get; }
 	public ObservableCollection<<# Definition.Name#>ListItemViewModel> <# Definition.Name#>s { get; } = [];
 
 	public <# Definition.Name#>sViewModel(
 		I<# Definition.Name#>Service <# Definition.NameLow#>Service,
-<#for definition in Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n))
-#>		I<# definition.Name#>Service <# definition.NameLow#>Service,
-<#end#>		ViewModelBaseParameters <<# Definition.Name#>ViewModel> parameters) : base(parameters)
+		<# Definition.Name#>FilterViewModel filters,
+		ViewModelBaseParameters<<# Definition.Name#>sViewModel> parameters) : base(parameters)
 	{
 		_<# Definition.NameLow#>Service = <# Definition.NameLow#>Service;
-<#for definition in Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n))
-#>		_<# definition.NameLow#>Service = <# definition.NameLow#>Service;
-<#end#>
-		<# Definition.Name#>sView = new ObservableCollectionView<<# Definition.Name#>ListItemViewModel>(<# Definition.Name#>s, Filter<# Definition.Name#>);
+		Filters = filters;
+
+		Filters.FilterChanged += async (s, e) => await LoadItemsAsync(e);
+
+		NavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));
+		Add<# Definition.Name#>Command = new AsyncCommand(Add<# Definition.Name#>Async, t => HandleError(t.Exception));
+		Edit<# Definition.Name#>Command = new AsyncCommand<<# Definition.Name#>ListItemViewModel>(Edit<# Definition.Name#>Async, t => HandleError(t.Exception));
 
 		_<# Definition.NameLow#>Service.ItemCreated += Handle;
 		_<# Definition.NameLow#>Service.ItemUpdated += Handle;
 		_<# Definition.NameLow#>Service.ItemDeleted += Handle;
-
-<#cs if (Definition.Name == "Note") Write("\t\tNavigateBackCommand = new AsyncCommand(NavigationService.NavigateBack, t => HandleError(t.Exception));"); else Write("\t\tNavigateBackCommand = new AsyncCommand(() => NavigationService.NavigateBack(), t => HandleError(t.Exception));"); #>
-		Add<# Definition.Name#>Command = new AsyncCommand(Add<# Definition.Name#>Async, t => HandleError(t.Exception));
-		Edit<# Definition.Name#>Command = new AsyncCommand<<# Definition.Name#>ListItemViewModel>(Edit<# Definition.Name#>Async, t => HandleError(t.Exception));
 	}
+
+	public AsyncCommand NavigateBackCommand { get; }
+	public AsyncCommand<<# Definition.Name#>ListItemViewModel> Edit<# Definition.Name#>Command { get; }
+	public AsyncCommand Add<# Definition.Name#>Command { get; }
 
 	public async Task InitializeAsync()
 	{
-		await Refresh<# Definition.Name#>sAsync();
+		await Filters.InitializeAsync();
 		await _<# Definition.NameLow#>Service.StartEventListener();
 	}
 
-	private bool Filter<# Definition.Name#>(<# Definition.Name#>ListItemViewModel item)
+	private async Task LoadItemsAsync(EntityFilter? filter)
 	{
-		if (string.IsNullOrEmpty(Filter))
+		try
 		{
-			return true;
-		}
+			IsBusy = true;
+			_lastFilter = filter;
 
-<#for entry in Entries
-	.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2)
-#><#if entry.EntryType == "string"
-#>		var <# entry.FieldLow#> = item.<# entry.Field#>;
-<#else
-#>		var <# entry.FieldLow#> = item.<# entry.Field#>.ToString();
-<#end
-#>		if (!string.IsNullOrEmpty(<# entry.FieldLow#>) && <# entry.FieldLow#>.IndexOf(Filter, StringComparison.OrdinalIgnoreCase) != -1)
+			var items = filter is null || filter.Conditions.Count == 0
+				? await _<# Definition.NameLow#>Service.GetItemsAsync()
+				: await _<# Definition.NameLow#>Service.GetItemsAsync(filter);
+
+			var viewModels = Map.From<<# Definition.Name#>ListItemModel>(items).To<<# Definition.Name#>ListItemViewModel>();
+			<# Definition.Name#>s.Clear();
+			foreach (var item in viewModels)
+			{
+				<# Definition.Name#>s.Add(item);
+			}
+		}
+		catch (Exception ex)
 		{
-			return true;
+			await NotificationService.ShowErrorAsync($"{ErrorLoc.ErrorLoadingData} {ex.Message}");
 		}
-
-<#end#>		return false;
+		finally
+		{
+			IsBusy = false;
+		}
 	}
+
+	private EntityFilter? _lastFilter;
 
 	private async Task Handle(object? sender, <# Definition.Name#>Created obj)
 		=> await DispatcherHelper.InvokeOnUIThread(() =>
 		{
+			if (_lastFilter is { Conditions.Count: > 0 })
+			{
+				return;
+			}
+
 			var item = Map.From(obj).To<<# Definition.Name#>ListItemViewModel>();
 			<# Definition.Name#>s.Insert(0, item);
 		});
@@ -102,8 +108,6 @@ public class <# Definition.Name#>sViewModel : ViewModelBase, IAsyncInitializable
 			}
 		});
 
-	public AsyncCommand NavigateBackCommand { get; }
-	public AsyncCommand<<# Definition.Name#>ListItemViewModel> Edit<# Definition.Name#>Command { get; }
 	public async Task Edit<# Definition.Name#>Async(<# Definition.Name#>ListItemViewModel? model)
 	{
 		if (IsBusy || model is null)
@@ -126,7 +130,6 @@ public class <# Definition.Name#>sViewModel : ViewModelBase, IAsyncInitializable
 		}
 	}
 
-	public AsyncCommand Add<# Definition.Name#>Command { get; }
 	public async Task Add<# Definition.Name#>Async()
 	{
 		if (IsBusy)
@@ -145,42 +148,6 @@ public class <# Definition.Name#>sViewModel : ViewModelBase, IAsyncInitializable
 		}
 		finally
 		{
-			IsBusy = false;
-		}
-	}
-
-	public async Task Refresh<# Definition.Name#>sAsync()
-	{
-		if (IsBusy)
-		{
-			return;
-		}
-
-		try
-		{
-			IsBusy = true;
-			<# Definition.Name#>sView.Disable();
-			Filter = "";
-
-			<# Definition.Name#>s.Clear();
-
-<#for definition in Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n))
-#>			var <# definition.NameLow#>s = await _<# definition.NameLow#>Service.GetItemsAsync();
-<#end#>			var <# Definition.NameLow#>s = await _<# Definition.NameLow#>Service.GetItemsAsync();
-			var viewModels = Map.From<<# Definition.Name#>ListItemModel>(<# Definition.NameLow#>s).To<<# Definition.Name#>ListItemViewModel>();
-
-			foreach (var item in viewModels)
-			{
-				<# Definition.Name#>s.Add(item);
-			}
-		}
-		catch (Exception ex)
-		{
-			await NotificationService.ShowErrorAsync($"{ErrorLoc.ErrorLoadingData} {ex.Message}");
-		}
-		finally
-		{
-			<# Definition.Name#>sView.Enable();
 			IsBusy = false;
 		}
 	}

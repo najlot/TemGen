@@ -1,6 +1,8 @@
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Todo.Service.Features.Users;
 using Todo.Service.Infrastructure.Persistence.MongoDb;
@@ -32,6 +34,17 @@ public class MongoDbUserRepository : IUserRepository
 	public async Task<UserModel?> Get(string username)
 	{
 		var result = await _collection.FindAsync(item => item.Username == username && item.DeletedAt == null).ConfigureAwait(false);
+		return await result.FirstOrDefaultAsync().ConfigureAwait(false);
+	}
+
+	public async Task<UserModel?> GetByEmail(string email)
+	{
+		var pattern = $"^{Regex.Escape(email.Trim())}$";
+		var filter = Builders<UserModel>.Filter.And(
+			Builders<UserModel>.Filter.Eq(item => item.DeletedAt, (DateTime?)null),
+			Builders<UserModel>.Filter.Regex(item => item.EMail, new BsonRegularExpression(pattern, "i")));
+
+		var result = await _collection.FindAsync(filter).ConfigureAwait(false);
 		return await result.FirstOrDefaultAsync().ConfigureAwait(false);
 	}
 

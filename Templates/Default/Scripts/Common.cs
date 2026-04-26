@@ -55,6 +55,47 @@ void SetEncodingWithoutBom()
 string FixPathPluralization(string path)
     => path.Replace("Entrys", "Entries").Replace("Statuss", "Status");
 
+bool IsNumberType(string entryType)
+    => entryType == "long"
+        || entryType == "short"
+        || entryType == "int"
+        || entryType == "ulong"
+        || entryType == "ushort"
+        || entryType == "uint"
+        || entryType == "decimal"
+        || entryType == "double"
+        || entryType == "float";
+
+bool IsComparableType(string entryType)
+    => IsNumberType(entryType)
+        || entryType == "DateTime";
+
+bool AllowsEmptyFilter(bool isNullable, string entryType)
+    => isNullable || entryType == "string";
+
+string GetFieldPropertyName(string field, bool isReference)
+    => isReference ? field + "Id" : field;
+
+string GetFilterFieldKind(string entryType, bool isReference, bool isEnumeration)
+{
+    if (isReference || isEnumeration || entryType == "bool")
+    {
+        return "Option";
+    }
+
+    if (entryType == "DateTime")
+    {
+        return "DateTime";
+    }
+
+    if (IsNumberType(entryType))
+    {
+        return "Number";
+    }
+
+    return "Text";
+}
+
 void SetOutputPathAndSkipOtherDefinitions()
 {
     RelativePath = RelativePath.Replace("TodoItem", Definition.Name).Replace("Todo", Project.Namespace);

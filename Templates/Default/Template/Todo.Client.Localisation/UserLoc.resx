@@ -132,6 +132,9 @@
   <data name="EmailAddress" xml:space="preserve">
     <value>EMail address</value>
   </data>
+  <data name="ForgotPassword" xml:space="preserve">
+    <value>Forgot password?</value>
+  </data>
   <data name="EMail" xml:space="preserve">
     <value>EMail:</value>
   </data>
@@ -149,6 +152,15 @@
   </data>
   <data name="Register" xml:space="preserve">
     <value>Register</value>
+  </data>
+  <data name="ResetCode" xml:space="preserve">
+    <value>Reset code</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>Reset password</value>
+  </data>
+  <data name="SendResetCode" xml:space="preserve">
+    <value>Send reset code</value>
   </data>
   <data name="UserManagement" xml:space="preserve">
     <value>User management</value>

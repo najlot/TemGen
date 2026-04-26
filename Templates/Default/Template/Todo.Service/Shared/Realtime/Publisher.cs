@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Text.Json;
-using <# Project.Namespace#>.Service.Serialization;
+using <# Project.Namespace#>.Service;
 
 namespace <# Project.Namespace#>.Service.Shared.Realtime;
 

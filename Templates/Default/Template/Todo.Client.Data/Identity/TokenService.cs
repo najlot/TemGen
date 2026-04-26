@@ -1,7 +1,7 @@
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using <# Project.Namespace#>.Client.Data.Serialization;
+using <# Project.Namespace#>.Client.Data;
 using <# Project.Namespace#>.Contracts.Auth;
 
 namespace <# Project.Namespace#>.Client.Data.Identity;

@@ -61,11 +61,8 @@ public class TemplateReaderTests
 		Directory.Delete(directory, true);
 
 		// Assert
-		Assert.Equal(Path.Combine(testId, filename), template.RelativePath);
-
-		Assert.Single(template.Sections);
-		Assert.Equal(TemplateHandler.CSharp, template.Sections[0].Handler);
-		Assert.Equal(content, template.Sections[0].Content);
+		Assert.Equal(TemplateHandler.CSharp, template.Handler);
+		Assert.Equal(content, template.Content);
 	}
 
 	[Fact]
@@ -90,11 +87,8 @@ public class TemplateReaderTests
 		Directory.Delete(directory, true);
 
 		// Assert
-		Assert.Equal(Path.Combine(testId, filename), template.RelativePath);
-
-		Assert.Single(template.Sections);
-		Assert.Equal(TemplateHandler.CSharp, template.Sections[0].Handler);
-		Assert.Equal(content, template.Sections[0].Content);
+		Assert.Equal(TemplateHandler.CSharp, template.Handler);
+		Assert.Equal(content, template.Content);
 	}
 
 	[Fact]
@@ -119,11 +113,8 @@ public class TemplateReaderTests
 		Directory.Delete(directory, true);
 
 		// Assert
-		Assert.Equal(Path.Combine(testId, filename), template.RelativePath);
-
-		Assert.Single(template.Sections);
-		Assert.Equal(TemplateHandler.CSharp, template.Sections[0].Handler);
-		Assert.Equal(content, template.Sections[0].Content);
+		Assert.Equal(TemplateHandler.CSharp, template.Handler);
+		Assert.Equal(content, template.Content);
 	}
 
 	[Fact]
@@ -148,11 +139,8 @@ public class TemplateReaderTests
 		Directory.Delete(directory, true);
 
 		// Assert
-		Assert.Equal(Path.Combine(testId, filename), template.RelativePath);
-
-		Assert.Single(template.Sections);
-		Assert.Equal(TemplateHandler.CSharp, template.Sections[0].Handler);
-		Assert.Equal(content, template.Sections[0].Content);
+		Assert.Equal(TemplateHandler.CSharp, template.Handler);
+		Assert.Equal(content, template.Content);
 	}
 
 	[Fact]

@@ -24,13 +24,13 @@
 			<!--  Username  -->
 			<StackPanel Spacing="4">
 				<TextBlock Text="{x:Static loc:UserLoc.Username}" />
-				<TextBox Classes="clearButton" Text="{Binding Username, Mode=TwoWay}" Watermark="{x:Static loc:UserLoc.Username}" />
+				<TextBox Classes="clearButton" Text="{Binding Username, Mode=TwoWay}" PlaceholderText="{x:Static loc:UserLoc.Username}" />
 			</StackPanel>
 
 			<!--  Email  -->
 			<StackPanel Spacing="4">
 				<TextBlock Text="{x:Static loc:UserLoc.EmailAddress}" />
-				<TextBox Classes="clearButton" Text="{Binding EMail, Mode=TwoWay}" Watermark="{x:Static loc:UserLoc.EmailAddress}" />
+				<TextBox Classes="clearButton" Text="{Binding EMail, Mode=TwoWay}" PlaceholderText="{x:Static loc:UserLoc.EmailAddress}" />
 			</StackPanel>
 
 			<!--  Password  -->
@@ -39,7 +39,7 @@
 				<TextBox Classes="revealPasswordButton"
 				         PasswordChar="•"
 				         Text="{Binding Password, Mode=TwoWay}"
-				         Watermark="{x:Static loc:UserLoc.Password}" />
+				         PlaceholderText="{x:Static loc:UserLoc.Password}" />
 			</StackPanel>
 
 			<!--  Register Button  -->

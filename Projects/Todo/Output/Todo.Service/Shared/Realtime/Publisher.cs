@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Text.Json;
-using Todo.Service.Serialization;
+using Todo.Service;
 
 namespace Todo.Service.Shared.Realtime;
 

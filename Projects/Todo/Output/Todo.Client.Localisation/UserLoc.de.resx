@@ -121,16 +121,19 @@
     <value>Passwort ändern</value>
   </data>
   <data name="ConfirmNewPassword" xml:space="preserve">
-    <value>Password bestätigen</value>
+    <value>Neues Passwort bestätigen</value>
   </data>
   <data name="CreateUser" xml:space="preserve">
-    <value>CreateUser:</value>
+    <value>Benutzer erstellen:</value>
   </data>
   <data name="EditUser" xml:space="preserve">
-    <value>EditUser:</value>
+    <value>Benutzer bearbeiten:</value>
   </data>
   <data name="EmailAddress" xml:space="preserve">
-    <value>Email Adresse</value>
+    <value>EMail Adresse</value>
+  </data>
+  <data name="ForgotPassword" xml:space="preserve">
+    <value>Passwort vergessen?</value>
   </data>
   <data name="EMail" xml:space="preserve">
     <value>EMail:</value>
@@ -150,6 +153,15 @@
   <data name="Register" xml:space="preserve">
     <value>Registrieren</value>
   </data>
+  <data name="ResetCode" xml:space="preserve">
+    <value>Zurücksetzungscode</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>Passwort zurücksetzen</value>
+  </data>
+  <data name="SendResetCode" xml:space="preserve">
+    <value>Zurücksetzungscode senden</value>
+  </data>
   <data name="UserManagement" xml:space="preserve">
     <value>Benutzerverwaltung</value>
   </data>
@@ -157,6 +169,6 @@
     <value>Benutzername</value>
   </data>
   <data name="Users" xml:space="preserve">
-    <value>Users:</value>
+    <value>Benutzer:</value>
   </data>
 </root>
