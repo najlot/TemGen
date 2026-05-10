@@ -47,12 +47,12 @@
 	</div>
 
 	<div>
+		@Html.AntiForgeryToken()
 		<form id="filter-form" method="get"
 			  hx-get="/Notes"
 			  hx-target="#items-container"
 			  hx-swap="outerHTML"
-			  hx-push-url="true">
-			@Html.AntiForgeryToken()
+			  hx-replace-url="true">
 			<input id="filter-state" name="filterState" type="hidden" />
 			<div class="card shadow-sm border-0 mb-3">
 				<div class="card-body">
