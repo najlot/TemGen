@@ -1,0 +1,54 @@
+@using Todo.Client.Localisation
+
+<nav class="navbar navbar-expand-lg bg-primary shadow-sm sticky-top" data-bs-theme="dark">
+	<div class="container-fluid px-3 px-md-4">
+		<a class="navbar-brand" href="/">Todo</a>
+		<button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="@CommonLoc.Navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="collapse navbar-collapse" id="mainNavbar">
+			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+				<li class="nav-item">
+					<a class="nav-link@(Context.Request.Path == "/" ? " active" : "")" href="/">@CommonLoc.Home</a>
+				</li>
+				<li class="nav-item dropdown">
+					<a class="nav-link dropdown-toggle@((Context.Request.Path.StartsWithSegments("/Note") || Context.Request.Path.StartsWithSegments("/Notes")) ? " active" : "")"
+					   href="#"
+					   role="button"
+					   data-bs-toggle="dropdown"
+					   aria-expanded="false">@NoteLoc.Notes</a>
+					<ul class="dropdown-menu shadow border-0">
+						<li>
+							<a class="dropdown-item@(Context.Request.Path.StartsWithSegments("/Notes") ? " active" : "")" href="/note/@Guid.Empty">@NoteLoc.CreateNote</a>
+						</li>
+						<li>
+							<a class="dropdown-item@(Context.Request.Path.StartsWithSegments("/Notes") ? " active" : "")" href="/Notes">@NoteLoc.Notes</a>
+						</li>
+					</ul>
+				</li>
+				<li class="nav-item dropdown">
+					<a class="nav-link dropdown-toggle@((Context.Request.Path.StartsWithSegments("/TodoItem") || Context.Request.Path.StartsWithSegments("/TodoItems")) ? " active" : "")"
+					   href="#"
+					   role="button"
+					   data-bs-toggle="dropdown"
+					   aria-expanded="false">@TodoItemLoc.TodoItems</a>
+					<ul class="dropdown-menu shadow border-0">
+						<li>
+							<a class="dropdown-item@(Context.Request.Path.StartsWithSegments("/TodoItems") ? " active" : "")" href="/todoitem/@Guid.Empty">@TodoItemLoc.CreateTodoItem</a>
+						</li>
+						<li>
+							<a class="dropdown-item@(Context.Request.Path.StartsWithSegments("/TodoItems") ? " active" : "")" href="/TodoItems">@TodoItemLoc.TodoItems</a>
+						</li>
+					</ul>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link@(Context.Request.Path.StartsWithSegments("/trash") ? " active" : "")" href="/trash">@TrashLoc.Trash</a>
+				</li>
+			</ul>
+
+			@await Html.PartialAsync("_LoginPartial")
+		</div>
+	</div>
+</nav>
+

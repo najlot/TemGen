@@ -1,0 +1,24 @@
+@model Todo.Htmx.Pages.NoteModel
+
+<div id="favorite-toggle"
+	 hx-get="@(Model.FavoriteItemId == Guid.Empty ? null : Url.Page("/Note", new { id = Model.FavoriteItemId }))"
+	 hx-select="@(Model.FavoriteItemId == Guid.Empty ? null : "#favorite-toggle")"
+	 hx-target="@(Model.FavoriteItemId == Guid.Empty ? null : "this")"
+	 hx-swap="@(Model.FavoriteItemId == Guid.Empty ? null : "outerHTML")"
+	 hx-on::before-request="@(Model.FavoriteItemId == Guid.Empty ? null : "const hasOtherRequestInFlight = document.querySelector('.htmx-request') && !this.classList.contains('htmx-request'); if (document.visibilityState !== 'visible' || hasOtherRequestInFlight) { document.body.dataset.liveRefreshPending = 'true'; event.preventDefault(); }")"
+	 hx-trigger="@(Model.FavoriteItemId == Guid.Empty ? null : "live-refresh-all from:body queue:last, sse:FavoriteCreated queue:last, sse:FavoriteDeleted queue:last")">
+	@if (Model.FavoriteItemId != Guid.Empty)
+	{
+		@Html.AntiForgeryToken()
+		<button type="button"
+				class="@Model.FavoriteButtonClass"
+				title="@Model.FavoriteTitle"
+				aria-label="@Model.FavoriteTitle"
+				aria-pressed="@(Model.IsFavorite ? "true" : "false")"
+				hx-post="@($"{Context.Request.Path}?handler=ToggleFavorite&id={Model.FavoriteItemId}")"
+				hx-target="#favorite-toggle"
+				hx-swap="outerHTML">
+			<span class="material-symbols-sharp" style="font-size:1.1rem;vertical-align:middle;">@Model.FavoriteIcon</span>
+		</button>
+	}
+</div>

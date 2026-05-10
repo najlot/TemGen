@@ -12,17 +12,16 @@
 	<StackPanel>
 <#csfor entry in Entries
 #><#csif !entry.IsArray && !entry.IsOwnedType
-#>			<DockPanel Margin="5">
+#>			<StackPanel Margin="5">
 <#end#><#csif entry.EntryType != "bool" && !entry.IsArray && !entry.IsOwnedType
-#>				<Label Content="{x:Static loc:<#cs Write(Definition.Name)#>Loc.<#cs Write(entry.Field)#>}" MinWidth="75" />
+#>				<Label Margin="0,0,0,4" Padding="0" Content="{x:Static loc:<#cs Write(Definition.Name)#>Loc.<#cs Write(entry.Field)#>}" />
 <#end#><#csif entry.EntryType == "DateTime"
 #>				<StackPanel Orientation="Horizontal">
 					<DatePicker SelectedDate="{Binding <#cs Write(entry.Field)#>Date, Converter={x:Static converter:DateTimeOffsetToDateTimeConverter.Instance}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 					<TextBox Width="64" Margin="8,0,0,0" VerticalContentAlignment="Center" ToolTip="HH:mm" Text="{Binding <#cs Write(entry.Field)#>Time, Converter={x:Static converter:NullableTimeSpanConverter.Instance}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 				</StackPanel>
 <#cselseif entry.EntryType == "bool"
-#>				<Label Content="" MinWidth="75" />
-				<CheckBox IsChecked="{Binding <#cs Write(entry.Field)#>}" Content="{x:Static loc:<#cs Write(Definition.Name)#>Loc.<#cs Write(entry.Field)#>}" />
+#>				<CheckBox IsChecked="{Binding <#cs Write(entry.Field)#>}" Content="{x:Static loc:<#cs Write(Definition.Name)#>Loc.<#cs Write(entry.Field)#>}" />
 <#cselseif entry.IsOwnedType
 #>			<Label Content="{x:Static loc:<#cs Write(Definition.Name)#>Loc.<#cs Write(entry.Field)#>}" Foreground="{StaticResource ForegroundColor}" Background="{StaticResource BackgroundColor}" />
 			<local:<#cs Write(entry.EntryType)#>View DataContext="{Binding <#cs Write(entry.Field)#>}" />
@@ -118,7 +117,9 @@
 				</DataGrid>
 <#else
 #>				<TextBox Text="{Binding <#cs Write(entry.Field)#>}" />
-<#end#><#csif !entry.IsOwnedType
+<#end#><#csif !entry.IsOwnedType && !entry.IsArray
+#>			</StackPanel>
+<#cselseif entry.IsArray
 #>			</DockPanel>
 <#end#><#end#>
 	</StackPanel>

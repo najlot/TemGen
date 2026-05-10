@@ -31,6 +31,7 @@
 							<materialIcons:MaterialIcon Kind="Redo" Width="18" Height="18" />
 						</Button.Content>
 					</Button>
+					<ContentControl x:Name="ToggleFavoriteButtonHost" Margin="5" DataContext="{Binding ToggleFavorite}" />
 <#if !Definition.IsArray
 #>					<Button ToolTip="{x:Static loc:CommonLoc.History}"
 							Command="{Binding NavigateToHistoryCommand}"
@@ -58,19 +59,18 @@
 						HorizontalAlignment="Center" VerticalAlignment="Center">
 <#for entry in Entries
 #><#if !entry.IsArray && !entry.IsOwnedType
-#>					<DockPanel Margin="5">
+#>					<StackPanel Margin="5">
 <#end#><#if entry.EntryType != "bool" && !entry.IsArray && !entry.IsOwnedType
-#>						<Label Content="{x:Static loc:<#cs Write(Definition.Name)#>Loc.<#cs Write(entry.Field)#>}" MinWidth="75" />
+#>						<Label Margin="0,0,0,4" Padding="0" Content="{x:Static loc:<#cs Write(Definition.Name)#>Loc.<#cs Write(entry.Field)#>}" />
 <#end#><#if entry.EntryType == "DateTime"
 #>					<StackPanel Orientation="Horizontal">
 						<DatePicker SelectedDate="{Binding <#cs Write(entry.Field)#>Date, Converter={x:Static converter:DateTimeOffsetToDateTimeConverter.Instance}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 						<TextBox Width="64" Margin="8,0,0,0" VerticalContentAlignment="Center" ToolTip="HH:mm" Text="{Binding <#cs Write(entry.Field)#>Time, Converter={x:Static converter:NullableTimeSpanConverter.Instance}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 					</StackPanel>
 <#elseif entry.EntryType == "bool"
-#>						<Label Content="" MinWidth="75" />
-						<CheckBox IsChecked="{Binding <#cs Write(entry.Field)#>}" Content="{x:Static loc:<#cs Write(Definition.Name)#>Loc.<#cs Write(entry.Field)#>}" />
+#>						<CheckBox IsChecked="{Binding <#cs Write(entry.Field)#>}" Content="{x:Static loc:<#cs Write(Definition.Name)#>Loc.<#cs Write(entry.Field)#>}" />
 <#elseif entry.IsReference
-#>						<ComboBox ItemsSource="{Binding Available<#cs Write(Definitions.First(d => d.Name == entry.ReferenceType).Name)#>s}" SelectedValue="{Binding <#cs Write(entry.Field)#>Id}" SelectedValuePath="Id" DisplayMemberPath="<#cs Write(Definitions.First(d => d.Name == entry.ReferenceType).Entries.First(e => !(e.IsOwnedType || e.IsKey || e.IsArray || e.IsReference || e.IsEnumeration)).Field)#>" IsEditable="True" />
+#>						<ComboBox ItemsSource="{Binding Available<#cs Write(Definitions.First(d => d.Name == entry.ReferenceType).Name)#>s}" SelectedValue="{Binding <#cs Write(entry.Field)#>Id}" SelectedValuePath="Id" DisplayMemberPath="DisplayText" />
 <#elseif entry.IsOwnedType
 #>					<Label Content="{x:Static loc:<#cs Write(Definition.Name)#>Loc.<#cs Write(entry.Field)#>}" Foreground="{StaticResource ForegroundColor}" Background="{StaticResource BackgroundColor}" />
 					<local:<#cs Write(entry.EntryType)#>View DataContext="{Binding <#cs Write(entry.Field)#>}" />
@@ -163,7 +163,9 @@
 						</DataGrid>
 <#else
 #>						<TextBox Text="{Binding <#cs Write(entry.Field)#>}" />
-<#end#><#if !entry.IsOwnedType
+<#end#><#if !entry.IsOwnedType && !entry.IsArray
+#>					</StackPanel>
+<#elseif entry.IsArray
 #>					</DockPanel>
 <#end#><#end#>				</StackPanel>
 			</ScrollViewer>

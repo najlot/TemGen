@@ -3,11 +3,12 @@
 @using Todo.Blazor.Identity;
 @using Todo.Blazor.Services;
 @using Todo.Client.Data;
+@using Todo.Client.Data.Favorites;
 @using Todo.Client.Data.TodoItems;
 @using Todo.Client.Data.Users;
 @using Todo.Client.Localisation;
 @using Todo.Contracts.TodoItems;
-
+@using Todo.Contracts.Shared;
 @inject ILogger<TodoItem> Log
 @inject Najlot.Map.IMap Map;
 @inject ITodoItemService TodoItemService
@@ -56,6 +57,10 @@ else
 							Execute="_changeTracker.Redo" />
 				@if (!isNew)
 				{
+					<ToggleFavoriteButton TargetType="ItemType.TodoItem"
+									  ItemId="@Model.Id"
+									  CanToggle="@(!isNew)" />
+
 					<IconButton Icon="history"
 								ButtonClass="btn btn-outline-secondary"
 								Execute="NavigateToHistory"
@@ -125,7 +130,7 @@ else
 								 ValueExpression="@(() => Model.AssignedToId)">
 						@foreach (var value in _users)
 						{
-							<option value="@value.Id">@value.Username</option>
+							<option value="@value.Id">@value.DisplayText</option>
 						}
 						</InputSelect>
 						</div>
@@ -236,7 +241,7 @@ else
 			return;
 		}
 
-		NavigationManager.NavigateTo($"/history/{Model.Id}");
+		NavigationManager.NavigateTo($"/history/{Model.Id}?entityName=TodoItem");
 	}
 
 	protected override async Task OnInitializedAsync()
@@ -253,7 +258,8 @@ else
 				Model = await TodoItemService.GetItemAsync(Id);
 			}
 
-			_users = await UserService.GetItemsAsync();
+			var availableUsers = await UserService.GetItemsAsync();
+			_users = [new UserListItemModel { Id = Guid.Empty }, .. availableUsers];
 
 			TodoItemService.ItemUpdated += Handle;
 			_changeTracker.StateChanged += () => InvokeAsync(StateHasChanged);
@@ -286,7 +292,7 @@ else
 			{
 				await TodoItemService.AddItemAsync(Model);
 				Id = Model.Id;
-				NavigationManager.NavigateTo($"/todoitem/{Model.Id}", false, true);
+				NavigationManager.NavigateTo($"/TodoItem/{Model.Id}", false, true);
 				isNew = false;
 			}
 			else
@@ -324,7 +330,7 @@ else
 			}
 
 			_changeTracker.Clear();
-			NavigationManager.NavigateTo("/todoitems");
+			NavigationManager.NavigateTo("/TodoItems");
 		}
 		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{

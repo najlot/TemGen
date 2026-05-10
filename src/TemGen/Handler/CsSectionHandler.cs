@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.Scripting.Hosting;
+using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Security.Cryptography;
@@ -13,16 +14,17 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 {
 	#region Static Initialization
 
-	private static readonly Script<object> _emptyScript = null;
+	private static readonly InteractiveAssemblyLoader _loader;
+	private static readonly ScriptOptions _options;
+	private static readonly Script<object> _emptyScript;
 
 	static CsSectionHandler()
 	{
+		_loader = GetLoader();
+		_options = GetOptions();
 		_emptyScript = CSharpScript.Create(string.Empty, _options, typeof(Globals), _loader);
 		_emptyScript.Compile();
 	}
-
-	private static readonly InteractiveAssemblyLoader _loader = GetLoader();
-	private static readonly ScriptOptions _options = GetOptions();
 
 	private static System.Reflection.Assembly[] GetReferences() =>
 	[
@@ -57,15 +59,15 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 				"System.Dynamic",
 				"System.Collections.Generic",
 				"System.Text.RegularExpressions"
-				);
+			);
 
 	#endregion Static Initialization
 
-    private static readonly ConcurrentDictionary<(string ScriptsKey, string Content), ScriptRunner<object>> _cache = new();
+	private static readonly ConcurrentDictionary<(string ScriptsKey, string Content), ScriptRunner<object>> _cache = new();
 	private static readonly ConcurrentDictionary<(string ScriptsKey, string Content), ScriptRunner<object>> _expressionCache = new();
 
-	private readonly Script<object> _initialScript = null;
-    private readonly string _initialScriptsKey;
+	private readonly Script<object> _initialScript;
+	private readonly string _initialScriptsKey;
 
 	public CsSectionHandler(string[] initialScripts) : base(TemplateHandler.CSharp)
 	{
@@ -76,22 +78,32 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 			_initialScript = _initialScript.ContinueWith(script, _options);
 		}
 
-       _initialScriptsKey = GetStableCacheKey(initialScripts);
+		_initialScriptsKey = GetStableCacheKey(initialScripts);
 	}
 
 	public async Task<object> EvaluateExpression(Globals globals, string expression)
 	{
 		var content = WrapWithVisibleVariables(globals, $"return (object)({expression});");
-		var script = _expressionCache.GetOrAdd((_initialScriptsKey, content), c => _initialScript.ContinueWith(c.Content, _options).CreateDelegate());
-		return await script(globals).ConfigureAwait(false);
+
+		var scriptRunner = _expressionCache.GetOrAdd(
+			(_initialScriptsKey, content),
+			static (key, state) => state._initialScript.ContinueWith(key.Content, _options).CreateDelegate(),
+			this);
+
+		return await scriptRunner(globals).ConfigureAwait(false);
 	}
 
 	protected override async Task Handle(Globals globals, string content)
 	{
 		content = EnsureStatementTermination(content);
-		content = WrapWithVisibleVariables(globals, content + System.Environment.NewLine + "return null;");
-		var script = _cache.GetOrAdd((_initialScriptsKey, content), c => _initialScript.ContinueWith(c.Content, _options).CreateDelegate());
-		await script(globals).ConfigureAwait(false);
+		content = WrapWithVisibleVariables(globals, content + Environment.NewLine + "return null;");
+
+		var scriptRunner = _cache.GetOrAdd(
+			(_initialScriptsKey, content),
+			static (key, state) => state._initialScript.ContinueWith(key.Content, _options).CreateDelegate(),
+			this);
+
+		await scriptRunner(globals).ConfigureAwait(false);
 	}
 
 	private static string WrapWithVisibleVariables(Globals globals, string content)
@@ -103,8 +115,8 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 			return content;
 		}
 
-		var declarations = string.Join(System.Environment.NewLine, variableNames.Select(name => $"dynamic {name} = GetVariable(\"{name}\");"));
-		return declarations + System.Environment.NewLine + content;
+		var declarations = string.Join(Environment.NewLine, variableNames.Select(name => $"dynamic {name} = GetVariable(\"{name}\");"));
+		return declarations + Environment.NewLine + content;
 	}
 
 	private static string EnsureStatementTermination(string content)
@@ -121,8 +133,13 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 
 	private static string GetStableCacheKey(string[] scripts)
 	{
+		if (scripts == null || scripts.Length == 0)
+		{
+			return string.Empty;
+		}
+
 		var content = string.Join('\n', scripts);
 		var hash = SHA256.HashData(Encoding.UTF8.GetBytes(content));
-       return System.Convert.ToHexString(hash);
+		return Convert.ToHexString(hash);
 	}
 }

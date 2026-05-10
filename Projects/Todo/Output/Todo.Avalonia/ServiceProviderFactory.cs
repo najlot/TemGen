@@ -8,7 +8,9 @@ using Todo.Client.Data;
 using Todo.Client.Data.Identity;
 using Todo.Client.MVVM;
 using Todo.ClientBase;
+using Todo.Avalonia.Controls;
 using Todo.Avalonia.Identity;
+using Todo.Avalonia.Views;
 
 namespace Todo.Avalonia;
 
@@ -66,6 +68,10 @@ public static class ServiceProviderFactory
 
 		serviceCollection.RegisterClientData();
 		serviceCollection.RegisterClientBase();
+		serviceCollection.AddTransient<ToggleFavoriteButton>();
+		serviceCollection.AddTransient<NoteView>();
+		serviceCollection.AddTransient<TodoItemView>();
+
 
 		var serviceProvider = serviceCollection.BuildServiceProvider();
 

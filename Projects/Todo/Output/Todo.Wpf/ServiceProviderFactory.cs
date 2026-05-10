@@ -7,7 +7,9 @@ using Todo.Client.Data;
 using Todo.Client.Data.Identity;
 using Todo.Client.MVVM;
 using Todo.ClientBase;
+using Todo.Wpf.Controls;
 using Todo.Wpf.Identity;
+using Todo.Wpf.Views;
 
 namespace Todo.Wpf;
 
@@ -41,6 +43,10 @@ public static class ServiceProviderFactory
 
 		serviceCollection.RegisterClientData();
 		serviceCollection.RegisterClientBase();
+		serviceCollection.AddTransient<ToggleFavoriteButton>();
+		serviceCollection.AddTransient<NoteView>();
+		serviceCollection.AddTransient<TodoItemView>();
+
 
 		var serviceProvider = serviceCollection.BuildServiceProvider();
 

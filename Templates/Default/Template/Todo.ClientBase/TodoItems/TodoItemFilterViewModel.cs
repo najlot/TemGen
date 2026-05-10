@@ -47,12 +47,12 @@ public class <# Definition.Name#>FilterViewModel : EntityFilterEditorViewModel
 #>[.. <# entry.ReferenceTypeLow#>s.Select(item => new FilterValueOption
 				{
 					Value = item.Id.ToString(),
-					Label = Convert.ToString(item.<#cs Write(Definitions.First(d => d.Name == entry.ReferenceType).Entries.First(e => !(e.IsOwnedType || e.IsKey || e.IsArray || e.IsReference || e.IsEnumeration)).Field)#>) ?? CommonLoc.Untitled,
+					Label = item.DisplayText,
 				})]<#elseif entry.IsEnumeration
 #>[.. Enum.GetValues<<# entry.EntryType#>>().Select(value => new FilterValueOption
 				{
 					Value = value.ToString(),
-					Label = value.ToString(),
+					Label = value == <# entry.EntryType#>.None ? CommonLoc.NothingSelected : value.ToString(),
 				})]<#elseif entry.EntryType == "bool"
 #>[new FilterValueOption { Value = bool.TrueString, Label = bool.TrueString }, new FilterValueOption { Value = bool.FalseString, Label = bool.FalseString }]<#else#>[]<#end#>,
 			},
@@ -69,12 +69,12 @@ public class <# Definition.Name#>FilterViewModel : EntityFilterEditorViewModel
 #>[.. <# entry.ReferenceTypeLow#>s.Select(item => new FilterValueOption
 				{
 					Value = item.Id.ToString(),
-					Label = Convert.ToString(item.<#cs Write(Definitions.First(d => d.Name == entry.ReferenceType).Entries.First(e => !(e.IsOwnedType || e.IsKey || e.IsArray || e.IsReference || e.IsEnumeration)).Field)#>) ?? CommonLoc.Untitled,
+					Label = item.DisplayText,
 				})]<#elseif entry.IsEnumeration
 #>[.. Enum.GetValues<<# entry.EntryType#>>().Select(value => new FilterValueOption
 				{
 					Value = value.ToString(),
-					Label = value.ToString(),
+					Label = value == <# entry.EntryType#>.None ? CommonLoc.NothingSelected : value.ToString(),
 				})]<#elseif entry.EntryType == "bool"
 #>[new FilterValueOption { Value = bool.TrueString, Label = bool.TrueString }, new FilterValueOption { Value = bool.FalseString, Label = bool.FalseString }]<#else#>[]<#end#>,
 			},

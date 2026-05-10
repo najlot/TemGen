@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Todo.Service.Features.Favorites;
+using Todo.Service.Features.Favorites.Persistence;
 using Todo.Service.Features.Filters;
 using Todo.Service.Features.Filters.Persistence;
 using Todo.Service.Features.History;
@@ -30,6 +32,7 @@ public static class MySqlRepositoryServiceCollectionExtensions
 			services.AddSingleton(configuration);
 			services.AddScoped<MySqlDbContext>();
 			services.AddScoped<IUnitOfWork, MySqlUnitOfWork>();
+			services.RegisterMySqlFavoritePersistence();
 			services.RegisterMySqlFilterPersistence();
 			services.RegisterMySqlHistoryPersistence();
 			services.RegisterMySqlUserPersistence();
@@ -46,6 +49,7 @@ public static class MySqlRepositoryServiceCollectionExtensions
 				serviceProvider.GetRequiredService<ILoggerFactory>()));
 		services.AddKeyedScoped<IUnitOfWork>(serviceKey, static (serviceProvider, key) =>
 			new MySqlUnitOfWork(serviceProvider.GetRequiredKeyedService<MySqlDbContext>(key)));
+		services.RegisterMySqlFavoritePersistence(serviceKey);
 		services.RegisterMySqlFilterPersistence(serviceKey);
 		services.RegisterMySqlHistoryPersistence(serviceKey);
 		services.RegisterMySqlUserPersistence(serviceKey);

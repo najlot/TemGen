@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using <# Project.Namespace#>.Service.Features.Favorites;
 using <# Project.Namespace#>.Service.Features.Filters;
 using <# Project.Namespace#>.Service.Features.History;
 using <# Project.Namespace#>.Service.Features.Users;
@@ -46,6 +47,7 @@ public class MySqlDbContext(
 		modelBuilder.ApplyConfigurationsFromAssembly(typeof(MySqlDbContext).Assembly);
 	}
 
+	public DbSet<FavoriteModel> Favorites { get; set; }
 	public DbSet<FilterModel> Filters { get; set; }
 	public DbSet<HistoryModel> HistoryEntries { get; set; }
 	public DbSet<UserModel> Users { get; set; }

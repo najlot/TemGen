@@ -11,7 +11,8 @@ Definition.IsOwnedType || Definition.IsArray || Definition.IsEnumeration
 public <#cs Write(Definition.IsEnumeration ? "enum" : "class")#> <# Definition.Name#>
 {
 <#if Definition.IsEnumeration
-#><#for entry in Entries
+#>	None = 0,
+<#for entry in Entries
 #>	<# entry.Field#>,
 <#end#><#else
 #>	public <#cs Write(Definition.IsArray ? "int" : "Guid")#> Id { get; set; }

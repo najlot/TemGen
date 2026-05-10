@@ -8,6 +8,7 @@ namespace Todo.Service.Features.Filters;
 [Mapping]
 internal partial class FilterMappings
 {
+	[MapIgnoreProperty(nameof(to.UserId))]
 	[MapIgnoreProperty(nameof(to.Conditions))]
 	[PostMap(nameof(PostMapToModel))]
 	public static partial void MapToModel(IMap map, CreateFilter from, FilterModel to);
@@ -16,6 +17,7 @@ internal partial class FilterMappings
 		map.From<FilterCondition>(from.Conditions).ToList(to.Conditions);
 	}
 
+	[MapIgnoreProperty(nameof(to.UserId))]
 	[MapIgnoreProperty(nameof(to.Conditions))]
 	[PostMap(nameof(PostMapToModel))]
 	public static partial void MapToModel(IMap map, UpdateFilter from, FilterModel to);

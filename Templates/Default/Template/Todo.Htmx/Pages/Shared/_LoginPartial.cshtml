@@ -1,0 +1,24 @@
+@using <# Project.Namespace#>.Client.Localisation
+
+<div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 mt-3 mt-lg-0 ms-lg-3">
+	@if (User.Identity?.IsAuthenticated == true)
+	{
+		<a href="/global-search" class="btn btn-sm btn-outline-light d-inline-flex align-items-center justify-content-center" title="@GlobalSearchLoc.GlobalSearch">
+			<span class="material-symbols-sharp fs-5 lh-1" aria-hidden="true">search</span>
+			<span class="ms-1 d-lg-none">@GlobalSearchLoc.GlobalSearch</span>
+		</a>
+		<a href="/Identity/Manage" class="btn btn-sm btn-outline-light d-inline-flex align-items-center justify-content-center" title="@UserLoc.UserManagement">
+			<span class="material-symbols-sharp fs-5 lh-1" aria-hidden="true">person</span>
+			<span class="ms-1 d-lg-none">@UserLoc.UserManagement</span>
+		</a>
+		<form method="post" asp-page="/Identity/Logout" class="m-0">
+			<button type="submit" class="btn btn-sm btn-outline-light">@UserLoc.Logout</button>
+		</form>
+	}
+	else
+	{
+		<a href="/Identity/Register" class="btn btn-sm btn-outline-light">@UserLoc.Register</a>
+		<a href="/Identity/Login" class="btn btn-sm btn-outline-light">@UserLoc.Login</a>
+	}
+</div>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

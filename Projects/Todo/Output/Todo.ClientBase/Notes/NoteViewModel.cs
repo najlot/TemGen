@@ -8,6 +8,7 @@ using Todo.Client.MVVM;
 using Todo.ClientBase.History;
 using Todo.ClientBase.Shared;
 using Todo.Contracts.Notes;
+using Todo.Contracts.Shared;
 
 namespace Todo.ClientBase.Notes;
 
@@ -18,16 +19,25 @@ public class NoteViewModel : ValidationViewModelBase, IParameterizable, IAsyncIn
 
 	public PredefinedColor[] AvailablePredefinedColors { get; } = Enum.GetValues<PredefinedColor>();
 
-	public Guid Id { get; set => Set(ref field, value); }
+	public Guid Id
+	{
+		get;
+		set => Set(ref field, value, UpdateToggleFavoriteState);
+	}
 	public string Title { get; set => Set(ref field, value); } = string.Empty;
 	public string Content { get; set => Set(ref field, value); } = string.Empty;
 	public PredefinedColor Color { get; set => Set(ref field, value); }
 
 	private readonly ChangeTracker _changeTracker = new();
+	public ToggleFavoriteViewModel ToggleFavorite { get; }
 
 	public bool CanNavigateToHistory => !IsNew;
 
-	public bool IsBusy { get; private set => Set(ref field, value); }
+	public bool IsBusy
+	{
+		get;
+		private set => Set(ref field, value, UpdateToggleFavoriteState);
+	}
 	public bool CanEdit { get; private set => Set(ref field, value); } = true;
 
 	public bool IsNew
@@ -37,14 +47,17 @@ public class NoteViewModel : ValidationViewModelBase, IParameterizable, IAsyncIn
 		{
 			RaisePropertyChanged(nameof(CanNavigateToHistory));
 			NavigateToHistoryCommand.RaiseCanExecuteChanged();
+			UpdateToggleFavoriteState();
 		});
 	}
 
 	public NoteViewModel(
 		INoteService noteService,
+		ToggleFavoriteViewModel toggleFavorite,
 		ViewModelBaseParameters<NoteViewModel> parameters) : base(parameters)
 	{
 		_noteService = noteService;
+		ToggleFavorite = toggleFavorite;
 
 		NavigateBackCommand = new AsyncCommand(NavigationService.NavigateBack, t => HandleError(t.Exception));
 		NavigateToHistoryCommand = new AsyncCommand(NavigateToHistoryAsync, t => HandleError(t.Exception), () => CanNavigateToHistory);
@@ -88,6 +101,7 @@ public class NoteViewModel : ValidationViewModelBase, IParameterizable, IAsyncIn
 
 
 		await _noteService.StartEventListener();
+		await ToggleFavorite.InitializeAsync(ItemType.Note, Id, !IsNew && Id != Guid.Empty && !IsBusy);
 
 		_changeTracker.Clear();
 
@@ -107,6 +121,11 @@ public class NoteViewModel : ValidationViewModelBase, IParameterizable, IAsyncIn
 
 
 		});
+	}
+
+	private void UpdateToggleFavoriteState()
+	{
+		ToggleFavorite.UpdateState(Id, !IsNew && Id != Guid.Empty && !IsBusy);
 	}
 
 	public AsyncCommand NavigateBackCommand { get; }
@@ -271,6 +290,7 @@ public class NoteViewModel : ValidationViewModelBase, IParameterizable, IAsyncIn
 							or nameof(CanEdit)
 							or nameof(CanNavigateToHistory)
 							or nameof(Id)
+							or nameof(ToggleFavorite)
 							or nameof(AvailablePredefinedColors)
 ;
 
@@ -285,6 +305,7 @@ public class NoteViewModel : ValidationViewModelBase, IParameterizable, IAsyncIn
 				_changeTracker.StateChanged -= RedoCommand.RaiseCanExecuteChanged;
 				HasErrorsChanged -= SaveCommand.RaiseCanExecuteChanged;
 				_noteService.ItemUpdated -= Handle;
+				ToggleFavorite.Dispose();
 			}
 
 			_disposedValue = true;

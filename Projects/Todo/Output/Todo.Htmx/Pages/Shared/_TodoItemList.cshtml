@@ -1,0 +1,54 @@
+@using Todo.Client.Localisation
+@using Todo.Contracts.TodoItems
+@model Todo.Htmx.Pages.TodoItemsModel
+
+<div id="items-container"
+	 hx-get="@($"{Context.Request.Path}{Context.Request.QueryString}")"
+	 hx-select="#items-container"
+	 hx-target="this"
+	 hx-swap="outerHTML"
+	 hx-on::before-request="const hasOtherRequestInFlight = document.querySelector('.htmx-request') && !this.classList.contains('htmx-request'); if (document.visibilityState !== 'visible' || hasOtherRequestInFlight) { document.body.dataset.liveRefreshPending = 'true'; event.preventDefault(); }"
+	 hx-trigger="live-refresh-all from:body queue:last, sse:TodoItemCreated queue:last, sse:TodoItemUpdated queue:last, sse:TodoItemDeleted queue:last, sse:FavoriteCreated queue:last, sse:FavoriteDeleted queue:last">
+@if (Model.Items.Count == 0)
+{
+	<div class="alert alert-light border">@CommonLoc.NotFound</div>
+}
+else
+{
+	<div class="card shadow-sm border-0">
+		<div class="table-responsive">
+			<table class="table table-hover align-middle mb-0">
+				<thead class="table-light">
+					<tr>
+						<th class="text-center" style="width: 1%;">
+							<span class="material-symbols-sharp text-warning" title="Favorite" aria-label="Favorite">star</span>
+						</th>
+						<th>@TodoItemLoc.Title</th>
+						<th>@TodoItemLoc.Content</th>
+						<th class="text-end">@CommonLoc.Edit</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var item in Model.Items)
+					{
+						<tr>
+							<td class="text-center">
+								@if (Model.FavoriteItemIds.Contains(item.Id))
+								{
+									<span class="material-symbols-sharp text-warning" title="Favorite" aria-label="Favorite">star</span>
+								}
+							</td>
+							<td class="text-break">@(item.Title.Length > 75 ? item.Title[..75] + "..." : item.Title)</td>
+							<td class="text-break">@(item.Content.Length > 75 ? item.Content[..75] + "..." : item.Content)</td>
+							<td class="text-end">
+								<a href="/todoitem/@item.Id" class="btn btn-outline-primary btn-sm">@CommonLoc.Edit</a>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+}
+</div>
+

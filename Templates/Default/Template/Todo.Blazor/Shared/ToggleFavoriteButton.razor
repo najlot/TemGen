@@ -1,0 +1,164 @@
+@using System.Linq
+@using Microsoft.AspNetCore.Components
+@using <# Project.Namespace#>.Blazor.Identity
+@using <# Project.Namespace#>.Blazor.Pages
+@using <# Project.Namespace#>.Blazor.Services
+@using <# Project.Namespace#>.Client.Data.Favorites
+@using <# Project.Namespace#>.Client.Data.Identity
+@using <# Project.Namespace#>.Client.Localisation
+@using <# Project.Namespace#>.Contracts.Favorites
+@using <# Project.Namespace#>.Contracts.Shared
+
+@inject ILogger<ToggleFavoriteButton> Log
+@inject IFavoriteService FavoriteService
+@inject NavigationManager NavigationManager
+
+@implements IDisposable
+
+<IconButton Icon="@FavoriteIcon"
+            ButtonClass="@FavoriteButtonClass"
+            CanExecute="CanToggleFavorite"
+            Execute="ToggleFavoriteAsync"
+            Title="@FavoriteTitle" />
+
+@code {
+    [CascadingParameter(Name = "ErrorService")]
+    protected IErrorService? ErrorService { get; set; }
+
+    [Parameter, EditorRequired]
+    public ItemType TargetType { get; set; }
+
+    [Parameter]
+    public Guid ItemId { get; set; }
+
+    [Parameter]
+    public bool CanToggle { get; set; } = true;
+
+    private ItemType _loadedTargetType;
+    private Guid _loadedItemId;
+    private bool _hasLoadedFavoriteState;
+    private bool _isFavorite;
+
+    private string FavoriteIcon => _isFavorite ? "star" : "star_outline";
+
+    private string FavoriteButtonClass => _isFavorite
+        ? "btn btn-outline-warning"
+        : "btn btn-outline-secondary";
+
+    private string FavoriteTitle => _isFavorite
+        ? "Remove favorite"
+        : "Add favorite";
+
+    protected override void OnInitialized()
+    {
+        FavoriteService.ItemCreated += HandleFavoriteCreated;
+        FavoriteService.ItemDeleted += HandleFavoriteDeleted;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_hasLoadedFavoriteState
+            && _loadedTargetType == TargetType
+            && _loadedItemId == ItemId)
+        {
+            return;
+        }
+
+        _hasLoadedFavoriteState = true;
+        _loadedTargetType = TargetType;
+        _loadedItemId = ItemId;
+
+        await RefreshFavoriteStateAsync();
+    }
+
+    private bool CanToggleFavorite()
+        => CanToggle && ItemId != Guid.Empty;
+
+    private async Task RefreshFavoriteStateAsync()
+    {
+        if (ItemId == Guid.Empty)
+        {
+            _isFavorite = false;
+            return;
+        }
+
+        try
+        {
+            await FavoriteService.StartEventListener();
+
+            var favorites = await FavoriteService.GetItemsAsync(TargetType);
+            _isFavorite = favorites.Any(item => item.ItemId == ItemId);
+        }
+        catch (SessionUnavailableException)
+        {
+            var url = NavigationManager.BuildReturnUrl("/login");
+            NavigationManager.NavigateTo(url);
+        }
+        catch (Exception ex)
+        {
+            Log.LogError(ex, "Error loading favorite state for {TargetType} {ItemId}.", TargetType, ItemId);
+            ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotLoad);
+        }
+    }
+
+    private async Task ToggleFavoriteAsync()
+    {
+        if (!CanToggleFavorite())
+        {
+            return;
+        }
+
+        try
+        {
+            if (_isFavorite)
+            {
+                await FavoriteService.DeleteItemAsync(TargetType, ItemId);
+                _isFavorite = false;
+            }
+            else
+            {
+                await FavoriteService.AddItemAsync(TargetType, ItemId);
+                _isFavorite = true;
+            }
+        }
+        catch (SessionUnavailableException)
+        {
+            var url = NavigationManager.BuildReturnUrl("/login");
+            NavigationManager.NavigateTo(url);
+        }
+        catch (Exception ex)
+        {
+            Log.LogError(ex, "Error toggling favorite state for {TargetType} {ItemId}.", TargetType, ItemId);
+            ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotSave);
+        }
+    }
+
+    private async Task HandleFavoriteCreated(object? sender, FavoriteCreated message)
+    {
+        if (message.TargetType != TargetType || message.ItemId != ItemId)
+        {
+            return;
+        }
+
+        _isFavorite = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleFavoriteDeleted(object? sender, FavoriteDeleted message)
+    {
+        if (message.TargetType != TargetType || message.ItemId != ItemId)
+        {
+            return;
+        }
+
+        _isFavorite = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        FavoriteService.ItemCreated -= HandleFavoriteCreated;
+        FavoriteService.ItemDeleted -= HandleFavoriteDeleted;
+    }
+}
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

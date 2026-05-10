@@ -10,6 +10,7 @@ using Todo.Client.MVVM;
 using Todo.ClientBase.History;
 using Todo.ClientBase.Shared;
 using Todo.Contracts.TodoItems;
+using Todo.Contracts.Shared;
 
 namespace Todo.ClientBase.TodoItems;
 
@@ -22,7 +23,11 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 
 	public TodoItemStatus[] AvailableTodoItemStatus { get; } = Enum.GetValues<TodoItemStatus>();
 
-	public Guid Id { get; set => Set(ref field, value); }
+	public Guid Id
+	{
+		get;
+		set => Set(ref field, value, UpdateToggleFavoriteState);
+	}
 	public string Title { get; set => Set(ref field, value); } = string.Empty;
 	public string Content { get; set => Set(ref field, value); } = string.Empty;
 
@@ -115,14 +120,19 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 		=> datePart.Date + (timePart ?? TimeSpan.Zero);
 
 	private static DateTimeOffset? ToDateTimeOffset(DateTime? value)
-		=> value is null ? null : new DateTimeOffset(DateTime.SpecifyKind(value.Value, DateTimeKind.Unspecified), TimeSpan.Zero);
+		=> value is null ? null : new DateTimeOffset(System.DateTime.SpecifyKind(value.Value, DateTimeKind.Unspecified), TimeSpan.Zero);
 
 
 	private readonly ChangeTracker _changeTracker = new();
+	public ToggleFavoriteViewModel ToggleFavorite { get; }
 
 	public bool CanNavigateToHistory => !IsNew;
 
-	public bool IsBusy { get; private set => Set(ref field, value); }
+	public bool IsBusy
+	{
+		get;
+		private set => Set(ref field, value, UpdateToggleFavoriteState);
+	}
 	public bool CanEdit { get; private set => Set(ref field, value); } = true;
 
 	public bool IsNew
@@ -132,15 +142,18 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 		{
 			RaisePropertyChanged(nameof(CanNavigateToHistory));
 			NavigateToHistoryCommand.RaiseCanExecuteChanged();
+			UpdateToggleFavoriteState();
 		});
 	}
 
 	public TodoItemViewModel(
 		ITodoItemService todoItemService,
+		ToggleFavoriteViewModel toggleFavorite,
 		IUserService userService,
 		ViewModelBaseParameters<TodoItemViewModel> parameters) : base(parameters)
 	{
 		_todoItemService = todoItemService;
+		ToggleFavorite = toggleFavorite;
 		_userService = userService;
 
 		NavigateBackCommand = new AsyncCommand(NavigationService.NavigateBack, t => HandleError(t.Exception));
@@ -183,9 +196,11 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 			IsNew = false;
 		}
 
-		AvailableUsers = await _userService.GetItemsAsync();
+		var availableUsers = await _userService.GetItemsAsync();
+		AvailableUsers = [new UserListItemModel { Id = Guid.Empty }, .. availableUsers];
 
 		await _todoItemService.StartEventListener();
+		await ToggleFavorite.InitializeAsync(ItemType.TodoItem, Id, !IsNew && Id != Guid.Empty && !IsBusy);
 
 		_changeTracker.Clear();
 
@@ -207,6 +222,11 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 			InitializeChecklistTracking();
 
 		});
+	}
+
+	private void UpdateToggleFavoriteState()
+	{
+		ToggleFavorite.UpdateState(Id, !IsNew && Id != Guid.Empty && !IsBusy);
 	}
 
 	public AsyncCommand NavigateBackCommand { get; }
@@ -371,6 +391,7 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 							or nameof(CanEdit)
 							or nameof(CanNavigateToHistory)
 							or nameof(Id)
+							or nameof(ToggleFavorite)
 							or nameof(AvailableUsers)
 							or nameof(AvailableTodoItemStatus)
 ;
@@ -386,6 +407,7 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 				_changeTracker.StateChanged -= RedoCommand.RaiseCanExecuteChanged;
 				HasErrorsChanged -= SaveCommand.RaiseCanExecuteChanged;
 				_todoItemService.ItemUpdated -= Handle;
+				ToggleFavorite.Dispose();
 			}
 
 			_disposedValue = true;

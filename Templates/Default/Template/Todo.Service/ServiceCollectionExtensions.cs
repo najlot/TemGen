@@ -1,4 +1,5 @@
 using <# Project.Namespace#>.Service.Features.Auth;
+using <# Project.Namespace#>.Service.Features.Favorites;
 using <# Project.Namespace#>.Service.Features.Filters;
 using <# Project.Namespace#>.Service.Features.GlobalSearch;
 using <# Project.Namespace#>.Service.Features.History;
@@ -23,6 +24,7 @@ public static class ServiceCollectionExtensions
 	{
 		services.RegisterAuthFeature();
 		services.RegisterUsersFeature();
+		services.RegisterFavoritesFeature();
 		services.RegisterFiltersFeature();
 		services.RegisterHistoryFeature();
 

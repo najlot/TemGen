@@ -1,4 +1,5 @@
 using Todo.Service.Features.Auth;
+using Todo.Service.Features.Favorites;
 using Todo.Service.Features.Filters;
 using Todo.Service.Features.GlobalSearch;
 using Todo.Service.Features.History;
@@ -18,6 +19,7 @@ public static class ServiceCollectionExtensions
 	{
 		services.RegisterAuthFeature();
 		services.RegisterUsersFeature();
+		services.RegisterFavoritesFeature();
 		services.RegisterFiltersFeature();
 		services.RegisterHistoryFeature();
 

@@ -1,0 +1,35 @@
+@page
+@using <# Project.Namespace#>.Client.Localisation
+@using <# Project.Namespace#>.Contracts.Trash
+@using <# Project.Namespace#>.Contracts.Shared
+@model <# Project.Namespace#>.Htmx.Pages.TrashModel
+@{
+	ViewData["Title"] = TrashLoc.Trash;
+}
+
+
+<section id="trash-container"
+	 class="d-grid gap-3"
+	 hx-get="@($"{Request.Path}{Request.QueryString}")"
+	 hx-select="#trash-container"
+	 hx-target="this"
+	 hx-swap="outerHTML"
+	 hx-on::before-request="const hasOtherRequestInFlight = document.querySelector('.htmx-request') && !this.classList.contains('htmx-request'); if (document.visibilityState !== 'visible' || hasOtherRequestInFlight) { document.body.dataset.liveRefreshPending = 'true'; event.preventDefault(); }"
+	 hx-trigger="live-refresh-all from:body queue:last, sse:TrashItemCreated queue:last, sse:TrashItemUpdated queue:last, sse:TrashItemDeleted queue:last">
+	<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+		<h1 class="mb-0">@TrashLoc.Trash</h1>
+		@if (Model.Items.Count > 0)
+		{
+			<form method="post" asp-page-handler="DeleteAll"
+				  hx-post="?handler=DeleteAll"
+				  hx-target="#trash-list"
+				  hx-swap="outerHTML"
+				  hx-confirm="@TrashLoc.PermanentDeleteAllConfirmationDescription">
+				<button type="submit" class="btn btn-outline-danger">@TrashLoc.DeleteAll</button>
+			</form>
+		}
+	</div>
+
+	@await Html.PartialAsync("_TrashList", Model)
+</section>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

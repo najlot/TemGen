@@ -1,22 +1,16 @@
 using Microsoft.Extensions.DependencyInjection;
+using <# Project.Namespace#>.Client.Data.Favorites;
 using <# Project.Namespace#>.Client.Data.Filters;
 using <# Project.Namespace#>.Client.Data.GlobalSearch;
 using <# Project.Namespace#>.Client.Data.History;
 using <# Project.Namespace#>.Client.Data.Identity;
 <#cs
 foreach (var contractNamespace in Definitions
-	.Where(d => !d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))
-	.Select(definition => 
-	{
-		if (definition.IsEnumeration || definition.IsOwnedType || definition.IsArray)
-		{
-			return $"{Project.Namespace}.Client.Data.{GetChildFeatureFolderName(definition.Name)}";
-		}
-		
-		return $"{Project.Namespace}.Client.Data.{definition.Name}s";
-	})
+	.Where(d => !(d.IsArray || d.IsEnumeration || d.IsOwnedType || d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
+	.Select(definition => $"{Project.Namespace}.Client.Data.{FixPathPluralization(definition.Name + "s")}")
+
 	.Distinct()
-	.OrderBy(contractNamespace => contractNamespace))
+	.Order())
 {
 	WriteLine($"using {contractNamespace};");
 }
@@ -46,6 +40,7 @@ public static class ServiceCollectionExtensions
 
 		public void RegisterClientDataRepositories()
 		{
+			serviceCollection.AddScoped<IFavoriteRepository, FavoriteRepository>();
 			serviceCollection.AddScoped<IFilterRepository, FilterRepository>();
 			serviceCollection.AddScoped<IGlobalSearchRepository, GlobalSearchRepository>();
 			serviceCollection.AddScoped<IHistoryRepository, HistoryRepository>();
@@ -58,9 +53,13 @@ public static class ServiceCollectionExtensions
 		public void RegisterClientDataServices()
 		{
 			serviceCollection.AddScoped<IApiEventConnectionProvider, ApiEventConnectionProvider>();
+			serviceCollection.AddScoped<IFavoriteService, FavoriteService>();
 			serviceCollection.AddScoped<IFilterService, FilterService>();
 			serviceCollection.AddScoped<IGlobalSearchService, GlobalSearchService>();
-			serviceCollection.AddScoped<IHistoryService, HistoryService>();
+
+<#for definition in Definitions.Where(d => !(d.IsArray || d.IsEnumeration || d.IsOwnedType || d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
+#>			serviceCollection.AddScoped<IEntityHistoryLocalizer, <# definition.Name#>HistoryLocalizer>();
+<#end#>			serviceCollection.AddScoped<IHistoryService, HistoryService>();
 			serviceCollection.AddScoped<ITrashService, TrashService>();
 <#for definition in Definitions.Where(d => !(d.IsArray || d.IsEnumeration || d.IsOwnedType || d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
 #>			serviceCollection.AddScoped<I<# definition.Name#>Service, <# definition.Name#>Service>();

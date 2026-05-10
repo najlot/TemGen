@@ -4,6 +4,7 @@ using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
 using <# Project.Namespace#>.Contracts.Trash;
 using <# Project.Namespace#>.Contracts.Shared;
 using <# Project.Namespace#>.Service.Features.Auth;
+using <# Project.Namespace#>.Service.Features.Favorites;
 using <# Project.Namespace#>.Service.Features.History;
 using <# Project.Namespace#>.Service.Features.Filters;
 using <# Project.Namespace#>.Service.Shared.Realtime;
@@ -13,6 +14,7 @@ namespace <# Project.Namespace#>.Service.Features.<# Definition.Name#>s;
 
 public class <# Definition.Name#>Service(
 	I<# Definition.Name#>Repository <# Definition.NameLow#>Repository,
+	FavoriteService favoriteService,
 	HistoryService historyService,
 	IPublisher publisher,
 	IMap map,
@@ -52,6 +54,13 @@ public class <# Definition.Name#>Service(
 
 		await <# Definition.NameLow#>Repository.Update(item).ConfigureAwait(false);
 		await historyService.WriteChangesAsync(item.Id, snapshot).ConfigureAwait(false);
+		await favoriteService.UpdateItemsAsync(
+			ItemType.<# Definition.Name#>,
+			item.Id,
+<#cs var favoriteFields = Entries.Where(e => e.EntryType.Equals("string", StringComparison.OrdinalIgnoreCase)).Take(2).ToList();
+if (favoriteFields.Count > 0) WriteLine($"\t\t\titem.{favoriteFields[0].Field},"); else WriteLine("\t\t\tstring.Empty,");
+if (favoriteFields.Count > 1) WriteLine($"\t\t\titem.{favoriteFields[1].Field}).ConfigureAwait(false);"); else WriteLine("\t\t\tstring.Empty).ConfigureAwait(false);");
+#>
 
 		var message = map.From(item).To<<# Definition.Name#>Updated>();
 		await publisher.PublishAsync(message).ConfigureAwait(false);
@@ -80,6 +89,7 @@ public class <# Definition.Name#>Service(
 			item.DeletedAt = DateTime.UtcNow;
 			await <# Definition.NameLow#>Repository.Update(item).ConfigureAwait(false);
 			await historyService.WriteChangesAsync(item.Id, snapshot).ConfigureAwait(false);
+			await favoriteService.DeleteItemsAsync(ItemType.<# Definition.Name#>, item.Id).ConfigureAwait(false);
 
 			var trashItemCreated = map.From(item).To<TrashItemCreated>();
 			await publisher.PublishAsync(trashItemCreated).ConfigureAwait(false);
@@ -90,6 +100,7 @@ public class <# Definition.Name#>Service(
 		else
 		{
 			await historyService.DeleteHistoryEntriesAsync(item.Id).ConfigureAwait(false);
+			await favoriteService.DeleteItemsAsync(ItemType.<# Definition.Name#>, item.Id).ConfigureAwait(false);
 			await <# Definition.NameLow#>Repository.Delete(id).ConfigureAwait(false);
 			var trashItemDeleted = new TrashItemDeleted(item.Id, ItemType.<# Definition.Name#>);
 			await publisher.PublishAsync(trashItemDeleted).ConfigureAwait(false);

@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using <# Project.Namespace#>.Client.MVVM;
-<#if NeedsSharedEnumerationChildren()
-#>using <# Project.Namespace#>.Contracts.Shared;
+<#for folderName in Entries
+	.Where(e => e.IsEnumeration)
+	.Select(e => GetChildFeatureFolderName(e.EntryType))
+	.Distinct()
+#>using <# Project.Namespace#>.Contracts.<# folderName#>;
 <#end#>
 namespace <# Project.Namespace#>.ClientBase.<#if Definition.IsArray
 #><#cs Write(GetChildFeatureFolderName(Definition.Name))#><#else#><# Definition.Name#>s<#end#>;

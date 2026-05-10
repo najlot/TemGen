@@ -31,6 +31,7 @@
 							<materialIcons:MaterialIcon Kind="Redo" Width="18" Height="18" />
 						</Button.Content>
 					</Button>
+					<ContentControl x:Name="ToggleFavoriteButtonHost" Margin="5" DataContext="{Binding ToggleFavorite}" />
 					<Button ToolTip="{x:Static loc:CommonLoc.History}"
 							Command="{Binding NavigateToHistoryCommand}"
 							Margin="5"
@@ -55,49 +56,49 @@
 			<ScrollViewer>
 				<StackPanel Margin="2,0" MinWidth="400" MinHeight="200"
 						HorizontalAlignment="Center" VerticalAlignment="Center">
-					<DockPanel Margin="5">
-						<Label Content="{x:Static loc:TodoItemLoc.Title}" MinWidth="75" />
+					<StackPanel Margin="5">
+						<Label Margin="0,0,0,4" Padding="0" Content="{x:Static loc:TodoItemLoc.Title}" />
 						<TextBox Text="{Binding Title}" />
-					</DockPanel>
-					<DockPanel Margin="5">
-						<Label Content="{x:Static loc:TodoItemLoc.Content}" MinWidth="75" />
+					</StackPanel>
+					<StackPanel Margin="5">
+						<Label Margin="0,0,0,4" Padding="0" Content="{x:Static loc:TodoItemLoc.Content}" />
 						<TextBox Text="{Binding Content}" />
-					</DockPanel>
-					<DockPanel Margin="5">
-						<Label Content="{x:Static loc:TodoItemLoc.CreatedAt}" MinWidth="75" />
+					</StackPanel>
+					<StackPanel Margin="5">
+						<Label Margin="0,0,0,4" Padding="0" Content="{x:Static loc:TodoItemLoc.CreatedAt}" />
 					<StackPanel Orientation="Horizontal">
 						<DatePicker SelectedDate="{Binding CreatedAtDate, Converter={x:Static converter:DateTimeOffsetToDateTimeConverter.Instance}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 						<TextBox Width="64" Margin="8,0,0,0" VerticalContentAlignment="Center" ToolTip="HH:mm" Text="{Binding CreatedAtTime, Converter={x:Static converter:NullableTimeSpanConverter.Instance}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 					</StackPanel>
-					</DockPanel>
-					<DockPanel Margin="5">
-						<Label Content="{x:Static loc:TodoItemLoc.CreatedBy}" MinWidth="75" />
+					</StackPanel>
+					<StackPanel Margin="5">
+						<Label Margin="0,0,0,4" Padding="0" Content="{x:Static loc:TodoItemLoc.CreatedBy}" />
 						<TextBox Text="{Binding CreatedBy}" />
-					</DockPanel>
-					<DockPanel Margin="5">
-						<Label Content="{x:Static loc:TodoItemLoc.AssignedTo}" MinWidth="75" />
-						<ComboBox ItemsSource="{Binding AvailableUsers}" SelectedValue="{Binding AssignedToId}" SelectedValuePath="Id" DisplayMemberPath="Username" IsEditable="True" />
-					</DockPanel>
-					<DockPanel Margin="5">
-						<Label Content="{x:Static loc:TodoItemLoc.Status}" MinWidth="75" />
+					</StackPanel>
+					<StackPanel Margin="5">
+						<Label Margin="0,0,0,4" Padding="0" Content="{x:Static loc:TodoItemLoc.AssignedTo}" />
+						<ComboBox ItemsSource="{Binding AvailableUsers}" SelectedValue="{Binding AssignedToId}" SelectedValuePath="Id" DisplayMemberPath="DisplayText" />
+					</StackPanel>
+					<StackPanel Margin="5">
+						<Label Margin="0,0,0,4" Padding="0" Content="{x:Static loc:TodoItemLoc.Status}" />
 						<ComboBox ItemsSource="{Binding AvailableTodoItemStatus, Converter={x:Static converter:EnumToTranslationConverter.Instance}, ConverterParameter={x:Type loc:TodoItemStatusLoc}}"
 								  SelectedItem="{Binding Status, Converter={x:Static converter:EnumToTranslationConverter.Instance}, ConverterParameter={x:Type loc:TodoItemStatusLoc}}" />
-					</DockPanel>
-					<DockPanel Margin="5">
-						<Label Content="{x:Static loc:TodoItemLoc.ChangedAt}" MinWidth="75" />
+					</StackPanel>
+					<StackPanel Margin="5">
+						<Label Margin="0,0,0,4" Padding="0" Content="{x:Static loc:TodoItemLoc.ChangedAt}" />
 					<StackPanel Orientation="Horizontal">
 						<DatePicker SelectedDate="{Binding ChangedAtDate, Converter={x:Static converter:DateTimeOffsetToDateTimeConverter.Instance}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 						<TextBox Width="64" Margin="8,0,0,0" VerticalContentAlignment="Center" ToolTip="HH:mm" Text="{Binding ChangedAtTime, Converter={x:Static converter:NullableTimeSpanConverter.Instance}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 					</StackPanel>
-					</DockPanel>
-					<DockPanel Margin="5">
-						<Label Content="{x:Static loc:TodoItemLoc.ChangedBy}" MinWidth="75" />
+					</StackPanel>
+					<StackPanel Margin="5">
+						<Label Margin="0,0,0,4" Padding="0" Content="{x:Static loc:TodoItemLoc.ChangedBy}" />
 						<TextBox Text="{Binding ChangedBy}" />
-					</DockPanel>
-					<DockPanel Margin="5">
-						<Label Content="{x:Static loc:TodoItemLoc.Priority}" MinWidth="75" />
+					</StackPanel>
+					<StackPanel Margin="5">
+						<Label Margin="0,0,0,4" Padding="0" Content="{x:Static loc:TodoItemLoc.Priority}" />
 						<TextBox Text="{Binding Priority}" />
-					</DockPanel>
+					</StackPanel>
 					<DockPanel>
 						<DockPanel DockPanel.Dock="Top">
 							<Button ToolTip="{x:Static loc:CommonLoc.New}" Command="{Binding AddChecklistTaskCommand}" Margin="5" DockPanel.Dock="Right">

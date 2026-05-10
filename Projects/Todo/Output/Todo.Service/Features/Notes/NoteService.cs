@@ -4,6 +4,7 @@ using Todo.Contracts.Notes;
 using Todo.Contracts.Trash;
 using Todo.Contracts.Shared;
 using Todo.Service.Features.Auth;
+using Todo.Service.Features.Favorites;
 using Todo.Service.Features.History;
 using Todo.Service.Features.Filters;
 using Todo.Service.Shared.Realtime;
@@ -13,6 +14,7 @@ namespace Todo.Service.Features.Notes;
 
 public class NoteService(
 	INoteRepository noteRepository,
+	FavoriteService favoriteService,
 	HistoryService historyService,
 	IPublisher publisher,
 	IMap map,
@@ -53,6 +55,12 @@ public class NoteService(
 
 		await noteRepository.Update(item).ConfigureAwait(false);
 		await historyService.WriteChangesAsync(item.Id, snapshot).ConfigureAwait(false);
+		await favoriteService.UpdateItemsAsync(
+			ItemType.Note,
+			item.Id,
+			item.Title,
+			item.Content).ConfigureAwait(false);
+
 
 		var message = map.From(item).To<NoteUpdated>();
 		await publisher.PublishAsync(message).ConfigureAwait(false);
@@ -81,6 +89,7 @@ public class NoteService(
 			item.DeletedAt = DateTime.UtcNow;
 			await noteRepository.Update(item).ConfigureAwait(false);
 			await historyService.WriteChangesAsync(item.Id, snapshot).ConfigureAwait(false);
+			await favoriteService.DeleteItemsAsync(ItemType.Note, item.Id).ConfigureAwait(false);
 
 			var trashItemCreated = map.From(item).To<TrashItemCreated>();
 			await publisher.PublishAsync(trashItemCreated).ConfigureAwait(false);
@@ -91,6 +100,7 @@ public class NoteService(
 		else
 		{
 			await historyService.DeleteHistoryEntriesAsync(item.Id).ConfigureAwait(false);
+			await favoriteService.DeleteItemsAsync(ItemType.Note, item.Id).ConfigureAwait(false);
 			await noteRepository.Delete(id).ConfigureAwait(false);
 			var trashItemDeleted = new TrashItemDeleted(item.Id, ItemType.Note);
 			await publisher.PublishAsync(trashItemDeleted).ConfigureAwait(false);

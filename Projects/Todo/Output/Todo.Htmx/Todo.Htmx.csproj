@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>aspnet-Todo.Htmx-4ea02e08-91a1-464f-b410-a492610d37b0</UserSecretsId>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
+		<PackageReference Include="Najlot.Log.Configuration.FileSource" />
+		<PackageReference Include="Najlot.Log.Extensions.Logging" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Todo.Client.Data\Todo.Client.Data.csproj" />
+		<ProjectReference Include="..\Todo.Client.Localisation\Todo.Client.Localisation.csproj" />
+	</ItemGroup>
+
+</Project>
+

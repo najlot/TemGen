@@ -48,7 +48,7 @@ public class NoteFilterViewModel : EntityFilterEditorViewModel
 				Values = [.. Enum.GetValues<PredefinedColor>().Select(value => new FilterValueOption
 				{
 					Value = value.ToString(),
-					Label = value.ToString(),
+					Label = value == PredefinedColor.None ? CommonLoc.NothingSelected : value.ToString(),
 				})],
 			},
 		]);

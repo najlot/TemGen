@@ -13,9 +13,8 @@ using <# Project.Namespace#>.Client.MVVM;
 using <# Project.Namespace#>.ClientBase.History;
 using <# Project.Namespace#>.ClientBase.Shared;
 using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
-<#if NeedsSharedEnumerationChildren()
-#>using <# Project.Namespace#>.Contracts.Shared;
-<#end#>
+using <# Project.Namespace#>.Contracts.Shared;
+
 namespace <# Project.Namespace#>.ClientBase.<# Definition.Name#>s;
 
 public <#if Entries.Any(e => e.IsArray)
@@ -37,22 +36,13 @@ public <#if Entries.Any(e => e.IsArray)
 #>	public IEnumerable<<# definition.Name#>ListItemModel> Available<# definition.Name#>s { get; set => Set(ref field, value); } = [];
 <#end#>
 <#for entry in Entries.Where(e => e.IsEnumeration)
-#><#if entry.IsNullable
-#>	private static IEnumerable<<# entry.EntryType#>?> GetAvailable<# entry.EntryType#>s()
-	{
-		yield return null;
-
-		foreach (var entry in Enum.GetValues(typeof(<# entry.EntryType#>)) as <# entry.EntryType#>[])
-		{
-			yield return entry;
-		}
-	}
-
-	public List<<# entry.EntryType#>?> Available<# entry.EntryType#>s { get; } = GetAvailable<# entry.EntryType#>s().ToList();
-<#else
 #>	public <# entry.EntryType#>[] Available<# entry.EntryType#>s { get; } = Enum.GetValues<<# entry.EntryType#>>();
-<#end#><#end#>
-	public Guid Id { get; set => Set(ref field, value); }
+<#end#>
+	public Guid Id
+	{
+		get;
+		set => Set(ref field, value, UpdateToggleFavoriteState);
+	}
 <#for entry in Entries.Where(e => !e.IsArray)
 	#><#if entry.EntryType == "DateTime"
 #>
@@ -133,14 +123,19 @@ public <#if Entries.Any(e => e.IsArray)
 		=> datePart.Date + (timePart ?? TimeSpan.Zero);
 
 	private static DateTimeOffset? ToDateTimeOffset(DateTime? value)
-		=> value is null ? null : new DateTimeOffset(DateTime.SpecifyKind(value.Value, DateTimeKind.Unspecified), TimeSpan.Zero);
+		=> value is null ? null : new DateTimeOffset(System.DateTime.SpecifyKind(value.Value, DateTimeKind.Unspecified), TimeSpan.Zero);
 
 <#end#>
 	private readonly ChangeTracker _changeTracker = new();
+	public ToggleFavoriteViewModel ToggleFavorite { get; }
 
 	public bool CanNavigateToHistory => !IsNew;
 
-	public bool IsBusy { get; private set => Set(ref field, value); }
+	public bool IsBusy
+	{
+		get;
+		private set => Set(ref field, value, UpdateToggleFavoriteState);
+	}
 	public bool CanEdit { get; private set => Set(ref field, value); } = true;
 
 	public bool IsNew
@@ -150,11 +145,13 @@ public <#if Entries.Any(e => e.IsArray)
 		{
 			RaisePropertyChanged(nameof(CanNavigateToHistory));
 			NavigateToHistoryCommand.RaiseCanExecuteChanged();
+			UpdateToggleFavoriteState();
 		});
 	}
 
 	public <# Definition.Name#>ViewModel(
 		I<# Definition.Name#>Service <# Definition.NameLow#>Service,
+		ToggleFavoriteViewModel toggleFavorite,
 <#for definition in Entries
 	.Where(e => e.IsReference)
 	.Select(e => e.ReferenceType)
@@ -164,6 +161,7 @@ public <#if Entries.Any(e => e.IsArray)
 <#end#>		ViewModelBaseParameters<<# Definition.Name#>ViewModel> parameters) : base(parameters)
 	{
 		_<# Definition.NameLow#>Service = <# Definition.NameLow#>Service;
+		ToggleFavorite = toggleFavorite;
 <#for definition in Entries
 	.Where(e => e.IsReference)
 	.Select(e => e.ReferenceType)
@@ -216,9 +214,11 @@ public <#if Entries.Any(e => e.IsArray)
 	.Select(e => e.ReferenceType)
 	.Distinct()
 	.Select(n => Definitions.First(d => d.Name == n))
-#>		Available<# definition.Name#>s = await _<# definition.NameLow#>Service.GetItemsAsync();
+#>		var available<# definition.Name#>s = await _<# definition.NameLow#>Service.GetItemsAsync();
+		Available<# definition.Name#>s = [new <# definition.Name#>ListItemModel { Id = Guid.Empty }, .. available<# definition.Name#>s];
 <#end#>
 		await _<# Definition.NameLow#>Service.StartEventListener();
+		await ToggleFavorite.InitializeAsync(ItemType.<# Definition.Name#>, Id, !IsNew && Id != Guid.Empty && !IsBusy);
 
 		_changeTracker.Clear();
 <#for entry in Entries.Where(e => e.IsOwnedType)
@@ -246,6 +246,11 @@ public <#if Entries.Any(e => e.IsArray)
 #>			Initialize<# entry.Field#>Tracking();
 <#end#>
 		});
+	}
+
+	private void UpdateToggleFavoriteState()
+	{
+		ToggleFavorite.UpdateState(Id, !IsNew && Id != Guid.Empty && !IsBusy);
 	}
 
 	public AsyncCommand NavigateBackCommand { get; }
@@ -416,6 +421,7 @@ public <#if Entries.Any(e => e.IsArray)
 							or nameof(CanEdit)
 							or nameof(CanNavigateToHistory)
 							or nameof(Id)
+							or nameof(ToggleFavorite)
 <#for definition in Entries
 	.Where(e => e.IsReference)
 	.Select(e => e.ReferenceType)
@@ -437,6 +443,7 @@ public <#if Entries.Any(e => e.IsArray)
 				_changeTracker.StateChanged -= RedoCommand.RaiseCanExecuteChanged;
 				HasErrorsChanged -= SaveCommand.RaiseCanExecuteChanged;
 				_<# Definition.NameLow#>Service.ItemUpdated -= Handle;
+				ToggleFavorite.Dispose();
 			}
 
 			_disposedValue = true;

@@ -7,6 +7,7 @@
 	<Project Path="Todo.Avalonia.iOS/Todo.Avalonia.iOS.csproj" />
 	<Project Path="Todo.Avalonia/Todo.Avalonia.csproj" />
 	<Project Path="Todo.Blazor/Todo.Blazor.csproj" />
+	<Project Path="Todo.Htmx/Todo.Htmx.csproj" />
 	<Project Path="Todo.Client.Data.Test/Todo.Client.Data.Test.csproj" />
 	<Project Path="Todo.Client.Data/Todo.Client.Data.csproj" />
 	<Project Path="Todo.Client.Localisation/Todo.Client.Localisation.csproj" />

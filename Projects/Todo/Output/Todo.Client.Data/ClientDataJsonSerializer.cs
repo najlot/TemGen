@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Todo.Client.Data.Favorites;
 using Todo.Client.Data.Filters;
 using Todo.Client.Data.GlobalSearch;
 using Todo.Client.Data.History;
@@ -20,6 +21,7 @@ public static class ClientDataJsonSerializer
 	{
 		var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 
+		options.TypeInfoResolverChain.Add(FavoritesSerializerContext.Default);
 		options.TypeInfoResolverChain.Add(FiltersSerializerContext.Default);
 		options.TypeInfoResolverChain.Add(AuthSerializerContext.Default);
 		options.TypeInfoResolverChain.Add(GlobalSearchSerializerContext.Default);

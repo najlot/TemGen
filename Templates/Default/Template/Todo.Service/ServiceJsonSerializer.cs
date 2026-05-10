@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using <# Project.Namespace#>.Service.Features.Auth;
+using <# Project.Namespace#>.Service.Features.Favorites;
 using <# Project.Namespace#>.Service.Features.Filters;
 using <# Project.Namespace#>.Service.Features.GlobalSearch;
 using <# Project.Namespace#>.Service.Features.History;
@@ -26,6 +27,7 @@ public static class ServiceJsonSerializer
 	internal static IJsonTypeInfoResolver[] TypeInfoResolvers { get; } =
 	[
 		AuthSerializerContext.Default,
+		FavoritesSerializerContext.Default,
 		FiltersSerializerContext.Default,
 		GlobalSearchSerializerContext.Default,
 		HistorySerializerContext.Default,

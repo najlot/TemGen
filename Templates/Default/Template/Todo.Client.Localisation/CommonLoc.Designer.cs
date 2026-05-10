@@ -104,6 +104,15 @@ namespace <# Project.Namespace#>.Client.Localisation {
                 return ResourceManager.GetString("Delete", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Deleted.
+        /// </summary>
+        public static string Deleted {
+            get {
+                return ResourceManager.GetString("Deleted", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Are you sure you want to delete this item?.
@@ -255,6 +264,15 @@ namespace <# Project.Namespace#>.Client.Localisation {
         public static string Redo {
             get {
                 return ResourceManager.GetString("Redo", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Nothing selected.
+        /// </summary>
+        public static string NothingSelected {
+            get {
+                return ResourceManager.GetString("NothingSelected", resourceCulture);
             }
         }
         

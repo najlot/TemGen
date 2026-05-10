@@ -123,6 +123,9 @@
   <data name="Delete" xml:space="preserve">
     <value>Delete</value>
   </data>
+  <data name="Deleted" xml:space="preserve">
+    <value>Deleted</value>
+  </data>
   <data name="DeleteConfirmationDescription" xml:space="preserve">
     <value>Are you sure you want to delete this item?</value>
   </data>
@@ -167,6 +170,9 @@
   </data>
   <data name="New" xml:space="preserve">
     <value>New</value>
+  </data>
+  <data name="NothingSelected" xml:space="preserve">
+    <value>Nothing selected</value>
   </data>
   <data name="NoHistoryEntries" xml:space="preserve">
     <value>No changes recorded yet.</value>

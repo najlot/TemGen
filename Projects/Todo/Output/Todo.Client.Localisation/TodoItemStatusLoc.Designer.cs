@@ -79,6 +79,15 @@ namespace Todo.Client.Localisation {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to None:.
+        /// </summary>
+        public static string None {
+            get {
+                return ResourceManager.GetString("None", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Todo:.
         /// </summary>
         public static string Todo {

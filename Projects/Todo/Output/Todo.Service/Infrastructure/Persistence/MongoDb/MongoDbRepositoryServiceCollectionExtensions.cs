@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using Todo.Service.Features.Favorites;
+using Todo.Service.Features.Favorites.Persistence;
 using Todo.Service.Features.Filters;
 using Todo.Service.Features.Filters.Persistence;
 using Todo.Service.Features.History;
@@ -28,6 +30,7 @@ public static class MongoDbRepositoryServiceCollectionExtensions
 			services.AddSingleton(configuration);
 			services.AddSingleton<MongoDbContext>();
 			services.AddScoped<IUnitOfWork, MongoDbUnitOfWork>();
+			services.RegisterMongoDbFavoritePersistence();
 			services.RegisterMongoDbFilterPersistence();
 			services.RegisterMongoDbHistoryPersistence();
 			services.RegisterMongoDbUserPersistence();
@@ -41,6 +44,7 @@ public static class MongoDbRepositoryServiceCollectionExtensions
 		services.AddKeyedSingleton<MongoDbContext>(serviceKey, static (serviceProvider, key) =>
 			new MongoDbContext(serviceProvider.GetRequiredKeyedService<MongoDbConfiguration>(key)));
 		services.AddKeyedScoped<IUnitOfWork>(serviceKey, static (_, _) => new MongoDbUnitOfWork());
+		services.RegisterMongoDbFavoritePersistence(serviceKey);
 		services.RegisterMongoDbFilterPersistence(serviceKey);
 		services.RegisterMongoDbHistoryPersistence(serviceKey);
 		services.RegisterMongoDbUserPersistence(serviceKey);

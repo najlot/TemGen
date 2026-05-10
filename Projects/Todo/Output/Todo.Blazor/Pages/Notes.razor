@@ -4,6 +4,7 @@
 @using Todo.Blazor.Services
 @using Todo.Client.Data
 @using Todo.Client.Data.Filters
+@using Todo.Client.Data.Favorites
 @using Todo.Client.Data.Notes
 @using Todo.Client.Localisation
 @using Todo.Contracts.Filters
@@ -13,6 +14,7 @@
 @inject ILogger<Notes> Log
 @inject Najlot.Map.IMap Map
 @inject INoteService NoteService
+@inject IFavoriteService FavoriteService
 @inject NavigationManager NavigationManager
 
 @attribute [Authorize]
@@ -43,6 +45,9 @@
 				<table class="table table-hover align-middle mb-0">
 					<thead class="table-light">
 						<tr>
+							<th class="text-center" style="width: 1%;">
+								<span class="material-symbols-sharp text-warning" title="Favorite" aria-label="Favorite">star</span>
+							</th>
 							<th>@NoteLoc.Title</th>
 							<th>@NoteLoc.Content</th>
 							<th class="text-end">@CommonLoc.Edit</th>
@@ -52,6 +57,12 @@
 						@foreach (var note in notes)
 						{
 							<tr scope="row">
+								<td class="text-center">
+									@if (IsFavorite(note.Id))
+									{
+										<span class="material-symbols-sharp text-warning" title="Favorite" aria-label="Favorite">star</span>
+									}
+								</td>
 								<td class="text-break">@note.Title.Truncate(75)</td>
 								<td class="text-break">@note.Content.Truncate(75)</td>
 								<td class="text-end"><a href="/Note/@note.Id" class="btn btn-outline-primary btn-sm">@CommonLoc.Edit</a></td>
@@ -70,6 +81,7 @@
 
 	private EntityFilterEditor? filterEditor;
 	private List<NoteListItemModel>? notes;
+	private HashSet<Guid> _favoriteIds = [];
 	private IReadOnlyList<FilterFieldOption> availableFilterFields = [];
 	private bool isLoading;
 	private EntityFilter? _lastFilter;
@@ -83,8 +95,12 @@
 			NoteService.ItemCreated += Handle;
 			NoteService.ItemUpdated += Handle;
 			NoteService.ItemDeleted += Handle;
+			FavoriteService.ItemCreated += HandleFavoriteCreated;
+			FavoriteService.ItemDeleted += HandleFavoriteDeleted;
 
-			await NoteService.StartEventListener();
+			await Task.WhenAll(
+				NoteService.StartEventListener(),
+				FavoriteService.StartEventListener());
 		}
 		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
@@ -119,9 +135,16 @@
 			isLoading = true;
 			_lastFilter = filter;
 
-			notes = filter.Conditions.Count == 0
-				? [.. await NoteService.GetItemsAsync().ConfigureAwait(false)]
-				: [.. await NoteService.GetItemsAsync(filter).ConfigureAwait(false)];
+			var itemsTask = filter.Conditions.Count == 0
+				? NoteService.GetItemsAsync()
+				: NoteService.GetItemsAsync(filter);
+			var favoritesTask = FavoriteService.GetItemsAsync(ItemType.Note);
+
+			var items = await itemsTask.ConfigureAwait(false);
+			var favorites = await favoritesTask.ConfigureAwait(false);
+
+			notes = [.. items];
+			_favoriteIds = [.. favorites.Select(item => item.ItemId)];
 		}
 		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
@@ -140,6 +163,9 @@
 
 		await InvokeAsync(StateHasChanged);
 	}
+
+	private bool IsFavorite(Guid itemId)
+		=> _favoriteIds.Contains(itemId);
 
 	private IReadOnlyList<FilterFieldOption> BuildFilterFieldOptions()
 	{
@@ -170,7 +196,7 @@
 				Values = [.. Enum.GetValues<PredefinedColor>().Select(value => new FilterValueOption
 				{
 					Value = value.ToString(),
-					Label = value.ToString(),
+					Label = value == PredefinedColor.None ? CommonLoc.NothingSelected : value.ToString(),
 				})],
 			},
 		];
@@ -226,10 +252,36 @@
 		await InvokeAsync(StateHasChanged);
 	}
 
+	private async Task HandleFavoriteCreated(object? sender, Todo.Contracts.Favorites.FavoriteCreated message)
+	{
+		if (message.TargetType != ItemType.Note)
+		{
+			return;
+		}
+
+		_favoriteIds.Add(message.ItemId);
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private async Task HandleFavoriteDeleted(object? sender, Todo.Contracts.Favorites.FavoriteDeleted message)
+	{
+		if (message.TargetType != ItemType.Note)
+		{
+			return;
+		}
+
+		_favoriteIds.Remove(message.ItemId);
+
+		await InvokeAsync(StateHasChanged);
+	}
+
 	public void Dispose()
 	{
 		NoteService.ItemCreated -= Handle;
 		NoteService.ItemUpdated -= Handle;
 		NoteService.ItemDeleted -= Handle;
+		FavoriteService.ItemCreated -= HandleFavoriteCreated;
+		FavoriteService.ItemDeleted -= HandleFavoriteDeleted;
 	}
 }

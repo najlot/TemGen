@@ -59,11 +59,12 @@ namespace <# Project.Namespace#>.Client.Localisation {
                 resourceCulture = value;
             }
         }
-<#for entry in Entries
+<#for entry in (Definition.IsEnumeration ? new[] { "None" } : Array.Empty<string>())
+    .Concat(Entries
     .Select(e => e.Field)
     .Concat(Definition.IsArray || Definition.IsEnumeration 
         ? []
-        : ["Create" + Definition.Name, "Edit" + Definition.Name, Definition.Name + "s"])
+        : ["Create" + Definition.Name, "Edit" + Definition.Name, Definition.Name + "s"]))
     .OrderBy(e => e)
 #>        
         /// <summary>

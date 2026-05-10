@@ -1,0 +1,39 @@
+@page
+@using <# Project.Namespace#>.Client.Localisation
+@model <# Project.Namespace#>.Htmx.Pages.Identity.LoginModel
+@{
+	ViewData["Title"] = UserLoc.Login;
+	Layout = "_Layout";
+}
+
+<section class="w-100 p-4 d-flex justify-content-center">
+	<div style="min-width: 320px; max-width: 420px; width: 100%;">
+		<h1>@UserLoc.Login</h1>
+		<br />
+
+		@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+		{
+			<div class="alert alert-danger">@Model.ErrorMessage</div>
+		}
+
+		<form method="post">
+			<div class="mb-4">
+				<label class="form-label" for="UsernameInput">@UserLoc.Username</label>
+				<input type="text" id="UsernameInput" name="Input.Username" class="form-control"
+					   value="@Model.Input.Username" autocomplete="username" />
+			</div>
+			<div class="mb-4">
+				<label class="form-label" for="PasswordInput">@UserLoc.Password</label>
+				<input type="password" id="PasswordInput" name="Input.Password" class="form-control"
+					   autocomplete="current-password" />
+			</div>
+			<div class="mb-4">
+				<button type="submit" class="btn btn-primary w-100">@UserLoc.Login</button>
+			</div>
+			<div class="mb-4 text-center">
+				<a href="/Identity/ForgotPassword" class="btn btn-link">@UserLoc.ForgotPassword</a>
+			</div>
+		</form>
+	</div>
+</section>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

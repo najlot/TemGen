@@ -80,19 +80,24 @@
 	[Parameter]
 	public Guid Id { get; set; }
 
+	[SupplyParameterFromQuery(Name = "entityName")]
+	public string? EntityName { get; set; }
+
 	private Guid _lastEntityId;
+	private string? _lastEntityName;
 	private bool isHistoryLoading;
 	private Guid? expandedHistoryEntryId;
 	private HistoryEntry[] historyEntries = [];
 
 	protected override async Task OnParametersSetAsync()
 	{
-		if (_lastEntityId == Id)
+		if (_lastEntityId == Id && _lastEntityName == EntityName)
 		{
 			return;
 		}
 
 		_lastEntityId = Id;
+		_lastEntityName = EntityName;
 		isHistoryLoading = false;
 		expandedHistoryEntryId = null;
 		historyEntries = [];
@@ -110,7 +115,7 @@
 		try
 		{
 			isHistoryLoading = true;
-			historyEntries = await HistoryService.GetItemsAsync(Id);
+			historyEntries = await HistoryService.GetItemsAsync(Id, EntityName ?? string.Empty);
 			expandedHistoryEntryId = historyEntries.FirstOrDefault()?.Id;
 		}
 		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)

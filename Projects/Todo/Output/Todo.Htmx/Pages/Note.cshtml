@@ -1,0 +1,102 @@
+@page "/note/{id:guid}"
+@using Todo.Client.Localisation
+@using Todo.Contracts.Notes
+@model Todo.Htmx.Pages.NoteModel
+@{
+	ViewData["Title"] = Model.IsNew ? (string)NoteLoc.CreateNote : (string)NoteLoc.EditNote;
+	var liveDetailUrl = (Model.Model is not null && !Model.IsNew) ? $"{Request.Path}{Request.QueryString}" : null;
+	var liveDetailSelect = liveDetailUrl is not null ? "#detail-container" : null;
+	var liveDetailTarget = liveDetailUrl is not null ? "this" : null;
+	var liveDetailSwap = liveDetailUrl is not null ? "outerHTML" : null;
+	var liveDetailTrigger = liveDetailUrl is not null
+		? "live-refresh-all from:body queue:last, sse:NoteUpdated queue:last, sse:NoteDeleted queue:last"
+		: null;
+	var liveDetailBeforeRequest = liveDetailUrl is not null
+		? "const hasOtherRequestInFlight = document.querySelector('.htmx-request') && !this.classList.contains('htmx-request'); if (document.visibilityState !== 'visible' || hasOtherRequestInFlight) { document.body.dataset.liveRefreshPending = 'true'; event.preventDefault(); return; } const form = this.querySelector('form[data-live-dirty-form=\"true\"]'); if (form && (form.dataset.liveDirty === 'true' || form.contains(document.activeElement))) { event.preventDefault(); }"
+		: null;
+}
+
+<div id="detail-container"
+	 hx-get="@liveDetailUrl"
+	 hx-select="@liveDetailSelect"
+	 hx-target="@liveDetailTarget"
+	 hx-swap="@liveDetailSwap"
+	 hx-trigger="@liveDetailTrigger"
+	 hx-on::before-request="@liveDetailBeforeRequest">
+	@if (Model.Model == null)
+	{
+		<p><em>@CommonLoc.Loading...</em></p>
+	}
+	else
+	{
+		<section class="d-grid gap-4">
+		<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
+			<h1 class="mb-1">@ViewData["Title"]</h1>
+			<div class="d-flex flex-wrap gap-2">
+				@if (!Model.IsNew)
+				{
+					<a href="/history/@Model.Model.Id?entityName=Note" class="btn btn-outline-secondary"><span class="material-symbols-sharp me-1" style="font-size:1.1rem;vertical-align:middle;">history</span> @CommonLoc.History</a>
+					@await Html.PartialAsync("_NoteFavoriteToggle", Model)
+				}
+				<button type="submit" form="edit-form" class="btn btn-success"><span class="material-symbols-sharp me-1" style="font-size:1.1rem;vertical-align:middle;">save</span> @CommonLoc.Save</button>
+				@if (!Model.IsNew)
+				{
+					<button type="button" class="btn btn-danger"
+							hx-post="/note/@Model.Model.Id?handler=Delete"
+							hx-confirm="@CommonLoc.DeleteConfirmationDescription"
+							hx-target="body"
+							hx-push-url="true">
+						<span class="material-symbols-sharp me-1" style="font-size:1.1rem;vertical-align:middle;">delete</span> @CommonLoc.Delete
+					</button>
+				}
+			</div>
+		</div>
+
+		@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+		{
+			<div class="alert alert-danger">@Model.ErrorMessage</div>
+		}
+
+		<form id="edit-form"
+			  method="post"
+			  data-live-dirty-form="true"
+			  data-live-dirty="@((!ViewData.ModelState.IsValid || !string.IsNullOrWhiteSpace(Model.ErrorMessage)) ? "true" : "false")"
+			  hx-on:input="this.dataset.liveDirty = 'true'"
+			  hx-on:change="this.dataset.liveDirty = 'true'">
+			<div class="card shadow-sm border-0">
+				<div class="card-body">
+					<div class="row g-3">
+
+						<!-- Title -->
+						<div class="col-12 col-md-6">
+							<label class="form-label" for="TitleInput">@NoteLoc.Title</label>
+							<input type="text" id="TitleInput" name="Model.Title"
+								   class="form-control" value="@Model.Model.Title" />
+						</div>
+
+						<!-- Content -->
+						<div class="col-12 col-md-6">
+							<label class="form-label" for="ContentInput">@NoteLoc.Content</label>
+							<input type="text" id="ContentInput" name="Model.Content"
+								   class="form-control" value="@Model.Model.Content" />
+						</div>
+
+						<!-- Color -->
+						<div class="col-12 col-md-6">
+							<label class="form-label" for="ColorInput">@NoteLoc.Color</label>
+							<select id="ColorInput" name="Model.Color" class="form-select">
+								@foreach (var value in Enum.GetValues(typeof(PredefinedColor)))
+								{
+									<option value="@value" selected="@(Model.Model.Color.Equals(value) ? "selected" : null)">@((value.Equals(PredefinedColor.None) ? CommonLoc.NothingSelected : value.ToString()))</option>
+								}
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</form>
+	</section>
+	}
+</div>
+

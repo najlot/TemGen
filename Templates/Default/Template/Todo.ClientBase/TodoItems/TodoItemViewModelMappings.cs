@@ -36,9 +36,12 @@ internal sealed partial class <# Definition.Name#>ViewModelMappings
 #>		to.<# entry.Field#> = [.. map.From<<# entry.EntryType#>Model>(from.<# entry.Field#>).To<<# entry.EntryType#>ViewModel>()];
 <#end#>	}
 
+	[MapIgnoreProperty(nameof(to.IsFavorite))]
 	public static partial void MapToViewModel(IMap map, <# Definition.Name#>ListItemModel from, <# Definition.Name#>ListItemViewModel to);
 
+	[MapIgnoreProperty(nameof(to.IsFavorite))]
 	public static partial void MapToViewModel(IMap map, <# Definition.Name#>Created from, <# Definition.Name#>ListItemViewModel to);
 
+	[MapIgnoreProperty(nameof(to.IsFavorite))]
 	public static partial void MapToViewModel(IMap map, <# Definition.Name#>Updated from, <# Definition.Name#>ListItemViewModel to);
 }<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

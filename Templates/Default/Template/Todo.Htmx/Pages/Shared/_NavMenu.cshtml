@@ -1,0 +1,43 @@
+@using <# Project.Namespace#>.Client.Localisation
+
+<nav class="navbar navbar-expand-lg bg-primary shadow-sm sticky-top" data-bs-theme="dark">
+	<div class="container-fluid px-3 px-md-4">
+		<a class="navbar-brand" href="/"><# Project.Namespace#></a>
+		<button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="@CommonLoc.Navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="collapse navbar-collapse" id="mainNavbar">
+			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+				<li class="nav-item">
+					<a class="nav-link@(Context.Request.Path == "/" ? " active" : "")" href="/">@CommonLoc.Home</a>
+				</li>
+<#for definition in Definitions.Where(d => !(d.IsArray
+	|| d.IsEnumeration
+	|| d.IsOwnedType
+	|| d.Name == "User"))
+#>				<li class="nav-item dropdown">
+					<a class="nav-link dropdown-toggle@((Context.Request.Path.StartsWithSegments("/<# definition.Name#>") || Context.Request.Path.StartsWithSegments("/<# definition.Name#>s")) ? " active" : "")"
+					   href="#"
+					   role="button"
+					   data-bs-toggle="dropdown"
+					   aria-expanded="false">@<# definition.Name#>Loc.<#cs Write(definition.Name)#>s</a>
+					<ul class="dropdown-menu shadow border-0">
+						<li>
+							<a class="dropdown-item@(Context.Request.Path.StartsWithSegments("/<# definition.Name#>s") ? " active" : "")" href="/<#cs Write(definition.Name.ToLowerInvariant())#>/@Guid.Empty">@<# definition.Name#>Loc.Create<#cs Write(definition.Name)#></a>
+						</li>
+						<li>
+							<a class="dropdown-item@(Context.Request.Path.StartsWithSegments("/<# definition.Name#>s") ? " active" : "")" href="/<# definition.Name#>s">@<# definition.Name#>Loc.<#cs Write(definition.Name)#>s</a>
+						</li>
+					</ul>
+				</li>
+<#end#>				<li class="nav-item">
+					<a class="nav-link@(Context.Request.Path.StartsWithSegments("/trash") ? " active" : "")" href="/trash">@TrashLoc.Trash</a>
+				</li>
+			</ul>
+
+			@await Html.PartialAsync("_LoginPartial")
+		</div>
+	</div>
+</nav>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

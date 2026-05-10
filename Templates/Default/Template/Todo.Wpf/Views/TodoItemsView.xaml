@@ -3,6 +3,7 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:controls="clr-namespace:<#cs Write(Project.Namespace)#>.Wpf.Controls"
+			 xmlns:converter="clr-namespace:<#cs Write(Project.Namespace)#>.Wpf.Converters"
 			 xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
 			 xmlns:loc="clr-namespace:<#cs Write(Project.Namespace)#>.Client.Localisation;assembly=<#cs Write(Project.Namespace)#>.Client.Localisation"
 			 xmlns:local="clr-namespace:<#cs Write(Project.Namespace)#>.Wpf.Views"
@@ -42,17 +43,50 @@
 				<ItemsControl ItemsSource="{Binding <#cs Write(Definition.Name)#>s}">
 					<ItemsControl.ItemTemplate>
 						<DataTemplate>
-							<StackPanel Margin="5">
-<#csfor entry in Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2)
-#>								<TextBlock Padding="5,5,5,0" Text="{Binding <#cs Write(entry.Field)#>}">
+							<Grid Margin="10,0">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="Auto" />
+									<ColumnDefinition Width="*" />
+								</Grid.ColumnDefinitions>
+								<Grid.RowDefinitions>
+									<RowDefinition Height="Auto" />
+									<RowDefinition Height="Auto" />
+									<RowDefinition Height="Auto" />
+								</Grid.RowDefinitions>
+
+								<materialIcons:MaterialIcon
+									Grid.Row="0" Grid.Column="0"
+									Width="18" Height="18"
+									Margin="5,5,0,0"
+									Kind="Star"
+									VerticalAlignment="Center"
+									Visibility="{Binding IsFavorite, Converter={x:Static converter:BooleanToVisibilityConverter.Instance}}" />
+
+<#for entry in Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(1)
+#>								<TextBlock Grid.Row="0" Grid.Column="1" 
+										   Padding="5,5,5,0" 
+										   Text="{Binding <# entry.Field#>}">
 									<i:Interaction.Triggers>
 										<i:EventTrigger EventName="MouseLeftButtonUp">
-											<i:InvokeCommandAction Command="{Binding DataContext.Edit<#cs Write(Definition.Name)#>Command, RelativeSource={RelativeSource AncestorType=local:<#cs Write(Definition.Name)#>sView}}" CommandParameter="{Binding .}" />
+											<i:InvokeCommandAction Command="{Binding DataContext.Edit<#cs Write(Definition.Name)#>Command, RelativeSource={RelativeSource AncestorType=local:<#cs Write(Definition.Name)#>sView}}" 
+																   CommandParameter="{Binding .}" />
 										</i:EventTrigger>
 									</i:Interaction.Triggers>
 								</TextBlock>
-<#end
-#>							</StackPanel>
+<#end#><#for entry in Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Skip(1).Take(1)
+#>								<TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" 
+										   Padding="5,5,5,0" 
+										   Text="{Binding <# entry.Field#>}">
+									<i:Interaction.Triggers>
+										<i:EventTrigger EventName="MouseLeftButtonUp">
+											<i:InvokeCommandAction Command="{Binding DataContext.Edit<#cs Write(Definition.Name)#>Command, RelativeSource={RelativeSource AncestorType=local:<#cs Write(Definition.Name)#>sView}}" 
+																   CommandParameter="{Binding .}" />
+										</i:EventTrigger>
+									</i:Interaction.Triggers>
+								</TextBlock>
+<#end#>
+								<Separator Grid.Row="2" Grid.ColumnSpan="2"/>
+							</Grid>
 						</DataTemplate>
 					</ItemsControl.ItemTemplate>
 				</ItemsControl>

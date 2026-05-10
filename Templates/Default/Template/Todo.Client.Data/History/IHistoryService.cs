@@ -6,5 +6,5 @@ namespace <# Project.Namespace#>.Client.Data.History;
 
 public interface IHistoryService
 {
-	Task<HistoryEntry[]> GetItemsAsync(Guid entityId);
+	Task<HistoryEntry[]> GetItemsAsync(Guid entityId, string entityName);
 }<#cs SetOutputPathAndSkipOtherDefinitions()#>

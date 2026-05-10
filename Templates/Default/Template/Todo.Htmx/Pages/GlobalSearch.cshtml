@@ -1,0 +1,38 @@
+@page "/global-search"
+@using System.Net
+@using <# Project.Namespace#>.Client.Localisation
+@using <# Project.Namespace#>.Contracts.Trash
+@using <# Project.Namespace#>.Contracts.Shared
+@model <# Project.Namespace#>.Htmx.Pages.GlobalSearchModel
+@{
+	ViewData["Title"] = GlobalSearchLoc.GlobalSearch;
+}
+
+<section class="d-grid gap-3">
+	<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+		<h1 class="mb-0">@GlobalSearchLoc.GlobalSearch</h1>
+	</div>
+
+	<form method="get" action="/global-search"
+		  hx-get="/global-search"
+		  hx-target="#search-results"
+		  hx-swap="innerHTML"
+		  hx-push-url="true">
+		<div class="row g-2">
+			<div class="col-12 col-md-8 col-lg-6">
+				<input class="form-control" name="q" value="@Model.Query" placeholder="@GlobalSearchLoc.SearchPlaceholder" />
+			</div>
+			<div class="col-12 col-md-auto">
+				<button class="btn btn-primary w-100" type="submit">
+					<span class="htmx-indicator spinner-border spinner-border-sm me-1" role="status"></span>
+					@GlobalSearchLoc.Search
+				</button>
+			</div>
+		</div>
+	</form>
+
+	<div id="search-results">
+		@await Html.PartialAsync("_GlobalSearchResults", Model)
+	</div>
+</section>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

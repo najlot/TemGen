@@ -2,6 +2,7 @@ namespace Todo.Service.Shared.Configuration;
 
 public class FileConfiguration
 {
+	public string FavoritesPath { get; set; } = "Data/Favorites";
 	public string FiltersPath { get; set; } = "Data/Filters";
 	public string UsersPath { get; set; } = "Data/Users";
 	public string HistoryPath { get; set; } = "Data/History";

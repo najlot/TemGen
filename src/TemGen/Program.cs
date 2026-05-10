@@ -58,7 +58,7 @@ internal class Program
 		}
 		catch (JsonException ex)
 		{
-			Console.Error.WriteLine($"Could not read generation manifest {GeneratedOutputManifest.GetManifestPath(project.OutputPath)}. Stale-file cleanup will be skipped for this run. {ex}");
+			Console.Error.WriteLine($"Could not read generation manifest {Path.Combine(project.OutputPath, GeneratedOutputManifest.FileName)}. Stale-file cleanup will be skipped for this run. {ex}");
 		}
 
 		if (!string.IsNullOrWhiteSpace(project.ResourcesScriptPath))
@@ -108,7 +108,7 @@ internal class Program
 					foreach (var (key, (encoding, content)) in results)
 					{
 						var destPath = Path.Combine(project.OutputPath, key);
-						var normalizedRelativePath = GeneratedOutputManifest.NormalizeRelativePath(key);
+						var normalizedRelativePath = key.Replace('\\', '/');
 						var dirPath = Path.GetDirectoryName(destPath);
 						Directory.CreateDirectory(dirPath);
 

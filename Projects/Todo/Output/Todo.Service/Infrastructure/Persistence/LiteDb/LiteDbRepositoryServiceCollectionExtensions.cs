@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using Todo.Service.Features.Favorites;
+using Todo.Service.Features.Favorites.Persistence;
 using Todo.Service.Features.Filters;
 using Todo.Service.Features.Filters.Persistence;
 using Todo.Service.Features.History;
@@ -28,6 +30,7 @@ public static class LiteDbRepositoryServiceCollectionExtensions
 			services.AddSingleton(configuration);
 			services.AddSingleton<LiteDbContext>();
 			services.AddScoped<IUnitOfWork, LiteDbUnitOfWork>();
+			services.RegisterLiteDbFavoritePersistence();
 			services.RegisterLiteDbFilterPersistence();
 			services.RegisterLiteDbHistoryPersistence();
 			services.RegisterLiteDbUserPersistence();
@@ -42,6 +45,7 @@ public static class LiteDbRepositoryServiceCollectionExtensions
 			new LiteDbContext(serviceProvider.GetRequiredKeyedService<LiteDbConfiguration>(key)));
 		services.AddKeyedScoped<IUnitOfWork>(serviceKey, static (serviceProvider, key) =>
 			new LiteDbUnitOfWork(serviceProvider.GetRequiredKeyedService<LiteDbContext>(key)));
+		services.RegisterLiteDbFavoritePersistence(serviceKey);
 		services.RegisterLiteDbFilterPersistence(serviceKey);
 		services.RegisterLiteDbHistoryPersistence(serviceKey);
 		services.RegisterLiteDbUserPersistence(serviceKey);

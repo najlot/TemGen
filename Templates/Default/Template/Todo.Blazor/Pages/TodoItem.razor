@@ -3,20 +3,45 @@
 @using <# Project.Namespace#>.Blazor.Identity;
 @using <# Project.Namespace#>.Blazor.Services;
 @using <# Project.Namespace#>.Client.Data;
-@using <# Project.Namespace#>.Client.Data.<# Definition.Name#>s;<#if Entries.Any(e => e.IsReference)
+@using <# Project.Namespace#>.Client.Data.Favorites;
+@using <# Project.Namespace#>.Client.Data.<# Definition.Name#>s;<#if Entries
+	.Where(e => e.IsReference)
+	.Concat(Entries
+		.Where(e => e.IsArray)
+		.SelectMany(arrayEntry => Definitions.First(definition => definition.Name == arrayEntry.EntryType).Entries)
+		.Where(childEntry => childEntry.IsReference))
+	.DistinctBy(e => e.ReferenceType)
+	.Any()
 #>
-<#for entry in Entries.Where(e => e.IsReference)
+<#for entry in Entries
+	.Where(e => e.IsReference)
+	.Concat(Entries
+		.Where(e => e.IsArray)
+		.SelectMany(arrayEntry => Definitions.First(definition => definition.Name == arrayEntry.EntryType).Entries)
+		.Where(childEntry => childEntry.IsReference))
+	.DistinctBy(e => e.ReferenceType)
 #>@using <# Project.Namespace#>.Client.Data.<# entry.ReferenceType#>s;
 <#end#><#end#>@using <# Project.Namespace#>.Client.Localisation;
 @using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
-<#if NeedsSharedOwnedChildren() || NeedsSharedArrayChildren() || NeedsSharedEnumerationChildren()
-#>@using <# Project.Namespace#>.Contracts.Shared;
-<#end#>
+@using <# Project.Namespace#>.Contracts.Shared;
 @inject ILogger<<# Definition.Name#>> Log
 @inject Najlot.Map.IMap Map;
-@inject I<# Definition.Name#>Service <# Definition.Name#>Service<#if Entries.Any(e => e.IsReference)
+@inject I<# Definition.Name#>Service <# Definition.Name#>Service<#if Entries
+	.Where(e => e.IsReference)
+	.Concat(Entries
+		.Where(e => e.IsArray)
+		.SelectMany(arrayEntry => Definitions.First(definition => definition.Name == arrayEntry.EntryType).Entries)
+		.Where(childEntry => childEntry.IsReference))
+	.DistinctBy(e => e.ReferenceType)
+	.Any()
 #>
-<#for entry in Entries.Where(e => e.IsReference)
+<#for entry in Entries
+	.Where(e => e.IsReference)
+	.Concat(Entries
+		.Where(e => e.IsArray)
+		.SelectMany(arrayEntry => Definitions.First(definition => definition.Name == arrayEntry.EntryType).Entries)
+		.Where(childEntry => childEntry.IsReference))
+	.DistinctBy(e => e.ReferenceType)
 #>@inject I<# entry.ReferenceType#>Service <# entry.ReferenceType#>Service
 <#end#><#else#>
 <#end#>@inject NavigationManager NavigationManager
@@ -64,6 +89,10 @@ else
 							Execute="_changeTracker.Redo" />
 				@if (!isNew)
 				{
+					<ToggleFavoriteButton TargetType="ItemType.<# Definition.Name#>"
+									  ItemId="@Model.Id"
+									  CanToggle="@(!isNew)" />
+
 					<IconButton Icon="history"
 								ButtonClass="btn btn-outline-secondary"
 								Execute="NavigateToHistory"
@@ -148,7 +177,7 @@ else
 								 ValueExpression="@(() => Model.<# entry.Field#>Id)">
 						@foreach (var value in _<# entry.ReferenceTypeLow#>s)
 						{
-							<option value="@value.Id">@value.<#cs Write(Definitions.First(e => e.Name == entry.ReferenceType).Entries.First().Field)#></option>
+							<option value="@value.Id">@value.DisplayText</option>
 						}
 						</InputSelect>
 <#else
@@ -183,6 +212,34 @@ else
 <#for e in Definitions.First(definition => definition.Name == entry.EntryType).Entries
 #><#if e.EntryType.ToLower() == "bool"
 #>									<td><input type="checkbox" class="form-check-input" checked="@entry.<# e.Field#>" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, (bool)(ev.Value ?? false)))" /></td>
+<#elseif e.EntryType.ToLower() == "string"
+#>									<td><input type="text" class="form-control" value="@entry.<# e.Field#>" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, ev.Value?.ToString() ?? string.Empty))" /></td>
+<#elseif e.EntryType.ToLower() == "int"
+#>									<td><input type="number" class="form-control" value="@entry.<# e.Field#>" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, int.TryParse(ev.Value?.ToString(), out var parsedValue) ? parsedValue : entry.<# e.Field#>))" /></td>
+<#elseif e.EntryType.ToLower() == "long"
+#>									<td><input type="number" class="form-control" value="@entry.<# e.Field#>" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, long.TryParse(ev.Value?.ToString(), out var parsedValue) ? parsedValue : entry.<# e.Field#>))" /></td>
+<#elseif e.EntryType.ToLower() == "double"
+#>									<td><input type="number" step="any" class="form-control" value="@entry.<# e.Field#>" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, double.TryParse(ev.Value?.ToString(), out var parsedValue) ? parsedValue : entry.<# e.Field#>))" /></td>
+<#elseif e.EntryType.ToLower() == "datetime"
+#>									<td><input type="date" class="form-control" value="@entry.<# e.Field#>.ToString(\"yyyy-MM-dd\")" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, DateTime.TryParse(ev.Value?.ToString(), out var parsedValue) ? parsedValue : entry.<# e.Field#>))" /></td>
+<#elseif e.IsEnumeration
+#>									<td>
+										<select class="form-select" value="@entry.<# e.Field#>" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, Enum.TryParse<<# e.EntryType#>>(ev.Value?.ToString(), out var parsedValue) ? parsedValue : entry.<# e.Field#>))">
+											@foreach (var item in Enum.GetValues(typeof(<# e.EntryType#>)))
+											{
+												<option value="@item">@(((<# e.EntryType#>)item) == <# e.EntryType#>.None ? CommonLoc.NothingSelected : item.ToString())</option>
+											}
+										</select>
+									</td>
+<#elseif e.IsReference
+#>									<td>
+										<select class="form-select" value="@entry.<# e.Field#>Id" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>Id), entry.<# e.Field#>Id, Guid.TryParse(ev.Value?.ToString(), out var parsedValue) ? parsedValue : entry.<# e.Field#>Id))">
+											@foreach (var item in _<# e.ReferenceTypeLow#>s)
+											{
+												<option value="@item.Id">@item.DisplayText</option>
+											}
+										</select>
+									</td>
 <#else
 #>									<td><input type="text" class="form-control" value="@entry.<# e.Field#>" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, ev.Value?.ToString() ?? string.Empty))" /></td>
 <#end#><#end#>									<td class="text-end">
@@ -216,7 +273,13 @@ else
 	private <# Definition.Name#>Model? Model;
 	private readonly ChangeTracker _changeTracker = new();
 
-<#for entry in Entries.Where(e => e.IsReference).DistinctBy(e => e.ReferenceType)
+<#for entry in Entries
+	.Where(e => e.IsReference)
+	.Concat(Entries
+		.Where(e => e.IsArray)
+		.SelectMany(arrayEntry => Definitions.First(definition => definition.Name == arrayEntry.EntryType).Entries)
+		.Where(childEntry => childEntry.IsReference))
+	.DistinctBy(e => e.ReferenceType)
 #>	private IEnumerable<<# entry.ReferenceType#>ListItemModel> _<# entry.ReferenceTypeLow#>s = [];
 <#end#>
 	private void NavigateToHistory()
@@ -226,7 +289,7 @@ else
 			return;
 		}
 
-		NavigationManager.NavigateTo($"/history/{Model.Id}");
+		NavigationManager.NavigateTo($"/history/{Model.Id}?entityName=<# Definition.Name#>");
 	}
 
 	protected override async Task OnInitializedAsync()
@@ -243,8 +306,15 @@ else
 				Model = await <# Definition.Name#>Service.GetItemAsync(Id);
 			}
 
-<#for entry in Entries.Where(e => e.IsReference).DistinctBy(e => e.ReferenceType)
-#>			_<# entry.ReferenceTypeLow#>s = await <# entry.ReferenceType#>Service.GetItemsAsync();
+<#for entry in Entries
+	.Where(e => e.IsReference)
+	.Concat(Entries
+		.Where(e => e.IsArray)
+		.SelectMany(arrayEntry => Definitions.First(definition => definition.Name == arrayEntry.EntryType).Entries)
+		.Where(childEntry => childEntry.IsReference))
+	.DistinctBy(e => e.ReferenceType)
+#>			var available<# entry.ReferenceType#>s = await <# entry.ReferenceType#>Service.GetItemsAsync();
+			_<# entry.ReferenceTypeLow#>s = [new <# entry.ReferenceType#>ListItemModel { Id = Guid.Empty }, .. available<# entry.ReferenceType#>s];
 <#end#>
 			<# Definition.Name#>Service.ItemUpdated += Handle;
 			_changeTracker.StateChanged += () => InvokeAsync(StateHasChanged);
@@ -277,14 +347,7 @@ else
 			{
 				await <# Definition.Name#>Service.AddItemAsync(Model);
 				Id = Model.Id;
-				NavigationManager.NavigateTo($"/<#cs
-var name = Definition.Name.ToLower();
-if (name.EndsWith("entry"))
-{
-	name = name[0..^5] + "entrie";
-}
-Write(name);
-#>/{Model.Id}", false, true);
+				NavigationManager.NavigateTo($"/<# Definition.Name#>/{Model.Id}", false, true);
 				isNew = false;
 			}
 			else
@@ -322,14 +385,7 @@ Write(name);
 			}
 
 			_changeTracker.Clear();
-			NavigationManager.NavigateTo("/<#cs
-var name = Definition.Name.ToLower();
-if (name.EndsWith("entry"))
-{
-	name = name[0..^5] + "entrie";
-}
-Write(name);
-#>s");
+			NavigationManager.NavigateTo("/<# Definition.Name#>s");
 		}
 		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
 		{

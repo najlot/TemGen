@@ -1,18 +1,10 @@
-@page "/<#cs 
-if (!Definition.Name.EndsWith("entry"))
-{
-	Write(Definition.Name);
-}
-else
-{
-	Write(Definition.Name[0..^5] + "entrie");
-}
-#>s"
+@page "/<# Definition.Name#>s"
 @using Humanizer
 @using Microsoft.AspNetCore.Components
 @using <# Project.Namespace#>.Blazor.Services
 @using <# Project.Namespace#>.Client.Data
 @using <# Project.Namespace#>.Client.Data.Filters
+@using <# Project.Namespace#>.Client.Data.Favorites
 @using <# Project.Namespace#>.Client.Data.<# Definition.Name#>s
 <#for definition in Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n))
 #>@using <# Project.Namespace#>.Client.Data.<# definition.Name#>s
@@ -24,6 +16,7 @@ else
 @inject ILogger<<# Definition.Name#>s> Log
 @inject Najlot.Map.IMap Map
 @inject I<# Definition.Name#>Service <# Definition.Name#>Service
+@inject IFavoriteService FavoriteService
 <#for definition in Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n))
 #>@inject I<# definition.Name#>Service <# definition.Name#>Service
 <#end#>@inject NavigationManager NavigationManager
@@ -56,6 +49,9 @@ else
 				<table class="table table-hover align-middle mb-0">
 					<thead class="table-light">
 						<tr>
+							<th class="text-center" style="width: 1%;">
+								<span class="material-symbols-sharp text-warning" title="Favorite" aria-label="Favorite">star</span>
+							</th>
 <#for entry in Definition.Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2)
 #>							<th>@<# Definition.Name#>Loc.<# entry.Field#></th>
 <#end
@@ -66,6 +62,12 @@ else
 						@foreach (var <# Definition.NameLow#> in <# Definition.NameLow#>s)
 						{
 							<tr scope="row">
+								<td class="text-center">
+									@if (IsFavorite(<# Definition.NameLow#>.Id))
+									{
+										<span class="material-symbols-sharp text-warning" title="Favorite" aria-label="Favorite">star</span>
+									}
+								</td>
 <#for entry in Definition.Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2)
 #><#if entry.EntryType.ToLower() == "string"
 #>								<td class="text-break">@<# Definition.NameLow#>.<# entry.Field#>.Truncate(75)</td>
@@ -88,6 +90,7 @@ else
 
 	private EntityFilterEditor? filterEditor;
 	private List<<# Definition.Name#>ListItemModel>? <# Definition.NameLow#>s;
+	private HashSet<Guid> _favoriteIds = [];
 	private IReadOnlyList<FilterFieldOption> availableFilterFields = [];
 	private bool isLoading;
 	private EntityFilter? _lastFilter;
@@ -103,8 +106,12 @@ else
 			<# Definition.Name#>Service.ItemCreated += Handle;
 			<# Definition.Name#>Service.ItemUpdated += Handle;
 			<# Definition.Name#>Service.ItemDeleted += Handle;
+			FavoriteService.ItemCreated += HandleFavoriteCreated;
+			FavoriteService.ItemDeleted += HandleFavoriteDeleted;
 
-			await <# Definition.Name#>Service.StartEventListener();
+			await Task.WhenAll(
+				<# Definition.Name#>Service.StartEventListener(),
+				FavoriteService.StartEventListener());
 		}
 		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
 		{
@@ -139,9 +146,16 @@ else
 			isLoading = true;
 			_lastFilter = filter;
 
-			<# Definition.NameLow#>s = filter.Conditions.Count == 0
-				? [.. await <# Definition.Name#>Service.GetItemsAsync().ConfigureAwait(false)]
-				: [.. await <# Definition.Name#>Service.GetItemsAsync(filter).ConfigureAwait(false)];
+			var itemsTask = filter.Conditions.Count == 0
+				? <# Definition.Name#>Service.GetItemsAsync()
+				: <# Definition.Name#>Service.GetItemsAsync(filter);
+			var favoritesTask = FavoriteService.GetItemsAsync(ItemType.<# Definition.Name#>);
+
+			var items = await itemsTask.ConfigureAwait(false);
+			var favorites = await favoritesTask.ConfigureAwait(false);
+
+			<# Definition.NameLow#>s = [.. items];
+			_favoriteIds = [.. favorites.Select(item => item.ItemId)];
 		}
 		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
 		{
@@ -161,6 +175,9 @@ else
 		await InvokeAsync(StateHasChanged);
 	}
 
+	private bool IsFavorite(Guid itemId)
+		=> _favoriteIds.Contains(itemId);
+
 	private IReadOnlyList<FilterFieldOption> BuildFilterFieldOptions(<#for definition in Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n))#><# definition.Name#>ListItemModel[] <# definition.NameLow#>s<#if definition != Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n)).Last()#>, <#end#><#end#>)
 	{
 		return
@@ -176,12 +193,12 @@ else
 #>[.. <# entry.ReferenceTypeLow#>s.Select(item => new FilterValueOption
 				{
 					Value = item.Id.ToString(),
-					Label = Convert.ToString(item.<#cs Write(Definitions.First(d => d.Name == entry.ReferenceType).Entries.First(e => !(e.IsOwnedType || e.IsKey || e.IsArray || e.IsReference || e.IsEnumeration)).Field)#>) ?? CommonLoc.Untitled,
+					Label = item.DisplayText,
 				})]<#elseif entry.IsEnumeration
 #>[.. Enum.GetValues<<# entry.EntryType#>>().Select(value => new FilterValueOption
 				{
 					Value = value.ToString(),
-					Label = value.ToString(),
+					Label = value == <# entry.EntryType#>.None ? CommonLoc.NothingSelected : value.ToString(),
 				})]<#elseif entry.EntryType == "bool"
 #>[new FilterValueOption { Value = bool.TrueString, Label = bool.TrueString }, new FilterValueOption { Value = bool.FalseString, Label = bool.FalseString }]<#else#>[]<#end#>,
 			},
@@ -238,11 +255,37 @@ else
 		await InvokeAsync(StateHasChanged);
 	}
 
+	private async Task HandleFavoriteCreated(object? sender, <# Project.Namespace#>.Contracts.Favorites.FavoriteCreated message)
+	{
+		if (message.TargetType != ItemType.<# Definition.Name#>)
+		{
+			return;
+		}
+
+		_favoriteIds.Add(message.ItemId);
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private async Task HandleFavoriteDeleted(object? sender, <# Project.Namespace#>.Contracts.Favorites.FavoriteDeleted message)
+	{
+		if (message.TargetType != ItemType.<# Definition.Name#>)
+		{
+			return;
+		}
+
+		_favoriteIds.Remove(message.ItemId);
+
+		await InvokeAsync(StateHasChanged);
+	}
+
 	public void Dispose()
 	{
 		<# Definition.Name#>Service.ItemCreated -= Handle;
 		<# Definition.Name#>Service.ItemUpdated -= Handle;
 		<# Definition.Name#>Service.ItemDeleted -= Handle;
+		FavoriteService.ItemCreated -= HandleFavoriteCreated;
+		FavoriteService.ItemDeleted -= HandleFavoriteDeleted;
 	}
 }
 <#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

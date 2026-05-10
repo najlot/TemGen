@@ -123,6 +123,9 @@
   <data name="Delete" xml:space="preserve">
     <value>Löschen</value>
   </data>
+  <data name="Deleted" xml:space="preserve">
+    <value>Gelöscht</value>
+  </data>
   <data name="DeleteConfirmationDescription" xml:space="preserve">
     <value>Möchten Sie dieses Element wirklich löschen?</value>
   </data>
@@ -197,6 +200,9 @@
   </data>
   <data name="SaveConfirmationTitle" xml:space="preserve">
     <value>Änderungen speichern?</value>
+  </data>
+  <data name="NothingSelected" xml:space="preserve">
+    <value>Nichts ausgewählt</value>
   </data>
   <data name="Undo" xml:space="preserve">
     <value>Rückgängig</value>

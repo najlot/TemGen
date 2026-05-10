@@ -9,153 +9,178 @@
 			 mc:Ignorable="d">
 
 	<Expander Header="{x:Static loc:FilterLoc.Filters}" Margin="12,0" IsExpanded="False">
-		<StackPanel Margin="0,12,0,0">
+		<Border Margin="0,12,0,0"
+				Padding="12"
+				CornerRadius="8"
+				Background="#FFF6F6F6"
+				BorderBrush="#FFE0E0E0"
+				BorderThickness="1">
+			<StackPanel>
+				<StackPanel Margin="0,0,0,12">
+					<TextBlock Text="{x:Static loc:FilterLoc.SavedFilters}" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" />
 
-			<TextBlock Text="{x:Static loc:FilterLoc.ActiveConditions}" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,8" />
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
 
-			<ItemsControl ItemsSource="{Binding FilterConditions}">
-				<ItemsControl.ItemTemplate>
-					<DataTemplate>
-						<Border Background="Transparent" 
-								BorderBrush="LightGray" 
-								BorderThickness="1" 
-								CornerRadius="6" 
-								Padding="8,8,8,0" 
-								Margin="0,0,0,8">
+						<ComboBox Grid.Column="0"
+								  HorizontalAlignment="Stretch"
+								  Margin="0,0,8,0"
+								  ToolTip="{x:Static loc:FilterLoc.SelectFilter}"
+								  ItemsSource="{Binding NamedFilters}"
+								  SelectedValue="{Binding SelectedNamedFilterName}"
+								  SelectedValuePath="Name"
+								  DisplayMemberPath="Name" />
 
-							<WrapPanel VerticalAlignment="Center">
-								<ComboBox MinWidth="140" Margin="0,0,8,8"
-											ItemsSource="{Binding AvailableFields}"
-											SelectedValue="{Binding SelectedFieldKey}"
-											SelectedValuePath="Key"
-											DisplayMemberPath="Label" />
+						<Button Grid.Column="1" Margin="0,0,8,0" Command="{Binding ApplyNamedFilterCommand}" ToolTip="{x:Static loc:FilterLoc.Apply}" Padding="10,4">
+							<StackPanel Orientation="Horizontal">
+								<material:MaterialIcon Kind="Check" Margin="0,0,4,0"/>
+								<TextBlock Text="{x:Static loc:FilterLoc.Apply}" />
+							</StackPanel>
+						</Button>
 
-								<ComboBox MinWidth="120" Margin="0,0,8,8"
-											ItemsSource="{Binding AvailableOperators}"
-											SelectedValue="{Binding SelectedOperator}"
-											SelectedValuePath="Value"
-											DisplayMemberPath="Label" />
+						<Button Grid.Column="2" Command="{Binding DeleteNamedFilterCommand}" ToolTip="{x:Static loc:CommonLoc.Delete}" Padding="10,4">
+							<StackPanel Orientation="Horizontal">
+								<material:MaterialIcon Kind="Delete" Margin="0,0,4,0"/>
+								<TextBlock Text="{x:Static loc:CommonLoc.Delete}" />
+							</StackPanel>
+						</Button>
+					</Grid>
+				</StackPanel>
 
-								<TextBox MinWidth="160" Margin="0,0,8,8"
-											ToolTip="{x:Static loc:FilterLoc.Value}"
-											Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
-											Visibility="{Binding ShowTextValueEditor, Converter={x:Static converter:BooleanToVisibilityConverter.Instance}}" />
+				<StackPanel Margin="0,0,0,12">
+					<TextBlock Text="{x:Static loc:CommonLoc.Save}" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" />
 
-								<ComboBox MinWidth="160" Margin="0,0,8,8"
-											ItemsSource="{Binding AvailableValues}"
-											SelectedValue="{Binding Value}"
-											SelectedValuePath="Value"
-											DisplayMemberPath="Label"
-											Visibility="{Binding ShowOptionValueEditor, Converter={x:Static converter:BooleanToVisibilityConverter.Instance}}" />
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
 
-								<Button Margin="0,0,0,8"
-										ToolTip="{x:Static loc:FilterLoc.RemoveCondition}"
-										Background="Transparent"
-										BorderBrush="Transparent"
-										Command="{Binding DataContext.RemoveFilterConditionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-										CommandParameter="{Binding .}">
-									<material:MaterialIcon Kind="Close" Foreground="IndianRed" />
-								</Button>
-							</WrapPanel>
-						</Border>
-					</DataTemplate>
-				</ItemsControl.ItemTemplate>
-			</ItemsControl>
+						<TextBox Grid.Column="0"
+								 Margin="0,0,8,0"
+								 ToolTip="{x:Static loc:FilterLoc.FilterNamePlaceholder}"
+								 Text="{Binding SaveFilterName, UpdateSourceTrigger=PropertyChanged}" />
 
-			<WrapPanel>
-				<Button MinWidth="160" Margin="0,0,8,8" Command="{Binding AddFilterConditionCommand}">
-					<StackPanel Orientation="Horizontal">
-						<material:MaterialIcon Kind="Plus" Margin="0,0,4,0"/>
-						<TextBlock Text="{x:Static loc:FilterLoc.AddCondition}" />
-					</StackPanel>
-				</Button>
+						<Button Grid.Column="1" Command="{Binding SaveCurrentFilterCommand}" Padding="10,4">
+							<StackPanel Orientation="Horizontal">
+								<material:MaterialIcon Kind="ContentSave" Margin="0,0,4,0"/>
+								<TextBlock Text="{x:Static loc:CommonLoc.Save}" />
+							</StackPanel>
+						</Button>
+					</Grid>
+				</StackPanel>
 
-				<Button MinWidth="160" Margin="0,0,8,8" Command="{Binding ClearFiltersCommand}">
-					<StackPanel Orientation="Horizontal">
-						<material:MaterialIcon Kind="FilterRemove" Margin="0,0,4,0"/>
-						<TextBlock Text="{x:Static loc:FilterLoc.ClearAllFilters}" />
-					</StackPanel>
-				</Button>
+				<StackPanel Margin="0,0,0,12">
+					<DockPanel Margin="0,0,0,8" LastChildFill="False">
+						<Button DockPanel.Dock="Right" Command="{Binding ClearFiltersCommand}" Padding="10,4">
+							<StackPanel Orientation="Horizontal">
+								<material:MaterialIcon Kind="FilterRemove" Margin="0,0,4,0"/>
+								<TextBlock Text="{x:Static loc:FilterLoc.ClearAll}" />
+							</StackPanel>
+						</Button>
 
-				<Button MinWidth="160" Margin="0,0,8,8" Command="{Binding SetDefaultFilterCommand}">
-					<StackPanel Orientation="Horizontal">
-						<material:MaterialIcon Kind="Star" Margin="0,0,4,0"/>
-						<TextBlock Text="{x:Static loc:FilterLoc.SetAsDefault}" />
-					</StackPanel>
-				</Button>
-				<Button MinWidth="160" Margin="0,0,8,8" Command="{Binding ClearDefaultFilterCommand}">
-					<StackPanel Orientation="Horizontal">
-						<material:MaterialIcon Kind="StarOffOutline" Margin="0,0,4,0"/>
-						<TextBlock Text="{x:Static loc:FilterLoc.ClearDefault}" />
-					</StackPanel>
-				</Button>
+						<TextBlock Text="{x:Static loc:FilterLoc.ActiveConditions}" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+					</DockPanel>
 
-				<Button MinWidth="160" Margin="0,0,8,8"
-					Command="{Binding SearchCommand}" 
-					FontWeight="Bold"
-					Padding="24,4">
-					<StackPanel Orientation="Horizontal">
-						<material:MaterialIcon Kind="Magnify" Margin="0,0,4,0"/>
-						<TextBlock Text="{x:Static loc:CommonLoc.Search}" />
-					</StackPanel>
-				</Button>
-			</WrapPanel>
+					<ItemsControl ItemsSource="{Binding FilterConditions}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<Border Background="White"
+										BorderBrush="#FFE0E0E0"
+										BorderThickness="1"
+										CornerRadius="6"
+										Padding="8,8,8,0"
+										Margin="0,0,0,8">
 
-			<Separator/>
+									<WrapPanel VerticalAlignment="Center">
+										<ComboBox MinWidth="140" Margin="0,0,8,8"
+												  ItemsSource="{Binding AvailableFields}"
+												  SelectedValue="{Binding SelectedFieldKey}"
+												  SelectedValuePath="Key"
+												  DisplayMemberPath="Label" />
 
-			<TextBlock Text="{x:Static loc:FilterLoc.SavedFilters}" FontWeight="SemiBold" FontSize="12" Margin="0,4,0,4" />
+										<ComboBox MinWidth="120" Margin="0,0,8,8"
+												  ItemsSource="{Binding AvailableOperators}"
+												  SelectedValue="{Binding SelectedOperator}"
+												  SelectedValuePath="Value"
+												  DisplayMemberPath="Label" />
 
-			<Grid Margin="0,0,0,8">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="*" />
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="Auto" />
-				</Grid.ColumnDefinitions>
+										<TextBox MinWidth="160" Margin="0,0,8,8"
+												 ToolTip="{x:Static loc:FilterLoc.Value}"
+												 Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+												 Visibility="{Binding ShowTextValueEditor, Converter={x:Static converter:BooleanToVisibilityConverter.Instance}}" />
 
-				<ComboBox Grid.Column="0"
-							HorizontalAlignment="Stretch"
-							Margin="0,0,8,0"
-							ToolTip="{x:Static loc:FilterLoc.SelectFilter}"
-							ItemsSource="{Binding NamedFilters}"
-							SelectedValue="{Binding SelectedNamedFilterName}"
-							SelectedValuePath="Name"
-							DisplayMemberPath="Name" />
+										<ComboBox MinWidth="160" Margin="0,0,8,8"
+												  ItemsSource="{Binding AvailableValues}"
+												  SelectedValue="{Binding Value}"
+												  SelectedValuePath="Value"
+												  DisplayMemberPath="Label"
+												  Visibility="{Binding ShowOptionValueEditor, Converter={x:Static converter:BooleanToVisibilityConverter.Instance}}" />
 
-				<Button Grid.Column="1" Margin="0,0,8,0" Command="{Binding ApplyNamedFilterCommand}" ToolTip="Apply Filter">
-					<StackPanel Orientation="Horizontal">
-						<material:MaterialIcon Kind="Check" Margin="0,0,4,0"/>
-						<TextBlock Text="{x:Static loc:FilterLoc.Apply}" />
-					</StackPanel>
-				</Button>
+										<Button Margin="0,0,0,8"
+												ToolTip="{x:Static loc:FilterLoc.RemoveCondition}"
+												Background="Transparent"
+												BorderBrush="Transparent"
+												Command="{Binding DataContext.RemoveFilterConditionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+												CommandParameter="{Binding .}">
+											<material:MaterialIcon Kind="Close" Foreground="IndianRed" />
+										</Button>
+									</WrapPanel>
+								</Border>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</StackPanel>
 
-				<Button Grid.Column="2" Command="{Binding DeleteNamedFilterCommand}" ToolTip="{x:Static loc:CommonLoc.Delete}">
-					<StackPanel Orientation="Horizontal">
-						<material:MaterialIcon Kind="Delete" Margin="0,0,4,0"/>
-						<TextBlock Text="{x:Static loc:CommonLoc.Delete}" />
-					</StackPanel>
-				</Button>
-			</Grid>
+				<StackPanel>
+					<TextBlock Text="{x:Static loc:CommonLoc.Field}" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" />
 
-			<Grid Margin="0,0,0,8">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="*" />
-					<ColumnDefinition Width="Auto" />
-				</Grid.ColumnDefinitions>
+					<DockPanel LastChildFill="True">
+						<Button DockPanel.Dock="Right"
+								Command="{Binding SearchCommand}"
+								FontWeight="SemiBold"
+								Padding="16,4">
+							<StackPanel Orientation="Horizontal">
+								<material:MaterialIcon Kind="Magnify" Margin="0,0,4,0"/>
+								<TextBlock Text="{x:Static loc:CommonLoc.Search}" />
+							</StackPanel>
+						</Button>
 
-				<TextBox Grid.Column="0" 
-						 Margin="0,0,8,0" 
-						 ToolTip="{x:Static loc:FilterLoc.FilterNamePlaceholder}" 
-						 Text="{Binding SaveFilterName, UpdateSourceTrigger=PropertyChanged}" />
+						<WrapPanel>
+							<ComboBox MinWidth="220" Margin="0,0,8,8"
+									  ItemsSource="{Binding AvailableFilterFields}"
+									  SelectedValue="{Binding SelectedNewFilterFieldKey}"
+									  SelectedValuePath="Key"
+									  DisplayMemberPath="Label" />
 
-				<Button Grid.Column="1" Command="{Binding SaveCurrentFilterCommand}">
-					<StackPanel Orientation="Horizontal">
-						<material:MaterialIcon Kind="ContentSave" Margin="0,0,4,0"/>
-						<TextBlock Text="{x:Static loc:CommonLoc.Save}" />
-					</StackPanel>
-				</Button>
-			</Grid>
+							<Button Margin="0,0,8,8" Command="{Binding AddFilterConditionCommand}" Padding="10,4">
+								<StackPanel Orientation="Horizontal">
+									<material:MaterialIcon Kind="Plus" Margin="0,0,4,0"/>
+									<TextBlock Text="{x:Static loc:FilterLoc.AddCondition}" />
+								</StackPanel>
+							</Button>
 
-			<Separator/>
-		</StackPanel>
+							<Button Margin="0,0,8,8" Command="{Binding SetDefaultFilterCommand}" Padding="10,4">
+								<StackPanel Orientation="Horizontal">
+									<material:MaterialIcon Kind="Star" Margin="0,0,4,0"/>
+									<TextBlock Text="{x:Static loc:FilterLoc.SetAsDefault}" />
+								</StackPanel>
+							</Button>
+
+							<Button Margin="0,0,8,8" Command="{Binding ClearDefaultFilterCommand}" Padding="10,4">
+								<StackPanel Orientation="Horizontal">
+									<material:MaterialIcon Kind="StarOffOutline" Margin="0,0,4,0"/>
+									<TextBlock Text="{x:Static loc:FilterLoc.ClearDefault}" />
+								</StackPanel>
+							</Button>
+						</WrapPanel>
+					</DockPanel>
+				</StackPanel>
+			</StackPanel>
+		</Border>
 	</Expander>
 </UserControl><#cs SetOutputPathAndSkipOtherDefinitions()#>

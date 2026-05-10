@@ -21,9 +21,7 @@
 	|| d.IsOwnedType
 	|| d.Name == "User"))
 #>		<div class="nav-item px-3">
-			<NavLink class="nav-link ps-3" href="<#if definition.Name.ToLower().EndsWith("entry")
-#><#cs Write(definition.Name.ToLower()[0..^5] + "entrie")#><#else
-#><#cs Write(definition.Name.ToLower())#><#end#>s">
+			<NavLink class="nav-link ps-3" href="<# definition.Name#>s">
 				<span class="material-symbols-sharp me-2">notes</span> @<# definition.Name#>Loc.<#cs Write(definition.Name)#>s
 			</NavLink>
 		</div>

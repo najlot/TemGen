@@ -32,6 +32,7 @@ public static class ServiceCollectionExtensions
 			serviceCollection.AddTransient<GlobalSearchViewModel>();
 			serviceCollection.AddTransient<EntityHistoryViewModel>();
 			serviceCollection.AddTransient<TrashViewModel>();
+			serviceCollection.AddTransient<ToggleFavoriteViewModel>();
 
 			serviceCollection.AddTransient<NotesViewModel>();
 			serviceCollection.AddTransient<NoteFilterViewModel>();

@@ -51,17 +51,18 @@ public class EnumToTranslationConverter : IValueConverter
 
 	public object? ConvertBack(object? value, Type targetType, object parameter, CultureInfo culture)
 	{
-		if (value is null)
-		{
-			return null;
-		}
-
 		if (parameter is not Type type)
 		{
-			return null;
+			return Binding.DoNothing;
 		}
 
 		var resourceManager = new System.Resources.ResourceManager(type);
+		var emptySelectionValue = GetEmptySelectionValue(targetType);
+
+		if (value is null)
+		{
+			return emptySelectionValue;
+		}
 
 		if (targetType.IsConstructedGenericType)
 		{
@@ -71,35 +72,58 @@ public class EnumToTranslationConverter : IValueConverter
 
 				foreach (var item in collection)
 				{
-					newCollection.Add(TranslateBack(item.ToString(), resourceManager, targetType) ?? string.Empty);
+					newCollection.Add(TranslateBack(item?.ToString(), resourceManager, targetType, emptySelectionValue));
 				}
 
 				return newCollection;
 			}
 
-			return null;
+			return Binding.DoNothing;
 		}
 
-		return TranslateBack(value.ToString(), resourceManager, targetType);
+		return TranslateBack(value.ToString(), resourceManager, targetType, emptySelectionValue);
 	}
 
-	private static object? TranslateBack(string? value, System.Resources.ResourceManager resourceManager, Type targetType)
+	private static object TranslateBack(string? value, System.Resources.ResourceManager resourceManager, Type targetType, object emptySelectionValue)
 	{
+		if (string.IsNullOrWhiteSpace(value))
+		{
+			return emptySelectionValue;
+		}
+
+		var enumType = Nullable.GetUnderlyingType(targetType) ?? targetType;
 		var resourceSet = resourceManager.GetResourceSet(CultureInfo.CurrentUICulture, true, true);
 
 		if (resourceSet is null)
 		{
-			return null;
+			return emptySelectionValue;
 		}
 
 		foreach (DictionaryEntry entry in resourceSet)
 		{
 			if (entry.Value?.ToString() == value)
 			{
-				return Enum.Parse(targetType, entry.Key.ToString() ?? string.Empty);
+				return Enum.Parse(enumType, entry.Key.ToString() ?? string.Empty);
 			}
 		}
 
-		return value;
+		if (Enum.TryParse(enumType, value, true, out var enumValue))
+		{
+			return enumValue;
+		}
+
+		return emptySelectionValue;
+	}
+
+	private static object GetEmptySelectionValue(Type targetType)
+	{
+		var enumType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+
+		if (enumType.IsEnum)
+		{
+			return Enum.ToObject(enumType, 0);
+		}
+
+		return Binding.DoNothing;
 	}
 }<#cs SetOutputPathAndSkipOtherDefinitions()#>

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-<#cs#>
+<#if NeedsSharedEnumerationChildren()
+#>using <# Project.Namespace#>.Contracts.Shared;
+<#end#>
 namespace <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
 
 public sealed class <# Definition.Name#>ListItem

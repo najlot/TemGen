@@ -1,0 +1,27 @@
+@page
+@using Todo.Client.Localisation
+@model Todo.Htmx.Pages.IndexModel
+@{
+	ViewData["Title"] = CommonLoc.Home;
+}
+
+<section class="w-100 p-4 d-flex justify-content-center">
+	<div>
+		@if (User.Identity?.IsAuthenticated == true)
+		{
+			<h1>@CommonLoc.Welcome, @User.Identity.Name!</h1>
+		}
+		else
+		{
+			<h1>@CommonLoc.Welcome!</h1>
+			<p>@CommonLoc.RegisterOrLogin</p>
+			<div class="mb-4">
+				<a href="/Identity/Login" class="btn btn-primary w-100">@UserLoc.Login</a>
+			</div>
+			<div class="mb-4">
+				<a href="/Identity/Register" class="btn btn-primary w-100">@UserLoc.Register</a>
+			</div>
+		}
+	</div>
+</section>
+

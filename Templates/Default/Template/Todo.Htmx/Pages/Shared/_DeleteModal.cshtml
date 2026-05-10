@@ -1,0 +1,37 @@
+@using <# Project.Namespace#>.Client.Localisation
+
+@* Reusable delete confirmation modal. Usage:
+   Include this partial with a unique modalId and item details.
+   The confirm button POSTs to the given confirmAction URL.
+*@
+@{
+	var modalId = ViewData["ModalId"] as string ?? "deleteModal";
+	var confirmUrl = ViewData["ConfirmUrl"] as string ?? "#";
+	var title = ViewData["ModalTitle"] as string ?? CommonLoc.DeleteConfirmationTitle;
+	var description = ViewData["ModalDescription"] as string ?? CommonLoc.DeleteConfirmationDescription;
+	var targetId = ViewData["TargetId"] as string;
+}
+
+<div class="modal fade" id="@modalId" tabindex="-1" aria-modal="true" role="dialog">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">@title</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@CommonLoc.Cancel"></button>
+			</div>
+			<div class="modal-body">
+				<p>@description</p>
+			</div>
+			<div class="modal-footer">
+				<form method="post" action="@confirmUrl"
+					  hx-post="@(targetId != null ? confirmUrl : null)"
+					  hx-target="@targetId"
+					  hx-swap="@(targetId != null ? "innerHTML" : null)">
+					<button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">@CommonLoc.Cancel</button>
+					<button type="submit" class="btn btn-danger" data-bs-dismiss="modal">@CommonLoc.Delete</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

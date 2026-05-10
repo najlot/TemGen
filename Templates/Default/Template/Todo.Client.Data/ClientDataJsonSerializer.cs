@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using <# Project.Namespace#>.Client.Data.Favorites;
 using <# Project.Namespace#>.Client.Data.Filters;
 using <# Project.Namespace#>.Client.Data.GlobalSearch;
 using <# Project.Namespace#>.Client.Data.History;
@@ -28,6 +29,7 @@ public static class ClientDataJsonSerializer
 	{
 		var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 
+		options.TypeInfoResolverChain.Add(FavoritesSerializerContext.Default);
 		options.TypeInfoResolverChain.Add(FiltersSerializerContext.Default);
 		options.TypeInfoResolverChain.Add(AuthSerializerContext.Default);
 		options.TypeInfoResolverChain.Add(GlobalSearchSerializerContext.Default);

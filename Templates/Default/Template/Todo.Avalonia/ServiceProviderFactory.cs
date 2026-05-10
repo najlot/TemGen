@@ -8,7 +8,9 @@ using <# Project.Namespace#>.Client.Data;
 using <# Project.Namespace#>.Client.Data.Identity;
 using <# Project.Namespace#>.Client.MVVM;
 using <# Project.Namespace#>.ClientBase;
+using <# Project.Namespace#>.Avalonia.Controls;
 using <# Project.Namespace#>.Avalonia.Identity;
+using <# Project.Namespace#>.Avalonia.Views;
 
 namespace <# Project.Namespace#>.Avalonia;
 
@@ -66,6 +68,13 @@ public static class ServiceProviderFactory
 
 		serviceCollection.RegisterClientData();
 		serviceCollection.RegisterClientBase();
+		serviceCollection.AddTransient<ToggleFavoriteButton>();
+<#for definition in Definitions.Where(d => !(d.IsArray
+	|| d.IsEnumeration
+	|| d.IsOwnedType
+	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
+#>		serviceCollection.AddTransient<<# definition.Name#>View>();
+<#end#>
 
 		var serviceProvider = serviceCollection.BuildServiceProvider();
 

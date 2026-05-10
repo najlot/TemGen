@@ -2,10 +2,13 @@ using System;
 using System.Linq;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Todo.Client.Data.Favorites;
 using Todo.Client.Localisation;
 using Todo.Client.MVVM;
 using Todo.ClientBase.Filters;
+using Todo.Contracts.Favorites;
 using Todo.Contracts.Filters;
+using Todo.Contracts.Shared;
 using Todo.Contracts.TodoItems;
 using Todo.Client.Data.TodoItems;
 
@@ -14,6 +17,8 @@ namespace Todo.ClientBase.TodoItems;
 public class TodoItemsViewModel : ViewModelBase, IAsyncInitializable, IDisposable
 {
 	private readonly ITodoItemService _todoItemService;
+	private readonly IFavoriteService _favoriteService;
+	private static readonly ItemType FavoriteTargetType = ItemType.TodoItem;
 
 	public bool IsBusy { get; set => Set(ref field, value, () => Filters.IsBusy = value); }
 	public EntityFilterEditorViewModel Filters { get; }
@@ -21,10 +26,12 @@ public class TodoItemsViewModel : ViewModelBase, IAsyncInitializable, IDisposabl
 
 	public TodoItemsViewModel(
 		ITodoItemService todoItemService,
+		IFavoriteService favoriteService,
 		TodoItemFilterViewModel filters,
 		ViewModelBaseParameters<TodoItemsViewModel> parameters) : base(parameters)
 	{
 		_todoItemService = todoItemService;
+		_favoriteService = favoriteService;
 		Filters = filters;
 
 		Filters.FilterChanged += async (s, e) => await LoadItemsAsync(e);
@@ -36,6 +43,8 @@ public class TodoItemsViewModel : ViewModelBase, IAsyncInitializable, IDisposabl
 		_todoItemService.ItemCreated += Handle;
 		_todoItemService.ItemUpdated += Handle;
 		_todoItemService.ItemDeleted += Handle;
+		_favoriteService.ItemCreated += HandleFavoriteCreated;
+		_favoriteService.ItemDeleted += HandleFavoriteDeleted;
 	}
 
 	public AsyncCommand NavigateBackCommand { get; }
@@ -44,8 +53,10 @@ public class TodoItemsViewModel : ViewModelBase, IAsyncInitializable, IDisposabl
 
 	public async Task InitializeAsync()
 	{
+		await Task.WhenAll(
+			_favoriteService.StartEventListener(),
+			_todoItemService.StartEventListener());
 		await Filters.InitializeAsync();
-		await _todoItemService.StartEventListener();
 	}
 
 	private async Task LoadItemsAsync(EntityFilter? filter)
@@ -55,14 +66,23 @@ public class TodoItemsViewModel : ViewModelBase, IAsyncInitializable, IDisposabl
 			IsBusy = true;
 			_lastFilter = filter;
 
-			var items = filter is null || filter.Conditions.Count == 0
-				? await _todoItemService.GetItemsAsync()
-				: await _todoItemService.GetItemsAsync(filter);
+			var itemsTask = filter is null || filter.Conditions.Count == 0
+				? _todoItemService.GetItemsAsync()
+				: _todoItemService.GetItemsAsync(filter);
+			var favoritesTask = _favoriteService.GetItemsAsync(FavoriteTargetType);
+
+			await Task.WhenAll(itemsTask, favoritesTask);
+
+			var items = await itemsTask;
+			var favoriteIds = (await favoritesTask)
+				.Select(item => item.ItemId)
+				.ToHashSet();
 
 			var viewModels = Map.From<TodoItemListItemModel>(items).To<TodoItemListItemViewModel>();
 			TodoItems.Clear();
 			foreach (var item in viewModels)
 			{
+				item.IsFavorite = favoriteIds.Contains(item.Id);
 				TodoItems.Add(item);
 			}
 		}
@@ -87,6 +107,7 @@ public class TodoItemsViewModel : ViewModelBase, IAsyncInitializable, IDisposabl
 			}
 
 			var item = Map.From(obj).To<TodoItemListItemViewModel>();
+			item.IsFavorite = false;
 			TodoItems.Insert(0, item);
 		});
 
@@ -107,6 +128,34 @@ public class TodoItemsViewModel : ViewModelBase, IAsyncInitializable, IDisposabl
 				TodoItems.Remove(item);
 			}
 		});
+
+	private async Task HandleFavoriteCreated(object? sender, FavoriteCreated obj)
+	{
+		if (obj.TargetType != FavoriteTargetType)
+		{
+			return;
+		}
+
+		await DispatcherHelper.InvokeOnUIThread(() => SetFavoriteState(obj.ItemId, true));
+	}
+
+	private async Task HandleFavoriteDeleted(object? sender, FavoriteDeleted obj)
+	{
+		if (obj.TargetType != FavoriteTargetType)
+		{
+			return;
+		}
+
+		await DispatcherHelper.InvokeOnUIThread(() => SetFavoriteState(obj.ItemId, false));
+	}
+
+	private void SetFavoriteState(Guid id, bool isFavorite)
+	{
+		if (TodoItems.FirstOrDefault(item => item.Id == id) is { } item)
+		{
+			item.IsFavorite = isFavorite;
+		}
+	}
 
 	public async Task EditTodoItemAsync(TodoItemListItemViewModel? model)
 	{
@@ -162,6 +211,8 @@ public class TodoItemsViewModel : ViewModelBase, IAsyncInitializable, IDisposabl
 				_todoItemService.ItemCreated -= Handle;
 				_todoItemService.ItemUpdated -= Handle;
 				_todoItemService.ItemDeleted -= Handle;
+				_favoriteService.ItemCreated -= HandleFavoriteCreated;
+				_favoriteService.ItemDeleted -= HandleFavoriteDeleted;
 			}
 
 			_disposedValue = true;

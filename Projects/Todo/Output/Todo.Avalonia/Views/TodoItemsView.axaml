@@ -36,20 +36,28 @@
 			<ItemsControl ItemsSource="{Binding TodoItems}">
 				<ItemsControl.ItemTemplate>
 					<DataTemplate x:DataType="vms:TodoItemListItemViewModel">
-						<Button Margin="16,8"
-								Padding="0"
-								HorizontalAlignment="Stretch"
-								HorizontalContentAlignment="Stretch"
-								Background="Transparent"
-								BorderThickness="0"
-								Command="{Binding $parent[ItemsControl].((vms:TodoItemsViewModel)DataContext).EditTodoItemCommand}"
-								CommandParameter="{Binding .}"
-								Foreground="{StaticResource BackgroundColor}">
-							<StackPanel Margin="5">
-								<TextBlock Margin="5,5,5,0" Text="{Binding Title}" />
-								<TextBlock Margin="5,5,5,0" Text="{Binding Content}" TextWrapping="Wrap" />
-							</StackPanel>
-						</Button>
+						<Grid Margin="16,8" ColumnDefinitions="*,Auto">
+							<Button Grid.Column="0"
+									Padding="0"
+									HorizontalAlignment="Stretch"
+									HorizontalContentAlignment="Stretch"
+									Background="Transparent"
+									BorderThickness="0"
+									Command="{Binding $parent[ItemsControl].((vms:TodoItemsViewModel)DataContext).EditTodoItemCommand}"
+									CommandParameter="{Binding .}"
+									Foreground="{StaticResource BackgroundColor}">
+								<StackPanel Margin="5">
+									<TextBlock Margin="5,5,5,0" Text="{Binding Title}" />
+									<TextBlock Margin="5,5,5,0" Text="{Binding Content}" TextWrapping="Wrap" />
+								</StackPanel>
+							</Button>
+							<materialIcons:MaterialIcon Grid.Column="1"
+											Width="24"
+											Height="24"
+											Margin="12,0,0,0"
+											IsVisible="{Binding IsFavorite}"
+											Kind="Star" />
+						</Grid>
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>

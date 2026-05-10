@@ -10,125 +10,125 @@
 
 <div class="entity-filter-editor">
     <details class="mb-4">
-        <summary class="fw-bold fs-6 mb-2" style="cursor: pointer;">
-            Saved Filters &amp; Defaults
+        <summary class="fw-semibold" style="cursor: pointer;">
+            @FilterLoc.Filters
         </summary>
         <div class="card card-body bg-light border-0 shadow-sm mt-2">
-            
-            <div class="row g-2 mb-3 align-items-center">
-                <div class="col">
-                    <select class="form-select" @bind="selectedNamedFilterName">
-                        <option value="">Select a saved filter...</option>
+            <div class="row g-2 mb-3 align-items-end">
+                <div class="col-12 col-lg-5">
+                    <label class="form-label small mb-1">@FilterLoc.SavedFilters</label>
+                    <select class="form-select form-select-sm" @bind="selectedNamedFilterName">
+                        <option value="">@FilterLoc.SelectFilter</option>
                         @foreach (var namedFilter in NamedFilters)
                         {
                             <option value="@namedFilter.Name">@namedFilter.Name</option>
                         }
                     </select>
                 </div>
-                <div class="col-auto">
-                    <button class="btn btn-outline-primary" @onclick="ApplyNamedFilterAsync" disabled="@(!CanApplyNamedFilter)">
-                        <i class="bi bi-check2"></i> Apply
+                <div class="col-12 col-lg-auto d-flex gap-2">
+                    <button class="btn btn-outline-primary btn-sm" @onclick="ApplyNamedFilterAsync" disabled="@(!CanApplyNamedFilter)">
+                        <i class="bi bi-check2"></i> @FilterLoc.Apply
                     </button>
-                </div>
-                <div class="col-auto">
-                    <button class="btn btn-outline-danger" @onclick="DeleteNamedFilterAsync" disabled="@(!CanDeleteNamedFilter)">
+                    <button class="btn btn-outline-danger btn-sm" @onclick="DeleteNamedFilterAsync" disabled="@(!CanDeleteNamedFilter)">
                         <i class="bi bi-trash"></i> @CommonLoc.Delete
                     </button>
                 </div>
             </div>
 
-            <div class="row g-2 mb-3 align-items-center">
-                <div class="col">
-                    <input class="form-control" @bind="saveFilterName" placeholder="Name for new filter..." />
+            <div class="row g-2 mb-3 align-items-end">
+                <div class="col-12 col-lg-5">
+                    <label class="form-label small mb-1">@CommonLoc.Save</label>
+                    <input class="form-control form-control-sm" @bind="saveFilterName" placeholder="@FilterLoc.FilterNamePlaceholder" />
                 </div>
-                <div class="col-auto">
-                    <button class="btn btn-outline-primary" @onclick="SaveCurrentFilterAsync" disabled="@(!CanSaveFilter)">
+                <div class="col-12 col-lg-auto d-flex gap-2">
+                    <button class="btn btn-outline-primary btn-sm" @onclick="SaveCurrentFilterAsync" disabled="@(!CanSaveFilter)">
                         <i class="bi bi-save"></i> @CommonLoc.Save
                     </button>
                 </div>
             </div>
 
-            <hr class="mt-0 mb-3" />
+            <div class="d-grid gap-2 mb-3">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <label class="form-label small mb-0">@FilterLoc.ActiveConditions</label>
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="ClearFiltersAsync" disabled="@IsBusy">
+                        <i class="bi bi-funnel"></i> @FilterLoc.ClearAll
+                    </button>
+                </div>
 
-            <div class="d-flex gap-2 flex-wrap">
-                <button class="btn btn-sm btn-outline-secondary" @onclick="SetDefaultFilterAsync" disabled="@(!CanSetDefaultFilter)">
-                    <i class="bi bi-star"></i> Set as Default
-                </button>
-                <button class="btn btn-sm btn-outline-secondary" @onclick="ClearDefaultFilterAsync" disabled="@(!CanClearDefaultFilter)">
-                    <i class="bi bi-star-fill"></i> Clear Default
-                </button>
-            </div>
-        </div>
-    </details>
-
-    <div class="mb-4">
-        <h6 class="fw-bold mb-3">Active Filter Conditions</h6>
-        
-        @if (filterConditions.Count > 0)
-        {
-            <div class="d-grid gap-2 mb-2">
-                @foreach (var condition in filterConditions)
+                @if (filterConditions.Count > 0)
                 {
-                    <div class="border rounded px-3 py-2 border-light-subtle bg-white shadow-sm d-flex flex-wrap gap-2 align-items-center">
-                        
-                        <select class="form-select w-auto" value="@condition.Field" @onchange="e => ChangeConditionField(condition, e.Value?.ToString())">
-                            @foreach (var field in AvailableFields)
-                            {
-                                <option value="@field.Key">@field.Label</option>
-                            }
-                        </select>
-
-                        <select class="form-select w-auto" value="@condition.Operator" @onchange="e => ChangeConditionOperator(condition, e.Value?.ToString())">
-                            @foreach (var filterOperator in GetOperators(condition))
-                            {
-                                <option value="@filterOperator.Value">@filterOperator.Label</option>
-                            }
-                        </select>
-
-                        @if (ShowOptionEditor(condition))
+                    <div class="d-grid gap-2">
+                        @foreach (var condition in filterConditions)
                         {
-                            <select class="form-select w-auto flex-grow-1" style="min-width: 150px;" @bind="condition.Value">
-                                @foreach (var option in GetValues(condition))
+                            <div class="border rounded px-3 py-2 border-light-subtle bg-white shadow-sm d-flex flex-wrap gap-2 align-items-center">
+                                <select class="form-select form-select-sm w-auto" value="@condition.Field" @onchange="e => ChangeConditionField(condition, e.Value?.ToString())">
+                                    @foreach (var field in AvailableFields)
+                                    {
+                                        <option value="@field.Key">@field.Label</option>
+                                    }
+                                </select>
+
+                                <select class="form-select form-select-sm w-auto" value="@condition.Operator" @onchange="e => ChangeConditionOperator(condition, e.Value?.ToString())">
+                                    @foreach (var filterOperator in GetOperators(condition))
+                                    {
+                                        <option value="@filterOperator.Value">@filterOperator.Label</option>
+                                    }
+                                </select>
+
+                                @if (ShowOptionEditor(condition))
                                 {
-                                    <option value="@option.Value">@option.Label</option>
+                                    <select class="form-select form-select-sm w-auto flex-grow-1" style="min-width: 150px;" @bind="condition.Value">
+                                        @foreach (var option in GetValues(condition))
+                                        {
+                                            <option value="@option.Value">@option.Label</option>
+                                        }
+                                    </select>
                                 }
-                            </select>
-                        }
-                        else if (ShowTextEditor(condition))
-                        {
-                            <input class="form-control w-auto flex-grow-1" style="min-width: 150px;" type="@GetInputType(condition)" @bind="condition.Value" placeholder="Value..." />
-                        }
+                                else if (ShowTextEditor(condition))
+                                {
+                                    <input class="form-control form-control-sm w-auto flex-grow-1" style="min-width: 150px;" type="@GetInputType(condition)" @bind="condition.Value" placeholder="@FilterLoc.Value" />
+                                }
 
-                        <button class="btn btn-link text-danger p-1 ms-auto" title="Remove condition" @onclick="() => RemoveCondition(condition)" disabled="@IsBusy">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
+                                <button class="btn btn-link text-danger p-1 ms-auto" title="@FilterLoc.RemoveCondition" aria-label="@FilterLoc.RemoveCondition" @onclick="() => RemoveCondition(condition)" disabled="@IsBusy">
+                                    <span aria-hidden="true" class="fs-5 lh-1">&times;</span>
+                                </button>
+                            </div>
+                        }
                     </div>
                 }
             </div>
-        }
 
-        <div class="d-flex flex-wrap gap-2 mt-3">
-            <select class="form-select w-auto" value="@selectedNewFilterFieldKey" @onchange="OnNewFieldChanged">
-                @foreach (var field in AvailableFields)
-                {
-                    <option value="@field.Key">@field.Label</option>
-                }
-            </select>
-            <button class="btn btn-outline-secondary" @onclick="AddCondition" disabled="@(!CanAddCondition)">
-                <i class="bi bi-plus-lg"></i> Add condition
-            </button>
+            <div class="row g-2 align-items-end">
+                <div class="col-12 col-md-5">
+                    <label class="form-label small mb-1">@CommonLoc.Field</label>
+                    <select class="form-select form-select-sm" value="@selectedNewFilterFieldKey" @onchange="OnNewFieldChanged">
+                        @foreach (var field in AvailableFields)
+                        {
+                            <option value="@field.Key">@field.Label</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-12 col-md-auto d-flex gap-2">
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="AddCondition" disabled="@(!CanAddCondition)">
+                        <i class="bi bi-plus-lg"></i> @FilterLoc.AddCondition
+                    </button>
+                </div>
+                <div class="col-12 col-md-auto d-flex gap-2">
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="SetDefaultFilterAsync" disabled="@(!CanSetDefaultFilter)">
+                        <i class="bi bi-star"></i> @FilterLoc.SetAsDefault
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="ClearDefaultFilterAsync" disabled="@(!CanClearDefaultFilter)">
+                        <i class="bi bi-star-fill"></i> @FilterLoc.ClearDefault
+                    </button>
+                </div>
+                <div class="col-12 col-md-auto ms-md-auto d-flex gap-2">
+                    <button class="btn btn-primary btn-sm" @onclick="SearchAsync" disabled="@IsBusy">
+                        <i class="bi bi-search"></i> @CommonLoc.Search
+                    </button>
+                </div>
+            </div>
         </div>
-    </div>
-
-    <div class="d-flex flex-wrap justify-content-between align-items-center mt-4">
-        <button class="btn btn-outline-secondary" @onclick="ClearFiltersAsync" disabled="@IsBusy">
-            <i class="bi bi-funnel"></i> Clear All
-        </button>
-        
-        <button class="btn btn-primary fw-bold px-4 py-2" @onclick="SearchAsync" disabled="@IsBusy">
-            <i class="bi bi-search"></i> @CommonLoc.Search
-        </button>
-    </div>
+    </details>
 </div>
 
 @code {
@@ -150,18 +150,18 @@
     private readonly List<FilterCondition> filterConditions = [];
     private List<Filter> filters = [];
     private EntityFilter appliedFilter = new();
-    
+
     private string selectedNewFilterFieldKey = string.Empty;
     private string? selectedNamedFilterName;
     private string saveFilterName = string.Empty;
-    
+
     private ItemType initializedTargetType;
     private string[] initializedFieldKeys = [];
 
     // Expression-bodied properties for concise state checks
     private Filter? DefaultFilter => filters.FirstOrDefault(filter => filter.IsDefault);
     private IEnumerable<Filter> NamedFilters => filters.Where(f => !f.IsDefault).OrderBy(f => f.Name, StringComparer.CurrentCultureIgnoreCase);
-    
+
     private bool HasDefaultFilter => DefaultFilter?.Conditions.Count > 0;
     private bool CanAddCondition => !IsBusy && !string.IsNullOrWhiteSpace(selectedNewFilterFieldKey);
     private bool CanSaveFilter => !IsBusy && filterConditions.Count > 0 && !string.IsNullOrWhiteSpace(saveFilterName);
@@ -455,8 +455,9 @@
     private void LoadDraftFilter(EntityFilter filter)
     {
         var knownFieldKeys = AvailableFields.Select(f => f.Key).ToHashSet(StringComparer.Ordinal);
+
         filterConditions.Clear();
-        
+
         filterConditions.AddRange(filter.Conditions
             .Where(c => knownFieldKeys.Contains(c.Field))
             .Select(c => new FilterCondition { Field = c.Field, Operator = c.Operator, Value = c.Value }));

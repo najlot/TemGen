@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - Todo</title>
+	<link rel="stylesheet" href="~/css/bootstrap/bootstrap.min.css" />
+	<link rel="stylesheet" href="~/css/material-symbols/material-symbols-sharp.css" />
+	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+	<link rel="icon" type="image/png" href="~/favicon.png" />
+	<style>
+		.htmx-indicator { display: none; }
+		.htmx-request .htmx-indicator { display: inline-flex; }
+	</style>
+</head>
+<body class="bg-body-tertiary"
+	  hx-ext="sse"
+	  sse-connect="/live-updates">
+	<div class="min-vh-100 d-flex flex-column">
+		@await Html.PartialAsync("_NavMenu")
+
+		<main class="flex-grow-1">
+			<div class="container-fluid px-3 px-md-4 py-3">
+				@if (TempData["ErrorTitle"] is string errorTitle)
+				{
+					<div class="alert alert-danger d-flex mb-3" role="alert">
+						<div class="flex-grow-1">
+							<h6 class="alert-heading mb-1">@errorTitle</h6>
+							<p class="mb-0">@TempData["ErrorMessage"]</p>
+						</div>
+						<button type="button" class="btn-close ms-3" data-bs-dismiss="alert" aria-label="Close"></button>
+					</div>
+				}
+
+				@RenderBody()
+			</div>
+		</main>
+	</div>
+
+	<script src="~/css/bootstrap/bootstrap.bundle.min.js"></script>
+	<script src="~/css/htmx.min.js"></script>
+	<script src="~/htmx-ext-sse.js"></script>
+	<script>
+		// Add CSRF token to all HTMX requests
+		document.addEventListener('htmx:configRequest', function (evt) {
+			evt.detail.headers['RequestVerificationToken'] =
+				document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+		});
+
+		// Connect the browser only to the HTMX app; the HTMX app bridges upstream API events into SSE.
+		(() => {
+			let hasConnectedLiveStream = false;
+
+			const queueRefreshAll = () => {
+				document.body.dataset.liveRefreshPending = 'true';
+			};
+
+			const drainPendingRefresh = () => {
+				if (document.body.dataset.liveRefreshPending !== 'true'
+					|| document.visibilityState !== 'visible'
+					|| document.querySelector('.htmx-request')
+					|| !window.htmx) {
+					return;
+				}
+
+				delete document.body.dataset.liveRefreshPending;
+				window.htmx.trigger(document.body, 'live-refresh-all');
+			};
+
+			document.addEventListener('htmx:afterRequest', drainPendingRefresh);
+			document.addEventListener('visibilitychange', () => {
+				if (document.visibilityState === 'visible') {
+					drainPendingRefresh();
+				}
+			});
+
+			document.body.addEventListener('htmx:sseOpen', event => {
+				if (event.target !== document.body || !window.htmx) {
+					return;
+				}
+
+				if (hasConnectedLiveStream) {
+					queueRefreshAll();
+					drainPendingRefresh();
+					return;
+				}
+
+				hasConnectedLiveStream = true;
+			});
+		})();
+	</script>
+	@RenderSection("Scripts", required: false)
+</body>
+</html>
+

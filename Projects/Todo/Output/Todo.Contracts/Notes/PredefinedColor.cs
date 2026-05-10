@@ -5,6 +5,7 @@ namespace Todo.Contracts.Notes;
 
 public enum PredefinedColor
 {
+	None = 0,
 	White,
 	Silver,
 	Gray,

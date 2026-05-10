@@ -1,0 +1,207 @@
+@page "/<#cs Write(Definition.Name.ToLower())#>/{id:guid}"
+@using <# Project.Namespace#>.Client.Localisation
+@using <# Project.Namespace#>.Contracts.<# Definition.Name#>s
+<#if NeedsSharedOwnedChildren() || NeedsSharedArrayChildren() || NeedsSharedEnumerationChildren()
+#>@using <# Project.Namespace#>.Contracts.Shared
+<#end#>@model <# Project.Namespace#>.Htmx.Pages.<# Definition.Name#>Model
+@{
+	ViewData["Title"] = Model.IsNew ? (string)<# Definition.Name#>Loc.Create<# Definition.Name#> : (string)<# Definition.Name#>Loc.Edit<# Definition.Name#>;
+	var liveDetailUrl = (Model.Model is not null && !Model.IsNew) ? $"{Request.Path}{Request.QueryString}" : null;
+	var liveDetailSelect = liveDetailUrl is not null ? "#detail-container" : null;
+	var liveDetailTarget = liveDetailUrl is not null ? "this" : null;
+	var liveDetailSwap = liveDetailUrl is not null ? "outerHTML" : null;
+	var liveDetailTrigger = liveDetailUrl is not null
+		? "live-refresh-all from:body queue:last, sse:<# Definition.Name#>Updated queue:last, sse:<# Definition.Name#>Deleted queue:last"
+		: null;
+	var liveDetailBeforeRequest = liveDetailUrl is not null
+		? "const hasOtherRequestInFlight = document.querySelector('.htmx-request') && !this.classList.contains('htmx-request'); if (document.visibilityState !== 'visible' || hasOtherRequestInFlight) { document.body.dataset.liveRefreshPending = 'true'; event.preventDefault(); return; } const form = this.querySelector('form[data-live-dirty-form=\"true\"]'); if (form && (form.dataset.liveDirty === 'true' || form.contains(document.activeElement))) { event.preventDefault(); }"
+		: null;
+}
+
+<div id="detail-container"
+	 hx-get="@liveDetailUrl"
+	 hx-select="@liveDetailSelect"
+	 hx-target="@liveDetailTarget"
+	 hx-swap="@liveDetailSwap"
+	 hx-trigger="@liveDetailTrigger"
+	 hx-on::before-request="@liveDetailBeforeRequest">
+	@if (Model.Model == null)
+	{
+		<p><em>@CommonLoc.Loading...</em></p>
+	}
+	else
+	{
+		<section class="d-grid gap-4">
+		<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
+			<h1 class="mb-1">@ViewData["Title"]</h1>
+			<div class="d-flex flex-wrap gap-2">
+				@if (!Model.IsNew)
+				{
+					<a href="/history/@Model.Model.Id?entityName=<# Definition.Name#>" class="btn btn-outline-secondary"><span class="material-symbols-sharp me-1" style="font-size:1.1rem;vertical-align:middle;">history</span> @CommonLoc.History</a>
+					@await Html.PartialAsync("_<# Definition.Name#>FavoriteToggle", Model)
+				}
+				<button type="submit" form="edit-form" class="btn btn-success"><span class="material-symbols-sharp me-1" style="font-size:1.1rem;vertical-align:middle;">save</span> @CommonLoc.Save</button>
+				@if (!Model.IsNew)
+				{
+					<button type="button" class="btn btn-danger"
+							hx-post="/<#cs Write(Definition.Name.ToLower())#>/@Model.Model.Id?handler=Delete"
+							hx-confirm="@CommonLoc.DeleteConfirmationDescription"
+							hx-target="body"
+							hx-push-url="true">
+						<span class="material-symbols-sharp me-1" style="font-size:1.1rem;vertical-align:middle;">delete</span> @CommonLoc.Delete
+					</button>
+				}
+			</div>
+		</div>
+
+		@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+		{
+			<div class="alert alert-danger">@Model.ErrorMessage</div>
+		}
+
+		<form id="edit-form"
+			  method="post"
+			  data-live-dirty-form="true"
+			  data-live-dirty="@((!ViewData.ModelState.IsValid || !string.IsNullOrWhiteSpace(Model.ErrorMessage)) ? "true" : "false")"
+			  hx-on:input="this.dataset.liveDirty = 'true'"
+			  hx-on:change="this.dataset.liveDirty = 'true'">
+			<div class="card shadow-sm border-0">
+				<div class="card-body">
+					<div class="row g-3">
+<#for entry in Entries.Where(e => !e.IsArray)#>
+						<!-- <# entry.Field#> -->
+						<div class="<#if entry.IsOwnedType
+#>col-12<#elseif entry.EntryType.ToLower() == "bool"
+#>col-12 col-md-6<#else
+#>col-12 col-md-6<#end#>">
+<#if entry.EntryType.ToLower() == "string"
+#>							<label class="form-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
+							<input type="text" id="<# entry.Field#>Input" name="Model.<# entry.Field#>"
+								   class="form-control" value="@Model.Model.<# entry.Field#>" />
+<#elseif entry.EntryType.ToLower() == "datetime"
+#>							<label class="form-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
+							<input type="date" id="<# entry.Field#>Input" name="Model.<# entry.Field#>"
+								   class="form-control" value="@Model.Model.<# entry.Field#>.ToString("yyyy-MM-dd")" />
+<#elseif entry.EntryType.ToLower() == "bool"
+#>							<div class="form-check mt-md-4 pt-md-2">
+								<input type="hidden" name="Model.<# entry.Field#>" value="false" />
+								<input type="checkbox" id="<# entry.Field#>Input" name="Model.<# entry.Field#>"
+								   class="form-check-input" value="true" checked="@(Model.Model.<# entry.Field#> ? "checked" : null)" />
+								<label class="form-check-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
+							</div>
+<#elseif entry.EntryType.ToLower() == "int" || entry.EntryType.ToLower() == "long" || entry.EntryType.ToLower() == "double"
+#>							<label class="form-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
+							<input type="number" id="<# entry.Field#>Input" name="Model.<# entry.Field#>"
+								   class="form-control" value="@Model.Model.<# entry.Field#>" />
+<#elseif entry.IsOwnedType
+#>							<div class="card bg-body-tertiary border-0 h-100">
+								<div class="card-body">
+									<h2 class="h5 mb-3">@<# Definition.Name#>Loc.<# entry.Field#></h2>
+									@if (Model.Model.<# entry.Field#> is not null)
+									{
+<#for e in Definitions.First(d => d.Name == entry.EntryType).Entries.Where(e2 => !e2.IsArray)
+#>										<div class="mb-2">
+											<label class="form-label" for="<# entry.Field#><# e.Field#>Input">@<# entry.EntryType#>Loc.<# e.Field#></label>
+<#if e.EntryType.ToLower() == "string"
+#>											<input type="text" id="<# entry.Field#><# e.Field#>Input"
+												   name="Model.<# entry.Field#>.<# e.Field#>"
+												   class="form-control" value="@Model.Model.<# entry.Field#>.<# e.Field#>" />
+<#elseif e.EntryType.ToLower() == "bool"
+#>											<div class="form-check">
+												<input type="hidden" name="Model.<# entry.Field#>.<# e.Field#>" value="false" />
+												<input type="checkbox" id="<# entry.Field#><# e.Field#>Input"
+													   name="Model.<# entry.Field#>.<# e.Field#>"
+													   class="form-check-input" value="true"
+											   checked="@(Model.Model.<# entry.Field#>.<# e.Field#> ? "checked" : null)" />
+											</div>
+<#elseif e.EntryType.ToLower() == "int" || e.EntryType.ToLower() == "long" || e.EntryType.ToLower() == "double"
+#>											<input type="number" id="<# entry.Field#><# e.Field#>Input"
+												   name="Model.<# entry.Field#>.<# e.Field#>"
+												   class="form-control" value="@Model.Model.<# entry.Field#>.<# e.Field#>" />
+<#else
+#>											<input type="text" id="<# entry.Field#><# e.Field#>Input"
+												   name="Model.<# entry.Field#>.<# e.Field#>"
+												   class="form-control" value="@Model.Model.<# entry.Field#>.<# e.Field#>" />
+<#end#>										</div>
+<#end#>									}
+								</div>
+							</div>
+<#elseif entry.IsEnumeration
+#>							<label class="form-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
+							<select id="<# entry.Field#>Input" name="Model.<# entry.Field#>" class="form-select">
+								@foreach (var value in Enum.GetValues(typeof(<# entry.EntryType#>)))
+								{
+									<option value="@value" selected="@(Model.Model.<# entry.Field#>.Equals(value) ? "selected" : null)">@((value.Equals(<# entry.EntryType#>.None) ? CommonLoc.NothingSelected : value.ToString()))</option>
+								}
+							</select>
+<#elseif entry.IsReference
+#>							<label class="form-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
+							<select id="<# entry.Field#>Input" name="Model.<# entry.Field#>Id" class="form-select">
+								@foreach (var value in Model.<# entry.ReferenceTypeLow#>s)
+								{
+									<option value="@value.Id" selected="@(Model.Model.<# entry.Field#>Id == value.Id ? "selected" : null)">
+										@value.DisplayText
+									</option>
+								}
+							</select>
+<#end#>						</div>
+<#end#>					</div>
+				</div>
+			</div>
+<#for entry in Entries.Where(e => e.IsArray)
+#>
+			<div class="card shadow-sm border-0 mt-3">
+				<div class="card-header bg-body-tertiary d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+					<h2 class="h5 mb-0">@<# Definition.Name#>Loc.<# entry.Field#></h2>
+					<button type="submit" name="action" value="add_<#cs Write(entry.Field.ToLower())#>"
+							class="btn btn-success btn-sm" formnovalidate>
+						&#x2b; @CommonLoc.New
+					</button>
+				</div>
+				<div class="table-responsive">
+					<table class="table table-striped align-middle mb-0">
+						<thead class="table-light">
+							<tr>
+<#for e in Definitions.First(definition => definition.Name == entry.EntryType).Entries
+#>								<th>@<# entry.EntryType#>Loc.<# e.Field#></th>
+<#end#>								<th class="text-end">@CommonLoc.Delete</th>
+							</tr>
+						</thead>
+						<tbody>
+							@for (var i = 0; i < Model.Model.<# entry.Field#>.Count; i++)
+							{
+								var entryItem = Model.Model.<# entry.Field#>[i];
+								<tr>
+<#for e in Definitions.First(definition => definition.Name == entry.EntryType).Entries
+#><#if e.EntryType.ToLower() == "bool"
+#>									<td>
+										<input type="hidden" name="Model.<# entry.Field#>[@i].<# e.Field#>" value="false" />
+										<input type="checkbox" class="form-check-input"
+											   name="Model.<# entry.Field#>[@i].<# e.Field#>"
+											   value="true" @(entryItem.<# e.Field#> ? "checked" : "") />
+									</td>
+<#else
+#>									<td>
+										<input type="text" class="form-control form-control-sm"
+											   name="Model.<# entry.Field#>[@i].<# e.Field#>"
+											   value="@entryItem.<# e.Field#>" />
+									</td>
+<#end#><#end#>									<td class="text-end">
+										<button type="submit" name="action"
+												value="remove_<#cs Write(entry.Field.ToLower())#>_@(entryItem.Id)"
+												class="btn btn-danger btn-sm" formnovalidate>
+											&#x1F5D1;
+										</button>
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+<#end#>
+		</form>
+	</section>
+	}
+</div>
+<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

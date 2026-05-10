@@ -1,5 +1,6 @@
 using LiteDB;
 using System.IO;
+using <# Project.Namespace#>.Service.Features.Favorites;
 using <# Project.Namespace#>.Service.Features.Filters;
 using <# Project.Namespace#>.Service.Features.History;
 using <# Project.Namespace#>.Service.Features.Users;
@@ -46,6 +47,12 @@ public sealed class LiteDbContext : IDisposable
 
 	public void EnsureCreated()
 	{
+		var favoritesCollection = GetCollection<FavoriteModel>("Favorites");
+		favoritesCollection.EnsureIndex(item => item.Id, true);
+		favoritesCollection.EnsureIndex(item => item.UserId);
+		favoritesCollection.EnsureIndex(item => item.TargetType);
+		favoritesCollection.EnsureIndex(item => item.ItemId);
+
 		var filtersCollection = GetCollection<FilterModel>("Filters");
 		filtersCollection.EnsureIndex(item => item.Id, true);
 		filtersCollection.EnsureIndex(item => item.UserId);

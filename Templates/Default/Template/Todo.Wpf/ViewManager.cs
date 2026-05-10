@@ -62,6 +62,12 @@ public class ViewManager(IServiceProvider serviceProvider) : IViewManager<Contro
 				$"Ensure that this view model type is added to the '{nameof(ViewManager)}' {_knownControls.GetType().Name} mapping.");
 		}
 
+		if (serviceProvider.GetService(viewType) is Control instance)
+		{
+			instance.DataContext = viewModel;
+			return instance;
+		}
+
 		if (viewType.GetConstructor(Type.EmptyTypes) is not null)
 		{
 			if (Activator.CreateInstance(viewType) is Control control)
@@ -69,12 +75,6 @@ public class ViewManager(IServiceProvider serviceProvider) : IViewManager<Contro
 				control.DataContext = viewModel;
 				return control;
 			}
-		}
-
-		if (serviceProvider.GetRequiredService(viewType) is Control instance)
-		{
-			instance.DataContext = viewModel;
-			return instance;
 		}
 
 		throw new NullReferenceException($"The Class {viewType.FullName} is not a Control.");

@@ -36,21 +36,29 @@
 			<ItemsControl ItemsSource="{Binding <#cs Write(Definition.Name)#>s}">
 				<ItemsControl.ItemTemplate>
 					<DataTemplate x:DataType="vms:<#cs Write(Definition.Name)#>ListItemViewModel">
-						<Button Margin="16,8"
-								Padding="0"
-								HorizontalAlignment="Stretch"
-								HorizontalContentAlignment="Stretch"
-								Background="Transparent"
-								BorderThickness="0"
-								Command="{Binding $parent[ItemsControl].((vms:<#cs Write(Definition.Name)#>sViewModel)DataContext).Edit<#cs Write(Definition.Name)#>Command}"
-								CommandParameter="{Binding .}"
-								Foreground="{StaticResource BackgroundColor}">
-							<StackPanel Margin="5">
+						<Grid Margin="16,8" ColumnDefinitions="*,Auto">
+							<Button Grid.Column="0"
+									Padding="0"
+									HorizontalAlignment="Stretch"
+									HorizontalContentAlignment="Stretch"
+									Background="Transparent"
+									BorderThickness="0"
+									Command="{Binding $parent[ItemsControl].((vms:<#cs Write(Definition.Name)#>sViewModel)DataContext).Edit<#cs Write(Definition.Name)#>Command}"
+									CommandParameter="{Binding .}"
+									Foreground="{StaticResource BackgroundColor}">
+								<StackPanel Margin="5">
 <#csfor entry in Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2)
-#>								<TextBlock Margin="5,5,5,0" Text="{Binding <#cs Write(entry.Field)#>}"<#if entry.Field != Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2).First().Field
+#>									<TextBlock Margin="5,5,5,0" Text="{Binding <#cs Write(entry.Field)#>}"<#if entry.Field != Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2).First().Field
 #> TextWrapping="Wrap"<#end#> />
-<#end#>							</StackPanel>
-						</Button>
+<#end#>								</StackPanel>
+							</Button>
+							<materialIcons:MaterialIcon Grid.Column="1"
+											Width="24"
+											Height="24"
+											Margin="12,0,0,0"
+											IsVisible="{Binding IsFavorite}"
+											Kind="Star" />
+						</Grid>
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>

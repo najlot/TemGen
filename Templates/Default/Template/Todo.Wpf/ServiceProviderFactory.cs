@@ -7,7 +7,9 @@ using <# Project.Namespace#>.Client.Data;
 using <# Project.Namespace#>.Client.Data.Identity;
 using <# Project.Namespace#>.Client.MVVM;
 using <# Project.Namespace#>.ClientBase;
+using <# Project.Namespace#>.Wpf.Controls;
 using <# Project.Namespace#>.Wpf.Identity;
+using <# Project.Namespace#>.Wpf.Views;
 
 namespace <# Project.Namespace#>.Wpf;
 
@@ -41,6 +43,13 @@ public static class ServiceProviderFactory
 
 		serviceCollection.RegisterClientData();
 		serviceCollection.RegisterClientBase();
+		serviceCollection.AddTransient<ToggleFavoriteButton>();
+<#for definition in Definitions.Where(d => !(d.IsArray
+	|| d.IsEnumeration
+	|| d.IsOwnedType
+	|| d.Name.Equals("user", StringComparison.OrdinalIgnoreCase)))
+#>		serviceCollection.AddTransient<<# definition.Name#>View>();
+<#end#>
 
 		var serviceProvider = serviceCollection.BuildServiceProvider();
 

@@ -1,13 +1,24 @@
 using System;
 using <# Project.Namespace#>.Client.MVVM;
-<#if Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2).Any(e => e.IsEnumeration)
-#>using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
+<#for folderName in Entries
+	.Where(e => e.IsEnumeration)
+	.Select(e => GetChildFeatureFolderName(e.EntryType))
+	.Distinct()
+#>using <# Project.Namespace#>.Contracts.<# folderName#>;
 <#end#>
 namespace <# Project.Namespace#>.ClientBase.<# Definition.Name#>s;
 
 public class <# Definition.Name#>ListItemViewModel : AbstractViewModel
 {
 	public Guid Id { get; set => Set(ref field, value); }
+
+	public bool IsFavorite
+	{
+		get;
+		set => Set(ref field, value, () => RaisePropertyChanged(nameof(FavoriteIconKind)));
+	}
+
+	public string FavoriteIconKind => IsFavorite ? "Star" : "StarBorder";
 
 <#for entry in Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2)
 #>	public <#cs Write(entry.IsArray ? "List<" : "")#><# entry.EntryType#><#cs Write(entry.IsArray ? ">" : entry.IsNullable ? "?" : "")#> <# entry.Field#><#cs Write(entry.IsReference ? "Id" : "")#> { get; set => Set(ref field, value); }<#if entry.EntryType == "string"

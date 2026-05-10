@@ -1,0 +1,38 @@
+@using System.Net
+@using Todo.Client.Localisation
+@using Todo.Contracts.Shared
+@model Todo.Htmx.Pages.GlobalSearchModel
+
+@if (!Model.IsLoaded)
+{
+	<div class="alert alert-light border mb-0">@GlobalSearchLoc.SearchPrompt</div>
+}
+else if (Model.Items.Count == 0)
+{
+	<div class="alert alert-light border mb-0">@GlobalSearchLoc.NoResults</div>
+}
+else
+{
+	<div class="row g-3">
+		@foreach (var item in Model.Items)
+		{
+			<div class="col-12">
+				<a class="card shadow-sm border-0 text-decoration-none text-reset h-100" href="@GlobalSearchModel.GetResultHref(item)">
+					<div class="card-body">
+						<div class="d-flex justify-content-between align-items-start gap-3">
+							<div class="flex-grow-1">
+								<div class="fw-semibold text-break">@(string.IsNullOrWhiteSpace(item.Title) ? CommonLoc.Untitled : item.Title)</div>
+								@if (!string.IsNullOrWhiteSpace(item.Content))
+								{
+									<div class="text-muted text-break mt-1">@item.Content</div>
+								}
+							</div>
+							<div class="text-end text-nowrap small text-secondary">@item.Type</div>
+						</div>
+					</div>
+				</a>
+			</div>
+		}
+	</div>
+}
+

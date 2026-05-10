@@ -32,9 +32,12 @@ internal sealed partial class TodoItemViewModelMappings
 		to.Checklist = [.. map.From<ChecklistTaskModel>(from.Checklist).To<ChecklistTaskViewModel>()];
 	}
 
+	[MapIgnoreProperty(nameof(to.IsFavorite))]
 	public static partial void MapToViewModel(IMap map, TodoItemListItemModel from, TodoItemListItemViewModel to);
 
+	[MapIgnoreProperty(nameof(to.IsFavorite))]
 	public static partial void MapToViewModel(IMap map, TodoItemCreated from, TodoItemListItemViewModel to);
 
+	[MapIgnoreProperty(nameof(to.IsFavorite))]
 	public static partial void MapToViewModel(IMap map, TodoItemUpdated from, TodoItemListItemViewModel to);
 }

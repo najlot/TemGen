@@ -70,7 +70,7 @@ public class TodoItemFilterViewModel : EntityFilterEditorViewModel
 				Values = [.. users.Select(item => new FilterValueOption
 				{
 					Value = item.Id.ToString(),
-					Label = Convert.ToString(item.Username) ?? CommonLoc.Untitled,
+					Label = item.DisplayText,
 				})],
 			},
 			new FilterFieldOption
@@ -82,7 +82,7 @@ public class TodoItemFilterViewModel : EntityFilterEditorViewModel
 				Values = [.. Enum.GetValues<TodoItemStatus>().Select(value => new FilterValueOption
 				{
 					Value = value.ToString(),
-					Label = value.ToString(),
+					Label = value == TodoItemStatus.None ? CommonLoc.NothingSelected : value.ToString(),
 				})],
 			},
 			new FilterFieldOption

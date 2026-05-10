@@ -43,6 +43,7 @@ public static class ServiceCollectionExtensions
 			serviceCollection.AddTransient<GlobalSearchViewModel>();
 			serviceCollection.AddTransient<EntityHistoryViewModel>();
 			serviceCollection.AddTransient<TrashViewModel>();
+			serviceCollection.AddTransient<ToggleFavoriteViewModel>();
 
 <#for definition in Definitions.Where(d => !(d.IsArray
 	|| d.IsEnumeration

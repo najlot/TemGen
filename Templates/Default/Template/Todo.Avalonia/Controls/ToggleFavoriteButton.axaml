@@ -1,0 +1,16 @@
+<UserControl x:Class="<#cs Write(Project.Namespace)#>.Avalonia.Controls.ToggleFavoriteButton"
+			 xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vms="clr-namespace:<#cs Write(Project.Namespace)#>.ClientBase.Shared;assembly=<#cs Write(Project.Namespace)#>.ClientBase"
+			 d:DesignHeight="48"
+			 d:DesignWidth="48"
+			 x:DataType="vms:ToggleFavoriteViewModel"
+			 mc:Ignorable="d">
+	<Button Command="{Binding ToggleFavoriteCommand}">
+		<materialIcons:MaterialIcon Width="24" Height="24" Kind="{Binding FavoriteIconKind}" />
+	</Button>
+</UserControl>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

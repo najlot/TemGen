@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using <# Project.Namespace#>.Client.MVVM;
-<#if NeedsSharedEnumerationChildren()
-#>using <# Project.Namespace#>.Contracts.Shared;
+<#for folderName in Entries
+	.Where(e => e.IsEnumeration)
+	.Select(e => GetChildFeatureFolderName(e.EntryType))
+	.Distinct()
+#>using <# Project.Namespace#>.Contracts.<# folderName#>;
 <#end#>
 namespace <# Project.Namespace#>.ClientBase.<#if Definition.IsOwnedType
 #><#cs Write(GetChildFeatureFolderName(Definition.Name))#><#else#><# Definition.Name#>s<#end#>;
@@ -14,21 +17,8 @@ public <#if Entries.Any(e => e.IsArray)
 	public Guid Id { get; set => Set(ref field, value); }
 <#if Entries.Any(e => e.IsEnumeration)#>
 <#end#><#for entry in Entries.Where(e => e.IsEnumeration)
-#><#if entry.IsNullable
-#>	private static IEnumerable<<# entry.EntryType#>?> GetAvailable<# entry.EntryType#>s()
-	{
-		yield return null;
-
-		foreach (var entry in Enum.GetValues(typeof(<# entry.EntryType#>)) as <# entry.EntryType#>[])
-		{
-			yield return entry;
-		}
-	}
-
-	public List<<# entry.EntryType#>?> Available<# entry.EntryType#>s { get; } = GetAvailable<# entry.EntryType#>s().ToList();
-<#else
 #>	public <# entry.EntryType#>[] Available<# entry.EntryType#>s { get; } = Enum.GetValues<<# entry.EntryType#>>();
-<#end#><#end#>
+<#end#>
 <#for entry in Entries.Where(e => !e.IsArray)
 #><#if entry.EntryType == "DateTime"
 #>	private <# entry.EntryType#><#cs Write(entry.IsNullable ? "?" : "")#> _<# entry.FieldLow#>;

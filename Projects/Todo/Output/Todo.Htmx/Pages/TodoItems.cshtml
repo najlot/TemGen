@@ -1,0 +1,406 @@
+@page
+@using System.Text.Json
+@using Todo.Client.Localisation
+@using Todo.Contracts.TodoItems
+@using Todo.Contracts.Shared
+@model Todo.Htmx.Pages.TodoItemsModel
+@{
+	ViewData["Title"] = TodoItemLoc.TodoItems;
+	var filterFieldMetadata = Model.AvailableFilterFields.Select(field => new
+	{
+		key = field.Key,
+		label = field.Label,
+		kind = field.Kind.ToString(),
+		operators = field.Operators.Select(filterOperator => new
+		{
+			value = filterOperator.Value.ToString(),
+			label = filterOperator.Label
+		}),
+		values = field.Values.Select(value => new
+		{
+			value = value.Value,
+			label = value.Label
+		})
+	});
+	var namedFilterMetadata = Model.NamedFilters.Select(namedFilter => new
+	{
+		name = namedFilter.Name,
+		conditions = namedFilter.Conditions.Select(condition => new
+		{
+			field = condition.Field,
+			filterOperator = condition.Operator.ToString(),
+			value = condition.Value ?? string.Empty
+		})
+	});
+	var activeFilterConditions = Model.FilterConditions.Select(condition => new
+	{
+		field = condition.Field,
+		filterOperator = condition.Operator.ToString(),
+		value = condition.Value ?? string.Empty
+	});
+}
+
+<section class="d-grid gap-3">
+	<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+		<h1 class="mb-0">@TodoItemLoc.TodoItems</h1>
+		<a href="/TodoItem/@Guid.Empty" class="btn btn-success"><span class="material-symbols-sharp me-1" style="font-size:1.1rem;vertical-align:middle;">add</span> @CommonLoc.New</a>
+	</div>
+
+	<div>
+		<form id="filter-form" method="get"
+			  hx-get="/TodoItems"
+			  hx-target="#items-container"
+			  hx-swap="outerHTML"
+			  hx-push-url="true">
+			@Html.AntiForgeryToken()
+			<input id="filter-state" name="filterState" type="hidden" />
+			<div class="card shadow-sm border-0 mb-3">
+				<div class="card-body">
+					<details @((Model.HasActiveFilter || Model.NamedFilters.Count > 0) ? "open" : null)>
+						<summary class="fw-semibold">@FilterLoc.Filters</summary>
+						<div class="d-grid gap-3 pt-3">
+							<div class="row g-2 align-items-end">
+								<div class="col-12 col-lg-5">
+									<label class="form-label small mb-1" for="named-filter">@FilterLoc.SavedFilters</label>
+									<select class="form-select form-select-sm" id="named-filter" name="namedFilter">
+										<option value="">@FilterLoc.SelectFilter</option>
+										@foreach (var namedFilter in Model.NamedFilters)
+										{
+											<option value="@namedFilter.Name" selected="@(Model.SelectedNamedFilterName == namedFilter.Name ? "selected" : null)">@namedFilter.Name</option>
+										}
+									</select>
+								</div>
+								<div class="col-12 col-lg-auto d-flex gap-2">
+									<button type="button" class="btn btn-outline-primary btn-sm" id="apply-named-filter" @(Model.NamedFilters.Count == 0 ? "disabled" : null)>@FilterLoc.Apply</button>
+									<button type="button" class="btn btn-outline-danger btn-sm" id="delete-named-filter" hx-post="?handler=DeleteFilter" hx-include="#filter-form" hx-swap="none" @(Model.NamedFilters.Count == 0 ? "disabled" : null)>@CommonLoc.Delete</button>
+								</div>
+							</div>
+
+							<div class="row g-2 align-items-end">
+								<div class="col-12 col-lg-5">
+									<label class="form-label small mb-1" for="filter-name">@CommonLoc.Save</label>
+									<input class="form-control form-control-sm" id="filter-name" name="filterName" placeholder="@FilterLoc.FilterNamePlaceholder" />
+								</div>
+								<div class="col-12 col-lg-auto d-flex gap-2">
+									<button type="button" class="btn btn-outline-primary btn-sm" id="save-filter" hx-post="?handler=SaveFilter" hx-include="#filter-form" hx-swap="none">@CommonLoc.Save</button>
+								</div>
+							</div>
+
+							<div class="d-grid gap-2">
+								<div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+									<label class="form-label small mb-0">@FilterLoc.ActiveConditions</label>
+									<button type="button" class="btn btn-outline-secondary btn-sm" id="clear-current-filter">@FilterLoc.ClearAll</button>
+								</div>
+								<div id="filter-conditions" class="d-grid gap-2"></div>
+							</div>
+
+							<div class="row g-2 align-items-end">
+								<div class="col-12 col-md-5">
+									<label class="form-label small mb-1" for="new-filter-field">@CommonLoc.Field</label>
+									<select class="form-select form-select-sm" id="new-filter-field">
+										@foreach (var field in Model.AvailableFilterFields)
+										{
+											<option value="@field.Key">@field.Label</option>
+										}
+									</select>
+								</div>
+								<div class="col-12 col-md-auto d-flex gap-2">
+									<button type="button" class="btn btn-outline-secondary btn-sm" id="add-filter-condition" @(Model.AvailableFilterFields.Count == 0 ? "disabled" : null)>@FilterLoc.AddCondition</button>
+								</div>
+								<div class="col-12 col-md-auto d-flex gap-2">
+									<button type="button" class="btn btn-outline-secondary btn-sm" id="set-default-filter" hx-post="?handler=SetDefaultFilter" hx-include="#filter-form" hx-swap="none">@FilterLoc.SetAsDefault</button>
+									<button type="button" class="btn btn-outline-secondary btn-sm" id="clear-default-filter" hx-post="?handler=ClearDefaultFilter" hx-include="#filter-form" hx-swap="none" @(Model.HasDefaultFilter ? null : "disabled")>@FilterLoc.ClearDefault</button>
+								</div>
+								<div class="col-12 col-md-auto ms-md-auto d-flex gap-2">
+									<button type="submit" class="btn btn-primary btn-sm">
+										<span class="htmx-indicator spinner-border spinner-border-sm me-1"></span>
+										@FilterLoc.Apply
+									</button>
+								</div>
+							</div>
+						</div>
+					</details>
+				</div>
+			</div>
+		</form>
+
+		<script id="filter-field-metadata" type="application/json">@Html.Raw(JsonSerializer.Serialize(filterFieldMetadata))</script>
+		<script id="named-filter-metadata" type="application/json">@Html.Raw(JsonSerializer.Serialize(namedFilterMetadata))</script>
+		<script id="active-filter-conditions" type="application/json">@Html.Raw(JsonSerializer.Serialize(activeFilterConditions))</script>
+		<script>
+			(() => {
+				const form = document.getElementById("filter-form");
+				const filterStateInput = document.getElementById("filter-state");
+				const fieldMetadataElement = document.getElementById("filter-field-metadata");
+				const namedFilterMetadataElement = document.getElementById("named-filter-metadata");
+				const activeFilterConditionsElement = document.getElementById("active-filter-conditions");
+				const conditionsContainer = document.getElementById("filter-conditions");
+				const namedFilterSelect = document.getElementById("named-filter");
+				const applyNamedFilterButton = document.getElementById("apply-named-filter");
+				const deleteNamedFilterButton = document.getElementById("delete-named-filter");
+				const saveFilterNameInput = document.getElementById("filter-name");
+				const saveFilterButton = document.getElementById("save-filter");
+				const clearCurrentFilterButton = document.getElementById("clear-current-filter");
+				const newFilterFieldSelect = document.getElementById("new-filter-field");
+				const addFilterConditionButton = document.getElementById("add-filter-condition");
+				const setDefaultFilterButton = document.getElementById("set-default-filter");
+				const clearDefaultFilterButton = document.getElementById("clear-default-filter");
+
+				if (!form || !filterStateInput || !fieldMetadataElement || !namedFilterMetadataElement || !activeFilterConditionsElement || !conditionsContainer || !namedFilterSelect || !applyNamedFilterButton || !deleteNamedFilterButton || !saveFilterNameInput || !saveFilterButton || !clearCurrentFilterButton || !newFilterFieldSelect || !addFilterConditionButton || !setDefaultFilterButton || !clearDefaultFilterButton) {
+					return;
+				}
+
+				const fields = JSON.parse(fieldMetadataElement.textContent || "[]");
+				const namedFilters = JSON.parse(namedFilterMetadataElement.textContent || "[]");
+				let conditions = JSON.parse(activeFilterConditionsElement.textContent || "[]");
+
+				const fieldPlaceholder = @Html.Raw(JsonSerializer.Serialize(FilterLoc.SelectField));
+				const valuePlaceholder = @Html.Raw(JsonSerializer.Serialize(FilterLoc.Value));
+				const removeConditionLabel = @Html.Raw(JsonSerializer.Serialize(FilterLoc.RemoveCondition));
+
+				const requiresValue = filterOperator => filterOperator !== "IsEmpty" && filterOperator !== "IsNotEmpty";
+				const getField = fieldKey => fields.find(filterFieldOption => filterFieldOption.key === fieldKey);
+				const cloneCondition = condition => ({
+					field: condition?.field || "",
+					filterOperator: condition?.filterOperator || "",
+					value: condition?.value || ""
+				});
+
+				const createOption = (value, label, selected) => {
+					const option = document.createElement("option");
+					option.value = value;
+					option.textContent = label;
+					option.selected = selected;
+					return option;
+				};
+
+				const normalizeCondition = condition => {
+					if (fields.length === 0) {
+						return null;
+					}
+
+					const draft = cloneCondition(condition);
+					let field = getField(draft.field);
+					if (!field) {
+						draft.field = fields[0].key;
+						field = fields[0];
+					}
+
+					if (!field.operators.some(operatorOption => operatorOption.value === draft.filterOperator)) {
+						draft.filterOperator = field.operators[0]?.value || "";
+					}
+
+					if (!requiresValue(draft.filterOperator)) {
+						draft.value = "";
+						return draft;
+					}
+
+					if (field.values.length > 0) {
+						if (!field.values.some(valueOption => valueOption.value === draft.value)) {
+							draft.value = field.values[0]?.value || "";
+						}
+						return draft;
+					}
+
+					draft.value = draft.value || "";
+					return draft;
+				};
+
+				const normalizeConditions = sourceConditions => sourceConditions
+					.map(normalizeCondition)
+					.filter(condition => condition !== null);
+
+				const syncFilterState = () => {
+					filterStateInput.value = JSON.stringify(conditions.map(condition => ({
+						field: condition.field,
+						operator: condition.filterOperator,
+						value: condition.value || null
+					})));
+				};
+
+				const clearSelectedNamedFilter = () => {
+					namedFilterSelect.value = "";
+				};
+
+				const updateActionStates = () => {
+					const hasConditions = conditions.length > 0;
+					const hasSelectedNamedFilter = namedFilterSelect.value.trim() !== "";
+					const hasFilterName = saveFilterNameInput.value.trim() !== "";
+
+					applyNamedFilterButton.disabled = !hasSelectedNamedFilter;
+					deleteNamedFilterButton.disabled = !hasSelectedNamedFilter;
+					saveFilterButton.disabled = !hasConditions || !hasFilterName;
+					setDefaultFilterButton.disabled = !hasConditions;
+				};
+
+				const renderValueEditor = (field, condition, conditionIndex) => {
+					if (!requiresValue(condition.filterOperator)) {
+						return null;
+					}
+
+					if (field.values.length > 0) {
+						const select = document.createElement("select");
+						select.className = "form-select form-select-sm w-auto flex-grow-1";
+						select.style.minWidth = "180px";
+						select.append(createOption("", valuePlaceholder, condition.value === ""));
+
+						for (const valueOption of field.values) {
+							select.append(createOption(valueOption.value, valueOption.label, valueOption.value === condition.value));
+						}
+
+						select.addEventListener("change", event => {
+							conditions[conditionIndex].value = event.target.value;
+							clearSelectedNamedFilter();
+							syncFilterState();
+						});
+
+						return select;
+					}
+
+					const input = document.createElement("input");
+					input.className = "form-control form-control-sm w-auto flex-grow-1";
+					input.style.minWidth = "180px";
+					input.placeholder = valuePlaceholder;
+					input.type = field.kind === "Number"
+						? "number"
+						: field.kind === "DateTime"
+							? "datetime-local"
+							: "text";
+					input.value = condition.value;
+					input.addEventListener("input", event => {
+						conditions[conditionIndex].value = event.target.value;
+						clearSelectedNamedFilter();
+						syncFilterState();
+					});
+
+					return input;
+				};
+
+				const renderConditionRow = (condition, conditionIndex) => {
+					const field = getField(condition.field);
+					if (!field) {
+						return null;
+					}
+
+					const row = document.createElement("div");
+					row.className = "border rounded px-3 py-2 border-light-subtle bg-white shadow-sm d-flex flex-wrap gap-2 align-items-center";
+
+					const fieldSelect = document.createElement("select");
+					fieldSelect.className = "form-select form-select-sm w-auto";
+					fieldSelect.style.minWidth = "180px";
+					for (const fieldOption of fields) {
+						fieldSelect.append(createOption(fieldOption.key, fieldOption.label, fieldOption.key === condition.field));
+					}
+					fieldSelect.addEventListener("change", event => {
+						conditions[conditionIndex].field = event.target.value;
+						conditions = normalizeConditions(conditions);
+						clearSelectedNamedFilter();
+						render();
+					});
+
+					const operatorSelect = document.createElement("select");
+					operatorSelect.className = "form-select form-select-sm w-auto";
+					operatorSelect.style.minWidth = "180px";
+					for (const operatorOption of field.operators) {
+						operatorSelect.append(createOption(operatorOption.value, operatorOption.label, operatorOption.value === condition.filterOperator));
+					}
+					operatorSelect.addEventListener("change", event => {
+						conditions[conditionIndex].filterOperator = event.target.value;
+						conditions = normalizeConditions(conditions);
+						clearSelectedNamedFilter();
+						render();
+					});
+
+					row.append(fieldSelect, operatorSelect);
+
+					const valueEditor = renderValueEditor(field, condition, conditionIndex);
+					if (valueEditor) {
+						row.append(valueEditor);
+					}
+
+					const removeButton = document.createElement("button");
+					removeButton.type = "button";
+					removeButton.className = "btn btn-link text-danger p-1 ms-auto text-decoration-none";
+					removeButton.textContent = "×";
+					removeButton.title = removeConditionLabel;
+					removeButton.addEventListener("click", () => {
+						conditions.splice(conditionIndex, 1);
+						clearSelectedNamedFilter();
+						render();
+					});
+
+					row.append(removeButton);
+					return row;
+				};
+
+				const render = () => {
+					conditions = normalizeConditions(conditions);
+					const rows = conditions
+						.map(renderConditionRow)
+						.filter(row => row !== null);
+
+					if (rows.length === 0) {
+						const emptyState = document.createElement("div");
+						emptyState.className = "small text-body-secondary border rounded px-3 py-2 bg-light";
+						emptyState.textContent = fieldPlaceholder;
+						conditionsContainer.replaceChildren(emptyState);
+					}
+					else {
+						conditionsContainer.replaceChildren(...rows);
+					}
+
+					syncFilterState();
+					updateActionStates();
+				};
+
+				addFilterConditionButton.addEventListener("click", () => {
+					if (fields.length === 0) {
+						return;
+					}
+
+					conditions.push({
+						field: newFilterFieldSelect.value || fields[0].key,
+						filterOperator: "",
+						value: ""
+					});
+					clearSelectedNamedFilter();
+					render();
+				});
+
+				applyNamedFilterButton.addEventListener("click", () => {
+					const namedFilter = namedFilters.find(savedFilter => savedFilter.name === namedFilterSelect.value);
+					if (!namedFilter) {
+						return;
+					}
+
+					conditions = normalizeConditions(namedFilter.conditions || []);
+					render();
+					form.requestSubmit();
+				});
+
+				clearCurrentFilterButton.addEventListener("click", () => {
+					conditions = [];
+					clearSelectedNamedFilter();
+					render();
+					form.requestSubmit();
+				});
+
+				namedFilterSelect.addEventListener("change", updateActionStates);
+				saveFilterNameInput.addEventListener("input", updateActionStates);
+
+				form.addEventListener("submit", () => {
+					syncFilterState();
+				});
+
+				if (!newFilterFieldSelect.value && fields.length > 0) {
+					newFilterFieldSelect.value = fields[0].key;
+				}
+
+				render();
+			})();
+		</script>
+
+		@await Html.PartialAsync("_TodoItemList", Model)
+	</div>
+</section>
+

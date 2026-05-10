@@ -62,7 +62,7 @@ Definition.IsOwnedType || Definition.IsArray
 				 ValueExpression="@(() => Model.<# entry.Field#>Id)">
 			@foreach (var value in _<# entry.ReferenceTypeLow#>s)
 			{
-				<option value="@value.Id">@value.<#cs Write(Definitions.First(e => e.Name == entry.ReferenceType).Entries.First().Field)#></option>
+				<option value="@value.Id">@value.DisplayText</option>
 			}
 		</InputSelect>
 <#else
@@ -133,7 +133,8 @@ Definition.IsOwnedType || Definition.IsArray
 		try
 		{
 <#for entry in Entries.Where(e => e.IsReference).DistinctBy(e => e.ReferenceType)
-#>			_<# entry.ReferenceTypeLow#>s = await <# entry.ReferenceType#>Service.GetItemsAsync();
+#>			var available<# entry.ReferenceType#>s = await <# entry.ReferenceType#>Service.GetItemsAsync();
+			_<# entry.ReferenceTypeLow#>s = [new <# entry.ReferenceType#>ListItemModel { Id = Guid.Empty }, .. available<# entry.ReferenceType#>s];
 <#end#>		}
 		catch (Exception ex)
 		{

@@ -1,0 +1,13 @@
+{
+    "profiles": {
+        "<# Project.Namespace#>.Htmx": {
+            "commandName": "Project",
+            "launchBrowser": true,
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "applicationUrl": "http://localhost:81"
+        }
+    }
+}
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

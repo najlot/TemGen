@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using <# Project.Namespace#>.Service.Features.Favorites;
+using <# Project.Namespace#>.Service.Features.Favorites.Persistence;
 using <# Project.Namespace#>.Service.Features.Filters;
 using <# Project.Namespace#>.Service.Features.Filters.Persistence;
 using <# Project.Namespace#>.Service.Features.History;
@@ -31,6 +33,7 @@ public static class FileRepositoryServiceCollectionExtensions
 		{
 			services.AddSingleton(configuration);
 			services.AddScoped<IUnitOfWork, FileUnitOfWork>();
+			services.RegisterFileFavoritePersistence();
 			services.RegisterFileFilterPersistence();
 			services.RegisterFileHistoryPersistence();
 			services.RegisterFileUserPersistence();
@@ -46,6 +49,7 @@ public static class FileRepositoryServiceCollectionExtensions
 
 		services.AddKeyedSingleton(serviceKey, configuration);
 		services.AddKeyedScoped<IUnitOfWork>(serviceKey, static (_, _) => new FileUnitOfWork());
+		services.RegisterFileFavoritePersistence(serviceKey);
 		services.RegisterFileFilterPersistence(serviceKey);
 		services.RegisterFileHistoryPersistence(serviceKey);
 		services.RegisterFileUserPersistence(serviceKey);

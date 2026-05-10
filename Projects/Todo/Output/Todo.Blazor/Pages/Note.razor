@@ -3,9 +3,10 @@
 @using Todo.Blazor.Identity;
 @using Todo.Blazor.Services;
 @using Todo.Client.Data;
+@using Todo.Client.Data.Favorites;
 @using Todo.Client.Data.Notes;@using Todo.Client.Localisation;
 @using Todo.Contracts.Notes;
-
+@using Todo.Contracts.Shared;
 @inject ILogger<Note> Log
 @inject Najlot.Map.IMap Map;
 @inject INoteService NoteService
@@ -53,6 +54,10 @@ else
 							Execute="_changeTracker.Redo" />
 				@if (!isNew)
 				{
+					<ToggleFavoriteButton TargetType="ItemType.Note"
+									  ItemId="@Model.Id"
+									  CanToggle="@(!isNew)" />
+
 					<IconButton Icon="history"
 								ButtonClass="btn btn-outline-secondary"
 								Execute="NavigateToHistory"
@@ -138,7 +143,7 @@ else
 			return;
 		}
 
-		NavigationManager.NavigateTo($"/history/{Model.Id}");
+		NavigationManager.NavigateTo($"/history/{Model.Id}?entityName=Note");
 	}
 
 	protected override async Task OnInitializedAsync()
@@ -187,7 +192,7 @@ else
 			{
 				await NoteService.AddItemAsync(Model);
 				Id = Model.Id;
-				NavigationManager.NavigateTo($"/note/{Model.Id}", false, true);
+				NavigationManager.NavigateTo($"/Note/{Model.Id}", false, true);
 				isNew = false;
 			}
 			else
@@ -225,7 +230,7 @@ else
 			}
 
 			_changeTracker.Clear();
-			NavigationManager.NavigateTo("/notes");
+			NavigationManager.NavigateTo("/Notes");
 		}
 		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{

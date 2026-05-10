@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Todo.Service.Features.Auth;
+using Todo.Service.Features.Favorites;
 using Todo.Service.Features.Filters;
 using Todo.Service.Features.GlobalSearch;
 using Todo.Service.Features.History;
@@ -18,6 +19,7 @@ public static class ServiceJsonSerializer
 	internal static IJsonTypeInfoResolver[] TypeInfoResolvers { get; } =
 	[
 		AuthSerializerContext.Default,
+		FavoritesSerializerContext.Default,
 		FiltersSerializerContext.Default,
 		GlobalSearchSerializerContext.Default,
 		HistorySerializerContext.Default,

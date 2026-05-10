@@ -117,12 +117,13 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-<#for entry in Entries
+<#for entry in (Definition.IsEnumeration ? new[] { "None" } : Array.Empty<string>())
+  .Concat(Entries
   .Select(e => e.Field)
   .Concat(Definition.IsArray || Definition.IsEnumeration
     ? []
-    : ["Create" + Definition.Name, "Edit" + Definition.Name, Definition.Name + "s"])
+    : ["Create" + Definition.Name, "Edit" + Definition.Name, Definition.Name + "s"]))
 #>  <data name="<#cs Write(entry)#>" xml:space="preserve">
-    <value><#cs Write(entry)#></value>
+    <value><#cs Write(entry == "None" ? "Nothing selected" : entry)#></value>
   </data>
 <#end#></root><#cs SetOutputPath(false)#>

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using <# Project.Namespace#>.Client.Data.History;
 using <# Project.Namespace#>.Client.Localisation;
@@ -66,8 +65,8 @@ public sealed class EntityHistoryViewModel : ViewModelBase, IParameterizable, IA
 		try
 		{
 			IsLoading = true;
-			var entries = await _historyService.GetItemsAsync(EntityId);
-			Items = entries.Select(HistoryListItemViewModel.Create).ToArray();
+			var entries = await _historyService.GetItemsAsync(EntityId, EntityName);
+			Items = Map.From<HistoryEntry>(entries).ToArray<HistoryListItemViewModel>();
 		}
 		catch (Exception ex)
 		{
@@ -78,24 +77,6 @@ public sealed class EntityHistoryViewModel : ViewModelBase, IParameterizable, IA
 		{
 			IsLoading = false;
 		}
-	}
-}
-
-public sealed class HistoryListItemViewModel
-{
-	public string Username { get; init; } = "-";
-	public string TimeStampText { get; init; } = string.Empty;
-	public HistoryChange[] Changes { get; init; } = [];
-	public int ChangeCount => Changes.Length;
-
-	public static HistoryListItemViewModel Create(HistoryEntry entry)
-	{
-		return new HistoryListItemViewModel
-		{
-			Username = string.IsNullOrWhiteSpace(entry.Username) ? "-" : entry.Username,
-			TimeStampText = entry.TimeStamp.ToLocalTime().ToString("g"),
-			Changes = entry.Changes
-		};
 	}
 }
 <#cs SetOutputPathAndSkipOtherDefinitions()#>

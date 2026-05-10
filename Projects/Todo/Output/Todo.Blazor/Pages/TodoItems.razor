@@ -4,6 +4,7 @@
 @using Todo.Blazor.Services
 @using Todo.Client.Data
 @using Todo.Client.Data.Filters
+@using Todo.Client.Data.Favorites
 @using Todo.Client.Data.TodoItems
 @using Todo.Client.Data.Users
 @using Todo.Client.Localisation
@@ -14,6 +15,7 @@
 @inject ILogger<TodoItems> Log
 @inject Najlot.Map.IMap Map
 @inject ITodoItemService TodoItemService
+@inject IFavoriteService FavoriteService
 @inject IUserService UserService
 @inject NavigationManager NavigationManager
 
@@ -45,6 +47,9 @@
 				<table class="table table-hover align-middle mb-0">
 					<thead class="table-light">
 						<tr>
+							<th class="text-center" style="width: 1%;">
+								<span class="material-symbols-sharp text-warning" title="Favorite" aria-label="Favorite">star</span>
+							</th>
 							<th>@TodoItemLoc.Title</th>
 							<th>@TodoItemLoc.Content</th>
 							<th class="text-end">@CommonLoc.Edit</th>
@@ -54,6 +59,12 @@
 						@foreach (var todoItem in todoItems)
 						{
 							<tr scope="row">
+								<td class="text-center">
+									@if (IsFavorite(todoItem.Id))
+									{
+										<span class="material-symbols-sharp text-warning" title="Favorite" aria-label="Favorite">star</span>
+									}
+								</td>
 								<td class="text-break">@todoItem.Title.Truncate(75)</td>
 								<td class="text-break">@todoItem.Content.Truncate(75)</td>
 								<td class="text-end"><a href="/TodoItem/@todoItem.Id" class="btn btn-outline-primary btn-sm">@CommonLoc.Edit</a></td>
@@ -72,6 +83,7 @@
 
 	private EntityFilterEditor? filterEditor;
 	private List<TodoItemListItemModel>? todoItems;
+	private HashSet<Guid> _favoriteIds = [];
 	private IReadOnlyList<FilterFieldOption> availableFilterFields = [];
 	private bool isLoading;
 	private EntityFilter? _lastFilter;
@@ -86,8 +98,12 @@
 			TodoItemService.ItemCreated += Handle;
 			TodoItemService.ItemUpdated += Handle;
 			TodoItemService.ItemDeleted += Handle;
+			FavoriteService.ItemCreated += HandleFavoriteCreated;
+			FavoriteService.ItemDeleted += HandleFavoriteDeleted;
 
-			await TodoItemService.StartEventListener();
+			await Task.WhenAll(
+				TodoItemService.StartEventListener(),
+				FavoriteService.StartEventListener());
 		}
 		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
@@ -122,9 +138,16 @@
 			isLoading = true;
 			_lastFilter = filter;
 
-			todoItems = filter.Conditions.Count == 0
-				? [.. await TodoItemService.GetItemsAsync().ConfigureAwait(false)]
-				: [.. await TodoItemService.GetItemsAsync(filter).ConfigureAwait(false)];
+			var itemsTask = filter.Conditions.Count == 0
+				? TodoItemService.GetItemsAsync()
+				: TodoItemService.GetItemsAsync(filter);
+			var favoritesTask = FavoriteService.GetItemsAsync(ItemType.TodoItem);
+
+			var items = await itemsTask.ConfigureAwait(false);
+			var favorites = await favoritesTask.ConfigureAwait(false);
+
+			todoItems = [.. items];
+			_favoriteIds = [.. favorites.Select(item => item.ItemId)];
 		}
 		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
@@ -143,6 +166,9 @@
 
 		await InvokeAsync(StateHasChanged);
 	}
+
+	private bool IsFavorite(Guid itemId)
+		=> _favoriteIds.Contains(itemId);
 
 	private IReadOnlyList<FilterFieldOption> BuildFilterFieldOptions(UserListItemModel[] users)
 	{
@@ -189,7 +215,7 @@
 				Values = [.. users.Select(item => new FilterValueOption
 				{
 					Value = item.Id.ToString(),
-					Label = Convert.ToString(item.Username) ?? CommonLoc.Untitled,
+					Label = item.DisplayText,
 				})],
 			},
 			new FilterFieldOption
@@ -201,7 +227,7 @@
 				Values = [.. Enum.GetValues<TodoItemStatus>().Select(value => new FilterValueOption
 				{
 					Value = value.ToString(),
-					Label = value.ToString(),
+					Label = value == TodoItemStatus.None ? CommonLoc.NothingSelected : value.ToString(),
 				})],
 			},
 			new FilterFieldOption
@@ -281,10 +307,36 @@
 		await InvokeAsync(StateHasChanged);
 	}
 
+	private async Task HandleFavoriteCreated(object? sender, Todo.Contracts.Favorites.FavoriteCreated message)
+	{
+		if (message.TargetType != ItemType.TodoItem)
+		{
+			return;
+		}
+
+		_favoriteIds.Add(message.ItemId);
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private async Task HandleFavoriteDeleted(object? sender, Todo.Contracts.Favorites.FavoriteDeleted message)
+	{
+		if (message.TargetType != ItemType.TodoItem)
+		{
+			return;
+		}
+
+		_favoriteIds.Remove(message.ItemId);
+
+		await InvokeAsync(StateHasChanged);
+	}
+
 	public void Dispose()
 	{
 		TodoItemService.ItemCreated -= Handle;
 		TodoItemService.ItemUpdated -= Handle;
 		TodoItemService.ItemDeleted -= Handle;
+		FavoriteService.ItemCreated -= HandleFavoriteCreated;
+		FavoriteService.ItemDeleted -= HandleFavoriteDeleted;
 	}
 }
