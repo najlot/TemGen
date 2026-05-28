@@ -5,11 +5,11 @@
 
 @if (!Model.IsLoaded)
 {
-	<div class="alert alert-light border mb-0">@GlobalSearchLoc.SearchPrompt</div>
+	<div class="alert border bg-body-tertiary text-body mb-0">@GlobalSearchLoc.SearchPrompt</div>
 }
 else if (Model.Items.Count == 0)
 {
-	<div class="alert alert-light border mb-0">@GlobalSearchLoc.NoResults</div>
+	<div class="alert border bg-body-tertiary text-body mb-0">@GlobalSearchLoc.NoResults</div>
 }
 else
 {

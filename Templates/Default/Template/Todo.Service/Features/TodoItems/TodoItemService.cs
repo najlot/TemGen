@@ -18,6 +18,7 @@ public class <# Definition.Name#>Service(
 	HistoryService historyService,
 	IPublisher publisher,
 	IMap map,
+	IUserIdProvider userIdProvider,
 	IPermissionQueryFilter permissionQueryFilter)
 {
 	private static readonly HashSet<string> FilterableProperties = new(StringComparer.Ordinal)
@@ -31,6 +32,8 @@ public class <# Definition.Name#>Service(
 		var item = new <# Definition.Name#>Model();
 		var snapshot = historyService.CreateSnapshot(item);
 		map.From(command).To(item);
+		item.CreatedAt = DateTime.UtcNow;
+		item.CreatedBy = userIdProvider.GetRequiredUserId();
 
 		await <# Definition.NameLow#>Repository.Insert(item).ConfigureAwait(false);
 		await historyService.WriteChangesAsync(item.Id, snapshot).ConfigureAwait(false);

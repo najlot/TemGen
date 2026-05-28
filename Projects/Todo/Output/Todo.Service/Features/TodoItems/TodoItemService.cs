@@ -18,18 +18,16 @@ public class TodoItemService(
 	HistoryService historyService,
 	IPublisher publisher,
 	IMap map,
+	IUserIdProvider userIdProvider,
 	IPermissionQueryFilter permissionQueryFilter)
 {
 	private static readonly HashSet<string> FilterableProperties = new(StringComparer.Ordinal)
 	{
 		nameof(TodoItemModel.Title),
 		nameof(TodoItemModel.Content),
-		nameof(TodoItemModel.CreatedAt),
-		nameof(TodoItemModel.CreatedBy),
 		nameof(TodoItemModel.AssignedToId),
 		nameof(TodoItemModel.Status),
-		nameof(TodoItemModel.ChangedAt),
-		nameof(TodoItemModel.ChangedBy),
+		nameof(TodoItemModel.DueDate),
 		nameof(TodoItemModel.Priority),
 	};
 
@@ -38,6 +36,8 @@ public class TodoItemService(
 		var item = new TodoItemModel();
 		var snapshot = historyService.CreateSnapshot(item);
 		map.From(command).To(item);
+		item.CreatedAt = DateTime.UtcNow;
+		item.CreatedBy = userIdProvider.GetRequiredUserId();
 
 		await todoItemRepository.Insert(item).ConfigureAwait(false);
 		await historyService.WriteChangesAsync(item.Id, snapshot).ConfigureAwait(false);

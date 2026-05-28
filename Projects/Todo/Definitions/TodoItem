@@ -1,10 +1,7 @@
 string Title
 string Content
-DateTime CreatedAt
-string CreatedBy
 UserId AssignedTo
 TodoItemStatus Status
-DateTime ChangedAt
-string ChangedBy
+DateTime DueDate
 string Priority
 ChecklistTask[] Checklist

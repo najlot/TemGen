@@ -13,9 +13,13 @@ internal partial class NoteMappings
 	public static partial void MapToUpdated(IMap map, NoteModel from, NoteUpdated to);
 
 	[MapIgnoreProperty(nameof(to.DeletedAt))]
+	[MapIgnoreProperty(nameof(to.CreatedAt))]
+	[MapIgnoreProperty(nameof(to.CreatedBy))]
 	public static partial void MapToModel(IMap map, CreateNote from, NoteModel to);
 
 	[MapIgnoreProperty(nameof(to.DeletedAt))]
+	[MapIgnoreProperty(nameof(to.CreatedAt))]
+	[MapIgnoreProperty(nameof(to.CreatedBy))]
 	public static partial void MapToModel(IMap map, UpdateNote from, NoteModel to);
 
 	public static partial void MapToModel(IMap map, NoteModel from, Note to);

@@ -70,24 +70,6 @@ namespace Todo.Client.Localisation {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ChangedAt:.
-        /// </summary>
-        public static string ChangedAt {
-            get {
-                return ResourceManager.GetString("ChangedAt", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to ChangedBy:.
-        /// </summary>
-        public static string ChangedBy {
-            get {
-                return ResourceManager.GetString("ChangedBy", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Checklist:.
         /// </summary>
         public static string Checklist {
@@ -106,29 +88,20 @@ namespace Todo.Client.Localisation {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CreatedAt:.
-        /// </summary>
-        public static string CreatedAt {
-            get {
-                return ResourceManager.GetString("CreatedAt", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to CreatedBy:.
-        /// </summary>
-        public static string CreatedBy {
-            get {
-                return ResourceManager.GetString("CreatedBy", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to CreateTodoItem:.
         /// </summary>
         public static string CreateTodoItem {
             get {
                 return ResourceManager.GetString("CreateTodoItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DueDate:.
+        /// </summary>
+        public static string DueDate {
+            get {
+                return ResourceManager.GetString("DueDate", resourceCulture);
             }
         }
         

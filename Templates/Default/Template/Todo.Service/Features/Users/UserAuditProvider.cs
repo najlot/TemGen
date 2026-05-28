@@ -8,6 +8,7 @@ internal partial class UserAuditProvider
 {
 	[AuditIgnore(nameof(model.Id))]
 	[AuditIgnore(nameof(model.PasswordHash))]
+	[AuditIgnore(nameof(model.CreatedAt))]
 	[AuditIgnore(nameof(model.DeletedAt))]
 	[PostAudit(nameof(PostGetPropertyValues))]
 	public static partial IEnumerable<PropertyValue> GetPropertyValues(UserModel model);

@@ -123,23 +123,14 @@
   <data name="Content" xml:space="preserve">
     <value>Content</value>
   </data>
-  <data name="CreatedAt" xml:space="preserve">
-    <value>CreatedAt</value>
-  </data>
-  <data name="CreatedBy" xml:space="preserve">
-    <value>CreatedBy</value>
-  </data>
   <data name="AssignedTo" xml:space="preserve">
     <value>AssignedTo</value>
   </data>
   <data name="Status" xml:space="preserve">
     <value>Status</value>
   </data>
-  <data name="ChangedAt" xml:space="preserve">
-    <value>ChangedAt</value>
-  </data>
-  <data name="ChangedBy" xml:space="preserve">
-    <value>ChangedBy</value>
+  <data name="DueDate" xml:space="preserve">
+    <value>DueDate</value>
   </data>
   <data name="Priority" xml:space="preserve">
     <value>Priority</value>

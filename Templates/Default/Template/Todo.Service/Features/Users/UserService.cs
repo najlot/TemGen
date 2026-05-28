@@ -35,6 +35,7 @@ public class UserService(
 		var item = new UserModel();
 		var snapshot = historyService.CreateSnapshot(item);
 		map.From(command).To(item);
+		item.CreatedAt = DateTime.UtcNow;
 		item.Username = username;
 		item.PasswordHash = passwordHash;
 		await userRepository.Insert(item).ConfigureAwait(false);

@@ -1,4 +1,5 @@
 @page "/<#cs Write(Definition.Name)#>/{id:guid}"
+@using Microsoft.AspNetCore.Components.Routing;
 @using Microsoft.Extensions.Localization;
 @using <# Project.Namespace#>.Blazor.Identity;
 @using <# Project.Namespace#>.Blazor.Services;
@@ -198,7 +199,7 @@ else
 				</div>
 				<div class="table-responsive">
 					<table class="table table-striped align-middle mb-0">
-						<thead class="table-light">
+						<thead class="bg-body-tertiary">
 							<tr>
 <#for e in Definitions.First(definition => definition.Name == entry.EntryType).Entries
 #>								<th>@<# entry.EntryType#>Loc.<# e.Field#></th>
@@ -258,6 +259,7 @@ else
 		</EditForm>
 	</section>
 
+	<SaveConfirmationDialog @ref="_saveConfirmationDialog" />
 	<DeleteConfirmationDialog @bind-IsVisible="isDeleteRequested" Remove="Remove" />
 }
 
@@ -272,6 +274,10 @@ else
 	private bool isDeleteRequested = false;
 	private <# Definition.Name#>Model? Model;
 	private readonly ChangeTracker _changeTracker = new();
+	private SaveConfirmationDialog? _saveConfirmationDialog;
+	private IDisposable? _locationChangingRegistration;
+	private bool _ignoreLocationChanging;
+	private bool _isSaveConfirmationVisible;
 
 <#for entry in Entries
 	.Where(e => e.IsReference)
@@ -290,6 +296,68 @@ else
 		}
 
 		NavigationManager.NavigateTo($"/history/{Model.Id}?entityName=<# Definition.Name#>");
+	}
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+		{
+			_locationChangingRegistration = NavigationManager.RegisterLocationChangingHandler(HandleLocationChangingAsync);
+		}
+	}
+
+	private async ValueTask HandleLocationChangingAsync(LocationChangingContext context)
+	{
+		if (_ignoreLocationChanging)
+		{
+			_ignoreLocationChanging = false;
+			return;
+		}
+
+		if (!await CanNavigateAsync())
+		{
+			context.PreventNavigation();
+		}
+	}
+
+	private async Task<bool> CanNavigateAsync()
+	{
+		if (_isSaveConfirmationVisible || isDeleteRequested)
+		{
+			return false;
+		}
+
+		if (!_changeTracker.HasChanges || _saveConfirmationDialog is null)
+		{
+			return true;
+		}
+
+		_isSaveConfirmationVisible = true;
+
+		try
+		{
+			var saveDialogResult = await _saveConfirmationDialog.ShouldSave();
+
+			switch (saveDialogResult)
+			{
+				case SaveConfirmationDialog.SaveDialogResult.Save:
+					return await TrySaveAsync(navigateAfterCreate: false);
+				case SaveConfirmationDialog.SaveDialogResult.Discard:
+					return true;
+				default:
+					return false;
+			}
+		}
+		finally
+		{
+			_isSaveConfirmationVisible = false;
+		}
+	}
+
+	private void NavigateWithoutSaveConfirmation(string url, bool forceLoad = false, bool replace = false)
+	{
+		_ignoreLocationChanging = true;
+		NavigationManager.NavigateTo(url, forceLoad, replace);
 	}
 
 	protected override async Task OnInitializedAsync()
@@ -324,7 +392,7 @@ else
 		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
-			NavigationManager.NavigateTo(url);
+			NavigateWithoutSaveConfirmation(url);
 		}
 		catch (Exception ex)
 		{
@@ -333,12 +401,14 @@ else
 		}
 	}
 
-	private async Task Save()
+	private Task Save() => TrySaveAsync();
+
+	private async Task<bool> TrySaveAsync(bool navigateAfterCreate = true)
 	{
 		if (Model is null)
 		{
 			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorModelIsNullReload);
-			return;
+			return false;
 		}
 
 		try
@@ -347,26 +417,34 @@ else
 			{
 				await <# Definition.Name#>Service.AddItemAsync(Model);
 				Id = Model.Id;
-				NavigationManager.NavigateTo($"/<# Definition.Name#>/{Model.Id}", false, true);
 				isNew = false;
+				_changeTracker.Clear();
+
+				if (navigateAfterCreate)
+				{
+					NavigateWithoutSaveConfirmation($"/<# Definition.Name#>/{Model.Id}", false, true);
+				}
 			}
 			else
 			{
 				await <# Definition.Name#>Service.UpdateItemAsync(Model);
+				_changeTracker.Clear();
 			}
 
-			_changeTracker.Clear();
+			return true;
 		}
 		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
-			NavigationManager.NavigateTo(url);
+			NavigateWithoutSaveConfirmation(url);
 		}
 		catch (Exception ex)
 		{
 			Log.LogError(ex, "Error saving <# Definition.Name#>.");
 			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotSave);
 		}
+
+		return false;
 	}
 
 	private async Task Remove()
@@ -385,12 +463,12 @@ else
 			}
 
 			_changeTracker.Clear();
-			NavigationManager.NavigateTo("/<# Definition.Name#>s");
+			NavigateWithoutSaveConfirmation("/<# Definition.Name#>s");
 		}
 		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
-			NavigationManager.NavigateTo(url);
+			NavigateWithoutSaveConfirmation(url);
 		}
 		catch (Exception ex)
 		{
@@ -465,6 +543,7 @@ else
 	public void Dispose()
 	{
 		<# Definition.Name#>Service.ItemUpdated -= Handle;
+		_locationChangingRegistration?.Dispose();
 	}
 }
 <#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

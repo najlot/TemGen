@@ -20,7 +20,7 @@ TemGen is a powerful template-based code generator that processes templates with
 
 ## Features
 
-- **Multi-language scripting support**: Embed C#, JavaScript, Python, or Lua scripts in templates
+- **Multi-language scripting support**: Embed C# (Roslyn), JavaScript (Jint), Python (IronPython), or Lua (MoonSharp) scripts in templates
 - **Definition-based generation**: Define your data models in simple text files
 - **Full project generation**: Generate complete application structures including:
   - Service backends

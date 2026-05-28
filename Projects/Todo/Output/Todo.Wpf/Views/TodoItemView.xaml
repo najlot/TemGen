@@ -65,17 +65,6 @@
 						<TextBox Text="{Binding Content}" />
 					</StackPanel>
 					<StackPanel Margin="5">
-						<Label Margin="0,0,0,4" Padding="0" Content="{x:Static loc:TodoItemLoc.CreatedAt}" />
-					<StackPanel Orientation="Horizontal">
-						<DatePicker SelectedDate="{Binding CreatedAtDate, Converter={x:Static converter:DateTimeOffsetToDateTimeConverter.Instance}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-						<TextBox Width="64" Margin="8,0,0,0" VerticalContentAlignment="Center" ToolTip="HH:mm" Text="{Binding CreatedAtTime, Converter={x:Static converter:NullableTimeSpanConverter.Instance}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-					</StackPanel>
-					</StackPanel>
-					<StackPanel Margin="5">
-						<Label Margin="0,0,0,4" Padding="0" Content="{x:Static loc:TodoItemLoc.CreatedBy}" />
-						<TextBox Text="{Binding CreatedBy}" />
-					</StackPanel>
-					<StackPanel Margin="5">
 						<Label Margin="0,0,0,4" Padding="0" Content="{x:Static loc:TodoItemLoc.AssignedTo}" />
 						<ComboBox ItemsSource="{Binding AvailableUsers}" SelectedValue="{Binding AssignedToId}" SelectedValuePath="Id" DisplayMemberPath="DisplayText" />
 					</StackPanel>
@@ -85,15 +74,11 @@
 								  SelectedItem="{Binding Status, Converter={x:Static converter:EnumToTranslationConverter.Instance}, ConverterParameter={x:Type loc:TodoItemStatusLoc}}" />
 					</StackPanel>
 					<StackPanel Margin="5">
-						<Label Margin="0,0,0,4" Padding="0" Content="{x:Static loc:TodoItemLoc.ChangedAt}" />
+						<Label Margin="0,0,0,4" Padding="0" Content="{x:Static loc:TodoItemLoc.DueDate}" />
 					<StackPanel Orientation="Horizontal">
-						<DatePicker SelectedDate="{Binding ChangedAtDate, Converter={x:Static converter:DateTimeOffsetToDateTimeConverter.Instance}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-						<TextBox Width="64" Margin="8,0,0,0" VerticalContentAlignment="Center" ToolTip="HH:mm" Text="{Binding ChangedAtTime, Converter={x:Static converter:NullableTimeSpanConverter.Instance}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+						<DatePicker SelectedDate="{Binding DueDateDate, Converter={x:Static converter:DateTimeOffsetToDateTimeConverter.Instance}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+						<TextBox Width="64" Margin="8,0,0,0" VerticalContentAlignment="Center" ToolTip="HH:mm" Text="{Binding DueDateTime, Converter={x:Static converter:NullableTimeSpanConverter.Instance}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 					</StackPanel>
-					</StackPanel>
-					<StackPanel Margin="5">
-						<Label Margin="0,0,0,4" Padding="0" Content="{x:Static loc:TodoItemLoc.ChangedBy}" />
-						<TextBox Text="{Binding ChangedBy}" />
 					</StackPanel>
 					<StackPanel Margin="5">
 						<Label Margin="0,0,0,4" Padding="0" Content="{x:Static loc:TodoItemLoc.Priority}" />

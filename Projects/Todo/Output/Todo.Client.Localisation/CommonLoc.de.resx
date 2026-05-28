@@ -126,6 +126,9 @@
   <data name="Deleted" xml:space="preserve">
     <value>Gelöscht</value>
   </data>
+  <data name="DarkMode" xml:space="preserve">
+    <value>Dunkler Modus</value>
+  </data>
   <data name="DeleteConfirmationDescription" xml:space="preserve">
     <value>Möchten Sie dieses Element wirklich löschen?</value>
   </data>
@@ -164,6 +167,9 @@
   </data>
   <data name="Loading" xml:space="preserve">
     <value>Wird geladen</value>
+  </data>
+  <data name="LightMode" xml:space="preserve">
+    <value>Heller Modus</value>
   </data>
   <data name="Navigation" xml:space="preserve">
     <value>Navigation</value>

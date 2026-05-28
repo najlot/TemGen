@@ -14,6 +14,8 @@ internal partial class <# Definition.Name#>Mappings
 
 <#if Entries.Any(e => e.IsArray)
 #>	[MapIgnoreProperty(nameof(to.DeletedAt))]
+	[MapIgnoreProperty(nameof(to.CreatedAt))]
+	[MapIgnoreProperty(nameof(to.CreatedBy))]
 <#for entry in Entries.Where(e => e.IsArray)
 #>	[MapIgnoreProperty(nameof(to.<# entry.Field#>))]
 <#end#>	[PostMap(nameof(PostMapToModel))]
@@ -25,6 +27,8 @@ internal partial class <# Definition.Name#>Mappings
 <#end#>	}
 
 	[MapIgnoreProperty(nameof(to.DeletedAt))]
+	[MapIgnoreProperty(nameof(to.CreatedAt))]
+	[MapIgnoreProperty(nameof(to.CreatedBy))]
 <#for entry in Entries.Where(e => e.IsArray)
 #>	[MapIgnoreProperty(nameof(to.<# entry.Field#>))]
 <#end#>	[PostMap(nameof(PostMapToModel))]
@@ -36,9 +40,13 @@ internal partial class <# Definition.Name#>Mappings
 #>		to.<# entry.Field#> = map.From<<# entry.EntryType#>>(from.<# entry.Field#>).ToList(to.<# entry.Field#>);
 <#end#>	}
 <#else#>	[MapIgnoreProperty(nameof(to.DeletedAt))]
+	[MapIgnoreProperty(nameof(to.CreatedAt))]
+	[MapIgnoreProperty(nameof(to.CreatedBy))]
 	public static partial void MapToModel(IMap map, Create<# Definition.Name#> from, <# Definition.Name#>Model to);
 
 	[MapIgnoreProperty(nameof(to.DeletedAt))]
+	[MapIgnoreProperty(nameof(to.CreatedAt))]
+	[MapIgnoreProperty(nameof(to.CreatedBy))]
 	public static partial void MapToModel(IMap map, Update<# Definition.Name#> from, <# Definition.Name#>Model to);
 <#end#>
 	public static partial void MapToModel(IMap map, <# Definition.Name#>Model from, <# Definition.Name#> to);

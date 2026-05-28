@@ -113,6 +113,7 @@
     "Todo.Blazor/Shared/NavMenu.razor.css",
     "Todo.Blazor/Shared/RedirectToLogin.razor",
     "Todo.Blazor/Shared/SaveConfirmationDialog.razor",
+    "Todo.Blazor/Shared/ThemeToggle.razor",
     "Todo.Blazor/Shared/ToggleFavoriteButton.razor",
     "Todo.Blazor/Todo.Blazor.csproj",
     "Todo.Blazor/_Imports.razor",

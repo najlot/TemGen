@@ -90,8 +90,6 @@ public sealed class TodoItemService(
 			Id = Guid.NewGuid(),
 			Title = string.Empty,
 			Content = string.Empty,
-			CreatedBy = string.Empty,
-			ChangedBy = string.Empty,
 			Priority = string.Empty,
 			Checklist = []
 		};

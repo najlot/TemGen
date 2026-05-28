@@ -9,6 +9,8 @@ internal partial class NoteAuditProvider
 {
 	[AuditIgnore(nameof(model.Id))]
 	[AuditIgnore(nameof(model.DeletedAt))]
+	[AuditIgnore(nameof(model.CreatedAt))]
+	[AuditIgnore(nameof(model.CreatedBy))]
 	[PostAudit(nameof(PostGetPropertyValues))]
 	public static partial IEnumerable<PropertyValue> GetPropertyValues(NoteModel model);
 

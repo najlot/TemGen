@@ -95,6 +95,15 @@ namespace <# Project.Namespace#>.Client.Localisation {
                 return ResourceManager.GetString("ChangesRecorded", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Dark mode.
+        /// </summary>
+        public static string DarkMode {
+            get {
+                return ResourceManager.GetString("DarkMode", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Delete.
@@ -201,6 +210,15 @@ namespace <# Project.Namespace#>.Client.Localisation {
         public static string Loading {
             get {
                 return ResourceManager.GetString("Loading", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Light mode.
+        /// </summary>
+        public static string LightMode {
+            get {
+                return ResourceManager.GetString("LightMode", resourceCulture);
             }
         }
         

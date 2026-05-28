@@ -12,6 +12,12 @@
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design"
 			PrivateAssets="all"
 			ReferenceOutputAssembly="false" />
+		<PackageReference Include="NuGet.Packaging"
+			PrivateAssets="all"
+			ReferenceOutputAssembly="false" />
+		<PackageReference Include="NuGet.Protocol"
+			PrivateAssets="all"
+			ReferenceOutputAssembly="false" />
 		<PackageReference Include="Najlot.Log.Configuration.FileSource" />
 		<PackageReference Include="Najlot.Log.Extensions.Logging" />
 	</ItemGroup>

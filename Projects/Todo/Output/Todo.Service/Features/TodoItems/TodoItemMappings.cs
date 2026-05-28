@@ -13,6 +13,8 @@ internal partial class TodoItemMappings
 	public static partial void MapToUpdated(IMap map, TodoItemModel from, TodoItemUpdated to);
 
 	[MapIgnoreProperty(nameof(to.DeletedAt))]
+	[MapIgnoreProperty(nameof(to.CreatedAt))]
+	[MapIgnoreProperty(nameof(to.CreatedBy))]
 	[MapIgnoreProperty(nameof(to.Checklist))]
 	[PostMap(nameof(PostMapToModel))]
 	public static partial void MapToModel(IMap map, CreateTodoItem from, TodoItemModel to);
@@ -22,6 +24,8 @@ internal partial class TodoItemMappings
 	}
 
 	[MapIgnoreProperty(nameof(to.DeletedAt))]
+	[MapIgnoreProperty(nameof(to.CreatedAt))]
+	[MapIgnoreProperty(nameof(to.CreatedBy))]
 	[MapIgnoreProperty(nameof(to.Checklist))]
 	[PostMap(nameof(PostMapToModel))]
 	public static partial void MapToModel(IMap map, UpdateTodoItem from, TodoItemModel to);

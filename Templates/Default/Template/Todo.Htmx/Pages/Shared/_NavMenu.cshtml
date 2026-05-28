@@ -1,6 +1,6 @@
 @using <# Project.Namespace#>.Client.Localisation
 
-<nav class="navbar navbar-expand-lg bg-primary shadow-sm sticky-top" data-bs-theme="dark">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
 	<div class="container-fluid px-3 px-md-4">
 		<a class="navbar-brand" href="/"><# Project.Namespace#></a>
 		<button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="@CommonLoc.Navigation">
@@ -24,10 +24,10 @@
 					   aria-expanded="false">@<# definition.Name#>Loc.<#cs Write(definition.Name)#>s</a>
 					<ul class="dropdown-menu shadow border-0">
 						<li>
-							<a class="dropdown-item@(Context.Request.Path.StartsWithSegments("/<# definition.Name#>s") ? " active" : "")" href="/<#cs Write(definition.Name.ToLowerInvariant())#>/@Guid.Empty">@<# definition.Name#>Loc.Create<#cs Write(definition.Name)#></a>
+							<a class="dropdown-item@(Context.Request.Path.StartsWithSegments("/<#cs Write(definition.Name.ToLowerInvariant())#>") ? " dropdown-item-active" : "")" href="/<#cs Write(definition.Name.ToLowerInvariant())#>/@Guid.Empty">@<# definition.Name#>Loc.Create<#cs Write(definition.Name)#></a>
 						</li>
 						<li>
-							<a class="dropdown-item@(Context.Request.Path.StartsWithSegments("/<# definition.Name#>s") ? " active" : "")" href="/<# definition.Name#>s">@<# definition.Name#>Loc.<#cs Write(definition.Name)#>s</a>
+							<a class="dropdown-item@(Context.Request.Path.StartsWithSegments("/<# definition.Name#>s") ? " dropdown-item-active" : "")" href="/<# definition.Name#>s">@<# definition.Name#>Loc.<#cs Write(definition.Name)#>s</a>
 						</li>
 					</ul>
 				</li>

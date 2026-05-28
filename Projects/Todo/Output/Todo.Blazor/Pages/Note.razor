@@ -1,4 +1,5 @@
 @page "/Note/{id:guid}"
+@using Microsoft.AspNetCore.Components.Routing;
 @using Microsoft.Extensions.Localization;
 @using Todo.Blazor.Identity;
 @using Todo.Blazor.Services;
@@ -120,6 +121,7 @@ else
 		</EditForm>
 	</section>
 
+	<SaveConfirmationDialog @ref="_saveConfirmationDialog" />
 	<DeleteConfirmationDialog @bind-IsVisible="isDeleteRequested" Remove="Remove" />
 }
 
@@ -134,6 +136,10 @@ else
 	private bool isDeleteRequested = false;
 	private NoteModel? Model;
 	private readonly ChangeTracker _changeTracker = new();
+	private SaveConfirmationDialog? _saveConfirmationDialog;
+	private IDisposable? _locationChangingRegistration;
+	private bool _ignoreLocationChanging;
+	private bool _isSaveConfirmationVisible;
 
 
 	private void NavigateToHistory()
@@ -144,6 +150,68 @@ else
 		}
 
 		NavigationManager.NavigateTo($"/history/{Model.Id}?entityName=Note");
+	}
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+		{
+			_locationChangingRegistration = NavigationManager.RegisterLocationChangingHandler(HandleLocationChangingAsync);
+		}
+	}
+
+	private async ValueTask HandleLocationChangingAsync(LocationChangingContext context)
+	{
+		if (_ignoreLocationChanging)
+		{
+			_ignoreLocationChanging = false;
+			return;
+		}
+
+		if (!await CanNavigateAsync())
+		{
+			context.PreventNavigation();
+		}
+	}
+
+	private async Task<bool> CanNavigateAsync()
+	{
+		if (_isSaveConfirmationVisible || isDeleteRequested)
+		{
+			return false;
+		}
+
+		if (!_changeTracker.HasChanges || _saveConfirmationDialog is null)
+		{
+			return true;
+		}
+
+		_isSaveConfirmationVisible = true;
+
+		try
+		{
+			var saveDialogResult = await _saveConfirmationDialog.ShouldSave();
+
+			switch (saveDialogResult)
+			{
+				case SaveConfirmationDialog.SaveDialogResult.Save:
+					return await TrySaveAsync(navigateAfterCreate: false);
+				case SaveConfirmationDialog.SaveDialogResult.Discard:
+					return true;
+				default:
+					return false;
+			}
+		}
+		finally
+		{
+			_isSaveConfirmationVisible = false;
+		}
+	}
+
+	private void NavigateWithoutSaveConfirmation(string url, bool forceLoad = false, bool replace = false)
+	{
+		_ignoreLocationChanging = true;
+		NavigationManager.NavigateTo(url, forceLoad, replace);
 	}
 
 	protected override async Task OnInitializedAsync()
@@ -169,7 +237,7 @@ else
 		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
-			NavigationManager.NavigateTo(url);
+			NavigateWithoutSaveConfirmation(url);
 		}
 		catch (Exception ex)
 		{
@@ -178,12 +246,14 @@ else
 		}
 	}
 
-	private async Task Save()
+	private Task Save() => TrySaveAsync();
+
+	private async Task<bool> TrySaveAsync(bool navigateAfterCreate = true)
 	{
 		if (Model is null)
 		{
 			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorModelIsNullReload);
-			return;
+			return false;
 		}
 
 		try
@@ -192,26 +262,34 @@ else
 			{
 				await NoteService.AddItemAsync(Model);
 				Id = Model.Id;
-				NavigationManager.NavigateTo($"/Note/{Model.Id}", false, true);
 				isNew = false;
+				_changeTracker.Clear();
+
+				if (navigateAfterCreate)
+				{
+					NavigateWithoutSaveConfirmation($"/Note/{Model.Id}", false, true);
+				}
 			}
 			else
 			{
 				await NoteService.UpdateItemAsync(Model);
+				_changeTracker.Clear();
 			}
 
-			_changeTracker.Clear();
+			return true;
 		}
 		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
-			NavigationManager.NavigateTo(url);
+			NavigateWithoutSaveConfirmation(url);
 		}
 		catch (Exception ex)
 		{
 			Log.LogError(ex, "Error saving Note.");
 			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotSave);
 		}
+
+		return false;
 	}
 
 	private async Task Remove()
@@ -230,12 +308,12 @@ else
 			}
 
 			_changeTracker.Clear();
-			NavigationManager.NavigateTo("/Notes");
+			NavigateWithoutSaveConfirmation("/Notes");
 		}
 		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
-			NavigationManager.NavigateTo(url);
+			NavigateWithoutSaveConfirmation(url);
 		}
 		catch (Exception ex)
 		{
@@ -260,5 +338,6 @@ else
 	public void Dispose()
 	{
 		NoteService.ItemUpdated -= Handle;
+		_locationChangingRegistration?.Dispose();
 	}
 }

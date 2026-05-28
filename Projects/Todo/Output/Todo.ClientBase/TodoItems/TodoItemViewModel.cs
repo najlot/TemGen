@@ -30,65 +30,24 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 	}
 	public string Title { get; set => Set(ref field, value); } = string.Empty;
 	public string Content { get; set => Set(ref field, value); } = string.Empty;
-
-	public DateTime CreatedAt
-	{
-		get;
-		set
-		{
-			if (Set(ref field, value))
-			{
-				RaisePropertiesChanged(nameof(CreatedAtDate), nameof(CreatedAtTime));
-			}
-		}
-	}
-
-	public DateTimeOffset? CreatedAtDate
-	{
-		get => ToDateTimeOffset(CreatedAt);
-		set
-		{
-			if (value is null)
-			{
-				return;
-			}
-
-			CreatedAt = CombineDateAndTime(value.Value.Date, CreatedAt.TimeOfDay);
-		}
-	}
-
-	public TimeSpan? CreatedAtTime
-	{
-		get => CreatedAt.TimeOfDay;
-		set
-		{
-			if (value is null)
-			{
-				return;
-			}
-
-			CreatedAt = CombineDateAndTime(CreatedAt.Date, value);
-		}
-	}
-	public string CreatedBy { get; set => Set(ref field, value); } = string.Empty;
 	public Guid AssignedToId { get; set => Set(ref field, value); }
 	public TodoItemStatus Status { get; set => Set(ref field, value); }
 
-	public DateTime ChangedAt
+	public DateTime DueDate
 	{
 		get;
 		set
 		{
 			if (Set(ref field, value))
 			{
-				RaisePropertiesChanged(nameof(ChangedAtDate), nameof(ChangedAtTime));
+				RaisePropertiesChanged(nameof(DueDateDate), nameof(DueDateTime));
 			}
 		}
 	}
 
-	public DateTimeOffset? ChangedAtDate
+	public DateTimeOffset? DueDateDate
 	{
-		get => ToDateTimeOffset(ChangedAt);
+		get => ToDateTimeOffset(DueDate);
 		set
 		{
 			if (value is null)
@@ -96,13 +55,13 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 				return;
 			}
 
-			ChangedAt = CombineDateAndTime(value.Value.Date, ChangedAt.TimeOfDay);
+			DueDate = CombineDateAndTime(value.Value.Date, DueDate.TimeOfDay);
 		}
 	}
 
-	public TimeSpan? ChangedAtTime
+	public TimeSpan? DueDateTime
 	{
-		get => ChangedAt.TimeOfDay;
+		get => DueDate.TimeOfDay;
 		set
 		{
 			if (value is null)
@@ -110,10 +69,9 @@ public partial class TodoItemViewModel : ValidationViewModelBase, IParameterizab
 				return;
 			}
 
-			ChangedAt = CombineDateAndTime(ChangedAt.Date, value);
+			DueDate = CombineDateAndTime(DueDate.Date, value);
 		}
 	}
-	public string ChangedBy { get; set => Set(ref field, value); } = string.Empty;
 	public string Priority { get; set => Set(ref field, value); } = string.Empty;
 
 	private static DateTime CombineDateAndTime(DateTime datePart, TimeSpan? timePart)

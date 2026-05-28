@@ -283,7 +283,7 @@
 					}
 
 					const row = document.createElement("div");
-					row.className = "border rounded px-3 py-2 border-light-subtle bg-white shadow-sm d-flex flex-wrap gap-2 align-items-center";
+					row.className = "border rounded px-3 py-2 border-secondary-subtle bg-body shadow-sm d-flex flex-wrap gap-2 align-items-center";
 
 					const fieldSelect = document.createElement("select");
 					fieldSelect.className = "form-select form-select-sm w-auto";
@@ -341,7 +341,7 @@
 
 					if (rows.length === 0) {
 						const emptyState = document.createElement("div");
-						emptyState.className = "small text-body-secondary border rounded px-3 py-2 bg-light";
+						emptyState.className = "small text-body-secondary border rounded px-3 py-2 bg-body-tertiary";
 						emptyState.textContent = fieldPlaceholder;
 						conditionsContainer.replaceChildren(emptyState);
 					}

@@ -1,0 +1,32 @@
+@using Todo.Client.Localisation;
+@inject IJSRuntime JS
+
+<button class="theme-toggle nav-link material-symbols-sharp mt-1"
+		type="button"
+		@onclick="ToggleThemeAsync"
+		title="@ButtonLabel"
+		aria-label="@ButtonLabel">@ButtonIcon</button>
+
+@code {
+	private string currentTheme = "dark";
+
+	private string ButtonIcon => currentTheme == "dark" ? "light_mode" : "dark_mode";
+
+	private string ButtonLabel => currentTheme == "dark" ? CommonLoc.LightMode : CommonLoc.DarkMode;
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (!firstRender)
+		{
+			return;
+		}
+
+		currentTheme = await JS.InvokeAsync<string>("themePreference.getTheme");
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private async Task ToggleThemeAsync()
+	{
+		currentTheme = await JS.InvokeAsync<string>("themePreference.toggleTheme");
+	}
+}

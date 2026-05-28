@@ -81,20 +81,6 @@
 								   class="form-control" value="@Model.Model.Content" />
 						</div>
 
-						<!-- CreatedAt -->
-						<div class="col-12 col-md-6">
-							<label class="form-label" for="CreatedAtInput">@TodoItemLoc.CreatedAt</label>
-							<input type="date" id="CreatedAtInput" name="Model.CreatedAt"
-								   class="form-control" value="@Model.Model.CreatedAt.ToString("yyyy-MM-dd")" />
-						</div>
-
-						<!-- CreatedBy -->
-						<div class="col-12 col-md-6">
-							<label class="form-label" for="CreatedByInput">@TodoItemLoc.CreatedBy</label>
-							<input type="text" id="CreatedByInput" name="Model.CreatedBy"
-								   class="form-control" value="@Model.Model.CreatedBy" />
-						</div>
-
 						<!-- AssignedTo -->
 						<div class="col-12 col-md-6">
 							<label class="form-label" for="AssignedToInput">@TodoItemLoc.AssignedTo</label>
@@ -119,18 +105,11 @@
 							</select>
 						</div>
 
-						<!-- ChangedAt -->
+						<!-- DueDate -->
 						<div class="col-12 col-md-6">
-							<label class="form-label" for="ChangedAtInput">@TodoItemLoc.ChangedAt</label>
-							<input type="date" id="ChangedAtInput" name="Model.ChangedAt"
-								   class="form-control" value="@Model.Model.ChangedAt.ToString("yyyy-MM-dd")" />
-						</div>
-
-						<!-- ChangedBy -->
-						<div class="col-12 col-md-6">
-							<label class="form-label" for="ChangedByInput">@TodoItemLoc.ChangedBy</label>
-							<input type="text" id="ChangedByInput" name="Model.ChangedBy"
-								   class="form-control" value="@Model.Model.ChangedBy" />
+							<label class="form-label" for="DueDateInput">@TodoItemLoc.DueDate</label>
+							<input type="date" id="DueDateInput" name="Model.DueDate"
+								   class="form-control" value="@Model.Model.DueDate.ToString("yyyy-MM-dd")" />
 						</div>
 
 						<!-- Priority -->
@@ -153,7 +132,7 @@
 				</div>
 				<div class="table-responsive">
 					<table class="table table-striped align-middle mb-0">
-						<thead class="table-light">
+						<thead class="bg-body-tertiary">
 							<tr>
 								<th>@ChecklistTaskLoc.IsDone</th>
 								<th>@ChecklistTaskLoc.Description</th>

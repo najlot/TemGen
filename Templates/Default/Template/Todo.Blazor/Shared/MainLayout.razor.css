@@ -13,8 +13,8 @@ main {
 }
 
 .top-row {
-	background-color: #f7f7f7;
-	border-bottom: 1px solid #d6d5d5;
+	background-color: var(--bs-tertiary-bg);
+	border-bottom: 1px solid var(--bs-border-color);
 	justify-content: flex-end;
 	height: 3.5rem;
 	display: flex;
@@ -24,6 +24,10 @@ main {
 	.top-row ::deep a, .top-row .btn-link {
 		white-space: nowrap;
 		margin-left: 1.5rem;
+	}
+
+	.top-row ::deep .theme-toggle {
+		margin-left: 1rem;
 	}
 
 	.top-row a:first-child {
@@ -41,6 +45,10 @@ main {
 	}
 
 	.top-row a, .top-row .btn-link {
+		margin-left: 0;
+	}
+
+	.top-row ::deep .theme-toggle {
 		margin-left: 0;
 	}
 }

@@ -48,12 +48,6 @@
 					<TextBox Margin="0,0,0,8" VerticalAlignment="Stretch" Text="{Binding Title, Mode=TwoWay}" />
 					<TextBlock Text="{x:Static loc:TodoItemLoc.Content}" />
 					<TextBox Margin="0,0,0,8" VerticalAlignment="Stretch" Text="{Binding Content, Mode=TwoWay}" />
-					<TextBlock Text="{x:Static loc:TodoItemLoc.CreatedAt}" />
-					<DatePicker Margin="0,0,0,8" SelectedDate="{Binding CreatedAtDate, Mode=TwoWay}" />
-					<TimePicker ClockIdentifier="24HourClock" Margin="0,0,0,8"
-							    SelectedTime="{Binding CreatedAtTime, Mode=TwoWay}" />
-					<TextBlock Text="{x:Static loc:TodoItemLoc.CreatedBy}" />
-					<TextBox Margin="0,0,0,8" VerticalAlignment="Stretch" Text="{Binding CreatedBy, Mode=TwoWay}" />
 					<TextBlock Text="{x:Static loc:TodoItemLoc.AssignedTo}" />
 					<ComboBox Margin="0,0,0,8" ItemsSource="{Binding AvailableUsers}" SelectedValue="{Binding AssignedToId}" SelectedValueBinding="{Binding Id}">
 						<ComboBox.ItemTemplate>
@@ -64,12 +58,10 @@
 					</ComboBox>
 					<TextBlock Text="{x:Static loc:TodoItemLoc.Status}" />
 					<ComboBox Margin="0,0,0,8" ItemsSource="{Binding AvailableTodoItemStatus}" SelectedItem="{Binding Status}" />
-					<TextBlock Text="{x:Static loc:TodoItemLoc.ChangedAt}" />
-					<DatePicker Margin="0,0,0,8" SelectedDate="{Binding ChangedAtDate, Mode=TwoWay}" />
+					<TextBlock Text="{x:Static loc:TodoItemLoc.DueDate}" />
+					<DatePicker Margin="0,0,0,8" SelectedDate="{Binding DueDateDate, Mode=TwoWay}" />
 					<TimePicker ClockIdentifier="24HourClock" Margin="0,0,0,8"
-							    SelectedTime="{Binding ChangedAtTime, Mode=TwoWay}" />
-					<TextBlock Text="{x:Static loc:TodoItemLoc.ChangedBy}" />
-					<TextBox Margin="0,0,0,8" VerticalAlignment="Stretch" Text="{Binding ChangedBy, Mode=TwoWay}" />
+							    SelectedTime="{Binding DueDateTime, Mode=TwoWay}" />
 					<TextBlock Text="{x:Static loc:TodoItemLoc.Priority}" />
 					<TextBox Margin="0,0,0,8" VerticalAlignment="Stretch" Text="{Binding Priority, Mode=TwoWay}" />
 					<DockPanel DockPanel.Dock="Top">

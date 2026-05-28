@@ -47,22 +47,6 @@ public class TodoItemFilterViewModel : EntityFilterEditorViewModel
 			},
 			new FilterFieldOption
 			{
-				Key = "CreatedAt",
-				Label = TodoItemLoc.CreatedAt,
-				Kind = FilterFieldKind.DateTime,
-				Operators = FilterOperatorCatalog.CreateComparableOptions(false),
-				Values = [],
-			},
-			new FilterFieldOption
-			{
-				Key = "CreatedBy",
-				Label = TodoItemLoc.CreatedBy,
-				Kind = FilterFieldKind.Text,
-				Operators = FilterOperatorCatalog.CreateTextOptions(),
-				Values = [],
-			},
-			new FilterFieldOption
-			{
 				Key = "AssignedToId",
 				Label = TodoItemLoc.AssignedTo,
 				Kind = FilterFieldKind.Option,
@@ -87,18 +71,10 @@ public class TodoItemFilterViewModel : EntityFilterEditorViewModel
 			},
 			new FilterFieldOption
 			{
-				Key = "ChangedAt",
-				Label = TodoItemLoc.ChangedAt,
+				Key = "DueDate",
+				Label = TodoItemLoc.DueDate,
 				Kind = FilterFieldKind.DateTime,
 				Operators = FilterOperatorCatalog.CreateComparableOptions(false),
-				Values = [],
-			},
-			new FilterFieldOption
-			{
-				Key = "ChangedBy",
-				Label = TodoItemLoc.ChangedBy,
-				Kind = FilterFieldKind.Text,
-				Operators = FilterOperatorCatalog.CreateTextOptions(),
 				Values = [],
 			},
 			new FilterFieldOption

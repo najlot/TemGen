@@ -11,7 +11,9 @@ public class <# Definition.Name#>Model : IEntityModel
 {
 	[BsonId]
 	public Guid Id { get; set; }
+	public DateTime CreatedAt { get; set; }
 	public DateTime? DeletedAt { get; set; }
+	public Guid CreatedBy { get; set; }
 <#for entry in Entries
 #>	public <#cs Write(entry.IsArray ? "List<" : "")#><# entry.EntryType#><#cs Write(entry.IsArray ? ">" : entry.IsNullable ? "?" : "")#> <# entry.Field#><#cs Write(entry.IsReference ? "Id" : "")#> { get; set; }<#if entry.EntryType == "string"
 #> = string.Empty;<#elseif entry.IsArray

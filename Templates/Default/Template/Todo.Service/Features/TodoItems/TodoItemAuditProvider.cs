@@ -18,6 +18,8 @@ internal partial class <# Definition.Name#>AuditProvider
 }
 #>	[AuditIgnore(nameof(model.Id))]
 	[AuditIgnore(nameof(model.DeletedAt))]
+	[AuditIgnore(nameof(model.CreatedAt))]
+	[AuditIgnore(nameof(model.CreatedBy))]
 	[PostAudit(nameof(PostGetPropertyValues))]
 	public static partial IEnumerable<PropertyValue> GetPropertyValues(<# Definition.Name#>Model model);
 

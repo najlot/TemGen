@@ -13,7 +13,7 @@
         <summary class="fw-semibold" style="cursor: pointer;">
             @FilterLoc.Filters
         </summary>
-        <div class="card card-body bg-light border-0 shadow-sm mt-2">
+        <div class="card card-body bg-body-tertiary border-0 shadow-sm mt-2">
             <div class="row g-2 mb-3 align-items-end">
                 <div class="col-12 col-lg-5">
                     <label class="form-label small mb-1">@FilterLoc.SavedFilters</label>
@@ -60,7 +60,7 @@
                     <div class="d-grid gap-2">
                         @foreach (var condition in filterConditions)
                         {
-                            <div class="border rounded px-3 py-2 border-light-subtle bg-white shadow-sm d-flex flex-wrap gap-2 align-items-center">
+                            <div class="border rounded px-3 py-2 border-secondary-subtle bg-body shadow-sm d-flex flex-wrap gap-2 align-items-center">
                                 <select class="form-select form-select-sm w-auto" value="@condition.Field" @onchange="e => ChangeConditionField(condition, e.Value?.ToString())">
                                     @foreach (var field in AvailableFields)
                                     {

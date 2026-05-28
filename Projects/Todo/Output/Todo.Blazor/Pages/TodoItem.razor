@@ -1,4 +1,5 @@
 @page "/TodoItem/{id:guid}"
+@using Microsoft.AspNetCore.Components.Routing;
 @using Microsoft.Extensions.Localization;
 @using Todo.Blazor.Identity;
 @using Todo.Blazor.Services;
@@ -103,24 +104,6 @@ else
 							   ValueExpression="@(() => Model.Content)" />
 						</div>
 
-						<!-- CreatedAt input -->
-						<div class="col-12 col-md-6">
-							<label class="form-label" for="CreatedAtInput">@TodoItemLoc.CreatedAt</label>
-							<InputDate id="CreatedAtInput" class="form-control"
-							   Value="@Model.CreatedAt"
-							   ValueChanged="@((DateTime v) => _changeTracker.TrackChange(Model, nameof(Model.CreatedAt), Model.CreatedAt, v))"
-							   ValueExpression="@(() => Model.CreatedAt)" ParsingErrorMessage="@ErrorLoc.ParsingErrorMustBeDate" />
-						</div>
-
-						<!-- CreatedBy input -->
-						<div class="col-12 col-md-6">
-							<label class="form-label" for="CreatedByInput">@TodoItemLoc.CreatedBy</label>
-							<InputText type="text" id="CreatedByInput" class="form-control"
-							   Value="@Model.CreatedBy"
-							   ValueChanged="@((string v) => _changeTracker.TrackChange(Model, nameof(Model.CreatedBy), Model.CreatedBy, v))"
-							   ValueExpression="@(() => Model.CreatedBy)" />
-						</div>
-
 						<!-- AssignedTo input -->
 						<div class="col-12 col-md-6">
 							<label class="form-label" for="AssignedToInput">@TodoItemLoc.AssignedTo</label>
@@ -149,22 +132,13 @@ else
 						</InputSelect>
 						</div>
 
-						<!-- ChangedAt input -->
+						<!-- DueDate input -->
 						<div class="col-12 col-md-6">
-							<label class="form-label" for="ChangedAtInput">@TodoItemLoc.ChangedAt</label>
-							<InputDate id="ChangedAtInput" class="form-control"
-							   Value="@Model.ChangedAt"
-							   ValueChanged="@((DateTime v) => _changeTracker.TrackChange(Model, nameof(Model.ChangedAt), Model.ChangedAt, v))"
-							   ValueExpression="@(() => Model.ChangedAt)" ParsingErrorMessage="@ErrorLoc.ParsingErrorMustBeDate" />
-						</div>
-
-						<!-- ChangedBy input -->
-						<div class="col-12 col-md-6">
-							<label class="form-label" for="ChangedByInput">@TodoItemLoc.ChangedBy</label>
-							<InputText type="text" id="ChangedByInput" class="form-control"
-							   Value="@Model.ChangedBy"
-							   ValueChanged="@((string v) => _changeTracker.TrackChange(Model, nameof(Model.ChangedBy), Model.ChangedBy, v))"
-							   ValueExpression="@(() => Model.ChangedBy)" />
+							<label class="form-label" for="DueDateInput">@TodoItemLoc.DueDate</label>
+							<InputDate id="DueDateInput" class="form-control"
+							   Value="@Model.DueDate"
+							   ValueChanged="@((DateTime v) => _changeTracker.TrackChange(Model, nameof(Model.DueDate), Model.DueDate, v))"
+							   ValueExpression="@(() => Model.DueDate)" ParsingErrorMessage="@ErrorLoc.ParsingErrorMustBeDate" />
 						</div>
 
 						<!-- Priority input -->
@@ -188,7 +162,7 @@ else
 				</div>
 				<div class="table-responsive">
 					<table class="table table-striped align-middle mb-0">
-						<thead class="table-light">
+						<thead class="bg-body-tertiary">
 							<tr>
 								<th>@ChecklistTaskLoc.IsDone</th>
 								<th>@ChecklistTaskLoc.Description</th>
@@ -217,6 +191,7 @@ else
 		</EditForm>
 	</section>
 
+	<SaveConfirmationDialog @ref="_saveConfirmationDialog" />
 	<DeleteConfirmationDialog @bind-IsVisible="isDeleteRequested" Remove="Remove" />
 }
 
@@ -231,6 +206,10 @@ else
 	private bool isDeleteRequested = false;
 	private TodoItemModel? Model;
 	private readonly ChangeTracker _changeTracker = new();
+	private SaveConfirmationDialog? _saveConfirmationDialog;
+	private IDisposable? _locationChangingRegistration;
+	private bool _ignoreLocationChanging;
+	private bool _isSaveConfirmationVisible;
 
 	private IEnumerable<UserListItemModel> _users = [];
 
@@ -242,6 +221,68 @@ else
 		}
 
 		NavigationManager.NavigateTo($"/history/{Model.Id}?entityName=TodoItem");
+	}
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+		{
+			_locationChangingRegistration = NavigationManager.RegisterLocationChangingHandler(HandleLocationChangingAsync);
+		}
+	}
+
+	private async ValueTask HandleLocationChangingAsync(LocationChangingContext context)
+	{
+		if (_ignoreLocationChanging)
+		{
+			_ignoreLocationChanging = false;
+			return;
+		}
+
+		if (!await CanNavigateAsync())
+		{
+			context.PreventNavigation();
+		}
+	}
+
+	private async Task<bool> CanNavigateAsync()
+	{
+		if (_isSaveConfirmationVisible || isDeleteRequested)
+		{
+			return false;
+		}
+
+		if (!_changeTracker.HasChanges || _saveConfirmationDialog is null)
+		{
+			return true;
+		}
+
+		_isSaveConfirmationVisible = true;
+
+		try
+		{
+			var saveDialogResult = await _saveConfirmationDialog.ShouldSave();
+
+			switch (saveDialogResult)
+			{
+				case SaveConfirmationDialog.SaveDialogResult.Save:
+					return await TrySaveAsync(navigateAfterCreate: false);
+				case SaveConfirmationDialog.SaveDialogResult.Discard:
+					return true;
+				default:
+					return false;
+			}
+		}
+		finally
+		{
+			_isSaveConfirmationVisible = false;
+		}
+	}
+
+	private void NavigateWithoutSaveConfirmation(string url, bool forceLoad = false, bool replace = false)
+	{
+		_ignoreLocationChanging = true;
+		NavigationManager.NavigateTo(url, forceLoad, replace);
 	}
 
 	protected override async Task OnInitializedAsync()
@@ -269,7 +310,7 @@ else
 		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
-			NavigationManager.NavigateTo(url);
+			NavigateWithoutSaveConfirmation(url);
 		}
 		catch (Exception ex)
 		{
@@ -278,12 +319,14 @@ else
 		}
 	}
 
-	private async Task Save()
+	private Task Save() => TrySaveAsync();
+
+	private async Task<bool> TrySaveAsync(bool navigateAfterCreate = true)
 	{
 		if (Model is null)
 		{
 			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorModelIsNullReload);
-			return;
+			return false;
 		}
 
 		try
@@ -292,26 +335,34 @@ else
 			{
 				await TodoItemService.AddItemAsync(Model);
 				Id = Model.Id;
-				NavigationManager.NavigateTo($"/TodoItem/{Model.Id}", false, true);
 				isNew = false;
+				_changeTracker.Clear();
+
+				if (navigateAfterCreate)
+				{
+					NavigateWithoutSaveConfirmation($"/TodoItem/{Model.Id}", false, true);
+				}
 			}
 			else
 			{
 				await TodoItemService.UpdateItemAsync(Model);
+				_changeTracker.Clear();
 			}
 
-			_changeTracker.Clear();
+			return true;
 		}
 		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
-			NavigationManager.NavigateTo(url);
+			NavigateWithoutSaveConfirmation(url);
 		}
 		catch (Exception ex)
 		{
 			Log.LogError(ex, "Error saving TodoItem.");
 			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotSave);
 		}
+
+		return false;
 	}
 
 	private async Task Remove()
@@ -330,12 +381,12 @@ else
 			}
 
 			_changeTracker.Clear();
-			NavigationManager.NavigateTo("/TodoItems");
+			NavigateWithoutSaveConfirmation("/TodoItems");
 		}
 		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
 			var url = NavigationManager.BuildReturnUrl("/login");
-			NavigationManager.NavigateTo(url);
+			NavigateWithoutSaveConfirmation(url);
 		}
 		catch (Exception ex)
 		{
@@ -409,5 +460,6 @@ else
 	public void Dispose()
 	{
 		TodoItemService.ItemUpdated -= Handle;
+		_locationChangingRegistration?.Dispose();
 	}
 }

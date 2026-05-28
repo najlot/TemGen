@@ -8,6 +8,7 @@ public class UserModel : IEntityModel
 {
 	[BsonId]
 	public Guid Id { get; set; }
+	public DateTime CreatedAt { get; set; }
 	public string Username { get; set; } = string.Empty;
 	public string EMail { get; set; } = string.Empty;
 	public byte[] PasswordHash { get; set; } = [];

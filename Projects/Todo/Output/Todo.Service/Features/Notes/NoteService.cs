@@ -18,6 +18,7 @@ public class NoteService(
 	HistoryService historyService,
 	IPublisher publisher,
 	IMap map,
+	IUserIdProvider userIdProvider,
 	IPermissionQueryFilter permissionQueryFilter)
 {
 	private static readonly HashSet<string> FilterableProperties = new(StringComparer.Ordinal)
@@ -32,6 +33,8 @@ public class NoteService(
 		var item = new NoteModel();
 		var snapshot = historyService.CreateSnapshot(item);
 		map.From(command).To(item);
+		item.CreatedAt = DateTime.UtcNow;
+		item.CreatedBy = userIdProvider.GetRequiredUserId();
 
 		await noteRepository.Insert(item).ConfigureAwait(false);
 		await historyService.WriteChangesAsync(item.Id, snapshot).ConfigureAwait(false);

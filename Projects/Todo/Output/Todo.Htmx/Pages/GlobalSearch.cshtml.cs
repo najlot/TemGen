@@ -48,11 +48,6 @@ public class GlobalSearchModel : PageModel
 			TempData["ErrorMessage"] = ex.Message;
 		}
 
-		if (Request.Headers.ContainsKey("HX-Request"))
-		{
-			return Partial("_GlobalSearchResults", this);
-		}
-
 		return Page();
 	}
 

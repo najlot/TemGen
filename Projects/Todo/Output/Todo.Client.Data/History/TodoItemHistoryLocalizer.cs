@@ -19,12 +19,9 @@ internal sealed class TodoItemHistoryLocalizer(
 			{
 				"Title" => [TodoItemLoc.Title],
 				"Content" => [TodoItemLoc.Content],
-				"CreatedAt" => [TodoItemLoc.CreatedAt],
-				"CreatedBy" => [TodoItemLoc.CreatedBy],
 				"AssignedToId" => [TodoItemLoc.AssignedTo],
 				"Status" => [TodoItemLoc.Status],
-				"ChangedAt" => [TodoItemLoc.ChangedAt],
-				"ChangedBy" => [TodoItemLoc.ChangedBy],
+				"DueDate" => [TodoItemLoc.DueDate],
 				"Priority" => [TodoItemLoc.Priority],
 				"Checklist" => [TodoItemLoc.Checklist],
 				"IsDeleted" => [CommonLoc.Deleted],

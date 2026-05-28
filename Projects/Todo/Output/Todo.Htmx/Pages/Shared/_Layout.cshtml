@@ -1,9 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>@ViewData["Title"] - Todo</title>
+	<script>
+		window.themePreference = {
+			storageKey: "theme-preference",
+			defaultTheme: "dark",
+			getStoredTheme: function () {
+				try {
+					var theme = window.localStorage.getItem(this.storageKey);
+					return theme === "light" || theme === "dark" ? theme : null;
+				}
+				catch (error) {
+					return null;
+				}
+			},
+			getTheme: function () {
+				return this.getStoredTheme() || this.defaultTheme;
+			},
+			updateToggleButtons: function () {
+				var theme = this.getTheme();
+				document.querySelectorAll("[data-theme-toggle]").forEach(function (button) {
+					var icon = button.querySelector("[data-theme-icon]");
+					var label = theme === "dark" ? button.dataset.lightLabel : button.dataset.darkLabel;
+					if (icon) {
+						icon.textContent = theme === "dark" ? "light_mode" : "dark_mode";
+					}
+					else {
+						button.textContent = theme === "dark" ? "light_mode" : "dark_mode";
+					}
+					button.title = label;
+					button.setAttribute("aria-label", label);
+				});
+			},
+			setTheme: function (theme) {
+				var resolvedTheme = theme === "light" ? "light" : "dark";
+				document.documentElement.setAttribute("data-bs-theme", resolvedTheme);
+				try {
+					window.localStorage.setItem(this.storageKey, resolvedTheme);
+				}
+				catch (error) {
+				}
+				this.updateToggleButtons();
+				return resolvedTheme;
+			},
+			toggleTheme: function () {
+				return this.setTheme(this.getTheme() === "dark" ? "light" : "dark");
+			}
+		};
+
+		window.themePreference.setTheme(window.themePreference.getTheme());
+
+		document.addEventListener("click", function (event) {
+			var button = event.target.closest("[data-theme-toggle]");
+			if (!button) {
+				return;
+			}
+
+			event.preventDefault();
+			window.themePreference.toggleTheme();
+		});
+
+		document.addEventListener("DOMContentLoaded", function () {
+			window.themePreference.updateToggleButtons();
+		});
+
+		document.addEventListener("htmx:afterSwap", function () {
+			window.themePreference.updateToggleButtons();
+		});
+	</script>
 	<link rel="stylesheet" href="~/css/bootstrap/bootstrap.min.css" />
 	<link rel="stylesheet" href="~/css/material-symbols/material-symbols-sharp.css" />
 	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
