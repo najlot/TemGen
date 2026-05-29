@@ -2,13 +2,8 @@ using System;
 
 namespace TemGen;
 
-public sealed class TemplateReadException : Exception
+public sealed class TemplateReadException(string templatePath, string message, Exception innerException)
+	: Exception($"Error reading template '{templatePath}': {message}", innerException)
 {
-	public string TemplatePath { get; }
-
-	public TemplateReadException(string templatePath, string message, Exception innerException)
-		: base($"Error reading template '{templatePath}': {message}", innerException)
-	{
-		TemplatePath = templatePath;
-	}
+	public string TemplatePath { get; } = templatePath;
 }

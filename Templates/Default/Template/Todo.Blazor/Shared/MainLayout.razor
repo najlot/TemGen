@@ -28,6 +28,21 @@
 			</div>
 		}
 
+		@if (_isSuccessToastActive)
+		{
+			<div class="toast-container position-fixed bottom-0 end-0 p-3">
+				<div class="toast show align-items-center text-bg-success border-0 shadow" role="status" aria-live="polite" aria-atomic="true">
+					<div class="d-flex">
+						<div class="toast-body">
+							<div class="fw-semibold">@_successTitle</div>
+							<div>@_successMessage</div>
+						</div>
+						<button type="button" class="btn-close btn-close-white me-2 m-auto" aria-label="Close" @onclick="HideSuccess" />
+					</div>
+				</div>
+			</div>
+		}
+
 		<CascadingValue Value="this" Name="ErrorService">
 			<div class="content container px-1">
 				@Body
@@ -38,17 +53,26 @@
 
 @code {
 	private bool _isErrorActive;
+	private bool _isSuccessToastActive;
 	private string _title = "";
 	private string _message = "";
+	private string _successTitle = "";
+	private string _successMessage = "";
+	private int _successToastVersion;
 
 	public void ShowError(string title, string message)
 	{
+		if (_isSuccessToastActive)
+		{
+			_successToastVersion++;
+			ClearSuccessToast();
+		}
+
 		_isErrorActive = true;
 		_title = title;
 		_message = message;
 
-		StateHasChanged();
-		// InvokeAsync(StateHasChanged);
+		_ = InvokeAsync(StateHasChanged);
 	}
 
 	public void HideError()
@@ -62,7 +86,56 @@
 		_message = string.Empty;
 		_isErrorActive = false;
 
-		StateHasChanged();
-		// InvokeAsync(StateHasChanged);
+		_ = InvokeAsync(StateHasChanged);
+	}
+
+	public void ShowSuccess(string title, string message, int durationMilliseconds = 4000)
+	{
+		_isSuccessToastActive = true;
+		_successTitle = title;
+		_successMessage = message;
+		_successToastVersion++;
+
+		var successToastVersion = _successToastVersion;
+
+		_ = InvokeAsync(StateHasChanged);
+		_ = HideSuccessAfterDelayAsync(successToastVersion, durationMilliseconds);
+	}
+
+	public void HideSuccess()
+	{
+		if (!_isSuccessToastActive)
+		{
+			return;
+		}
+
+		_successToastVersion++;
+		ClearSuccessToast();
+
+		_ = InvokeAsync(StateHasChanged);
+	}
+
+	private void ClearSuccessToast()
+	{
+		_isSuccessToastActive = false;
+		_successTitle = string.Empty;
+		_successMessage = string.Empty;
+	}
+
+	private async Task HideSuccessAfterDelayAsync(int successToastVersion, int durationMilliseconds)
+	{
+		await Task.Delay(durationMilliseconds);
+
+		await InvokeAsync(() =>
+		{
+			if (successToastVersion != _successToastVersion || !_isSuccessToastActive)
+			{
+				return;
+			}
+
+			_successToastVersion++;
+			ClearSuccessToast();
+			StateHasChanged();
+		});
 	}
 }<#cs SetOutputPathAndSkipOtherDefinitions()#>

@@ -276,6 +276,9 @@ else
 				_changeTracker.Clear();
 			}
 
+			ErrorService?.HideError();
+			ErrorService?.ShowSuccess(CommonLoc.Save, CommonLoc.ChangesRecorded);
+
 			return true;
 		}
 		catch (Todo.Client.Data.Identity.SessionUnavailableException)

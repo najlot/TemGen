@@ -29,6 +29,7 @@ TemGen is a powerful template-based code generator that processes templates with
   - Contracts, events, and DTOs
   - Tests and localization
 - **Customizable templates**: Create your own templates or use the included default template
+- **Composable template sources**: Mix local template folders and git-backed template sources in the same project
 - **Resource management**: Copy and process resource files alongside generated code
 - **Watch mode**: Run in loop mode to continuously regenerate on demand
 
@@ -73,6 +74,18 @@ OutputPath:./Output
 ResourcesPath:./Resources
 ResourcesScriptPath:../../Templates/Default/Resources.cs
 ScriptsPath:../../Templates/Default/Scripts
+```
+
+`TemplatesPath` can also contain a semicolon-separated mix of local directories and git-backed sources. Each entry may point either directly at a `Template` directory or at a template source root that contains `Template`, `Scripts`, and `Resources.*`. When `ScriptsPath` or `ResourcesScriptPath` is omitted, TemGen now discovers sibling `Scripts` directories and `Resources.*` scripts from each template source automatically.
+
+Examples:
+
+```text
+TemplatesPath:../../Templates/Default;https://github.com/najlot/TemGen/tree/main/Templates/Default
+```
+
+```text
+TemplatesPath:https://github.com/najlot/TemGen/tree/main/Templates/Default;https://example.com/my-template-pack.git?ref=main&path=Templates/Default
 ```
 
 3. **Create a definition** (`Definitions/CalendarEntry`):

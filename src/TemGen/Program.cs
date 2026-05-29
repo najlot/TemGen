@@ -24,6 +24,12 @@ internal class Program
 		Console.WriteLine("Starting execution...");
 
 		var project = ProjectReader.ReadProject(path);
+		using var sourcesResolver = new ProjectSourcesResolver();
+		var resolvedSources = sourcesResolver.Resolve(project);
+		project.DefinitionsPath = resolvedSources.DefinitionsPath;
+		project.TemplatesPath = string.Join(';', resolvedSources.TemplatePaths);
+		project.ScriptsPath = string.Join(';', resolvedSources.ScriptPaths);
+		project.ResourcesScriptPath = string.Join(';', resolvedSources.ResourceScriptPaths);
 		var definitions = DefinitionsReader.ReadDefinitions(project.DefinitionsPath);
 		
 		var csScripts = Array.Empty<string>();
@@ -33,7 +39,10 @@ internal class Program
 
 		if (!string.IsNullOrWhiteSpace(project.ScriptsPath))
 		{
-			var scripts = TemplatesReader.ReadScripts(project.ScriptsPath);
+			var scripts = project
+				.ScriptPaths
+				.SelectMany(TemplatesReader.ReadScripts)
+				.ToList();
 			csScripts = scripts.Where(script => script.Handler == TemplateHandler.CSharp).Select(s => s.Content).ToArray();
 			jsScripts = scripts.Where(script => script.Handler == TemplateHandler.JavaScript).Select(s => s.Content).ToArray();
 			pyScripts = scripts.Where(script => script.Handler == TemplateHandler.Python).Select(s => s.Content).ToArray();
@@ -61,15 +70,15 @@ internal class Program
 			Console.Error.WriteLine($"Could not read generation manifest {Path.Combine(project.OutputPath, GeneratedOutputManifest.FileName)}. Stale-file cleanup will be skipped for this run. {ex}");
 		}
 
-		if (!string.IsNullOrWhiteSpace(project.ResourcesScriptPath))
+		foreach (var resourcesScriptPath in project.ResourceScriptPaths)
 		{
-			var (handler, content) = TemplatesReader.ReadScript(path, project.ResourcesScriptPath);
+			var (handler, content) = TemplatesReader.ReadScript(resourcesScriptPath);
 
 			try
 			{
 				await processor.Handle(new Template
 				{
-					RelativePath = project.ResourcesScriptPath,
+					RelativePath = resourcesScriptPath,
 					Sections = [new TemplateSection { Handler = handler, Content = content }],
 					Encoding = System.Text.Encoding.UTF8,
 				}, new Definition() { Entries = [] }, null).ConfigureAwait(false);
@@ -77,7 +86,7 @@ internal class Program
 			catch (Exception ex)
 			{
 				hasProcessingErrors = true;
-				Console.Error.WriteLine($"Error processing script {project.ResourcesScriptPath}: {ex}");
+				Console.Error.WriteLine($"Error processing script {resourcesScriptPath}: {ex}");
 			}
 		}
 

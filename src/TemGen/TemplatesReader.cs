@@ -242,10 +242,9 @@ public static class TemplatesReader
 		};
 	}
 
-	public static (TemplateHandler Handler, string Content) ReadScript(string path, string resourcesScriptPath)
+	public static (TemplateHandler Handler, string Content) ReadScript(string resourcesScriptPath)
 	{
-		path = Path.GetFullPath(path);
-		resourcesScriptPath = Path.Combine(path, resourcesScriptPath);
+		resourcesScriptPath = Path.GetFullPath(resourcesScriptPath);
 
 		var extension = Path.GetExtension(resourcesScriptPath).TrimStart('.');
 		var handler = GetHandlerFromLanguage(extension);
@@ -254,10 +253,20 @@ public static class TemplatesReader
 		return (handler, content);
 	}
 
+	public static (TemplateHandler Handler, string Content) ReadScript(string path, string resourcesScriptPath)
+	{
+		path = Path.GetFullPath(path);
+		resourcesScriptPath = Path.IsPathFullyQualified(resourcesScriptPath)
+			? resourcesScriptPath
+			: Path.Combine(path, resourcesScriptPath);
+
+		return ReadScript(resourcesScriptPath);
+	}
+
 	public static List<(TemplateHandler Handler, string Content)> ReadScripts(string scriptsPath)
 	{
 		var files = Directory.GetFiles(scriptsPath, "*", SearchOption.AllDirectories);
-		var templates = files.Select(file => ReadScript(scriptsPath, file)).ToList();
+		var templates = files.Select(ReadScript).ToList();
 		return templates;
 	}
 

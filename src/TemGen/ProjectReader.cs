@@ -173,8 +173,8 @@ public static class ProjectReader
 		project.TemplatesPath = NormalizePathList(project.ProjectDirectory, project.TemplatesPath);
 		project.OutputPath = NormalizePath(project.ProjectDirectory, project.OutputPath);
 		project.ResourcesPath = NormalizePath(project.ProjectDirectory, project.ResourcesPath);
-		project.ResourcesScriptPath = NormalizePath(project.ProjectDirectory, project.ResourcesScriptPath);
-		project.ScriptsPath = NormalizePath(project.ProjectDirectory, project.ScriptsPath);
+		project.ResourcesScriptPath = NormalizePathList(project.ProjectDirectory, project.ResourcesScriptPath);
+		project.ScriptsPath = NormalizePathList(project.ProjectDirectory, project.ScriptsPath);
 	}
 
 	private static string NormalizePathList(string projectDirectory, string path)
@@ -191,7 +191,9 @@ public static class ProjectReader
 
 	private static string NormalizePath(string projectDirectory, string path)
 	{
-		if (string.IsNullOrWhiteSpace(path) || Path.IsPathFullyQualified(path))
+		if (string.IsNullOrWhiteSpace(path)
+			|| Path.IsPathFullyQualified(path)
+			|| ProjectSourcesResolver.IsSourceUri(path))
 		{
 			return path;
 		}

@@ -431,6 +431,9 @@ else
 				_changeTracker.Clear();
 			}
 
+			ErrorService?.HideError();
+			ErrorService?.ShowSuccess(CommonLoc.Save, CommonLoc.ChangesRecorded);
+
 			return true;
 		}
 		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)

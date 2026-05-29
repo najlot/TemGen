@@ -183,6 +183,51 @@ UserSecretsId: aspnet-LegacyProject.Blazor-test
 		}
 	}
 
+	[Fact]
+	public void ReadProject_preserves_remote_sources_while_normalizing_local_paths()
+	{
+		var projectDirectory = CreateProjectDirectory();
+
+		try
+		{
+			File.WriteAllText(Path.Combine(projectDirectory, "ProjectDefinition.json"), """
+{
+  "Namespace": "JsonProject",
+  "DefinitionsPath": "Definitions",
+  "TemplatesPath": "https://github.com/najlot/TemGen/tree/main/Templates/Default; Templates.Override ",
+  "ScriptsPath": "https://example.com/templates.git?ref=main&path=Scripts; scripts",
+  "ResourcesScriptPath": "https://example.com/templates.git?ref=main&path=Templates/Default; scripts/resources.cs",
+  "OutputPath": "Output"
+}
+""");
+
+			var project = ProjectReader.ReadProject(projectDirectory);
+
+			Assert.Equal(
+				[
+					"https://github.com/najlot/TemGen/tree/main/Templates/Default",
+					Path.Combine(projectDirectory, "Templates.Override")
+				],
+				project.TemplatePaths);
+			Assert.Equal(
+				[
+					"https://example.com/templates.git?ref=main&path=Scripts",
+					Path.Combine(projectDirectory, "scripts")
+				],
+				project.ScriptPaths);
+			Assert.Equal(
+				[
+					"https://example.com/templates.git?ref=main&path=Templates/Default",
+					Path.Combine(projectDirectory, "scripts", "resources.cs")
+				],
+				project.ResourceScriptPaths);
+		}
+		finally
+		{
+			Directory.Delete(projectDirectory, true);
+		}
+	}
+
 	private static string CreateProjectDirectory()
 	{
 		var projectDirectory = Path.Combine(Path.GetTempPath(), "TemGen.Tests", Guid.NewGuid().ToString("N"));

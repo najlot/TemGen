@@ -15,7 +15,9 @@ public class Project
 	public string OutputPath { get; set; }
 	public string ResourcesPath { get; set; }
 	public string ResourcesScriptPath { get; set; }
+	public string[] ResourceScriptPaths => SplitPaths(ResourcesScriptPath);
 	public string ScriptsPath { get; set; }
+	public string[] ScriptPaths => SplitPaths(ScriptsPath);
 	public Dictionary<string, string> Settings
 	{
 		get;
