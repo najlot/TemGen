@@ -16,7 +16,7 @@ TemGen is a template-based code generator built with .NET 10.0. It processes tem
 - **`./Projects/Todo`** - Default output project used for generation and testing
   - `Definitions/` - Definition files
   - `Output/` - Generated output from templates
-  - `ProjectDefinition` - Project configuration file
+  - `ProjectDefinition.json` - Project configuration file
   - `Resources/` - Resource files
 
 ## How It Works
@@ -105,7 +105,7 @@ Each **DefinitionEntry** has:
 ### Key Files
 
 - `Templates/Default/Scripts/Common.cs` - Helper functions (`SetOutputPath`, `SetOutputPathAndSkipOtherDefinitions`, `WriteFromToMapping`, etc.)
-- `Projects/Todo/ProjectDefinition` - Defines namespace (`Todo`), paths to definitions/templates/output
+- `Projects/Todo/ProjectDefinition.json` - Defines namespace (`Todo`), paths to definitions/templates/output
 - `src/TemGen/Definition.cs` - Definition class model
 - `src/TemGen/DefinitionEntry.cs` - Entry class model
 - `src/TemGen/TemplateProcessor.cs` - Core processing logic (skips empty RelativePath, breaks on SkipOtherDefinitions)

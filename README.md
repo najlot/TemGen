@@ -55,26 +55,27 @@ dotnet build src/TemGen.slnx
 
 ```
 MyProject/
-├── ProjectDefinition          # Project configuration
+├── ProjectDefinition.json     # Project configuration
 ├── Definitions/               # Your data model definitions
 │   └── User                   # Example: User entity
 └── Output/                    # Generated code will go here
 ```
 
-2. **Define your project** (`ProjectDefinition`):
+2. **Define your project** (`ProjectDefinition.json`):
 
+```json
+{
+  "Namespace": "MyApp",
+  "DefinitionsPath": "./Definitions",
+  "TemplatesPath": "../../Templates/Default/Template",
+  "OutputPath": "./Output",
+  "ResourcesPath": "./Resources",
+  "ResourcesScriptPath": "../../Templates/Default/Resources.cs",
+  "ScriptsPath": "../../Templates/Default/Scripts"
+}
 ```
-#Global
-Namespace:MyApp
 
-#Paths
-DefinitionsPath:./Definitions
-TemplatesPath:../../Templates/Default/Template
-OutputPath:./Output
-ResourcesPath:./Resources
-ResourcesScriptPath:../../Templates/Default/Resources.cs
-ScriptsPath:../../Templates/Default/Scripts
-```
+Legacy `ProjectDefinition` files without the `.json` extension are still supported.
 
 `TemplatesPath` can also contain a semicolon-separated mix of local directories and git-backed sources. Each entry may point either directly at a `Template` directory or at a template source root that contains `Template`, `Scripts`, and `Resources.*`. When `ScriptsPath` or `ResourcesScriptPath` is omitted, TemGen now discovers sibling `Scripts` directories and `Resources.*` scripts from each template source automatically.
 
@@ -98,7 +99,7 @@ int DurationInMinutes
 ```
 
 4. **Generate code**:
-Run `temgen` inside the folder with your `ProjectDefinition` or
+Run `temgen` inside the folder with your `ProjectDefinition.json` or
 
 ```bash
 temgen --path ./MyProject
@@ -114,7 +115,7 @@ dotnet run --project src/TemGen/TemGen.csproj -- --path ./MyProject
 
 A TemGen project consists of:
 
-- **ProjectDefinition**: Configuration file specifying paths and global settings
+- **ProjectDefinition.json**: Configuration file specifying paths and global settings
 - **Definitions/**: Directory containing entity/model definitions
 - **Templates/**: Template files with embedded scripts
 - **Scripts/**: Reusable script files
@@ -135,20 +136,21 @@ TemGen/
 │       └── Resources.cs     # Resources script
 └── Projects/
     └── Todo/                # Example Todo project
+        ├── ProjectDefinition.json
         ├── Definitions/     # Example definitions
         └── Output/          # Generated output
 ```
 
 ## How It Works
 
-1. **Read Configuration**: TemGen reads your `ProjectDefinition` file to understand project structure
+1. **Read Configuration**: TemGen reads your `ProjectDefinition.json` file, or the legacy `ProjectDefinition`, to understand project structure
 2. **Load Definitions**: Parses definition files to understand your data models
 3. **Process Templates**: Iterates through templates, executing embedded scripts
 4. **Execute Scripts**: Runs C#, JavaScript, Python, or Lua code to generate output
 5. **Write Output**: Saves generated files to the output directory
 6. **Incremental Updates**: Only writes files that have changed
 
-You can add arbitrary project settings directly in `ProjectDefinition` or `ProjectDefinition.json` and access them from templates. For example, `UserSecretsId: aspnet-MyApp.Blazor-...` is available through `Project.GetSetting("UserSecretsId")`, and setting names like `PrimaryColor` are also exposed through the same settings collection.
+You can add arbitrary project settings directly in `ProjectDefinition.json` or the legacy `ProjectDefinition` and access them from templates. For example, `"UserSecretsId": "aspnet-MyApp.Blazor-..."` is available through `Project.GetSetting("UserSecretsId")`, and setting names like `PrimaryColor` are also exposed through the same settings collection.
 
 ## Definition Files
 
@@ -222,7 +224,8 @@ Usage: TemGen [options]
 
 Options:
   -p, --path <path>         Path to a project definition file or folder
-                            containing a ProjectDefinition file
+                            containing a ProjectDefinition.json or
+                            ProjectDefinition file
                             [default: .]
                             
   -l, --loop                Run execution in a loop (watch mode)
