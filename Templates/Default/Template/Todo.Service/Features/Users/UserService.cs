@@ -13,7 +13,7 @@ public class UserService(
 	IPublisher publisher,
 	IMap map,
 	IUserIdProvider userIdProvider,
-	IPermissionQueryFilter permissionQueryFilter) : IUserService
+	IPermissionService permissionService) : IUserService
 {
 	public async Task<Result> CreateUser(CreateUser command)
 	{
@@ -147,7 +147,7 @@ public class UserService(
 		var query = userRepository.GetAllQueryable();
 
 		query = query.Where(e => e.DeletedAt == null);
-		query = permissionQueryFilter.ApplyReadFilter(query);
+		query = permissionService.ApplyReadFilter(query);
 
 		return map.From(query).To<UserListItem>().ToAsyncEnumerable();
 	}

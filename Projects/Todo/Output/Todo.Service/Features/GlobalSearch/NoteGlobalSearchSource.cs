@@ -8,12 +8,12 @@ namespace Todo.Service.Features.GlobalSearch;
 public class NoteGlobalSearchSource(
 	INoteRepository noteRepository,
 	IMap map,
-	IPermissionQueryFilter permissionQueryFilter) : IGlobalSearchSource
+	IPermissionService permissionService) : IGlobalSearchSource
 {
 	public IAsyncEnumerable<GlobalSearchItem> SearchAsync(string text)
 	{
 		var normalizedText = text.ToLower();
-		var query = permissionQueryFilter
+		var query = permissionService
 			.ApplyReadFilter(noteRepository.GetAllQueryable())
 			.Where(item => item.DeletedAt == null)
 			.Where(item =>

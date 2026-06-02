@@ -8,13 +8,13 @@ namespace Todo.Service.Features.Favorites;
 public sealed class NoteFavoriteSource(
 	INoteRepository noteRepository,
 	IMap map,
-	IPermissionQueryFilter permissionQueryFilter) : IFavoriteSource
+	IPermissionService permissionService) : IFavoriteSource
 {
 	public ItemType Type => ItemType.Note;
 
 	public Task<FavoriteModel?> CreateFavoriteAsync(Guid userId, Guid itemId)
 	{
-		var item = permissionQueryFilter
+		var item = permissionService
 			.ApplyReadFilter(noteRepository.GetAllQueryable())
 			.Where(item => item.DeletedAt == null && item.Id == itemId)
 			.FirstOrDefault();

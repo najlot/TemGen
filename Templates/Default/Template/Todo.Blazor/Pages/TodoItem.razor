@@ -133,7 +133,7 @@ else
 #>							<label class="form-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
 							<InputDate id="<# entry.Field#>Input" class="form-control"
 							   Value="@Model.<# entry.Field#>"
-							   ValueChanged="@((DateTime v) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
+							   ValueChanged="@((<#if entry.IsNullable#>DateTime?<#else#>DateTime<#end#> v) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
 							   ValueExpression="@(() => Model.<# entry.Field#>)" ParsingErrorMessage="@ErrorLoc.ParsingErrorMustBeDate" />
 <#elseif entry.EntryType.ToLower() == "bool"
 #>							<div class="form-check mt-md-4 pt-md-2">

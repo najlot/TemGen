@@ -8,12 +8,12 @@ namespace <# Project.Namespace#>.Service.Features.GlobalSearch;
 public class <# Definition.Name#>GlobalSearchSource(
 	I<# Definition.Name#>Repository <# Definition.NameLow#>Repository,
 	IMap map,
-	IPermissionQueryFilter permissionQueryFilter) : IGlobalSearchSource
+	IPermissionService permissionService) : IGlobalSearchSource
 {
 	public IAsyncEnumerable<GlobalSearchItem> SearchAsync(string text)
 	{
 		var normalizedText = text.ToLower();
-		var query = permissionQueryFilter
+		var query = permissionService
 			.ApplyReadFilter(<# Definition.NameLow#>Repository.GetAllQueryable())
 			.Where(item => item.DeletedAt == null)
 <#cs var searchableEntries = Entries.Where(e => e.EntryType.Equals("string", StringComparison.OrdinalIgnoreCase)).Take(2).ToList();

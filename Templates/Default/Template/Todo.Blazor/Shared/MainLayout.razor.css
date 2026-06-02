@@ -9,7 +9,11 @@ main {
 }
 
 .sidebar {
-	background-image: linear-gradient(180deg, <#cs Write(Project.GetSetting("PrimaryColor"))#> 0%, <#cs Write(Project.GetSetting("PrimaryDarkColor"))#> 75%);
+	background-color: <#cs Write(Project.GetSetting("PrimaryColor"))#>;
+}
+
+[data-bs-theme="dark"] .sidebar {
+	background-color: <#cs Write(Project.GetSetting("PrimaryDarkColor"))#>;
 }
 
 .top-row {

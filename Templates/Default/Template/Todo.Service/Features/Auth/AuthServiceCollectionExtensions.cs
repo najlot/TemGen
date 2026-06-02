@@ -9,7 +9,7 @@ public static class AuthServiceCollectionExtensions
 		services.AddHttpContextAccessor();
 		services.AddScoped<IUserIdProvider, HttpContextUserIdProvider>();
 		services.AddScoped<IPasswordResetCodeSender, SmtpPasswordResetCodeSender>();
-		services.AddScoped<IPermissionQueryFilter, PermissionQueryFilter>();
+		services.AddScoped<IPermissionService, PermissionService>();
 		services.AddScoped<PasswordResetService>();
 		services.AddScoped<TokenService>();
 

@@ -19,7 +19,7 @@ public class TodoItemService(
 	IPublisher publisher,
 	IMap map,
 	IUserIdProvider userIdProvider,
-	IPermissionQueryFilter permissionQueryFilter)
+	IPermissionService permissionService)
 {
 	private static readonly HashSet<string> FilterableProperties = new(StringComparer.Ordinal)
 	{
@@ -56,6 +56,11 @@ public class TodoItemService(
 			return Result.NotFound("TodoItem not found!");
 		}
 
+		if (!permissionService.CanAccess(item))
+		{
+			return Result.Forbidden("Access denied!");
+		}
+
 		var snapshot = historyService.CreateSnapshot(item);
 		map.From(command).To(item);
 
@@ -87,6 +92,11 @@ public class TodoItemService(
 		if (item == null)
 		{
 			return Result.NotFound("TodoItem not found!");
+		}
+
+		if (!permissionService.CanAccess(item))
+		{
+			return Result.Forbidden("Access denied!");
 		}
 
 		if (item.DeletedAt == null)
@@ -124,6 +134,11 @@ public class TodoItemService(
 			return Result<TodoItem>.NotFound("TodoItem not found!");
 		}
 
+		if (!permissionService.CanAccess(item))
+		{
+			return Result<TodoItem>.Forbidden("Access denied!");
+		}
+
 		return Result<TodoItem>.Success(map.From(item).To<TodoItem>());
 	}
 
@@ -137,7 +152,7 @@ public class TodoItemService(
 		var query = todoItemRepository.GetAllQueryable();
 
 		query = query.Where(e => e.DeletedAt == null);
-		query = permissionQueryFilter.ApplyReadFilter(query);
+		query = permissionService.ApplyReadFilter(query);
 
 		foreach (var condition in filter.Conditions)
 		{
@@ -157,7 +172,7 @@ public class TodoItemService(
 		var query = todoItemRepository.GetAllQueryable();
 
 		query = query.Where(e => e.DeletedAt == null);
-		query = permissionQueryFilter.ApplyReadFilter(query);
+		query = permissionService.ApplyReadFilter(query);
 
 		return map.From(query).To<TodoItemListItem>().ToAsyncEnumerable();
 	}

@@ -8,13 +8,13 @@ namespace <# Project.Namespace#>.Service.Features.Favorites;
 public sealed class <# Definition.Name#>FavoriteSource(
 	I<# Definition.Name#>Repository <# Definition.NameLow#>Repository,
 	IMap map,
-	IPermissionQueryFilter permissionQueryFilter) : IFavoriteSource
+	IPermissionService permissionService) : IFavoriteSource
 {
 	public ItemType Type => ItemType.<# Definition.Name#>;
 
 	public Task<FavoriteModel?> CreateFavoriteAsync(Guid userId, Guid itemId)
 	{
-		var item = permissionQueryFilter
+		var item = permissionService
 			.ApplyReadFilter(<# Definition.NameLow#>Repository.GetAllQueryable())
 			.Where(item => item.DeletedAt == null && item.Id == itemId)
 			.FirstOrDefault();

@@ -15,13 +15,13 @@ public class <# Definition.Name#>TrashSource(
 	HistoryService historyService,
 	IPublisher publisher,
 	IMap map,
-	IPermissionQueryFilter permissionQueryFilter) : ITrashSource
+	IPermissionService permissionService) : ITrashSource
 {
 	public ItemType Type => ItemType.<# Definition.Name#>;
 
 	public IAsyncEnumerable<TrashItem> GetItemsAsync()
 	{
-		var query = permissionQueryFilter
+		var query = permissionService
 			.ApplyReadFilter(<# Definition.NameLow#>Repository.GetAllQueryable())
 			.Where(item => item.DeletedAt != null)
 			.OrderByDescending(item => item.DeletedAt);
@@ -65,7 +65,7 @@ public class <# Definition.Name#>TrashSource(
 
 	public async Task DeleteAllAsync()
 	{
-		var items = permissionQueryFilter
+		var items = permissionService
 			.ApplyReadFilter(<# Definition.NameLow#>Repository.GetAllQueryable())
 			.Where(item => item.DeletedAt != null)
 			.ToList();

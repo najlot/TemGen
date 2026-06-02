@@ -124,6 +124,8 @@ internal class Program
 							Directory.CreateDirectory(dirPath);
 						}
 
+						generatedFiles.Add(normalizedRelativePath);
+
 						if (File.Exists(destPath))
 						{
 							if (!allowOverwrite)
@@ -141,8 +143,6 @@ internal class Program
 						{
 							await File.WriteAllTextAsync(destPath, content, encoding, tkn).ConfigureAwait(false);
 						}
-
-						generatedFiles.Add(normalizedRelativePath);
 					}
 				}
 				catch (Exception ex)

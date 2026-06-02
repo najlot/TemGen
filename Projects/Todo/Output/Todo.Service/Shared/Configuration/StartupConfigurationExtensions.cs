@@ -36,6 +36,11 @@ public static class StartupConfigurationExtensions
 			throw new Exception($"Please set {nameof(ServiceConfiguration.Secret)} in the {nameof(ServiceConfiguration)}!");
 		}
 
+		if (resolvedServiceConfig.Secret.Length < 32)
+		{
+			throw new Exception($"{nameof(ServiceConfiguration.Secret)} must be at least 32 characters long.");
+		}
+
 		var primaryStorage = ResolvePrimaryStorage(
 			storageConfigFound ? storageConfig : null,
 			fileConfigFound,

@@ -19,7 +19,7 @@ public class NoteService(
 	IPublisher publisher,
 	IMap map,
 	IUserIdProvider userIdProvider,
-	IPermissionQueryFilter permissionQueryFilter)
+	IPermissionService permissionService)
 {
 	private static readonly HashSet<string> FilterableProperties = new(StringComparer.Ordinal)
 	{
@@ -53,6 +53,11 @@ public class NoteService(
 			return Result.NotFound("Note not found!");
 		}
 
+		if (!permissionService.CanAccess(item))
+		{
+			return Result.Forbidden("Access denied!");
+		}
+
 		var snapshot = historyService.CreateSnapshot(item);
 		map.From(command).To(item);
 
@@ -84,6 +89,11 @@ public class NoteService(
 		if (item == null)
 		{
 			return Result.NotFound("Note not found!");
+		}
+
+		if (!permissionService.CanAccess(item))
+		{
+			return Result.Forbidden("Access denied!");
 		}
 
 		if (item.DeletedAt == null)
@@ -121,6 +131,11 @@ public class NoteService(
 			return Result<Note>.NotFound("Note not found!");
 		}
 
+		if (!permissionService.CanAccess(item))
+		{
+			return Result<Note>.Forbidden("Access denied!");
+		}
+
 		return Result<Note>.Success(map.From(item).To<Note>());
 	}
 
@@ -134,7 +149,7 @@ public class NoteService(
 		var query = noteRepository.GetAllQueryable();
 
 		query = query.Where(e => e.DeletedAt == null);
-		query = permissionQueryFilter.ApplyReadFilter(query);
+		query = permissionService.ApplyReadFilter(query);
 
 		foreach (var condition in filter.Conditions)
 		{
@@ -154,7 +169,7 @@ public class NoteService(
 		var query = noteRepository.GetAllQueryable();
 
 		query = query.Where(e => e.DeletedAt == null);
-		query = permissionQueryFilter.ApplyReadFilter(query);
+		query = permissionService.ApplyReadFilter(query);
 
 		return map.From(query).To<NoteListItem>().ToAsyncEnumerable();
 	}

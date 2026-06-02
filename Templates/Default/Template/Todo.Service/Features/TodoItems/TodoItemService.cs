@@ -19,7 +19,7 @@ public class <# Definition.Name#>Service(
 	IPublisher publisher,
 	IMap map,
 	IUserIdProvider userIdProvider,
-	IPermissionQueryFilter permissionQueryFilter)
+	IPermissionService permissionService)
 {
 	private static readonly HashSet<string> FilterableProperties = new(StringComparer.Ordinal)
 	{
@@ -50,6 +50,11 @@ public class <# Definition.Name#>Service(
 		if (item == null)
 		{
 			return Result.NotFound("<# Definition.Name#> not found!");
+		}
+
+		if (!permissionService.CanAccess(item))
+		{
+			return Result.Forbidden("Access denied!");
 		}
 
 		var snapshot = historyService.CreateSnapshot(item);
@@ -84,6 +89,11 @@ if (favoriteFields.Count > 1) WriteLine($"\t\t\titem.{favoriteFields[1].Field}).
 		if (item == null)
 		{
 			return Result.NotFound("<# Definition.Name#> not found!");
+		}
+
+		if (!permissionService.CanAccess(item))
+		{
+			return Result.Forbidden("Access denied!");
 		}
 
 		if (item.DeletedAt == null)
@@ -121,6 +131,11 @@ if (favoriteFields.Count > 1) WriteLine($"\t\t\titem.{favoriteFields[1].Field}).
 			return Result<<# Definition.Name#>>.NotFound("<# Definition.Name#> not found!");
 		}
 
+		if (!permissionService.CanAccess(item))
+		{
+			return Result<<# Definition.Name#>>.Forbidden("Access denied!");
+		}
+
 		return Result<<# Definition.Name#>>.Success(map.From(item).To<<# Definition.Name#>>());
 	}
 
@@ -134,7 +149,7 @@ if (favoriteFields.Count > 1) WriteLine($"\t\t\titem.{favoriteFields[1].Field}).
 		var query = <# Definition.NameLow#>Repository.GetAllQueryable();
 
 		query = query.Where(e => e.DeletedAt == null);
-		query = permissionQueryFilter.ApplyReadFilter(query);
+		query = permissionService.ApplyReadFilter(query);
 
 		foreach (var condition in filter.Conditions)
 		{
@@ -154,7 +169,7 @@ if (favoriteFields.Count > 1) WriteLine($"\t\t\titem.{favoriteFields[1].Field}).
 		var query = <# Definition.NameLow#>Repository.GetAllQueryable();
 
 		query = query.Where(e => e.DeletedAt == null);
-		query = permissionQueryFilter.ApplyReadFilter(query);
+		query = permissionService.ApplyReadFilter(query);
 
 		return map.From(query).To<<# Definition.Name#>ListItem>().ToAsyncEnumerable();
 	}

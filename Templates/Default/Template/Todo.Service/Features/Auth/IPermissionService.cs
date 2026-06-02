@@ -1,7 +1,8 @@
 namespace <# Project.Namespace#>.Service.Features.Auth;
 
-public interface IPermissionQueryFilter
+public interface IPermissionService
 {
 	IQueryable<T> ApplyReadFilter<T>(IQueryable<T> query);
+	bool CanAccess<T>(T item);
 }
 <#cs SetOutputPathAndSkipOtherDefinitions()#>

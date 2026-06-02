@@ -9,7 +9,11 @@ main {
 }
 
 .sidebar {
-	background-image: linear-gradient(180deg, #004d40 0%, #00251a 75%);
+	background-color: #004d40;
+}
+
+[data-bs-theme="dark"] .sidebar {
+	background-color: #00251a;
 }
 
 .top-row {

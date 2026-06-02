@@ -15,13 +15,13 @@ public class TodoItemTrashSource(
 	HistoryService historyService,
 	IPublisher publisher,
 	IMap map,
-	IPermissionQueryFilter permissionQueryFilter) : ITrashSource
+	IPermissionService permissionService) : ITrashSource
 {
 	public ItemType Type => ItemType.TodoItem;
 
 	public IAsyncEnumerable<TrashItem> GetItemsAsync()
 	{
-		var query = permissionQueryFilter
+		var query = permissionService
 			.ApplyReadFilter(todoItemRepository.GetAllQueryable())
 			.Where(item => item.DeletedAt != null)
 			.OrderByDescending(item => item.DeletedAt);
@@ -65,7 +65,7 @@ public class TodoItemTrashSource(
 
 	public async Task DeleteAllAsync()
 	{
-		var items = permissionQueryFilter
+		var items = permissionService
 			.ApplyReadFilter(todoItemRepository.GetAllQueryable())
 			.Where(item => item.DeletedAt != null)
 			.ToList();
