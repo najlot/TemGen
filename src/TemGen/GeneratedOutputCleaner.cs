@@ -12,7 +12,7 @@ public static class GeneratedOutputCleaner
 		GeneratedOutputManifest previousManifest,
 		GeneratedOutputManifest currentManifest)
 	{
-		if (previousManifest.Files.Count == 0)
+		if (previousManifest?.Files == null || previousManifest.Files.Count == 0)
 		{
 			return 0;
 		}

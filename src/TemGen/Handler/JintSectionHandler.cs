@@ -20,11 +20,13 @@ public sealed class JintSectionHandler(string[] initialScripts) : AbstractSectio
 			.SetValue("definitions", globals.Definitions.ToArray())
 			.SetValue("skipOtherDefinitions", globals.SkipOtherDefinitions)
 			.SetValue("repeatForEachDefinitionEntry", globals.RepeatForEachDefinitionEntry)
+			.SetValue("allowOverwrite", globals.AllowOverwrite)
 			.SetValue("project", globals.Project)
 			.SetValue("getResult", () => globals.Result)
 			.SetValue("setResult", (Action<object>)(o => globals.Result = o.ToString()))
 			.SetValue("write", (Action<object>)(o => globals.Write(o)))
 			.SetValue("writeLine", (Action<object>)(o => globals.WriteLine(o)))
+			.SetValue("skipRemaining", (Func<object>)globals.SkipRemaining)
 			.SetValue("setVariable", (Action<string, object>)((name, value) => globals.SetVariable(name, value)))
 			.SetValue("getVariable", (Func<string, object>)(name => globals.GetVariable(name)));
 
@@ -40,6 +42,7 @@ public sealed class JintSectionHandler(string[] initialScripts) : AbstractSectio
 		globals.RelativePath = engine.GetValue("relativePath").ToString();
 		globals.SkipOtherDefinitions = engine.GetValue("skipOtherDefinitions").AsBoolean();
 		globals.RepeatForEachDefinitionEntry = engine.GetValue("repeatForEachDefinitionEntry").AsBoolean();
+		globals.AllowOverwrite = engine.GetValue("allowOverwrite").AsBoolean();
 
 		return Task.CompletedTask;
 	}

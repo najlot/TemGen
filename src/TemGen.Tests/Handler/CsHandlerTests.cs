@@ -55,10 +55,12 @@ public class CsHandlerTests
 						"w(Definition.Name + ':'); \n" +
 							"foreach(var e in Entries) Write(e.Field + ','); \n" +
 							"Result=Result.Trim(','); \n" +
-							"RelativePath = \"Is\" + RelativePath;"
+							"RelativePath = \"Is\" + RelativePath; \n" +
+							"AllowOverwrite = false;"
 			});
 
 		Assert.Equal("IsTest.cs", globals.RelativePath);
+		Assert.False(globals.AllowOverwrite);
 		Assert.False(globals.SkipOtherDefinitions);
 		Assert.Equal("aspnet-TestNamespace.Blazor-cs|Test:Entry_1,Entry_2", globals.Result);
 

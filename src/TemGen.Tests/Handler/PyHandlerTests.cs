@@ -55,10 +55,12 @@ public class PyHandlerTests
 						"w(definition.Name + ':') \n" +
 							"for val in entries: write(val.Field + ',') \n" +
 							"set_result(get_result().rstrip(',')) \n" +
-							"relative_path = \"Is\" + relative_path"
+							"relative_path = \"Is\" + relative_path \n" +
+							"allow_overwrite = False"
 			});
 
 		Assert.Equal("IsTest.cs", globals.RelativePath);
+		Assert.False(globals.AllowOverwrite);
 		Assert.False(globals.SkipOtherDefinitions);
 		Assert.Equal("aspnet-TestNamespace.Blazor-py|Test:Entry_1,Entry_2", globals.Result);
 
@@ -71,5 +73,15 @@ public class PyHandlerTests
 			});
 
 		Assert.True(globals.SkipOtherDefinitions);
+
+		await handler.TryHandle(
+			globals,
+			new TemplateSection()
+			{
+				Handler = TemplateHandler.Python,
+				Content = "skip_remaining()"
+			});
+
+		Assert.True(globals.SkipRemainingRequested);
 	}
 }

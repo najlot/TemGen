@@ -22,12 +22,14 @@ public class Globals
 	public string RelativePath { get; set; }
 	public Definition Definition { get; set; }
 	public bool SkipOtherDefinitions { get; set; }
+	public bool SkipRemainingRequested { get; set; }
 	public List<Definition> Definitions { get; set; }
 	public DefinitionEntry DefinitionEntry { get; set; }
 	public List<DefinitionEntry> Entries { get; set; }
 	public Project Project { get; set; }
 	public bool RepeatForEachDefinitionEntry { get; set; }
 	public Encoding Encoding { get; set; } = Encoding.UTF8;
+	public bool AllowOverwrite { get; set; } = true;
 
 	public void Write(object obj)
 	{
@@ -56,6 +58,12 @@ public class Globals
 				_resultSb.AppendLine(obj.ToString());
 				break;
 		}
+	}
+
+	public object SkipRemaining()
+	{
+		SkipRemainingRequested = true;
+		return null;
 	}
 
 	private readonly List<Dictionary<string, object>> _variableScopes = [[]];

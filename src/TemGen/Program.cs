@@ -114,15 +114,23 @@ internal class Program
 				{
 					var results = await processor.Handle(template, definitions).ConfigureAwait(false);
 
-					foreach (var (key, (encoding, content)) in results)
+					foreach (var (key, (encoding, content, allowOverwrite)) in results)
 					{
 						var destPath = Path.Combine(project.OutputPath, key);
 						var normalizedRelativePath = key.Replace('\\', '/');
 						var dirPath = Path.GetDirectoryName(destPath);
-						Directory.CreateDirectory(dirPath);
+						if (!string.IsNullOrWhiteSpace(dirPath))
+						{
+							Directory.CreateDirectory(dirPath);
+						}
 
 						if (File.Exists(destPath))
 						{
+							if (!allowOverwrite)
+							{
+								return;
+							}
+
 							var currentContent = await File.ReadAllTextAsync(destPath, tkn).ConfigureAwait(false);
 							if (currentContent != content)
 							{

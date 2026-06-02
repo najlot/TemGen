@@ -51,6 +51,48 @@ public class TemplateProcessorTests
 	}
 
 	[Fact]
+	public async Task Handle_must_stop_processing_remaining_sections_when_skip_remaining_is_returned_from_csharp()
+	{
+		var testId = Path.Combine(".", System.Guid.NewGuid().ToString());
+		var templatePath = Path.Combine(testId, "SkipRemainingReturnTemplate.txt");
+		var content = "START<#cs Write(\"A\"); return SkipRemaining();#>END";
+
+		Directory.CreateDirectory(testId);
+		File.WriteAllText(templatePath, content);
+
+		try
+		{
+			var template = TemplatesReader.ReadTemplates(testId).Single();
+			var definition = new Definition
+			{
+				Name = "TodoItem",
+				NameLow = "todoItem",
+				Entries = []
+			};
+			var project = new Project
+			{
+				Namespace = "Todo"
+			};
+			var processor = new TemplateProcessor(
+			[
+				new TextSectionHandler(),
+				new CsSectionHandler([]),
+				new ReflectionSectionHandler()
+			],
+			project,
+			[definition]);
+
+			var result = await processor.Handle(template, definition, null);
+
+			Assert.Equal("STARTA", result.Content.Replace("\r\n", "\n"));
+		}
+		finally
+		{
+			Directory.Delete(testId, true);
+		}
+	}
+
+	[Fact]
 	public async Task Handle_must_support_if_else_blocks_with_scoped_loop_variables()
 	{
 		var testId = Path.Combine(".", System.Guid.NewGuid().ToString());

@@ -22,11 +22,13 @@ public sealed class PySectionHandler(string[] initialScripts) : AbstractSectionH
 			["definitions"] = globals.Definitions.ToArray(),
 			["skip_other_definitions"] = globals.SkipOtherDefinitions,
 			["repeat_for_each_definition_entry"] = globals.RepeatForEachDefinitionEntry,
+			["allow_overwrite"] = globals.AllowOverwrite,
 			["project"] = globals.Project,
 			["get_result"] = () => globals.Result,
 			["set_result"] = (Action<object>)(o => globals.Result = o.ToString()),
 			["write"] = (Action<object>)globals.Write,
 			["write_line"] = (Action<object>)globals.WriteLine,
+			["skip_remaining"] = (Func<object>)globals.SkipRemaining,
 			["set_variable"] = (Action<string, object>)((name, value) => globals.SetVariable(name, value)),
 			["get_variable"] = (Func<string, object>)(name => globals.GetVariable(name))
 		};
@@ -45,6 +47,7 @@ public sealed class PySectionHandler(string[] initialScripts) : AbstractSectionH
 		globals.RelativePath = (string)scriptGlobals["relative_path"];
 		globals.SkipOtherDefinitions = (bool)scriptGlobals["skip_other_definitions"];
 		globals.RepeatForEachDefinitionEntry = (bool)scriptGlobals["repeat_for_each_definition_entry"];
+		globals.AllowOverwrite = (bool)scriptGlobals["allow_overwrite"];
 
 		return Task.CompletedTask;
 	}

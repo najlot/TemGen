@@ -56,6 +56,7 @@ public sealed class LuaSectionHandler(string[] initialScripts) : AbstractSection
 
 		script.Globals["skip_other_definitions"] = globals.SkipOtherDefinitions;
 		script.Globals["repeat_for_each_definition_entry"] = globals.RepeatForEachDefinitionEntry;
+		script.Globals["allow_overwrite"] = globals.AllowOverwrite;
 
 		var projectTable = new Table(script);
 		projectTable["namespace"] = globals.Project.Namespace;
@@ -87,6 +88,7 @@ public sealed class LuaSectionHandler(string[] initialScripts) : AbstractSection
 
 		script.Globals["write"] = (Action<object>)(o => globals.Write(o));
 		script.Globals["write_line"] = (Action<object>)(o => globals.WriteLine(o));
+		script.Globals["skip_remaining"] = (Func<object>)globals.SkipRemaining;
 
 		script.Globals["set_variable"] = (Action<string, object>)((name, value) => globals.SetVariable(name, value));
 		script.Globals["get_variable"] = (Func<string, object>)(name => globals.GetVariable(name));
@@ -101,6 +103,7 @@ public sealed class LuaSectionHandler(string[] initialScripts) : AbstractSection
 		globals.RelativePath = script.Globals["relative_path"].ToString();
 		globals.SkipOtherDefinitions = (bool)script.Globals["skip_other_definitions"];
 		globals.RepeatForEachDefinitionEntry = (bool)script.Globals["repeat_for_each_definition_entry"];
+		globals.AllowOverwrite = (bool)script.Globals["allow_overwrite"];
 
 		return Task.CompletedTask;
 	}

@@ -14,9 +14,9 @@ public partial class TemplateProcessor(AbstractSectionHandler[] handler, Project
 	private static readonly Regex _forPattern = GetForPatternRegex();
 	private readonly CsSectionHandler _csHandler = handler.OfType<CsSectionHandler>().FirstOrDefault() ?? throw new ArgumentException("TemplateProcessor requires a CsSectionHandler for C# control-flow blocks.", nameof(handler));
 
-	public async Task<Dictionary<string, (Encoding, string)>> Handle(Template template, List<Definition> definitions)
+	public async Task<Dictionary<string, (Encoding Encoding, string Content, bool AllowOverwrite)>> Handle(Template template, List<Definition> definitions)
 	{
-		Dictionary<string, (Encoding, string)> results = [];
+		Dictionary<string, (Encoding Encoding, string Content, bool AllowOverwrite)> results = [];
 
 		foreach (var definition in definitions)
 		{
@@ -24,7 +24,7 @@ public partial class TemplateProcessor(AbstractSectionHandler[] handler, Project
 
 			if (!string.IsNullOrWhiteSpace(result.RelativePath))
 			{
-				results[result.RelativePath] = (result.Encoding, result.Content);
+				results[result.RelativePath] = (result.Encoding, result.Content, result.AllowOverwrite);
 			}
 
 			if (result.SkipOtherDefinitions)
@@ -40,7 +40,7 @@ public partial class TemplateProcessor(AbstractSectionHandler[] handler, Project
 
 					if (!string.IsNullOrWhiteSpace(result.RelativePath))
 					{
-						results[result.RelativePath] = (result.Encoding, result.Content);
+						results[result.RelativePath] = (result.Encoding, result.Content, result.AllowOverwrite);
 					}
 				}
 			}
@@ -59,9 +59,11 @@ public partial class TemplateProcessor(AbstractSectionHandler[] handler, Project
 			DefinitionEntry = definitionEntry,
 			Entries = definition.Entries,
 			SkipOtherDefinitions = false,
+			SkipRemainingRequested = false,
 			Project = project,
 			RepeatForEachDefinitionEntry = false,
-			Encoding = template.Encoding
+			Encoding = template.Encoding,
+			AllowOverwrite = true
 		};
 
 		await HandleSections(template.Sections, globals).ConfigureAwait(false);
@@ -75,7 +77,8 @@ public partial class TemplateProcessor(AbstractSectionHandler[] handler, Project
 			Content = globals.Result,
 			SkipOtherDefinitions = globals.SkipOtherDefinitions,
 			RepeatForEachDefinitionEntry = globals.RepeatForEachDefinitionEntry,
-			Encoding = globals.Encoding
+			Encoding = globals.Encoding,
+			AllowOverwrite = globals.AllowOverwrite
 		};
 	}
 
@@ -115,6 +118,11 @@ public partial class TemplateProcessor(AbstractSectionHandler[] handler, Project
 			{
 				throw new Exception($"Error processing: [{section.Handler}]{Environment.NewLine}{section.Content}{Environment.NewLine}", ex);
 			}
+
+			if (globals.SkipRemainingRequested)
+			{
+				break;
+			}
 		}
 	}
 
@@ -144,6 +152,11 @@ public partial class TemplateProcessor(AbstractSectionHandler[] handler, Project
 			finally
 			{
 				globals.PopVariableScope();
+			}
+
+			if (globals.SkipRemainingRequested)
+			{
+				break;
 			}
 		}
 	}

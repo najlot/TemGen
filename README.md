@@ -216,6 +216,7 @@ In templates, you have access to:
 - **Definitions**: All definitions in the project
 - **Write()**, **WriteLine()**: Output methods
 - **SetOutputPath()**: Control output file path
+- **SkipRemaining()**: Use `return SkipRemaining();` to stop processing the current template file immediately.
 
 ## CLI Options
 

@@ -55,10 +55,12 @@ public class LuaHandlerTests
 						"w(definition.name .. \":\"); \n" +
 							"for key, value in ipairs(entries) do write(value.field .. ',') end \n" +
 							"set_result(string.sub(get_result(), 1, -2)); \n" +
-							"relative_path = \"Is\" .. relative_path;"
+							"relative_path = \"Is\" .. relative_path; \n" +
+							"allow_overwrite = false;"
 			});
 
 		Assert.Equal("IsTest.cs", globals.RelativePath);
+		Assert.False(globals.AllowOverwrite);
 		Assert.False(globals.SkipOtherDefinitions);
 		Assert.Equal("aspnet-TestNamespace.Blazor-lua|Test:Entry_1,Entry_2", globals.Result);
 
@@ -71,5 +73,15 @@ public class LuaHandlerTests
 			});
 
 		Assert.True(globals.SkipOtherDefinitions);
+
+		await handler.TryHandle(
+			globals,
+			new TemplateSection()
+			{
+				Handler = TemplateHandler.Lua,
+				Content = "skip_remaining()"
+			});
+
+		Assert.True(globals.SkipRemainingRequested);
 	}
 }

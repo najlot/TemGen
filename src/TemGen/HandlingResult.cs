@@ -9,4 +9,5 @@ public class HandlingResult
 	public bool SkipOtherDefinitions { get; set; }
 	public bool RepeatForEachDefinitionEntry { get; set; }
 	public Encoding Encoding { get; set; }
+	public bool AllowOverwrite { get; set; } = true;
 }

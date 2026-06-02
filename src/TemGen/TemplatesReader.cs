@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,6 +18,7 @@ public static class TemplatesReader
 	{
 		var sections = new List<TemplateSection>();
 		var buffer = content.AsSpan();
+		Span<char> langSpan = stackalloc char[32];
 
 		while (true)
 		{
@@ -28,7 +29,7 @@ public static class TemplatesReader
 				sections.Add(new TemplateSection()
 				{
 					Handler = TemplateHandler.Text,
-					Content = new string(buffer),
+					Content = buffer.ToString(),
 				});
 
 				break;
@@ -38,10 +39,9 @@ public static class TemplatesReader
 				sections.Add(new TemplateSection()
 				{
 					Handler = TemplateHandler.Text,
-					Content = new string(buffer.Slice(0, index)),
+					Content = buffer[..index].ToString(),
 				});
 
-				var language = "";
 				var endIndex = buffer.Slice(index).IndexOf("#>");
 
 				if (endIndex == -1)
@@ -50,6 +50,8 @@ public static class TemplatesReader
 				}
 
 				endIndex += index;
+
+				int langLen = 0;
 
 				for (index += 2; index < endIndex; index++)
 				{
@@ -66,18 +68,21 @@ public static class TemplatesReader
 						break;
 					}
 
-					language += c;
+					if (langLen < langSpan.Length)
+					{
+						langSpan[langLen++] = c;
+					}
 				}
 
-				TemplateHandler handler = GetHandlerFromLanguage(language);
+				TemplateHandler handler = GetHandlerFromLanguage(langSpan[..langLen]);
 
 				sections.Add(new TemplateSection()
 				{
 					Handler = handler,
-					Content = new string(buffer[index..endIndex]),
+					Content = buffer[index..endIndex].ToString(),
 				});
 
-				buffer = buffer.Slice(endIndex + 2);
+				buffer = buffer[(endIndex + 2)..];
 			}
 		}
 
@@ -216,30 +221,28 @@ public static class TemplatesReader
 		}
 	}
 
-	private static TemplateHandler GetHandlerFromLanguage(string language)
+	private static TemplateHandler GetHandlerFromLanguage(ReadOnlySpan<char> language)
 	{
-		if (string.IsNullOrWhiteSpace(language))
+		if (language.IsWhiteSpace())
 		{
 			// Default value when the input is invalid
 			return TemplateHandler.Reflection;
 		}
 
-		language = language.Trim().ToLowerInvariant();
+		language = language.Trim();
 
-		return language switch
-		{
-			"cs" => TemplateHandler.CSharp, // C# template handler
-			"csfor" or "for" => TemplateHandler.CSharpFor,
-			"csif" or "if" => TemplateHandler.CSharpIf,
-			"cselseif" or "elseif" => TemplateHandler.CSharpElseIf,
-			"else" => TemplateHandler.CSharpElse,
-			"end" => TemplateHandler.CSharpEnd,
-			"ref" => TemplateHandler.Reflection, // Reflection template handler
-			"js" => TemplateHandler.JavaScript, // JavaScript template handler
-			"lua" => TemplateHandler.Lua, // Lua template handler
-			"py" => TemplateHandler.Python, // Python template handler
-			_ => TemplateHandler.Text, // Default value when the language is not recognized
-		};
+		if (language.Equals("cs", StringComparison.OrdinalIgnoreCase)) return TemplateHandler.CSharp; // C# template handler
+		if (language.Equals("csfor", StringComparison.OrdinalIgnoreCase) || language.Equals("for", StringComparison.OrdinalIgnoreCase)) return TemplateHandler.CSharpFor;
+		if (language.Equals("csif", StringComparison.OrdinalIgnoreCase) || language.Equals("if", StringComparison.OrdinalIgnoreCase)) return TemplateHandler.CSharpIf;
+		if (language.Equals("cselseif", StringComparison.OrdinalIgnoreCase) || language.Equals("elseif", StringComparison.OrdinalIgnoreCase)) return TemplateHandler.CSharpElseIf;
+		if (language.Equals("else", StringComparison.OrdinalIgnoreCase)) return TemplateHandler.CSharpElse;
+		if (language.Equals("end", StringComparison.OrdinalIgnoreCase)) return TemplateHandler.CSharpEnd;
+		if (language.Equals("ref", StringComparison.OrdinalIgnoreCase)) return TemplateHandler.Reflection; // Reflection template handler
+		if (language.Equals("js", StringComparison.OrdinalIgnoreCase)) return TemplateHandler.JavaScript; // JavaScript template handler
+		if (language.Equals("lua", StringComparison.OrdinalIgnoreCase)) return TemplateHandler.Lua; // Lua template handler
+		if (language.Equals("py", StringComparison.OrdinalIgnoreCase)) return TemplateHandler.Python; // Python template handler
+
+		return TemplateHandler.Text; // Default value when the language is not recognized
 	}
 
 	public static (TemplateHandler Handler, string Content) ReadScript(string resourcesScriptPath)

@@ -56,10 +56,12 @@ public class JintHandlerTests
 							"result = getResult(); \n" +
 							"result = result.substring(0, result.length - 1); \n" +
 							"setResult(result); \n" +
-							"relativePath = \"Is\" + relativePath;"
+							"relativePath = \"Is\" + relativePath; \n" +
+							"allowOverwrite = false;"
 			});
 
 		Assert.Equal("IsTest.cs", globals.RelativePath);
+		Assert.False(globals.AllowOverwrite);
 		Assert.False(globals.SkipOtherDefinitions);
 		Assert.Equal("aspnet-TestNamespace.Blazor-js|Test:Entry_1,Entry_2", globals.Result);
 
@@ -72,5 +74,15 @@ public class JintHandlerTests
 			});
 
 		Assert.True(globals.SkipOtherDefinitions);
+
+		await handler.TryHandle(
+			globals,
+			new TemplateSection()
+			{
+				Handler = TemplateHandler.JavaScript,
+				Content = "skipRemaining();"
+			});
+
+		Assert.True(globals.SkipRemainingRequested);
 	}
 }
