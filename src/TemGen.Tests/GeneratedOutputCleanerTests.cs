@@ -13,7 +13,7 @@ public class GeneratedOutputCleanerTests
 		var outputPath = Path.Combine(Path.GetTempPath(), System.Guid.NewGuid().ToString("N"));
 		Directory.CreateDirectory(Path.Combine(outputPath, "Generated"));
 		var staleFilePath = Path.Combine(outputPath, "Generated", "Old.txt");
-		await File.WriteAllTextAsync(staleFilePath, "old content");
+		await File.WriteAllTextAsync(staleFilePath, "old content", TestContext.Current.CancellationToken);
 
 		try
 		{
@@ -45,7 +45,7 @@ public class GeneratedOutputCleanerTests
 		var outputPath = Path.Combine(Path.GetTempPath(), System.Guid.NewGuid().ToString("N"));
 		Directory.CreateDirectory(Path.Combine(outputPath, "Generated"));
 		var staleFilePath = Path.Combine(outputPath, "Generated", "Old.txt");
-		await File.WriteAllTextAsync(staleFilePath, "old content");
+		await File.WriteAllTextAsync(staleFilePath, "old content", TestContext.Current.CancellationToken);
 
 		try
 		{
@@ -54,7 +54,7 @@ public class GeneratedOutputCleanerTests
 				Files = ["Generated/Old.txt"]
 			};
 
-			await File.WriteAllTextAsync(staleFilePath, "user changed this file");
+			await File.WriteAllTextAsync(staleFilePath, "user changed this file", TestContext.Current.CancellationToken);
 			var currentManifest = new GeneratedOutputManifest();
 
 			var deletedCount = GeneratedOutputCleaner.Cleanup(outputPath, previousManifest, currentManifest);
@@ -77,7 +77,7 @@ public class GeneratedOutputCleanerTests
 		var outputPath = Path.Combine(Path.GetTempPath(), System.Guid.NewGuid().ToString("N"));
 		Directory.CreateDirectory(outputPath);
 		var customFilePath = Path.Combine(outputPath, "CustomController.cs");
-		await File.WriteAllTextAsync(customFilePath, "custom controller");
+		await File.WriteAllTextAsync(customFilePath, "custom controller", TestContext.Current.CancellationToken);
 
 		try
 		{

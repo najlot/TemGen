@@ -27,6 +27,7 @@ public class Globals
 	public DefinitionEntry DefinitionEntry { get; set; }
 	public List<DefinitionEntry> Entries { get; set; }
 	public Project Project { get; set; }
+	public string PreviousContent { get; set; } = string.Empty;
 	public bool RepeatForEachDefinitionEntry { get; set; }
 	public Encoding Encoding { get; set; } = Encoding.UTF8;
 	public bool AllowOverwrite { get; set; } = true;

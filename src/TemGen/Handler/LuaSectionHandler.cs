@@ -12,6 +12,7 @@ public sealed class LuaSectionHandler(string[] initialScripts) : AbstractSection
 		var script = new Script();
 
 		script.Globals["relative_path"] = globals.RelativePath;
+		script.Globals["previous_content"] = globals.PreviousContent;
 
 		var definitionTable = new Table(script);
 		definitionTable["name"] = globals.Definition.Name;

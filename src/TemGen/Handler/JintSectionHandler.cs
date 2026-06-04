@@ -14,6 +14,7 @@ public sealed class JintSectionHandler(string[] initialScripts) : AbstractSectio
 	{
 		var engine = new Engine(cfg => cfg.LimitRecursion(1_000_000))
 			.SetValue("relativePath", globals.RelativePath)
+			.SetValue("previousContent", globals.PreviousContent)
 			.SetValue("definition", globals.Definition)
 			.SetValue("definitionEntry", globals.DefinitionEntry)
 			.SetValue("entries", globals.Definition.Entries.ToArray())

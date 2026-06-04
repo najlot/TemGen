@@ -14,13 +14,25 @@ public partial class TemplateProcessor(AbstractSectionHandler[] handler, Project
 	private static readonly Regex _forPattern = GetForPatternRegex();
 	private readonly CsSectionHandler _csHandler = handler.OfType<CsSectionHandler>().FirstOrDefault() ?? throw new ArgumentException("TemplateProcessor requires a CsSectionHandler for C# control-flow blocks.", nameof(handler));
 
-	public async Task<Dictionary<string, (Encoding Encoding, string Content, bool AllowOverwrite)>> Handle(Template template, List<Definition> definitions)
+	internal async Task<(Dictionary<string, (Encoding Encoding, string Content, bool AllowOverwrite)> Files, Dictionary<string, string> LayerContents)> HandleLayer(Template template, IReadOnlyDictionary<string, string> previousLayerContents = null)
 	{
 		Dictionary<string, (Encoding Encoding, string Content, bool AllowOverwrite)> results = [];
+		Dictionary<string, string> layerContents = new(StringComparer.Ordinal);
 
 		foreach (var definition in definitions)
 		{
-			var result = await Handle(template, definition, null).ConfigureAwait(false);
+			var result = await Handle(
+				template,
+				definition,
+				null,
+				GetPreviousContent(previousLayerContents, template.RelativePath, definition, null)).ConfigureAwait(false);
+
+			layerContents[CreatePreviousContentKey(template.RelativePath, definition, null)] = result.Content;
+
+			if (!string.IsNullOrWhiteSpace(result.RelativePath))
+			{
+				layerContents[CreatePreviousContentPathKey(result.RelativePath)] = result.Content;
+			}
 
 			if (!string.IsNullOrWhiteSpace(result.RelativePath))
 			{
@@ -36,7 +48,18 @@ public partial class TemplateProcessor(AbstractSectionHandler[] handler, Project
 			{
 				foreach (var entry in definition.Entries)
 				{
-					result = await Handle(template, definition, entry).ConfigureAwait(false);
+					result = await Handle(
+						template,
+						definition,
+						entry,
+						GetPreviousContent(previousLayerContents, template.RelativePath, definition, entry)).ConfigureAwait(false);
+
+					layerContents[CreatePreviousContentKey(template.RelativePath, definition, entry)] = result.Content;
+
+					if (!string.IsNullOrWhiteSpace(result.RelativePath))
+					{
+						layerContents[CreatePreviousContentPathKey(result.RelativePath)] = result.Content;
+					}
 
 					if (!string.IsNullOrWhiteSpace(result.RelativePath))
 					{
@@ -46,10 +69,10 @@ public partial class TemplateProcessor(AbstractSectionHandler[] handler, Project
 			}
 		}
 
-		return results;
+		return (results, layerContents);
 	}
 
-	public async Task<HandlingResult> Handle(Template template, Definition definition, DefinitionEntry definitionEntry)
+	public async Task<HandlingResult> Handle(Template template, Definition definition, DefinitionEntry definitionEntry, string previousContent = "")
 	{
 		var globals = new Globals()
 		{
@@ -61,6 +84,7 @@ public partial class TemplateProcessor(AbstractSectionHandler[] handler, Project
 			SkipOtherDefinitions = false,
 			SkipRemainingRequested = false,
 			Project = project,
+			PreviousContent = previousContent ?? string.Empty,
 			RepeatForEachDefinitionEntry = false,
 			Encoding = template.Encoding,
 			AllowOverwrite = true
@@ -80,6 +104,40 @@ public partial class TemplateProcessor(AbstractSectionHandler[] handler, Project
 			Encoding = globals.Encoding,
 			AllowOverwrite = globals.AllowOverwrite
 		};
+	}
+
+	private static string GetPreviousContent(IReadOnlyDictionary<string, string> previousLayerContents, string templateRelativePath, Definition definition, DefinitionEntry definitionEntry)
+	{
+		if (previousLayerContents is null)
+		{
+			return string.Empty;
+		}
+
+		return previousLayerContents.TryGetValue(CreatePreviousContentKey(templateRelativePath, definition, definitionEntry), out var previousContent)
+			? previousContent
+			: previousLayerContents.TryGetValue(CreatePreviousContentPathKey(templateRelativePath), out previousContent)
+				? previousContent
+				: string.Empty;
+	}
+
+	private static string CreatePreviousContentKey(string templateRelativePath, Definition definition, DefinitionEntry definitionEntry)
+	{
+		return string.Join(
+			'\u001F',
+			"context",
+			templateRelativePath ?? string.Empty,
+			definition?.Name ?? string.Empty,
+			definitionEntry is null ? "definition" : "entry",
+			definitionEntry?.Field ?? string.Empty,
+			definitionEntry?.EntryType ?? string.Empty);
+	}
+
+	private static string CreatePreviousContentPathKey(string relativePath)
+	{
+		return string.Join(
+			'\u001F',
+			"path",
+			relativePath ?? string.Empty);
 	}
 
 	private async Task HandleSections(IEnumerable<TemplateSection> sections, Globals globals)

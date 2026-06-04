@@ -16,6 +16,7 @@ public sealed class PySectionHandler(string[] initialScripts) : AbstractSectionH
 		var scriptGlobals = new Dictionary<string, object>
 		{
 			["relative_path"] = globals.RelativePath,
+			["previous_content"] = globals.PreviousContent,
 			["definition"] = globals.Definition,
 			["definition_entry"] = globals.DefinitionEntry,
 			["entries"] = globals.Definition.Entries.ToArray(),

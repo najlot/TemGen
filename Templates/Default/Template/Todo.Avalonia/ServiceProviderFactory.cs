@@ -23,13 +23,7 @@ public static class ServiceProviderFactory
 		INavigationService navigationService,
 		INotificationService notificationService)
 	{
-		var assembly = typeof(ServiceProviderFactory).Assembly;
-		using var appSettingsStream = assembly.GetManifestResourceStream($"{assembly.GetName().Name}.appsettings.json")
-			?? throw new InvalidOperationException("Embedded appsettings.json not found.");
-
-		var configurationBuilder = new ConfigurationBuilder()
-			.AddJsonStream(appSettingsStream);
-
+		var configurationBuilder = new ConfigurationBuilder();
 		var basePath = AppContext.BaseDirectory;
 		var appSettingsPath = Path.Combine(basePath, "appsettings.json");
 		if (File.Exists(appSettingsPath))

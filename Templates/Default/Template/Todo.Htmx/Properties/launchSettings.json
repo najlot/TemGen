@@ -10,4 +10,7 @@
         }
     }
 }
-<#cs SetOutputPathAndSkipOtherDefinitions()#>
+<#cs
+    AllowOverwrite = false;
+    SetOutputPathAndSkipOtherDefinitions()
+#>

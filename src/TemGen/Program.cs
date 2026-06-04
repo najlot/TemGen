@@ -90,6 +90,8 @@ internal class Program
 			}
 		}
 
+		var previousLayerContents = new Dictionary<string, string>(StringComparer.Ordinal);
+
 		foreach (var templatesPath in project.TemplatePaths)
 		{
 			List<Template> templates;
@@ -108,11 +110,19 @@ internal class Program
 				throw;
 			}
 
+			var priorLayerContents = previousLayerContents;
+			var currentLayerContents = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
+
 			await Parallel.ForEachAsync(templates, async (template, tkn) =>
 			{
 				try
 				{
-					var results = await processor.Handle(template, definitions).ConfigureAwait(false);
+					var (results, layerContents) = await processor.HandleLayer(template, priorLayerContents).ConfigureAwait(false);
+
+					foreach (var layerContent in layerContents)
+					{
+						currentLayerContents[layerContent.Key] = layerContent.Value;
+					}
 
 					foreach (var (key, (encoding, content, allowOverwrite)) in results)
 					{
@@ -151,6 +161,8 @@ internal class Program
 					Console.Error.WriteLine($"Error processing {template.RelativePath}: {ex}");
 				}
 			}).ConfigureAwait(false);
+
+			previousLayerContents = new Dictionary<string, string>(currentLayerContents, StringComparer.Ordinal);
 		}
 
 		if (hasProcessingErrors)
@@ -183,10 +195,17 @@ internal class Program
 
 		var pathOption = new Option<string>("--path", "-p")
 		{
-			Description = "Path to a project definition file or a folder containing ProjectDefinition.json or ProjectDefinition.",
+			Description = "Path to a project definition file or a folder containing ProjectDefinition.json or ProjectDefinition. With --new it becomes the target folder.",
 			DefaultValueFactory = (r) => "."
 		};
 		rootCommand.Add(pathOption);
+
+		var newOption = new Option<string>("--new", "-n")
+		{
+			Description = "Create a new project scaffold. Optionally provide the project name after the option.",
+			Arity = ArgumentArity.ZeroOrOne
+		};
+		rootCommand.Add(newOption);
 
 		var loopOption = new Option<bool>("--loop", "-l")
 		{
@@ -197,10 +216,25 @@ internal class Program
 		rootCommand.SetAction(async r =>
 		{
 			var path = r.GetValue(pathOption);
+			var newProjectName = r.GetValue(newOption);
 			var repeat = r.GetValue(loopOption);
+			var createNewProject = r.GetResult(newOption) is not null;
+			var isPathSpecified = r.GetResult(pathOption) is not null;
 
 			try
 			{
+				if (createNewProject)
+				{
+					if (!isPathSpecified && !string.IsNullOrWhiteSpace(newProjectName))
+					{
+						path = newProjectName;
+					}
+
+					var projectDirectory = ProjectScaffolder.Create(path, newProjectName);
+					Console.WriteLine($"Created new project scaffold at {projectDirectory}.");
+					return;
+				}
+
 				do
 				{
 					await Generate(path).ConfigureAwait(false);

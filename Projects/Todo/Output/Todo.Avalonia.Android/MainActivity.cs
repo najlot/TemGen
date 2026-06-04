@@ -4,6 +4,7 @@ using Android.Content.PM;
 using Android.Util;
 using Android.Views;
 using Avalonia.Android;
+using Microsoft.Extensions.Configuration;
 using System;
 using Todo.Avalonia.Android.Identity;
 using Todo.Avalonia.Views;
@@ -19,9 +20,25 @@ namespace Todo.Avalonia.Android;
 	ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
 public class MainActivity : AvaloniaMainActivity
 {
+	private static string GetDataServiceUrl()
+	{
+		var assembly = typeof(ServiceProviderFactory).Assembly;
+		using var appSettingsStream = assembly.GetManifestResourceStream($"{assembly.GetName().Name}.appsettings.json")
+			?? throw new InvalidOperationException("Embedded appsettings.json not found.");
+
+		var configurationBuilder = new ConfigurationBuilder()
+			.AddJsonStream(appSettingsStream);
+
+		var configuration = configurationBuilder.Build();
+
+		return configuration.GetSection("DataServiceUrl")?.Get<string>() ?? throw new InvalidOperationException("DataServiceUrl not found.");
+	}
+
 	protected override void OnCreate(Bundle? savedInstanceState)
 	{
 		ServiceProviderFactory.PlatformUserDataStoreFactory ??= () => new SecureUserDataStore(this);
+		ServiceProviderFactory.PlatformDataServiceUrlFactory ??= () => GetDataServiceUrl();
+		
 		base.OnCreate(savedInstanceState);
 	}
 

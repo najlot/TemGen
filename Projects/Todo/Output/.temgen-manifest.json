@@ -558,6 +558,7 @@
     "Todo.Service/Templates/ResetPassword.md",
     "Todo.Service/Todo.Service.csproj",
     "Todo.Service/WebApplicationExtensions.cs",
+    "Todo.Service/appsettings.development.json",
     "Todo.Service/appsettings.json",
     "Todo.Wpf/App.xaml",
     "Todo.Wpf/App.xaml.cs",
