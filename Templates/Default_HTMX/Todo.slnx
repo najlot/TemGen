@@ -1,0 +1,4 @@
+<#cs Write(AddSolutionProjects(
+	PreviousContent,
+	$"\t<Project Path=\"{Project.Namespace}.Htmx/{Project.Namespace}.Htmx.csproj\" />"));
+SetOutputPathAndSkipOtherDefinitions(); return SkipRemaining();#>

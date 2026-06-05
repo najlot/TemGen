@@ -28,7 +28,7 @@ TemGen is a powerful template-based code generator that processes templates with
   - Blazor web applications
   - Contracts, events, and DTOs
   - Tests and localization
-- **Customizable templates**: Create your own templates or use the included default template
+- **Customizable templates**: Create your own templates or compose the included default template layers
 - **Composable template sources**: Mix local template folders and git-backed template sources in the same project
 - **Resource management**: Copy and process resource files alongside generated code
 - **Watch mode**: Run in loop mode to continuously regenerate on demand
@@ -56,8 +56,10 @@ dotnet build src/TemGen.slnx
 ```
 MyProject/
 ├── ProjectDefinition.json     # Project configuration
+├── Resources.cs                # Optional resource copy script
 ├── Definitions/               # Your data model definitions
 │   └── User                   # Example: User entity
+├── Resources/                 # Optional static resources
 └── Output/                    # Generated code will go here
 ```
 
@@ -67,26 +69,50 @@ MyProject/
 {
   "Namespace": "MyApp",
   "DefinitionsPath": "./Definitions",
-  "TemplatesPath": "../../Templates/Default/Template",
+  "TemplatesPath": "../../Templates/Default_Backend;../../Templates/Default_DataAccess;../../Templates/Default_MVVM;../../Templates/Default_WPF",
   "OutputPath": "./Output",
   "ResourcesPath": "./Resources",
-  "ResourcesScriptPath": "../../Templates/Default/Resources.cs",
-  "ScriptsPath": "../../Templates/Default/Scripts"
+  "ResourcesScriptPath": "./Resources.cs",
+  "ScriptsPath": "../../Templates/Default_Scripts"
 }
 ```
 
 Legacy `ProjectDefinition` files without the `.json` extension are still supported.
 
-`TemplatesPath` can also contain a semicolon-separated mix of local directories and git-backed sources. Each entry may point either directly at a `Template` directory or at a template source root that contains `Template`, `Scripts`, and `Resources.*`. When `ScriptsPath` or `ResourcesScriptPath` is omitted, TemGen now discovers sibling `Scripts` directories and `Resources.*` scripts from each template source automatically.
+`TemplatesPath` can contain a semicolon-separated mix of local directories and git-backed sources. The included default application template is split into layers; list the folders you need in dependency order. Every default application layer requires `Default_Backend`.
+
+Common combinations:
+
+```text
+TemplatesPath:../../Templates/Default_Backend
+TemplatesPath:../../Templates/Default_Backend;../../Templates/Default_DataAccess;../../Templates/Default_Blazor
+TemplatesPath:../../Templates/Default_Backend;../../Templates/Default_DataAccess;../../Templates/Default_MVVM;../../Templates/Default_WPF
+```
+
+Layer dependencies:
+
+| Template | Depends on | Adds |
+| --- | --- | --- |
+| `Default_Backend` | none | Contracts, ASP.NET Core service, service tests |
+| `Default_DataAccess` | `Default_Backend` | Client data services, localisation, client data tests |
+| `Default_MVVM` | `Default_Backend`, `Default_DataAccess` | Shared MVVM helpers and view models |
+| `Default_WPF` | `Default_Backend`, `Default_DataAccess`, `Default_MVVM` | WPF desktop client |
+| `Default_Avalonia` | `Default_Backend`, `Default_DataAccess`, `Default_MVVM` | Avalonia shared client and platform heads |
+| `Default_Blazor` | `Default_Backend`, `Default_DataAccess` | Server-side Blazor client |
+| `Default_HTMX` | `Default_Backend`, `Default_DataAccess` | Razor Pages/HTMX client |
+
+Use `Default_Scripts` as `ScriptsPath` with the default layers. `Directory.Packages.props`, `README.md`, and `Todo.slnx` are layered files; later templates append the package versions, README sections, and solution projects they require.
+
+Each `TemplatesPath` entry may point either directly at a template directory or at a template source root that contains `Template`, `Scripts`, and `Resources.*`. When `ScriptsPath` or `ResourcesScriptPath` is omitted, TemGen discovers sibling `Scripts` directories and `Resources.*` scripts from each template source automatically.
 
 Examples:
 
 ```text
-TemplatesPath:../../Templates/Default;https://github.com/najlot/TemGen/tree/main/Templates/Default
+TemplatesPath:../../Templates/Default_Backend;../../Templates/Default_DataAccess;https://github.com/najlot/TemGen/tree/main/Templates/Default_Blazor
 ```
 
 ```text
-TemplatesPath:https://github.com/najlot/TemGen/tree/main/Templates/Default;https://example.com/my-template-pack.git?ref=main&path=Templates/Default
+TemplatesPath:https://github.com/najlot/TemGen/tree/main/Templates/Default_Backend;https://github.com/najlot/TemGen/tree/main/Templates/Default_DataAccess;https://example.com/my-template-pack.git?ref=main&path=Templates/MyClient
 ```
 
 3. **Create a definition** (`Definitions/CalendarEntry`):
@@ -130,10 +156,14 @@ TemGen/
 │   ├── TemGen/              # Main CLI application
 │   └── TemGen.Tests/        # Unit tests
 ├── Templates/
-│   └── Default/             # Default C# template
-│       ├── Template/        # Template files
-│       ├── Scripts/         # Script files
-│       └── Resources.cs     # Resources script
+│   ├── Default_Backend/     # Backend default layer
+│   ├── Default_DataAccess/  # Client data default layer
+│   ├── Default_MVVM/        # Shared MVVM default layer
+│   ├── Default_WPF/         # WPF client default layer
+│   ├── Default_Avalonia/    # Avalonia client default layer
+│   ├── Default_Blazor/      # Blazor client default layer
+│   ├── Default_HTMX/        # HTMX client default layer
+│   └── Default_Scripts/     # Shared default helper scripts
 └── Projects/
     └── Todo/                # Example Todo project
         ├── ProjectDefinition.json
@@ -271,8 +301,12 @@ The Todo project defines entities like:
 
 From these simple definitions, TemGen generates:
 - **Service Backend**: ASP.NET Core service with repositories, controllers
+- **Client Data Layer**: API repositories, client services, and localization
+- **MVVM Layer**: Shared client view models and infrastructure
 - **WPF Client**: Desktop application with MVVM pattern
+- **Avalonia Client**: Cross-platform Avalonia application heads
 - **Blazor App**: Server-side Blazor web application
+- **HTMX App**: Razor Pages/HTMX web application
 - **Contracts**: Events, DTOs, interfaces
 - **Tests**: Unit tests for services and client data layer
 - **Localization**: Resource files for multi-language support

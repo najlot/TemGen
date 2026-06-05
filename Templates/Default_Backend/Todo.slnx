@@ -1,0 +1,6 @@
+<Solution>
+	<Project Path="<#ref Project.Namespace#>.Contracts/<#ref Project.Namespace#>.Contracts.csproj" />
+	<Project Path="<#ref Project.Namespace#>.Service.Test/<#ref Project.Namespace#>.Service.Test.csproj" />
+	<Project Path="<#ref Project.Namespace#>.Service/<#ref Project.Namespace#>.Service.csproj" />
+</Solution>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

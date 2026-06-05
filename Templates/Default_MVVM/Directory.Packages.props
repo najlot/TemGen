@@ -1,0 +1,5 @@
+<#cs Write(AddPackageVersions(
+	PreviousContent,
+	"Microsoft.Extensions.DependencyInjection|10.0.7",
+	"Najlot.Map.SourceGenerator|0.2.1"));
+SetOutputPathAndSkipOtherDefinitions(); return SkipRemaining();#>

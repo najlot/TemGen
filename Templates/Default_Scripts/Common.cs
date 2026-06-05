@@ -104,6 +104,89 @@ void SetOutputPathAndSkipOtherDefinitions()
     SetEncodingWithoutBom();
 }
 
+string AddPackageVersions(string previousContent, params string[] packageVersions)
+{
+    var content = string.IsNullOrWhiteSpace(previousContent)
+        ? """
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+  </ItemGroup>
+</Project>
+"""
+        : previousContent;
+
+    var lines = new List<string>();
+
+    foreach (var packageVersion in packageVersions)
+    {
+        var parts = packageVersion.Split('|', 2);
+
+        if (parts.Length != 2 || content.Contains($"Include=\"{parts[0]}\"", StringComparison.Ordinal))
+        {
+            continue;
+        }
+
+        lines.Add($"    <PackageVersion Include=\"{parts[0]}\" Version=\"{parts[1]}\" />");
+    }
+
+    return AddLinesBefore(content, "  </ItemGroup>", lines);
+}
+
+string AddSolutionProjects(string previousContent, params string[] projectElements)
+{
+    var content = string.IsNullOrWhiteSpace(previousContent)
+        ? """
+<Solution>
+</Solution>
+"""
+        : previousContent;
+
+    return AddLinesBefore(
+        content,
+        "</Solution>",
+        projectElements.Where(projectElement => !content.Contains(projectElement, StringComparison.Ordinal)));
+}
+
+string AddReadmeSection(string previousContent, string section)
+{
+    if (string.IsNullOrWhiteSpace(previousContent))
+    {
+        return section.TrimEnd() + Environment.NewLine;
+    }
+
+    if (previousContent.Contains(section.Trim().Split('\n')[0].Trim(), StringComparison.Ordinal))
+    {
+        return previousContent;
+    }
+
+    return previousContent.TrimEnd() + Environment.NewLine + Environment.NewLine + section.TrimEnd() + Environment.NewLine;
+}
+
+string AddLinesBefore(string content, string marker, IEnumerable<string> lines)
+{
+    var additions = lines.Where(line => !string.IsNullOrWhiteSpace(line)).ToList();
+
+    if (additions.Count == 0)
+    {
+        return content;
+    }
+
+    var markerIndex = content.LastIndexOf(marker, StringComparison.Ordinal);
+
+    if (markerIndex < 0)
+    {
+        return content.TrimEnd() + Environment.NewLine + string.Join(Environment.NewLine, additions) + Environment.NewLine;
+    }
+
+    var newline = content.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
+    var insertion = string.Join(newline, additions) + newline;
+
+    return content.Insert(markerIndex, insertion);
+}
+
 void SetOutputPath(bool skip)
 {
     if (skip)

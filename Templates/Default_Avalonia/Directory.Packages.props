@@ -1,0 +1,16 @@
+<#cs Write(AddPackageVersions(
+	PreviousContent,
+	"Avalonia|12.0.2",
+	"Avalonia.Android|12.0.2",
+	"Avalonia.Browser|12.0.2",
+	"Avalonia.Desktop|12.0.2",
+	"Avalonia.Fonts.Inter|12.0.2",
+	"Avalonia.iOS|12.0.2",
+	"Avalonia.Themes.Fluent|12.0.2",
+	"Material.Icons.Avalonia|3.0.2",
+	"Microsoft.Extensions.Configuration|10.0.7",
+	"Microsoft.Extensions.Configuration.Binder|10.0.7",
+	"Microsoft.Extensions.Configuration.Json|10.0.7",
+	"System.Security.Cryptography.ProtectedData|10.0.7",
+	"Xamarin.AndroidX.Core.SplashScreen|1.2.0.2"));
+SetOutputPathAndSkipOtherDefinitions(); return SkipRemaining();#>

@@ -1,0 +1,4 @@
+<#cs Write(AddSolutionProjects(
+	PreviousContent,
+	$"\t<Project Path=\"{Project.Namespace}.Wpf/{Project.Namespace}.Wpf.csproj\" />"));
+SetOutputPathAndSkipOtherDefinitions(); return SkipRemaining();#>

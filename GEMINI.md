@@ -9,10 +9,15 @@ TemGen is a template-based code generator built with .NET 10.0. It processes tem
 - **`./src`** - Source code for the project
   - `TemGen/` - Main CLI application (executable tool)
   - `TemGen.Tests/` - Unit tests
-- **`./Templates/Default`** - Default template used for code generation
-  - `Template/` - Template files
-  - `Scripts/` - Script files (C#, JS, Python, Lua)
-  - `Resources.cs` - Resources script
+- **`./Templates/Default_*`** - Split default template layers used for code generation
+  - `Default_Backend/` - Contracts, service, and service tests
+  - `Default_DataAccess/` - Client data services, localisation, and client data tests
+  - `Default_MVVM/` - Shared MVVM helpers and view models
+  - `Default_WPF/` - WPF desktop client
+  - `Default_Avalonia/` - Avalonia shared client plus platform heads
+  - `Default_Blazor/` - Server-side Blazor client
+  - `Default_HTMX/` - Razor Pages/HTMX client
+  - `Default_Scripts/` - Shared C# helper scripts for the default layers
 - **`./Projects/Todo`** - Default output project used for generation and testing
   - `Definitions/` - Definition files
   - `Output/` - Generated output from templates
@@ -21,7 +26,7 @@ TemGen is a template-based code generator built with .NET 10.0. It processes tem
 
 ## How It Works
 
-The project uses the default template (`./Templates/Default`) to generate the output project (`./Projects/Todo`) based on definitions. The Todo project serves as both an example and a test case for the code generation functionality.
+The Todo project composes the split default template layers to generate `./Projects/Todo/Output` from its definitions. `Default_Backend` is required by every default application combination; client-facing layers depend on `Default_DataAccess`, and WPF/Avalonia also depend on `Default_MVVM`. The Todo project serves as both an example and a test case for the code generation functionality.
 
 ## Quick Reference
 
@@ -46,7 +51,13 @@ dotnet run --project src/TemGen/TemGen.csproj -- --path ./Projects/Todo && git d
 
 ### How TemGen Processes Templates
 
-Each template file in `Templates/Default/Template/` is processed **once per definition** (from `Projects/Todo/Definitions/`). The template controls its output via:
+Each template file in the selected `Templates/Default_*` layer directories is processed **once per definition** (from `Projects/Todo/Definitions/`). `Projects/Todo/ProjectDefinition.json` lists layers in dependency order:
+
+```text
+Default_Backend;Default_DataAccess;Default_MVVM;Default_WPF;Default_Avalonia;Default_Blazor;Default_HTMX
+```
+
+Templates with the same relative output path can build on earlier layers through `PreviousContent`. The default root files `Directory.Packages.props`, `README.md`, and `Todo.slnx` use this multilayer behavior so each layer contributes only its own package versions, README section, and solution projects. The template controls its output via:
 
 - **`RelativePath`**: Set to empty string to skip output for a definition. `SetOutputPath(bool skip)` helper: if skip is true, sets `RelativePath = ""` (no output); otherwise replaces `TodoItem` with `Definition.Name` and `Todo` with `Project.Namespace` in the path.
 - **`SkipOtherDefinitions`**: Set to `true` to stop processing further definitions. `SetOutputPathAndSkipOtherDefinitions()` sets the output path and stops after the first definition (used for files generated once, like converters, shared base classes).
@@ -99,12 +110,12 @@ Each **DefinitionEntry** has:
 1. Run temgen: `dotnet run --project src/TemGen/TemGen.csproj -- --path ./Projects/Todo`
 2. Check diff: `git diff Projects/Todo/Output`
 3. For each changed output file, compare template vs expected output
-4. Fix the template in `Templates/Default/Template/` to produce the exact expected output
+4. Fix the template in the relevant `Templates/Default_*` layer to produce the exact expected output
 5. Re-run temgen and verify `git diff --stat Projects/Todo/Output` shows no changes
 
 ### Key Files
 
-- `Templates/Default/Scripts/Common.cs` - Helper functions (`SetOutputPath`, `SetOutputPathAndSkipOtherDefinitions`, `WriteFromToMapping`, etc.)
+- `Templates/Default_Scripts/Common.cs` - Helper functions (`SetOutputPath`, `SetOutputPathAndSkipOtherDefinitions`, multilayer merge helpers, mapping helpers, etc.)
 - `Projects/Todo/ProjectDefinition.json` - Defines namespace (`Todo`), paths to definitions/templates/output
 - `src/TemGen/Definition.cs` - Definition class model
 - `src/TemGen/DefinitionEntry.cs` - Entry class model

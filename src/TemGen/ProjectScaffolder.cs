@@ -8,7 +8,7 @@ namespace TemGen;
 
 public static class ProjectScaffolder
 {
-	public const string DefaultTemplateSource = "https://github.com/najlot/TemGen/tree/main/Templates/Default";
+	public const string DefaultTemplateSource = "https://github.com/najlot/TemGen/tree/main/Templates/Default_Backend";
 
 	private const string ResourcesScriptContent = """
 foreach (var path in Directory.GetFiles(Project.ResourcesPath, "*.*", SearchOption.AllDirectories))

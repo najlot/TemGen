@@ -1,0 +1,6 @@
+<#cs Write(AddSolutionProjects(
+	PreviousContent,
+	$"\t<Project Path=\"{Project.Namespace}.Client.Data.Test/{Project.Namespace}.Client.Data.Test.csproj\" />",
+	$"\t<Project Path=\"{Project.Namespace}.Client.Data/{Project.Namespace}.Client.Data.csproj\" />",
+	$"\t<Project Path=\"{Project.Namespace}.Client.Localisation/{Project.Namespace}.Client.Localisation.csproj\" />"));
+SetOutputPathAndSkipOtherDefinitions(); return SkipRemaining();#>

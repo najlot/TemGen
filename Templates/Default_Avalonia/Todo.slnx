@@ -1,0 +1,8 @@
+<#cs Write(AddSolutionProjects(
+	PreviousContent,
+	$"\t<Project Path=\"{Project.Namespace}.Avalonia.Android/{Project.Namespace}.Avalonia.Android.csproj\">\n\t\t<Deploy Solution=\"Debug|*\" />\n\t</Project>",
+	$"\t<Project Path=\"{Project.Namespace}.Avalonia.Browser/{Project.Namespace}.Avalonia.Browser.csproj\" />",
+	$"\t<Project Path=\"{Project.Namespace}.Avalonia.Desktop/{Project.Namespace}.Avalonia.Desktop.csproj\" />",
+	$"\t<Project Path=\"{Project.Namespace}.Avalonia.iOS/{Project.Namespace}.Avalonia.iOS.csproj\" />",
+	$"\t<Project Path=\"{Project.Namespace}.Avalonia/{Project.Namespace}.Avalonia.csproj\" />"));
+SetOutputPathAndSkipOtherDefinitions(); return SkipRemaining();#>

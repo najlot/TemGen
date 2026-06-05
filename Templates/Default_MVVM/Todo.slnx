@@ -1,0 +1,6 @@
+<#cs Write(AddSolutionProjects(
+	PreviousContent,
+	$"\t<Project Path=\"{Project.Namespace}.Client.MVVM/{Project.Namespace}.Client.MVVM.csproj\" />",
+	$"\t<Project Path=\"{Project.Namespace}.ClientBase.Test/{Project.Namespace}.ClientBase.Test.csproj\" />",
+	$"\t<Project Path=\"{Project.Namespace}.ClientBase/{Project.Namespace}.ClientBase.csproj\" />"));
+SetOutputPathAndSkipOtherDefinitions(); return SkipRemaining();#>

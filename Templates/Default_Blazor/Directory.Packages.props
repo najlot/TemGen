@@ -1,0 +1,9 @@
+<#cs Write(AddPackageVersions(
+	PreviousContent,
+	"Microsoft.AspNetCore.Identity.UI|10.0.7",
+	"Microsoft.VisualStudio.Web.CodeGeneration.Design|10.0.2",
+	"Najlot.Log.Configuration.FileSource|4.0.4",
+	"Najlot.Log.Extensions.Logging|4.0.4",
+	"NuGet.Packaging|6.12.5",
+	"NuGet.Protocol|6.12.5"));
+SetOutputPathAndSkipOtherDefinitions(); return SkipRemaining();#>

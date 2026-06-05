@@ -1,4 +1,14 @@
 # <# Project.Namespace#> Application
+
+Generated with `Default_Backend`.
+
+## Included templates
+- `Default_Backend`: contracts, service, and service tests
+
+## Projects
+- `<# Project.Namespace#>.Contracts`
+- `<# Project.Namespace#>.Service`
+- `<# Project.Namespace#>.Service.Test`
 <#for definition in Definitions
     .Where(d => !d.IsArray && !d.IsOwnedType && !d.IsEnumeration && !d.Name.Equals("user", StringComparison.OrdinalIgnoreCase))#>
 ## <# definition.Name#>
