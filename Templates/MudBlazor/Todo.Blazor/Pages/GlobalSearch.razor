@@ -19,7 +19,7 @@
 		<MudText Typo="Typo.h3">@GlobalSearchLoc.GlobalSearch</MudText>
 
 		<MudPaper Class="pa-4" Elevation="0">
-			<MudGrid Spacing="2" Style="align-items: center;">
+			<MudGrid Spacing="2" Class="align-center">
 				<MudItem xs="10" sm="11">
 					<MudTextField T="string"
 							   Value="@queryText"
@@ -31,7 +31,7 @@
 							   Immediate="true"
 							   OnKeyDown="HandleSearchKeyDown" />
 				</MudItem>
-				<MudItem xs="2" sm="1" Style="display: flex; justify-content: flex-end;">
+				<MudItem xs="2" sm="1" Class="d-flex justify-end">
 					<MudIconButton Icon="@Icons.Material.Filled.Search"
 								   Variant="Variant.Filled"
 								   Color="Color.Primary"
@@ -66,20 +66,20 @@
 			<MudStack Spacing="2">
 				@foreach (var item in items)
 				{
-					<a href="@GetResultHref(item)" style="text-decoration: none; color: inherit;">
+					<MudLink Href="@GetResultHref(item)" Underline="Underline.None" Color="Color.Inherit">
 						<MudPaper Class="pa-4" Elevation="1">
 							<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Spacing="2">
-								<div style="flex: 1 1 auto; min-width: 0;">
-									<div style="font-weight: 600; word-break: break-word;">@Highlight(Display(item.Title, CommonLoc.Untitled))</div>
+								<div class="flex-grow-1">
+									<MudText Typo="Typo.subtitle1" Style="font-weight: 600; word-break: break-word;">@Highlight(Display(item.Title, CommonLoc.Untitled))</MudText>
 									@if (!string.IsNullOrWhiteSpace(item.Content))
 									{
-										<div style="margin-top: 0.35rem; opacity: 0.82; word-break: break-word;">@Highlight(item.Content)</div>
+										<MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-1" Style="word-break: break-word;">@Highlight(item.Content)</MudText>
 									}
 								</div>
 								<MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined">@item.Type</MudChip>
 							</MudStack>
 						</MudPaper>
-					</a>
+					</MudLink>
 				}
 			</MudStack>
 		}

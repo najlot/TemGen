@@ -13,7 +13,8 @@
 <PageTitle>@UserLoc.Login</PageTitle>
 
 <EditForm Model="@Input" OnValidSubmit="@TryLogin">
-	<MudPaper Class="pa-6" Elevation="0" Style="max-width: 32rem; margin: 0 auto;">
+<MudContainer MaxWidth="MaxWidth.Small" Class="px-0">
+	<MudPaper Class="pa-6" Elevation="0">
 		<MudStack Spacing="3">
 			<MudText Typo="Typo.h4">@UserLoc.Login</MudText>
 			<DataAnnotationsValidator />
@@ -33,6 +34,7 @@
 			<MudButton Variant="Variant.Text" Color="Color.Primary" Href="/ForgotPassword">@UserLoc.ForgotPassword</MudButton>
 		</MudStack>
 	</MudPaper>
+</MudContainer>
 </EditForm>
 
 @code {

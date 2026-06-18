@@ -15,7 +15,8 @@
 <PageTitle>@UserLoc.Register</PageTitle>
 
 <EditForm Model="@Input" OnValidSubmit="@TryRegister">
-	<MudPaper Class="pa-6" Elevation="0" Style="max-width: 32rem; margin: 0 auto;">
+<MudContainer MaxWidth="MaxWidth.Small" Class="px-0">
+	<MudPaper Class="pa-6" Elevation="0">
 		<MudStack Spacing="3">
 			<MudText Typo="Typo.h4">@UserLoc.Register</MudText>
 			<DataAnnotationsValidator />
@@ -40,6 +41,7 @@
 			<MudButton ButtonType="MudBlazor.ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">@UserLoc.Register</MudButton>
 		</MudStack>
 	</MudPaper>
+</MudContainer>
 </EditForm>
 
 @code {

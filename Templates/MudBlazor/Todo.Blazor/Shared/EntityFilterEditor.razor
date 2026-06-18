@@ -67,7 +67,7 @@
 											 Margin="Margin.Dense" />
 						</MudItem>
 						<MudItem xs="12" lg="5">
-							<MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center" Style="height: 100%; flex-wrap: wrap;">
+							<MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center" Class="h-100 flex-wrap">
 								<MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(_ => ApplyNamedFilterAsync())" Disabled="@(!CanApplyNamedFilter)">
 									@FilterLoc.Apply
 								</MudButton>
@@ -90,7 +90,7 @@
 								@foreach (var condition in filterConditions)
 								{
 									<MudPaper Class="pa-3" Elevation="0">
-										<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Style="flex-wrap: wrap;">
+										<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="flex-wrap">
 											<MudSelect T="string"
 													   Value="@condition.Field"
 													   ValueChanged="@((string value) => ChangeConditionField(condition, value))"
@@ -151,7 +151,7 @@
 
 					<MudGrid>
 						<MudItem xs="12">
-							<MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center" Style="height: 100%; flex-wrap: wrap;">
+							<MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center" Class="h-100 flex-wrap">
 								<MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="@(_ => AddCondition())" Disabled="@(!CanAddCondition)">
 									@FilterLoc.AddCondition
 								</MudButton>

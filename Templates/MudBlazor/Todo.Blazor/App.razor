@@ -13,12 +13,14 @@
 		<NotFound>
 			<PageTitle>@CommonLoc.NotFound</PageTitle>
 			<LayoutView Layout="@typeof(MainLayout)">
-				<MudPaper Class="pa-6" Elevation="0" Style="max-width: 36rem; margin: 0 auto;">
+				<MudContainer MaxWidth="MaxWidth.Small" Class="px-0">
+					<MudPaper Class="pa-6" Elevation="0">
 					<MudStack Spacing="2">
 						<MudText Typo="Typo.h4">@CommonLoc.NotFound</MudText>
 						<MudText Typo="Typo.body1">@CommonLoc.NotFoundMessage</MudText>
 					</MudStack>
-				</MudPaper>
+					</MudPaper>
+				</MudContainer>
 			</LayoutView>
 		</NotFound>
 	</Router>

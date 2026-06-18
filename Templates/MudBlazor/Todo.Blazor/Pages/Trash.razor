@@ -40,13 +40,13 @@
 				{
 					<MudPaper Class="pa-4" Elevation="1">
 						<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2">
-							<div style="flex: 1 1 auto; min-width: 0;">
+							<div class="flex-grow-1">
 								<MudText Typo="Typo.subtitle1">@Display(item.Title, CommonLoc.Untitled)</MudText>
 								@if (!string.IsNullOrWhiteSpace(item.Content))
 								{
-									<MudText Typo="Typo.body2" Style="margin-top: 0.35rem; opacity: 0.82;">@item.Content</MudText>
+									<MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-1">@item.Content</MudText>
 								}
-								<MudStack Row="true" Spacing="1" Style="margin-top: 1rem;">
+								<MudStack Row="true" Spacing="1" Class="mt-4">
 									<MudButton Variant="Variant.Text" Color="Color.Primary" Href="@GetItemHref(item)">@CommonLoc.Edit</MudButton>
 									<MudButton Variant="Variant.Outlined" Color="Color.Success" OnClick="@(_ => RestoreAsync(item))">@TrashLoc.Restore</MudButton>
 									<MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="@(_ => RequestDelete(item))">@CommonLoc.Delete</MudButton>

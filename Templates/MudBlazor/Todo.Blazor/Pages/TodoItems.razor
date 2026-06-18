@@ -55,19 +55,17 @@
 					  Dense="false"
 					  Breakpoint="Breakpoint.Sm"
 					  Elevation="1"
-					  HeaderClass="entity-list-header"
-					  RowClass="entity-list-row"
 					  OnRowClick="OpenEditor">
 				<HeaderContent>
-					<MudTh Style="width: 2.75rem; padding-left: 0.5rem; padding-right: 0.25rem;">
+					<MudTh Class="pl-2 pr-1" Style="width: 44px;">
 						<MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" title="Favorite" aria-label="Favorite" />
 					</MudTh>
 <#for entry in Definition.Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2)
-#>					<MudTh Style="color: white">@<# Definition.Name#>Loc.<# entry.Field#></MudTh>
+#>					<MudTh>@<# Definition.Name#>Loc.<# entry.Field#></MudTh>
 <#end#>
 				</HeaderContent>
 				<RowTemplate Context="<# Definition.NameLow#>">
-					<MudTd Style="width: 2.75rem; padding-left: 0.5rem; padding-right: 0.25rem;">
+					<MudTd Class="pl-2 pr-1" Style="width: 44px;">
 						@if (IsFavorite(<# Definition.NameLow#>.Id))
 						{
 							<MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" title="Favorite" aria-label="Favorite" />

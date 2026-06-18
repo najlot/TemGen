@@ -58,7 +58,7 @@ else
 {
 	<section>
 		<MudStack Spacing="4">
-			<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2" Style="flex-wrap: wrap;">
+			<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2" Class="flex-wrap">
 				<div>
 					@if (isNew)
 					{
@@ -69,7 +69,7 @@ else
 						<MudText Typo="Typo.h3">@<# Definition.Name#>Loc.Edit<# Definition.Name#></MudText>
 					}
 				</div>
-				<MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Style="flex-wrap: wrap;">
+				<MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="flex-wrap">
 					<MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
 						<IconButton Icon="Undo"
 								ButtonClass="btn btn-outline-secondary"
@@ -142,7 +142,7 @@ else
 											   Variant="Variant.Outlined" />
 <#elseif entry.IsOwnedType
 #>									<MudPaper Class="pa-4" Elevation="1">
-										<MudText Typo="Typo.h6" Style="margin-bottom: 0.75rem;">@<# Definition.Name#>Loc.<# entry.Field#></MudText>
+										<MudText Typo="Typo.h6" Class="mb-3">@<# Definition.Name#>Loc.<# entry.Field#></MudText>
 										@if (Model.<# entry.Field#> is not null)
 										{
 											<<# entry.EntryType#>Editor Model="@Model.<# entry.Field#>" ChangeTracker="_changeTracker" />
@@ -179,7 +179,7 @@ else
 					</MudPaper>
 <#for entry in Entries.Where(e => e.IsArray)
 #>					<MudPaper Class="pa-4" Elevation="1">
-						<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2" Style="margin-bottom: 1rem;">
+						<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2" Class="mb-4">
 							<MudText Typo="Typo.h6">@<# Definition.Name#>Loc.<# entry.Field#></MudText>
 							<IconButton Icon="Add"
 									ButtonClass="btn btn-primary"

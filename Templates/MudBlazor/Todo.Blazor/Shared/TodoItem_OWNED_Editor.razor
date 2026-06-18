@@ -44,7 +44,7 @@ Definition.IsOwnedType || Definition.IsArray
 						   Variant="Variant.Outlined" />
 <#elseif entry.IsOwnedType
 #>			<MudPaper Class="pa-4" Elevation="1">
-				<MudText Typo="Typo.h6" Style="margin-bottom: 0.75rem;">@<# Definition.Name#>Loc.<# entry.Field#></MudText>
+				<MudText Typo="Typo.h6" Class="mb-3">@<# Definition.Name#>Loc.<# entry.Field#></MudText>
 				@if (Model.<# entry.Field#> is not null)
 				{
 					<<# entry.EntryType#>Editor Model="@Model.<# entry.Field#>" ChangeTracker="ChangeTracker" />
@@ -78,10 +78,10 @@ Definition.IsOwnedType || Definition.IsArray
 <#end#>
 	</MudGrid>
 <#if Entries.Any(e => e.IsArray)
-#>	<MudStack Spacing="3" Style="margin-top: 1rem;">
+#>	<MudStack Spacing="3" Class="mt-4">
 <#end#><#for entry in Entries.Where(e => e.IsArray)
 #>		<MudPaper Class="pa-4" Elevation="1">
-			<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2" Style="margin-bottom: 1rem;">
+			<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2" Class="mb-4">
 				<MudText Typo="Typo.h6">@<# entry.EntryType#>Loc.<# entry.Field#></MudText>
 				<IconButton Icon="Add"
 							ButtonClass="btn btn-primary"
@@ -159,7 +159,7 @@ Definition.IsOwnedType || Definition.IsArray
 								  Variant="Variant.Outlined"
 								  Margin="Margin.Dense" />
 					</MudTd>
-<#end#><#end#>					<MudTd Style="text-align: right;">
+<#end#><#end#>					<MudTd Class="text-end">
 						<IconButton Icon="Delete"
 								ButtonClass="btn btn-danger"
 								Execute="() => Remove<# entry.Field#>Entry(entry.Id)"

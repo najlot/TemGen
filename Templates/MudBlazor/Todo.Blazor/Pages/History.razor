@@ -51,7 +51,7 @@
 						</MudStack>
 
 						<MudCollapse Expanded="@isExpanded">
-							<MudSimpleTable Dense="true" Style="margin-top: 1rem;">
+							<MudSimpleTable Dense="true" Class="mt-4">
 								<thead>
 									<tr>
 										<th>@CommonLoc.Field</th>
@@ -64,8 +64,8 @@
 									{
 										<tr>
 											<td><strong>@change.Path</strong></td>
-											<td><pre style="margin: 0; white-space: pre-wrap;">@change.OldValue</pre></td>
-											<td><pre style="margin: 0; white-space: pre-wrap;">@change.NewValue</pre></td>
+											<td><pre class="m-0 mud-typography-body1" style="white-space: pre-wrap;">@change.OldValue</pre></td>
+											<td><pre class="m-0 mud-typography-body1" style="white-space: pre-wrap;">@change.NewValue</pre></td>
 										</tr>
 									}
 								</tbody>

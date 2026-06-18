@@ -8,7 +8,8 @@
 
 <PageTitle>@CommonLoc.Home</PageTitle>
 
-<MudPaper Class="pa-6" Elevation="0" Style="max-width: 48rem; margin: 0 auto;">
+<MudContainer MaxWidth="MaxWidth.Medium" Class="px-0">
+<MudPaper Class="pa-6" Elevation="0">
 	<AuthorizeView>
 		<Authorized>
 			<MudStack Spacing="2">
@@ -30,6 +31,7 @@
 		</NotAuthorized>
 	</AuthorizeView>
 </MudPaper>
+</MudContainer>
 
 @code {
 	[CascadingParameter(Name = "ErrorService")]
