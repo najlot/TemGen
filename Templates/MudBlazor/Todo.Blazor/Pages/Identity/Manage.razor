@@ -1,0 +1,101 @@
+@page "/Manage"
+
+@using System.ComponentModel.DataAnnotations;
+@using <# Project.Namespace#>.Client.Data;
+@using <# Project.Namespace#>.Blazor.Services;
+@using <# Project.Namespace#>.Client.Data.Identity;
+@using <# Project.Namespace#>.Client.Data.Users;
+@using <# Project.Namespace#>.Client.Localisation;
+
+@inject ITokenProvider TokenProvider
+@inject IUserService UserService
+@inject ILogger<Manage> Logger
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize]
+
+<PageTitle>@UserLoc.UserManagement</PageTitle>
+
+<EditForm Model="@Input" OnValidSubmit="@SavePassword">
+	<MudPaper Class="pa-6" Elevation="0" Style="max-width: 32rem; margin: 0 auto;">
+		<MudStack Spacing="3">
+			<MudText Typo="Typo.h4">@UserLoc.UserManagement</MudText>
+			<DataAnnotationsValidator />
+			<ValidationSummary />
+			<MudTextField T="string"
+					   Label="@UserLoc.NewPassword"
+					   Value="@Input.Password"
+					   ValueChanged="@((string value) => Input.Password = value)"
+					   InputType="InputType.Password"
+					   Variant="Variant.Outlined" />
+			<MudTextField T="string"
+					   Label="@UserLoc.ConfirmNewPassword"
+					   Value="@Input.PasswordConfirm"
+					   ValueChanged="@((string value) => Input.PasswordConfirm = value)"
+					   InputType="InputType.Password"
+					   Variant="Variant.Outlined" />
+			<MudButton ButtonType="MudBlazor.ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">@UserLoc.ChangePassword</MudButton>
+		</MudStack>
+	</MudPaper>
+</EditForm>
+
+@code {
+	private class InputModel
+	{
+		[Required]
+		[DataType(DataType.Password)]
+		[StringLength(30, MinimumLength = 8)]
+		public string Password { get; set; } = string.Empty;
+
+		[Required]
+		[DataType(DataType.Password)]
+		[StringLength(30, MinimumLength = 8)]
+		public string PasswordConfirm { get; set; } = string.Empty;
+	}
+
+	private InputModel Input = new();
+
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		ErrorService?.HideError();
+		await base.OnInitializedAsync();
+	}
+
+	private async Task SavePassword()
+	{
+		if (Input.Password != Input.PasswordConfirm)
+		{
+			ErrorService?.ShowError(UserLoc.UserManagement, ErrorLoc.ErrorPasswordsDoNotMatch);
+			Input.PasswordConfirm = "";
+			return;
+		}
+
+		try
+		{
+			var token = await TokenProvider.GetToken();
+			if (token is null)
+			{
+				var url = NavigationManager.BuildReturnUrl("/login");
+				NavigationManager.NavigateTo(url);
+				return;
+			}
+
+			var user = await UserService.GetCurrentUserAsync();
+			user.Password = Input.Password;
+			await UserService.UpdateItemAsync(user);
+
+			Input.Password = "";
+			Input.PasswordConfirm = "";
+
+			ErrorService?.HideError();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error updating user.");
+			ErrorService?.ShowError(UserLoc.UserManagement, ErrorLoc.ErrorCouldNotUpdateUserData);
+		}
+	}
+}<#cs SetOutputPathAndSkipOtherDefinitions()#>

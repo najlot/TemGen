@@ -1,0 +1,257 @@
+@using Microsoft.Extensions.Localization;
+@using <# Project.Namespace#>.Blazor.Services;
+@using <# Project.Namespace#>.Client.Data.<#if
+Definition.IsOwnedType || Definition.IsArray
+#><#cs Write(GetChildFeatureFolderName(Definition.Name))#><#else#><# Definition.Name#>s<#end#>;
+@using <# Project.Namespace#>.Client.Localisation;
+<#if NeedsSharedEnumerationChildren()
+#>@using <# Project.Namespace#>.Contracts.Shared;
+<#end#>
+@inject ILogger<<# Definition.Name#>Editor> Log
+<#for entry in Entries.Where(e => e.IsReference).DistinctBy(e => e.ReferenceType)
+#>@inject I<# entry.ReferenceType#>Service <# entry.ReferenceType#>Service
+<#end#><#for entry in Entries.Where(e => e.IsEnumeration).DistinctBy(e => e.EntryType)
+#>@inject IStringLocalizer<<# entry.EntryType#>Loc> <# entry.EntryType#>Localizer
+<#end#>
+@if (Model is not null)
+{
+	<MudGrid>
+<#for entry in Entries.Where(e => !e.IsArray)
+#>		<MudItem xs="12" md="6">
+<#if entry.EntryType.ToLower() == "string"
+#>			<MudTextField T="string"
+					   Label="@<# Definition.Name#>Loc.<# entry.Field#>"
+					   Value="@Model.<# entry.Field#>"
+					   ValueChanged="@((string value) => ChangeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, value))"
+					   Variant="Variant.Outlined" />
+<#elseif entry.EntryType.ToLower() == "datetime"
+#>			<MudDatePicker Label="@<# Definition.Name#>Loc.<# entry.Field#>"
+						   Date="@Model.<# entry.Field#>"
+						   Editable="true"
+					   DateChanged="@((DateTime? value) => ChangeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, value ?? Model.<# entry.Field#>))"
+					   Variant="Variant.Outlined" />
+<#elseif entry.EntryType.ToLower() == "bool"
+#>			<MudSwitch T="bool"
+					  Label="@<# Definition.Name#>Loc.<# entry.Field#>"
+					  Value="@Model.<# entry.Field#>"
+					  ValueChanged="@((bool value) => ChangeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, value))"
+					  Color="Color.Primary" />
+<#elseif entry.EntryType.ToLower() == "int" || entry.EntryType.ToLower() == "long" || entry.EntryType.ToLower() == "double"
+#>			<MudNumericField T="<# entry.EntryType#>"
+						   Label="@<# Definition.Name#>Loc.<# entry.Field#>"
+						   Value="@Model.<# entry.Field#>"
+						   ValueChanged="@((<# entry.EntryType#> value) => ChangeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, value))"
+						   Variant="Variant.Outlined" />
+<#elseif entry.IsOwnedType
+#>			<MudPaper Class="pa-4" Elevation="1">
+				<MudText Typo="Typo.h6" Style="margin-bottom: 0.75rem;">@<# Definition.Name#>Loc.<# entry.Field#></MudText>
+				@if (Model.<# entry.Field#> is not null)
+				{
+					<<# entry.EntryType#>Editor Model="@Model.<# entry.Field#>" ChangeTracker="ChangeTracker" />
+				}
+			</MudPaper>
+<#elseif entry.IsEnumeration
+#>			<MudSelect T="<# entry.EntryType#>"
+					   Label="@<# Definition.Name#>Loc.<# entry.Field#>"
+					   Value="@Model.<# entry.Field#>"
+					   ValueChanged="@((<# entry.EntryType#> value) => ChangeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, value))"
+					   Variant="Variant.Outlined">
+				@foreach (var value in Enum.GetValues<<# entry.EntryType#>>())
+				{
+					<MudSelectItem T="<# entry.EntryType#>" Value="@value">@<# entry.EntryType#>Localizer[$"{value}"]</MudSelectItem>
+				}
+			</MudSelect>
+<#elseif entry.IsReference
+#>			<MudSelect T="Guid"
+					   Label="@<# Definition.Name#>Loc.<# entry.Field#>"
+					   Value="@Model.<# entry.Field#>Id"
+					   ValueChanged="@((Guid value) => ChangeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>Id), Model.<# entry.Field#>Id, value))"
+					   Variant="Variant.Outlined">
+				@foreach (var value in _<# entry.ReferenceTypeLow#>s)
+				{
+					<MudSelectItem T="Guid" Value="@value.Id">@value.DisplayText</MudSelectItem>
+				}
+			</MudSelect>
+<#else
+#>			<<# entry.EntryType#> ???
+<#end#>		</MudItem>
+<#end#>
+	</MudGrid>
+<#if Entries.Any(e => e.IsArray)
+#>	<MudStack Spacing="3" Style="margin-top: 1rem;">
+<#end#><#for entry in Entries.Where(e => e.IsArray)
+#>		<MudPaper Class="pa-4" Elevation="1">
+			<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2" Style="margin-bottom: 1rem;">
+				<MudText Typo="Typo.h6">@<# entry.EntryType#>Loc.<# entry.Field#></MudText>
+				<IconButton Icon="Add"
+							ButtonClass="btn btn-primary"
+							Execute="Add<# entry.Field#>Entry"
+							Title="@CommonLoc.New" />
+			</MudStack>
+			<MudTable Items="@Model.<# entry.Field#>" Dense="false" Hover="true" Elevation="1" Class="subitem-card-table">
+				<HeaderContent>
+<#for e in Definitions.First(definition => definition.Name == entry.EntryType).Entries
+#>					<MudTh>@<# entry.EntryType#>Loc.<# e.Field#></MudTh>
+<#end#>					<MudTh>@CommonLoc.Delete</MudTh>
+				</HeaderContent>
+				<RowTemplate Context="entry">
+<#for e in Definitions.First(definition => definition.Name == entry.EntryType).Entries
+#><#if e.EntryType.ToLower() == "bool"
+#>					<MudTd>
+						<MudCheckBox T="bool"
+							Value="@entry.<# e.Field#>"
+							ValueChanged="@((bool value) => ChangeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, value))" />
+					</MudTd>
+<#elseif e.IsOwnedType
+#>					<MudTd>
+						@if (entry.<# e.Field#> is not null)
+						{
+							<<# e.EntryType#>Editor Model="@entry.<# e.Field#>" ChangeTracker="ChangeTracker" />
+						}
+					</MudTd>
+<#elseif e.EntryType.ToLower() == "int" || e.EntryType.ToLower() == "long" || e.EntryType.ToLower() == "double"
+#>					<MudTd>
+						<MudNumericField T="<# e.EntryType#>"
+								   Value="@entry.<# e.Field#>"
+								   ValueChanged="@((<# e.EntryType#> value) => ChangeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, value))"
+								   Variant="Variant.Outlined"
+								   Margin="Margin.Dense" />
+					</MudTd>
+<#elseif e.EntryType.ToLower() == "datetime"
+#>					<MudTd>
+						<MudDatePicker Date="@entry.<# e.Field#>"
+								   DateChanged="@((DateTime? value) => ChangeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, value ?? entry.<# e.Field#>))"
+								   Editable="true"
+								   Variant="Variant.Outlined"
+								   Margin="Margin.Dense" />
+					</MudTd>
+<#elseif e.IsEnumeration
+#>					<MudTd>
+						<MudSelect T="<# e.EntryType#>"
+								   Value="@entry.<# e.Field#>"
+								   ValueChanged="@((<# e.EntryType#> value) => ChangeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, value))"
+								   Variant="Variant.Outlined"
+								   Margin="Margin.Dense">
+							@foreach (var value in Enum.GetValues<<# e.EntryType#>>())
+							{
+								<MudSelectItem T="<# e.EntryType#>" Value="@value">@(((<# e.EntryType#>)value) == <# e.EntryType#>.None ? CommonLoc.NothingSelected : value.ToString())</MudSelectItem>
+							}
+						</MudSelect>
+					</MudTd>
+<#elseif e.IsReference
+#>					<MudTd>
+						<MudSelect T="Guid"
+								   Value="@entry.<# e.Field#>Id"
+								   ValueChanged="@((Guid value) => ChangeTracker.TrackChange(entry, nameof(entry.<# e.Field#>Id), entry.<# e.Field#>Id, value))"
+								   Variant="Variant.Outlined"
+								   Margin="Margin.Dense">
+							@foreach (var item in _<# e.ReferenceTypeLow#>s)
+							{
+								<MudSelectItem T="Guid" Value="@item.Id">@item.DisplayText</MudSelectItem>
+							}
+						</MudSelect>
+					</MudTd>
+<#else
+#>					<MudTd>
+						<MudTextField T="string"
+								  Value="@entry.<# e.Field#>"
+								  ValueChanged="@((string value) => ChangeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, value))"
+								  Variant="Variant.Outlined"
+								  Margin="Margin.Dense" />
+					</MudTd>
+<#end#><#end#>					<MudTd Style="text-align: right;">
+						<IconButton Icon="Delete"
+								ButtonClass="btn btn-danger"
+								Execute="() => Remove<# entry.Field#>Entry(entry.Id)"
+								Title="@CommonLoc.Delete" />
+					</MudTd>
+				</RowTemplate>
+			</MudTable>
+		</MudPaper>
+<#end#><#if Entries.Any(e => e.IsArray)
+#>	</MudStack>
+<#end#>
+}
+
+@code {
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	[Parameter, EditorRequired]
+	public <# Definition.Name#>Model? Model { get; set; }
+
+	[Parameter, EditorRequired]
+	public ChangeTracker ChangeTracker { get; set; } = default!;
+
+<#for entry in Entries.Where(e => e.IsReference)
+#>	private IEnumerable<<# entry.ReferenceType#>ListItemModel> _<# entry.ReferenceTypeLow#>s = [];
+<#end#>
+	protected override async Task OnInitializedAsync()
+	{<#if Entries.Any(e => e.IsReference)#>
+		try
+		{
+<#for entry in Entries.Where(e => e.IsReference).DistinctBy(e => e.ReferenceType)
+#>			var available<# entry.ReferenceType#>s = await <# entry.ReferenceType#>Service.GetItemsAsync();
+			_<# entry.ReferenceTypeLow#>s = [new <# entry.ReferenceType#>ListItemModel { Id = Guid.Empty }, .. available<# entry.ReferenceType#>s];
+<#end#>		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error loading owned type editor for <# Definition.Name#>.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotLoad);
+		}<#end#>
+	}
+<#for entry in Entries.Where(e => e.IsArray)
+#>
+	private void Add<# entry.Field#>Entry()
+	{
+		if (Model is null)
+		{
+			return;
+		}
+
+		var model = new <# entry.EntryType#>Model() { Id = Model.<# entry.Field#>.Count == 0 ? -1 : Model.<# entry.Field#>.Min(i => i.Id) - 1 };
+
+		Model.<# entry.Field#>.Add(model);
+
+		ChangeTracker.Track(
+			nameof(Model.<# entry.Field#>),
+			() => Model.<# entry.Field#>.Remove(model),
+			() => Model.<# entry.Field#>.Add(model));
+	}
+
+	private void Remove<# entry.Field#>Entry(int id)
+	{
+		if (Model is null)
+		{
+			return;
+		}
+
+		var oldItem = Model.<# entry.Field#>.FirstOrDefault(i => i.Id == id);
+
+		if (oldItem != null)
+		{
+			var index = Model.<# entry.Field#>.IndexOf(oldItem);
+
+			if (index != -1)
+			{
+				Model.<# entry.Field#>.RemoveAt(index);
+
+				ChangeTracker.Track(
+					nameof(Model.<# entry.Field#>),
+					() => Model.<# entry.Field#>.Insert(index, oldItem),
+					() => Model.<# entry.Field#>.Remove(oldItem));
+			}
+		}
+	}
+<#end#>
+}
+<#cs
+if (!Definition.IsOwnedType)
+{
+	RelativePath = "";
+}
+else
+{
+	RelativePath = RelativePath.Replace("TodoItem_OWNED_", Definition.Name).Replace("Todo", Project.Namespace);
+}
+#>

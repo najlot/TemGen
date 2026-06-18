@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using TemGen.Handler;
+using TemGen.Services;
 using Xunit;
 
 namespace TemGen.Tests.Handler;
@@ -50,7 +51,8 @@ public class PyHandlerTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Python,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Python,
 				Content = "w(project.GetSetting('UserSecretsId') + '|') \n" +
 						"w(definition.Name + ':') \n" +
 							"for val in entries: write(val.Field + ',') \n" +
@@ -68,7 +70,8 @@ public class PyHandlerTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Python,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Python,
 				Content = "skip_other_definitions = True"
 			});
 
@@ -78,7 +81,8 @@ public class PyHandlerTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Python,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Python,
 				Content = "skip_remaining()"
 			});
 

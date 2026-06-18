@@ -1,5 +1,7 @@
 ﻿using System.Threading.Tasks;
 using TemGen.Handler;
+using TemGen.Models;
+using TemGen.Services;
 using Xunit;
 
 namespace TemGen.Tests.Handler;
@@ -26,7 +28,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.CSharp,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.CSharp,
 				Content = "SetVariable(\"Greeting\", \"Hello\");"
 			});
 
@@ -35,7 +38,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.JavaScript,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.JavaScript,
 				Content = "write(getVariable(\"Greeting\"));"
 			});
 
@@ -52,7 +56,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.CSharp,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.CSharp,
 				Content = "SetVariable(\"Greeting\", \"Hello\");"
 			});
 
@@ -61,7 +66,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Python,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Python,
 				Content = "write(get_variable(\"Greeting\"))"
 			});
 
@@ -78,7 +84,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.CSharp,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.CSharp,
 				Content = "SetVariable(\"Greeting\", \"Hello\");"
 			});
 
@@ -87,7 +94,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Lua,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Lua,
 				Content = "write(get_variable(\"Greeting\"))"
 			});
 
@@ -106,7 +114,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.JavaScript,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.JavaScript,
 				Content = "setVariable(\"Greeting\", \"Hello\");"
 			});
 
@@ -115,7 +124,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.CSharp,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.CSharp,
 				Content = "Write((string)GetVariable(\"Greeting\"));"
 			});
 
@@ -132,7 +142,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.JavaScript,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.JavaScript,
 				Content = "setVariable(\"Greeting\", \"Hello\");"
 			});
 
@@ -141,7 +152,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Python,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Python,
 				Content = "write(get_variable(\"Greeting\"))"
 			});
 
@@ -158,7 +170,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.JavaScript,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.JavaScript,
 				Content = "setVariable(\"Greeting\", \"Hello\");"
 			});
 
@@ -167,7 +180,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Lua,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Lua,
 				Content = "write(get_variable(\"Greeting\"))"
 			});
 
@@ -186,7 +200,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Python,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Python,
 				Content = "set_variable(\"Greeting\", \"Hello\")"
 			});
 
@@ -195,7 +210,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.CSharp,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.CSharp,
 				Content = "Write((string)GetVariable(\"Greeting\"));"
 			});
 
@@ -212,7 +228,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Python,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Python,
 				Content = "set_variable(\"Greeting\", \"Hello\")"
 			});
 
@@ -221,7 +238,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.JavaScript,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.JavaScript,
 				Content = "write(getVariable(\"Greeting\"));"
 			});
 
@@ -238,7 +256,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Python,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Python,
 				Content = "set_variable(\"Greeting\", \"Hello\")"
 			});
 
@@ -247,7 +266,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Lua,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Lua,
 				Content = "write(get_variable(\"Greeting\"))"
 			});
 
@@ -266,7 +286,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Lua,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Lua,
 				Content = "set_variable(\"Greeting\", \"Hello\")"
 			});
 
@@ -275,7 +296,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.CSharp,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.CSharp,
 				Content = "Write((string)GetVariable(\"Greeting\"));"
 			});
 
@@ -292,7 +314,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Lua,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Lua,
 				Content = "set_variable(\"Greeting\", \"Hello\")"
 			});
 
@@ -301,7 +324,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.JavaScript,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.JavaScript,
 				Content = "write(getVariable(\"Greeting\"));"
 			});
 
@@ -318,7 +342,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Lua,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Lua,
 				Content = "set_variable(\"Greeting\", \"Hello\")"
 			});
 
@@ -327,7 +352,8 @@ public class StringForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Python,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Python,
 				Content = "write(get_variable(\"Greeting\"))"
 			});
 

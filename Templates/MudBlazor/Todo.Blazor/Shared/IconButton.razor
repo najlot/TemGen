@@ -1,0 +1,115 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+
+<MudButton Class="icon-button"
+		   Variant="@ResolveVariant()"
+		   Color="@ResolveColor()"
+		   Size="@ResolveSize()"
+		   ButtonType="@ResolveMudButtonType()"
+		   Disabled="@(!CanHandleClick())"
+		   title="@Title"
+		   aria-label="@Title"
+		   OnClick="HandleClickAsync">
+	@if (IsExecuting)
+	{
+		<MudProgressCircular Class="icon-button-progress" Size="Size.Small" Indeterminate="true" />
+	}
+	else
+	{
+		<MudIcon Icon="@ResolveIcon(Icon)" />
+	}
+</MudButton>
+
+@code {
+	[Parameter] public string Icon { get; set; } = string.Empty;
+	[Parameter] public string Title { get; set; } = string.Empty;
+	[Parameter] public string ButtonType { get; set; } = "button";
+	[Parameter] public string ButtonClass { get; set; } = "btn btn-outline-secondary";
+
+	[Parameter] public EventCallback Execute { get; set; }
+	[Parameter] public Func<bool> CanExecute { get; set; } = () => true;
+
+	public bool IsExecuting { get; set; } = false;
+
+	private bool CanHandleClick() => !IsExecuting && CanExecute();
+
+	private Variant ResolveVariant()
+		=> ButtonClass.Contains("btn-outline", StringComparison.OrdinalIgnoreCase)
+			? Variant.Outlined
+			: ButtonClass.Contains("btn-link", StringComparison.OrdinalIgnoreCase)
+				? Variant.Text
+				: Variant.Filled;
+
+	private Color ResolveColor()
+	{
+		if (ButtonClass.Contains("btn-success", StringComparison.OrdinalIgnoreCase))
+		{
+			return Color.Success;
+		}
+
+		if (ButtonClass.Contains("btn-danger", StringComparison.OrdinalIgnoreCase))
+		{
+			return Color.Error;
+		}
+
+		if (ButtonClass.Contains("btn-warning", StringComparison.OrdinalIgnoreCase))
+		{
+			return Color.Warning;
+		}
+
+		if (ButtonClass.Contains("btn-primary", StringComparison.OrdinalIgnoreCase))
+		{
+			return Color.Primary;
+		}
+
+		return Color.Default;
+	}
+
+	private Size ResolveSize()
+		=> ButtonClass.Contains("btn-sm", StringComparison.OrdinalIgnoreCase)
+			? Size.Small
+			: Size.Medium;
+
+	private MudBlazor.ButtonType ResolveMudButtonType()
+		=> ButtonType.Equals("submit", StringComparison.OrdinalIgnoreCase)
+			? MudBlazor.ButtonType.Submit
+			: ButtonType.Equals("reset", StringComparison.OrdinalIgnoreCase)
+				? MudBlazor.ButtonType.Reset
+				: MudBlazor.ButtonType.Button;
+
+	private static string ResolveIcon(string icon)
+		=> icon switch
+		{
+			"Undo" => Icons.Material.Filled.Undo,
+			"Redo" => Icons.Material.Filled.Redo,
+			"Save" => Icons.Material.Filled.Save,
+			"Delete" => Icons.Material.Filled.Delete,
+			"Add" => Icons.Material.Filled.Add,
+			"history" => Icons.Material.Filled.History,
+			"star" => Icons.Material.Filled.Star,
+			"star_outline" => Icons.Material.Outlined.StarOutline,
+			_ => icon.ToLowerInvariant(),
+		};
+
+	private async Task HandleClickAsync(MouseEventArgs _)
+	{
+		if (!Execute.HasDelegate)
+		{
+			return;
+		}
+		else if (CanHandleClick())
+		{
+			IsExecuting = true;
+			await InvokeAsync(StateHasChanged);
+
+			try
+			{
+				await Execute.InvokeAsync();
+			}
+			finally
+			{
+				IsExecuting = false;
+				await InvokeAsync(StateHasChanged);
+			}
+		}
+	}
+}<#cs SetOutputPathAndSkipOtherDefinitions()#>

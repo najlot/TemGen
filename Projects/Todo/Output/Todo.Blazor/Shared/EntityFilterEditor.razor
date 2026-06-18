@@ -1,4 +1,8 @@
 @using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Routing
+@using System.Net
+@using System.Text
+@using System.Text.Json
 @using Todo.Blazor.Services
 @using Todo.Client.Data.Filters
 @using Todo.Client.Localisation
@@ -7,6 +11,9 @@
 
 @inject ILogger<EntityFilterEditor> Log
 @inject IFilterService FilterService
+@inject NavigationManager NavigationManager
+
+@implements IDisposable
 
 <div class="entity-filter-editor">
     <details class="mb-4">
@@ -157,6 +164,11 @@
 
     private ItemType initializedTargetType;
     private string[] initializedFieldKeys = [];
+    private string initializedPath = string.Empty;
+    private string? suppressedLocation;
+
+    private const string FilterQueryParameterName = "filter";
+    private static readonly JsonSerializerOptions FilterSerializerOptions = new(JsonSerializerDefaults.Web);
 
     // Expression-bodied properties for concise state checks
     private Filter? DefaultFilter => filters.FirstOrDefault(filter => filter.IsDefault);
@@ -170,6 +182,11 @@
     private bool CanSetDefaultFilter => !IsBusy && filterConditions.Count > 0;
     private bool CanClearDefaultFilter => !IsBusy && HasDefaultFilter;
 
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += HandleLocationChanged;
+    }
+
     protected override async Task OnParametersSetAsync()
     {
         if (AvailableFields.Count == 0)
@@ -182,6 +199,7 @@
 
         initializedTargetType = TargetType;
         initializedFieldKeys = [.. AvailableFields.Select(field => field.Key)];
+        initializedPath = NavigationManager.ToAbsoluteUri(NavigationManager.Uri).GetLeftPart(UriPartial.Path);
 
         if (AvailableFields.All(field => field.Key != selectedNewFilterFieldKey))
         {
@@ -191,8 +209,8 @@
         try
         {
             filters = [.. await FilterService.GetItemsAsync(TargetType)];
-            LoadDraftFilter(DefaultFilter is { } defaultFilter ? ToEntityFilter(defaultFilter) : new EntityFilter());
-            await ApplyFilterAsync(BuildDraftFilter(), updateAppliedFilter: true);
+            LoadDraftFilter(GetFilterFromUriOrDefault());
+            await ApplyFilterAsync(BuildDraftFilter(), updateAppliedFilter: true, updateAddress: false);
         }
         catch (Exception ex)
         {
@@ -207,6 +225,34 @@
         {
             await ApplyFilterAsync(CloneFilter(appliedFilter), updateAppliedFilter: false);
         }
+    }
+
+    private async void HandleLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        var changedPath = NavigationManager.ToAbsoluteUri(args.Location).GetLeftPart(UriPartial.Path);
+
+        if (!string.Equals(changedPath, initializedPath, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        if (string.Equals(args.Location, suppressedLocation, StringComparison.Ordinal))
+        {
+            suppressedLocation = null;
+            return;
+        }
+
+        if (AvailableFields.Count == 0)
+        {
+            return;
+        }
+
+        await InvokeAsync(async () =>
+        {
+            LoadDraftFilter(GetFilterFromUriOrDefault());
+            await ApplyFilterAsync(BuildDraftFilter(), updateAppliedFilter: true, updateAddress: false);
+            StateHasChanged();
+        });
     }
 
     private bool NeedsInitialization() =>
@@ -224,12 +270,12 @@
         saveFilterName = string.Empty;
     }
 
-    private Task SearchAsync() => ApplyFilterAsync(BuildDraftFilter(), updateAppliedFilter: true);
+    private Task SearchAsync() => ApplyFilterAsync(BuildDraftFilter(), updateAppliedFilter: true, updateAddress: true);
 
     private Task ClearFiltersAsync()
     {
         LoadDraftFilter(new EntityFilter());
-        return ApplyFilterAsync(new EntityFilter(), updateAppliedFilter: true);
+        return ApplyFilterAsync(new EntityFilter(), updateAppliedFilter: true, updateAddress: true);
     }
 
     private void AddCondition()
@@ -357,7 +403,7 @@
         {
             var filter = ToEntityFilter(namedFilter);
             LoadDraftFilter(filter);
-            await ApplyFilterAsync(CloneFilter(filter), updateAppliedFilter: true);
+            await ApplyFilterAsync(CloneFilter(filter), updateAppliedFilter: true, updateAddress: true);
         }
     }
 
@@ -432,12 +478,18 @@
         }
     }
 
-    private async Task ApplyFilterAsync(EntityFilter filter, bool updateAppliedFilter)
+    private async Task ApplyFilterAsync(EntityFilter filter, bool updateAppliedFilter, bool updateAddress = false)
     {
         if (updateAppliedFilter)
         {
             appliedFilter = CloneFilter(filter);
         }
+
+        if (updateAddress)
+        {
+            UpdateFilterUri(filter);
+        }
+
         await ApplyFilter.InvokeAsync(CloneFilter(filter));
     }
 
@@ -492,4 +544,138 @@
 
     private static EntityFilter ToEntityFilter(Filter filter) => new() { Conditions = CloneConditions(filter.Conditions) };
     private static EntityFilter CloneFilter(EntityFilter filter) => new() { Conditions = CloneConditions(filter.Conditions) };
+
+    private EntityFilter GetFilterFromUriOrDefault()
+    {
+        if (TryReadFilterFromUri(out var filter))
+        {
+            return filter;
+        }
+
+        return DefaultFilter is { } defaultFilter ? ToEntityFilter(defaultFilter) : new EntityFilter();
+    }
+
+    private bool TryReadFilterFromUri(out EntityFilter filter)
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+
+        if (!TryGetQueryValue(uri.Query, FilterQueryParameterName, out var encodedFilter) || string.IsNullOrWhiteSpace(encodedFilter))
+        {
+            filter = new EntityFilter();
+            return false;
+        }
+
+        try
+        {
+            var json = Encoding.UTF8.GetString(DecodeBase64Url(encodedFilter));
+            filter = JsonSerializer.Deserialize<EntityFilter>(json, FilterSerializerOptions) ?? new EntityFilter();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Log.LogWarning(ex, "Error reading filter from URL.");
+            filter = new EntityFilter();
+            return true;
+        }
+    }
+
+    private void UpdateFilterUri(EntityFilter filter)
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var query = ParseQuery(uri.Query)
+            .Where(parameter => !string.Equals(parameter.Key, FilterQueryParameterName, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        if (filter.Conditions.Count > 0)
+        {
+            query.Add(new KeyValuePair<string, string>(FilterQueryParameterName, EncodeFilter(filter)));
+        }
+
+        var nextUri = BuildUri(uri.GetLeftPart(UriPartial.Path), query, uri.Fragment);
+
+        if (string.Equals(nextUri, NavigationManager.Uri, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        suppressedLocation = nextUri;
+        NavigationManager.NavigateTo(nextUri);
+    }
+
+    private static string EncodeFilter(EntityFilter filter)
+    {
+        var json = JsonSerializer.Serialize(filter, FilterSerializerOptions);
+        return Convert.ToBase64String(Encoding.UTF8.GetBytes(json))
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
+    }
+
+    private static byte[] DecodeBase64Url(string value)
+    {
+        var padded = value.Replace('-', '+').Replace('_', '/');
+        var padding = padded.Length % 4;
+
+        if (padding == 2)
+        {
+            padded += "==";
+        }
+        else if (padding == 3)
+        {
+            padded += "=";
+        }
+
+        return Convert.FromBase64String(padded);
+    }
+
+    private static bool TryGetQueryValue(string query, string key, out string value)
+    {
+        foreach (var parameter in ParseQuery(query))
+        {
+            if (string.Equals(parameter.Key, key, StringComparison.OrdinalIgnoreCase))
+            {
+                value = parameter.Value;
+                return true;
+            }
+        }
+
+        value = string.Empty;
+        return false;
+    }
+
+    private static List<KeyValuePair<string, string>> ParseQuery(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return [];
+        }
+
+        return
+        [
+            .. query.TrimStart('?')
+                .Split('&', StringSplitOptions.RemoveEmptyEntries)
+                .Select(segment => segment.Split('=', 2))
+                .Select(parts => new KeyValuePair<string, string>(
+                    WebUtility.UrlDecode(parts[0]) ?? string.Empty,
+                    parts.Length > 1 ? WebUtility.UrlDecode(parts[1]) ?? string.Empty : string.Empty))
+        ];
+    }
+
+    private static string BuildUri(string path, IReadOnlyList<KeyValuePair<string, string>> query, string fragment)
+    {
+        if (query.Count == 0)
+        {
+            return $"{path}{fragment}";
+        }
+
+        var encodedQuery = string.Join("&", query.Select(parameter =>
+            $"{Uri.EscapeDataString(parameter.Key)}={Uri.EscapeDataString(parameter.Value)}"));
+
+        return $"{path}?{encodedQuery}{fragment}";
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= HandleLocationChanged;
+    }
 }

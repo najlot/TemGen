@@ -1,0 +1,55 @@
+@page "/"
+@using <# Project.Namespace#>.Blazor.Services
+@using <# Project.Namespace#>.Client.Localisation
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@attribute [Authorize]
+
+<PageTitle>@CommonLoc.Home</PageTitle>
+
+<MudPaper Class="pa-6" Elevation="0" Style="max-width: 48rem; margin: 0 auto;">
+	<AuthorizeView>
+		<Authorized>
+			<MudStack Spacing="2">
+				<MudText Typo="Typo.h3">@CommonLoc.Welcome, @name!</MudText>
+				<MudText Typo="Typo.body1">@CommonLoc.Home</MudText>
+			</MudStack>
+		</Authorized>
+		<NotAuthorized>
+			<MudStack Spacing="3">
+				<div>
+					<MudText Typo="Typo.h3">@CommonLoc.Welcome!</MudText>
+					<MudText Typo="Typo.body1">@CommonLoc.RegisterOrLogin</MudText>
+				</div>
+				<MudStack Row="true" Spacing="2">
+					<MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/login">@UserLoc.Login</MudButton>
+					<MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="/register">@UserLoc.Register</MudButton>
+				</MudStack>
+			</MudStack>
+		</NotAuthorized>
+	</AuthorizeView>
+</MudPaper>
+
+@code {
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	private string? name;
+
+	protected override async Task OnInitializedAsync()
+	{
+		name = "";
+		ErrorService?.HideError();
+
+		var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+		var user = authState.User;
+
+		if (user.Identity is not null && user.Identity.IsAuthenticated)
+		{
+			name = user.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.Name)?.Value;
+		}
+
+		await base.OnInitializedAsync();
+	}
+}<#cs SetOutputPathAndSkipOtherDefinitions()#>

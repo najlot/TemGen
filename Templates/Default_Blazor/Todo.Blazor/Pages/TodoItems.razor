@@ -29,7 +29,7 @@
 <section class="d-grid gap-3">
 	<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
 		<h1 class="mb-0">@<# Definition.Name#>Loc.<# Definition.Name#>s</h1>
-		<a href="/<# Definition.Name#>/@Guid.Empty" class="btn btn-success material-symbols-sharp">add</a>
+		<a href="@GetEditorHref(Guid.Empty)" class="btn btn-success material-symbols-sharp">add</a>
 	</div>
 
 	<EntityFilterEditor @ref="filterEditor"
@@ -74,7 +74,7 @@
 <#else
 #>								<td class="text-break">@<# Definition.NameLow#>.<# entry.Field#></td>
 <#end#><#end
-#>								<td class="text-end"><a href="/<# Definition.Name#>/@<# Definition.NameLow#>.Id" class="btn btn-outline-primary btn-sm">@CommonLoc.Edit</a></td>
+#>								<td class="text-end"><a href="@GetEditorHref(<# Definition.NameLow#>.Id)" class="btn btn-outline-primary btn-sm">@CommonLoc.Edit</a></td>
 							</tr>
 						}
 					</tbody>
@@ -177,6 +177,9 @@
 
 	private bool IsFavorite(Guid itemId)
 		=> _favoriteIds.Contains(itemId);
+
+	private string GetEditorHref(Guid id)
+		=> NavigationManager.BuildReturnUrl($"/<# Definition.Name#>/{id}");
 
 	private IReadOnlyList<FilterFieldOption> BuildFilterFieldOptions(<#for definition in Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n))#><# definition.Name#>ListItemModel[] <# definition.NameLow#>s<#if definition != Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n)).Last()#>, <#end#><#end#>)
 	{
@@ -287,5 +290,4 @@
 		FavoriteService.ItemCreated -= HandleFavoriteCreated;
 		FavoriteService.ItemDeleted -= HandleFavoriteDeleted;
 	}
-}
-<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>
+}<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

@@ -1,0 +1,157 @@
+@using System.Net;
+@using <# Project.Namespace#>.Blazor.Services;
+@inject IJSRuntime JS
+@inject ISnackbar Snackbar
+@inherits LayoutComponentBase
+@implements IErrorService
+
+<PageTitle><# Project.Namespace#></PageTitle>
+
+<CascadingValue Value="this" Name="ErrorService">
+	<MudThemeProvider Theme="_theme" @bind-IsDarkMode="_isDarkMode" />
+	<MudPopoverProvider />
+	<MudDialogProvider />
+	<MudSnackbarProvider />
+
+	<MudLayout>
+		<MudDrawer @bind-Open="_drawerOpen"
+				   Variant="DrawerVariant.Responsive"
+				   Breakpoint="Breakpoint.Md"
+				   Elevation="1"
+				   Class="app-shell-drawer">
+			<NavMenu />
+		</MudDrawer>
+
+		<MudAppBar Color="Color.Default" Elevation="0" Dense="true" Class="app-shell-appbar">
+			<MudIconButton Icon="@Icons.Material.Filled.Menu"
+						   Color="Color.Inherit"
+						   Edge="Edge.Start"
+						   Class="app-shell-menu"
+						   OnClick="@(_ => ToggleDrawer())" />
+			<MudSpacer />
+			<ThemeToggle IsDarkMode="_isDarkMode" ToggleTheme="ToggleThemeAsync" />
+			<LoginDisplay />
+		</MudAppBar>
+
+		<MudMainContent>
+			<MudContainer MaxWidth="MaxWidth.False" Class="content-shell">
+				@Body
+			</MudContainer>
+		</MudMainContent>
+	</MudLayout>
+</CascadingValue>
+
+@code {
+	private const string ErrorSnackbarKey = "layout-error";
+	private const string SuccessSnackbarKey = "layout-success";
+	private bool _drawerOpen = true;
+	private bool _isDarkMode = true;
+	private readonly MudTheme _theme = new()
+	{
+		PaletteLight = new PaletteLight
+		{
+			Primary = "<#cs Write(Project.GetSetting("PrimaryColor"))#>",
+			Secondary = "<#cs Write(Project.GetSetting("PrimaryDarkColor"))#>",
+			AppbarBackground = "<#cs Write(Project.GetSetting("PrimaryColor"))#>",
+		},
+		PaletteDark = new PaletteDark
+		{
+			Primary = "<#cs Write(Project.GetSetting("PrimaryColor"))#>",
+			Secondary = "<#cs Write(Project.GetSetting("PrimaryDarkColor"))#>",
+			DrawerText = Colors.Gray.Lighten5,
+			DrawerIcon = Colors.Gray.Lighten5,
+		},
+		LayoutProperties = new LayoutProperties
+		{
+			DefaultBorderRadius = "0px",
+		}
+	};
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (!firstRender)
+		{
+			return;
+		}
+
+		var theme = await JS.InvokeAsync<string>("themePreference.getTheme");
+		_isDarkMode = string.Equals(theme, "dark", StringComparison.OrdinalIgnoreCase);
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private void ToggleDrawer()
+	{
+		_drawerOpen = !_drawerOpen;
+	}
+
+	private async Task ToggleThemeAsync()
+	{
+		_isDarkMode = !_isDarkMode;
+		await JS.InvokeVoidAsync("themePreference.setTheme", _isDarkMode ? "dark" : "light");
+	}
+
+	public void ShowError(string title, string message)
+	{
+		_ = InvokeAsync(() =>
+		{
+			HideSuccessInternal();
+			HideErrorInternal();
+			Snackbar.Add(FormatSnackbarContent(title, message), Severity.Error, options =>
+			{
+				options.RequireInteraction = true;
+				options.CloseAfterNavigation = true;
+			}, ErrorSnackbarKey);
+		});
+	}
+
+	public void HideError()
+	{
+		_ = InvokeAsync(HideErrorInternal);
+	}
+
+	public void ShowSuccess(string title, string message, int durationMilliseconds = 4000)
+	{
+		_ = InvokeAsync(() =>
+		{
+			HideSuccessInternal();
+			Snackbar.Add(FormatSnackbarContent(title, message), Severity.Success, options =>
+			{
+				options.VisibleStateDuration = durationMilliseconds;
+				options.CloseAfterNavigation = true;
+			}, SuccessSnackbarKey);
+		});
+	}
+
+	public void HideSuccess()
+	{
+		_ = InvokeAsync(HideSuccessInternal);
+	}
+
+	private void HideErrorInternal()
+	{
+		Snackbar.RemoveByKey(ErrorSnackbarKey);
+	}
+
+	private void HideSuccessInternal()
+	{
+		Snackbar.RemoveByKey(SuccessSnackbarKey);
+	}
+
+	private static MarkupString FormatSnackbarContent(string title, string message)
+	{
+		var encodedTitle = WebUtility.HtmlEncode(title ?? string.Empty);
+		var encodedMessage = WebUtility.HtmlEncode(message ?? string.Empty);
+
+		if (string.IsNullOrWhiteSpace(encodedTitle))
+		{
+			return new MarkupString(encodedMessage);
+		}
+
+		if (string.IsNullOrWhiteSpace(encodedMessage) || string.Equals(encodedTitle, encodedMessage, StringComparison.Ordinal))
+		{
+			return new MarkupString($"<strong>{encodedTitle}</strong>");
+		}
+
+		return new MarkupString($"<strong>{encodedTitle}</strong><div>{encodedMessage}</div>");
+	}
+}<#cs SetOutputPathAndSkipOtherDefinitions()#>

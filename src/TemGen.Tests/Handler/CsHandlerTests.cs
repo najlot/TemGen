@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using TemGen.Handler;
+using TemGen.Services;
 using Xunit;
 
 namespace TemGen.Tests.Handler;
@@ -50,7 +51,8 @@ public class CsHandlerTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.CSharp,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.CSharp,
 				Content = "w(Project.GetSetting(\"UserSecretsId\") + '|'); \n" +
 						"w(Definition.Name + ':'); \n" +
 							"foreach(var e in Entries) Write(e.Field + ','); \n" +
@@ -68,7 +70,8 @@ public class CsHandlerTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.CSharp,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.CSharp,
 				Content = "SkipOtherDefinitions = true;"
 			});
 

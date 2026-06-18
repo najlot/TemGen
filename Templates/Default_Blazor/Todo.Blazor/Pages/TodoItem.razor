@@ -466,7 +466,7 @@ else
 			}
 
 			_changeTracker.Clear();
-			NavigateWithoutSaveConfirmation("/<# Definition.Name#>s");
+			NavigateWithoutSaveConfirmation(GetReturnToListUrl());
 		}
 		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
 		{
@@ -491,6 +491,16 @@ else
 		_changeTracker.Clear();
 
 		await InvokeAsync(StateHasChanged);
+	}
+
+	private string GetReturnToListUrl()
+	{
+		if (NavigationManager.TryGetReturnUrl(out var returnUrl) && !string.IsNullOrWhiteSpace(returnUrl))
+		{
+			return "/" + returnUrl.TrimStart('/');
+		}
+
+		return "/<# Definition.Name#>s";
 	}
 <#for entry in Entries.Where(e => e.IsArray)
 #>
@@ -548,5 +558,4 @@ else
 		<# Definition.Name#>Service.ItemUpdated -= Handle;
 		_locationChangingRegistration?.Dispose();
 	}
-}
-<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>
+}<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

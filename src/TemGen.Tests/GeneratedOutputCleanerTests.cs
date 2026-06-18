@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using TemGen.Services;
 using Xunit;
 
 namespace TemGen.Tests;

@@ -7,7 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using TemGen.Exceptions;
 using TemGen.Handler;
+using TemGen.Models;
+using TemGen.Services;
 
 namespace TemGen;
 
@@ -43,10 +46,10 @@ internal class Program
 				.ScriptPaths
 				.SelectMany(TemplatesReader.ReadScripts)
 				.ToList();
-			csScripts = scripts.Where(script => script.Handler == TemplateHandler.CSharp).Select(s => s.Content).ToArray();
-			jsScripts = scripts.Where(script => script.Handler == TemplateHandler.JavaScript).Select(s => s.Content).ToArray();
-			pyScripts = scripts.Where(script => script.Handler == TemplateHandler.Python).Select(s => s.Content).ToArray();
-			luaScripts = scripts.Where(script => script.Handler == TemplateHandler.Lua).Select(s => s.Content).ToArray();
+			csScripts = scripts.Where(script => script is { Handler: TemplateHandler.Script, Language: TemplateLanguage.CSharp }).Select(s => s.Content).ToArray();
+			jsScripts = scripts.Where(script => script is { Handler: TemplateHandler.Script, Language: TemplateLanguage.JavaScript }).Select(s => s.Content).ToArray();
+			pyScripts = scripts.Where(script => script is { Handler: TemplateHandler.Script, Language: TemplateLanguage.Python }).Select(s => s.Content).ToArray();
+			luaScripts = scripts.Where(script => script is { Handler: TemplateHandler.Script, Language: TemplateLanguage.Lua }).Select(s => s.Content).ToArray();
 		}
 
 		var processor = new TemplateProcessor([
@@ -72,14 +75,14 @@ internal class Program
 
 		foreach (var resourcesScriptPath in project.ResourceScriptPaths)
 		{
-			var (handler, content) = TemplatesReader.ReadScript(resourcesScriptPath);
+			var (handler, language, content) = TemplatesReader.ReadScript(resourcesScriptPath);
 
 			try
 			{
 				await processor.Handle(new Template
 				{
 					RelativePath = resourcesScriptPath,
-					Sections = [new TemplateSection { Handler = handler, Content = content }],
+					Sections = [new TemplateSection { Handler = handler, Language = language, Content = content }],
 					Encoding = System.Text.Encoding.UTF8,
 				}, new Definition() { Entries = [] }, null).ConfigureAwait(false);
 			}

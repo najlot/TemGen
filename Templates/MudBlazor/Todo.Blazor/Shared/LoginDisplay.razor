@@ -1,0 +1,37 @@
+@using <# Project.Namespace#>.Blazor.Identity;
+@using <# Project.Namespace#>.Client.Localisation;
+@inject IAuthenticationService AuthenticationService
+@inject NavigationManager NavigationManager
+
+<AuthorizeView>
+	<Authorized>
+		<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+			<MudIconButton Icon="@Icons.Material.Filled.Search"
+					   Color="Color.Inherit"
+					   Href="global-search"
+					   title="@CommonLoc.Search"
+					   aria-label="@CommonLoc.Search" />
+			<MudButton Variant="Variant.Text"
+				   Color="Color.Inherit"
+				   Href="Manage"
+				   StartIcon="@Icons.Material.Filled.AccountCircle">
+				@CommonLoc.Hello, @context.User.Identity?.Name!
+			</MudButton>
+			<MudButton Variant="Variant.Text" Color="Color.Inherit" OnClick="@(_ => Logout())">@UserLoc.Logout</MudButton>
+		</MudStack>
+	</Authorized>
+	<NotAuthorized>
+		<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+			<MudButton Variant="Variant.Text" Color="Color.Inherit" Href="Register">@UserLoc.Register</MudButton>
+			<MudButton Variant="Variant.Text" Color="Color.Inherit" Href="Login">@UserLoc.Login</MudButton>
+		</MudStack>
+	</NotAuthorized>
+</AuthorizeView>
+
+@code {
+	private async Task Logout()
+	{
+		await AuthenticationService.LogoutAsync();
+		NavigationManager.NavigateTo("/");
+	}
+}<#cs SetOutputPathAndSkipOtherDefinitions()#>

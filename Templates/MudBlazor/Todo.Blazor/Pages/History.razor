@@ -1,0 +1,154 @@
+@page "/history/{id:guid}"
+@using System.Linq
+@using <# Project.Namespace#>.Blazor.Pages;
+@using <# Project.Namespace#>.Blazor.Services;
+@using <# Project.Namespace#>.Client.Data.History;
+@using <# Project.Namespace#>.Client.Localisation;
+@using <# Project.Namespace#>.Contracts.History
+@inject ILogger<History> Log
+@inject IHistoryService HistoryService
+@inject NavigationManager NavigationManager
+@attribute [Authorize]
+
+<PageTitle>@CommonLoc.History</PageTitle>
+
+<section>
+	<MudStack Spacing="3">
+		<MudText Typo="Typo.h3">@CommonLoc.History</MudText>
+
+		@if (isHistoryLoading)
+		{
+			<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+				<MudProgressCircular Size="Size.Medium" Color="Color.Primary" Indeterminate="true" />
+				<MudText Typo="Typo.body1">@CommonLoc.Loading...</MudText>
+			</MudStack>
+		}
+		else if (historyEntries.Length == 0)
+		{
+			<MudPaper Class="pa-4" Elevation="0">
+				<MudText Typo="Typo.body1">@CommonLoc.NoHistoryEntries</MudText>
+			</MudPaper>
+		}
+		else
+		{
+			<MudStack Spacing="2">
+				@foreach (var historyEntry in historyEntries)
+				{
+					var isExpanded = expandedHistoryEntryId == historyEntry.Id;
+
+					<MudPaper Class="pa-4" Elevation="0">
+						<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2">
+							<div>
+								<MudText Typo="Typo.subtitle1">@FormatUsername(historyEntry.Username)</MudText>
+								<MudText Typo="Typo.caption">@FormatHistoryTimestamp(historyEntry.TimeStamp)</MudText>
+							</div>
+							<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+								<MudChip T="string" Variant="Variant.Outlined">@historyEntry.Changes.Length @CommonLoc.ChangesRecorded</MudChip>
+								<MudIconButton Icon="@(isExpanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
+										   Color="Color.Primary"
+										   OnClick="@(_ => ToggleHistoryEntry(historyEntry.Id))" />
+							</MudStack>
+						</MudStack>
+
+						<MudCollapse Expanded="@isExpanded">
+							<MudSimpleTable Dense="true" Style="margin-top: 1rem;">
+								<thead>
+									<tr>
+										<th>@CommonLoc.Field</th>
+										<th>@CommonLoc.Before</th>
+										<th>@CommonLoc.After</th>
+									</tr>
+								</thead>
+								<tbody>
+									@foreach (var change in historyEntry.Changes)
+									{
+										<tr>
+											<td><strong>@change.Path</strong></td>
+											<td><pre style="margin: 0; white-space: pre-wrap;">@change.OldValue</pre></td>
+											<td><pre style="margin: 0; white-space: pre-wrap;">@change.NewValue</pre></td>
+										</tr>
+									}
+								</tbody>
+							</MudSimpleTable>
+						</MudCollapse>
+					</MudPaper>
+				}
+			</MudStack>
+		}
+	</MudStack>
+</section>
+
+@code {
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	[Parameter]
+	public Guid Id { get; set; }
+
+	[SupplyParameterFromQuery(Name = "entityName")]
+	public string? EntityName { get; set; }
+
+	private Guid _lastEntityId;
+	private string? _lastEntityName;
+	private bool isHistoryLoading;
+	private Guid? expandedHistoryEntryId;
+	private HistoryEntry[] historyEntries = [];
+
+	protected override async Task OnParametersSetAsync()
+	{
+		if (_lastEntityId == Id && _lastEntityName == EntityName)
+		{
+			return;
+		}
+
+		_lastEntityId = Id;
+		_lastEntityName = EntityName;
+		isHistoryLoading = false;
+		expandedHistoryEntryId = null;
+		historyEntries = [];
+
+		await LoadHistoryIfNeededAsync();
+	}
+
+	private async Task LoadHistoryIfNeededAsync()
+	{
+		if (Id == Guid.Empty || isHistoryLoading)
+		{
+			return;
+		}
+
+		try
+		{
+			isHistoryLoading = true;
+			historyEntries = await HistoryService.GetItemsAsync(Id, EntityName ?? string.Empty);
+			expandedHistoryEntryId = historyEntries.FirstOrDefault()?.Id;
+		}
+		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigationManager.NavigateTo(url);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error loading history for entity {EntityId}.", Id);
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotLoad);
+			historyEntries = [];
+		}
+		finally
+		{
+			isHistoryLoading = false;
+		}
+	}
+
+	private void ToggleHistoryEntry(Guid historyEntryId)
+	{
+		expandedHistoryEntryId = expandedHistoryEntryId == historyEntryId ? null : historyEntryId;
+	}
+
+	private static string FormatHistoryTimestamp(DateTime timeStamp)
+		=> timeStamp.ToLocalTime().ToString("g");
+
+	private static string FormatUsername(string? username)
+		=> string.IsNullOrWhiteSpace(username) ? "-" : username;
+}
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

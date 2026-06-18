@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using TemGen.Services;
 using Xunit;
 
 namespace TemGen.Tests;

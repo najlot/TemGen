@@ -1,0 +1,20 @@
+@using <# Project.Namespace#>.Client.Localisation;
+
+<MudIconButton Icon="@ButtonIcon"
+			   Color="Color.Inherit"
+			   title="@ButtonLabel"
+			   aria-label="@ButtonLabel"
+			   OnClick="@(_ => ToggleTheme.InvokeAsync(null))" />
+
+@code {
+	[Parameter]
+	public bool IsDarkMode { get; set; }
+
+	[Parameter, EditorRequired]
+	public EventCallback ToggleTheme { get; set; }
+
+	private string ButtonIcon => IsDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode;
+
+	private string ButtonLabel => IsDarkMode ? CommonLoc.LightMode : CommonLoc.DarkMode;
+}
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

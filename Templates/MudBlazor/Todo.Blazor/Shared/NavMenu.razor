@@ -1,0 +1,19 @@
+@using <# Project.Namespace#>.Client.Localisation;
+
+<MudNavMenu Class="app-nav-menu" Rounded="true" Dense="true">
+	<MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
+		@CommonLoc.Home
+	</MudNavLink>
+<#for definition in Definitions.Where(d => !(d.IsArray
+	|| d.IsEnumeration 
+	|| d.IsOwnedType
+	|| d.Name == "User"))
+#>	<MudNavLink Href="<# definition.Name#>s" Icon="@Icons.Material.Filled.Notes">
+		@<# definition.Name#>Loc.<#cs Write(definition.Name)#>s
+	</MudNavLink>
+<#end#>	<MudDivider Class="my-4" />
+	<MudNavLink Href="trash" Icon="@Icons.Material.Filled.DeleteSweep">
+		@TrashLoc.Trash
+	</MudNavLink>
+</MudNavMenu>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

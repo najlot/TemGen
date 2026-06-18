@@ -1,0 +1,24 @@
+::deep .app-shell-drawer {
+	width: 19rem;
+}
+
+::deep .app-shell-appbar {
+	backdrop-filter: blur(18px);
+	border-bottom: 1px solid var(--mud-palette-divider);
+}
+
+::deep .app-shell-menu {
+	margin-right: 0.5rem;
+}
+
+.content-shell {
+	padding: 1.25rem 1rem 2rem;
+	min-height: calc(100vh - 64px);
+}
+
+@media (min-width: 960px) {
+	.content-shell {
+		padding: 1.25rem 2rem 2.5rem;
+	}
+}
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

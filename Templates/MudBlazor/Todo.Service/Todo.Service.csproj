@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+		<AnalysisLevel>latest</AnalysisLevel>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="Templates\**\*.md" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="LiteDB" />
+		<PackageReference Include="Markdig" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+		<PackageReference Include="Microsoft.IdentityModel.Tokens" />
+		<PackageReference Include="MongoDB.Driver" />
+		<PackageReference Include="Najlot.Audit" />
+		<PackageReference Include="Najlot.Audit.SourceGenerator" />
+		<PackageReference Include="Najlot.Log.Configuration.FileSource" />
+		<PackageReference Include="Najlot.Log.Extensions.Logging" />
+		<PackageReference Include="Najlot.Map" />
+		<PackageReference Include="Najlot.Map.SourceGenerator" PrivateAssets="all" ReferenceOutputAssembly="false" />
+		<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
+		<PackageReference Include="SharpCompress" />
+		<PackageReference Include="Swashbuckle.AspNetCore" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\<#cs Write(Project.Namespace)#>.Contracts\<#cs Write(Project.Namespace)#>.Contracts.csproj" />
+		<ProjectReference Include="..\<#cs Write(Project.Namespace)#>.Blazor\<#cs Write(Project.Namespace)#>.Blazor.csproj" />
+	</ItemGroup>
+
+</Project>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

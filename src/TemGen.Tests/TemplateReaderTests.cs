@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using TemGen.Exceptions;
+using TemGen.Services;
 using Xunit;
 
 namespace TemGen.Tests;
@@ -30,7 +32,7 @@ public class TemplateReaderTests
 
 		foreach (var section in template.Sections)
 		{
-			if (section.Handler == TemplateHandler.CSharp)
+			if (section is { Handler: TemplateHandler.Script, Language: TemplateLanguage.CSharp })
 			{
 				Assert.StartsWith("Write(", section.Content);
 				Assert.EndsWith(")", section.Content);
@@ -61,7 +63,8 @@ public class TemplateReaderTests
 		Directory.Delete(directory, true);
 
 		// Assert
-		Assert.Equal(TemplateHandler.CSharp, template.Handler);
+		Assert.Equal(TemplateHandler.Script, template.Handler);
+		Assert.Equal(TemplateLanguage.CSharp, template.Language);
 		Assert.Equal(content, template.Content);
 	}
 
@@ -87,7 +90,8 @@ public class TemplateReaderTests
 		Directory.Delete(directory, true);
 
 		// Assert
-		Assert.Equal(TemplateHandler.CSharp, template.Handler);
+		Assert.Equal(TemplateHandler.Script, template.Handler);
+		Assert.Equal(TemplateLanguage.CSharp, template.Language);
 		Assert.Equal(content, template.Content);
 	}
 
@@ -113,7 +117,8 @@ public class TemplateReaderTests
 		Directory.Delete(directory, true);
 
 		// Assert
-		Assert.Equal(TemplateHandler.CSharp, template.Handler);
+		Assert.Equal(TemplateHandler.Script, template.Handler);
+		Assert.Equal(TemplateLanguage.CSharp, template.Language);
 		Assert.Equal(content, template.Content);
 	}
 
@@ -139,7 +144,8 @@ public class TemplateReaderTests
 		Directory.Delete(directory, true);
 
 		// Assert
-		Assert.Equal(TemplateHandler.CSharp, template.Handler);
+		Assert.Equal(TemplateHandler.Script, template.Handler);
+		Assert.Equal(TemplateLanguage.CSharp, template.Language);
 		Assert.Equal(content, template.Content);
 	}
 
@@ -161,15 +167,18 @@ public class TemplateReaderTests
 			var nestedSections = rootSections[0].Sections.Where(section => section.Handler != TemplateHandler.Text || !string.IsNullOrEmpty(section.Content)).ToList();
 
 			Assert.Single(rootSections);
-			Assert.Equal(TemplateHandler.CSharpFor, rootSections[0].Handler);
+			Assert.Equal(TemplateHandler.For, rootSections[0].Handler);
+			Assert.Equal(TemplateLanguage.CSharp, rootSections[0].Language);
 			Assert.Equal("entry in Entries.Take(1)", rootSections[0].Content.Trim());
 			Assert.Single(nestedSections);
-			Assert.Equal(TemplateHandler.CSharpIf, nestedSections[0].Handler);
+			Assert.Equal(TemplateHandler.If, nestedSections[0].Handler);
+			Assert.Equal(TemplateLanguage.CSharp, nestedSections[0].Language);
 			Assert.Equal("entry.Field == \"Name\"", nestedSections[0].Content.Trim());
 			Assert.Single(nestedSections[0].Sections);
 			Assert.Single(nestedSections[0].ElseSections);
 			Assert.Equal("A", nestedSections[0].Sections[0].Content);
-			Assert.Equal(TemplateHandler.CSharpElseIf, nestedSections[0].ElseSections[0].Handler);
+			Assert.Equal(TemplateHandler.ElseIf, nestedSections[0].ElseSections[0].Handler);
+			Assert.Equal(TemplateLanguage.CSharp, nestedSections[0].ElseSections[0].Language);
 			Assert.Equal("entry.Field == \"Title\"", nestedSections[0].ElseSections[0].Content.Trim());
 			Assert.Single(nestedSections[0].ElseSections[0].Sections);
 			Assert.Equal("B", nestedSections[0].ElseSections[0].Sections[0].Content);
@@ -200,18 +209,68 @@ public class TemplateReaderTests
 			var nestedSections = rootSections[0].Sections.Where(section => section.Handler != TemplateHandler.Text || !string.IsNullOrEmpty(section.Content)).ToList();
 
 			Assert.Single(rootSections);
-			Assert.Equal(TemplateHandler.CSharpFor, rootSections[0].Handler);
+			Assert.Equal(TemplateHandler.For, rootSections[0].Handler);
+			Assert.Equal(TemplateLanguage.CSharp, rootSections[0].Language);
 			Assert.Equal("entry in Entries.Take(1)", rootSections[0].Content.Trim());
 			Assert.Single(nestedSections);
-			Assert.Equal(TemplateHandler.CSharpIf, nestedSections[0].Handler);
+			Assert.Equal(TemplateHandler.If, nestedSections[0].Handler);
+			Assert.Equal(TemplateLanguage.CSharp, nestedSections[0].Language);
 			Assert.Equal("entry.Field == \"Name\"", nestedSections[0].Content.Trim());
 			Assert.Single(nestedSections[0].ElseSections);
-			Assert.Equal(TemplateHandler.CSharpElseIf, nestedSections[0].ElseSections[0].Handler);
+			Assert.Equal(TemplateHandler.ElseIf, nestedSections[0].ElseSections[0].Handler);
+			Assert.Equal(TemplateLanguage.CSharp, nestedSections[0].ElseSections[0].Language);
 			Assert.Equal("entry.Field == \"Title\"", nestedSections[0].ElseSections[0].Content.Trim());
 		}
 		finally
 		{
 			Directory.Delete(directory, true);
+		}
+	}
+
+	[Fact]
+	public void ReadTemplates_must_build_nested_language_specific_control_flow_sections()
+	{
+		AssertNestedControlFlowSections(
+			"<#jsfor entry in entries.slice(0, 1)#><#jsif entry.field === 'Name'#>A<#jselseif entry.field === 'Title'#>B<#else#>C<#end#><#end#>",
+			TemplateLanguage.JavaScript);
+
+		AssertNestedControlFlowSections(
+			"<#pyfor entry in entries[:1]#><#pyif entry.Field == \"Name\"#>A<#pyelseif entry.Field == \"Title\"#>B<#else#>C<#end#><#end#>",
+			TemplateLanguage.Python);
+
+		AssertNestedControlFlowSections(
+			"<#luafor entry in { { field = 'Name' } }#><#luaif entry.field == 'Name'#>A<#luaelseif entry.field == 'Title'#>B<#else#>C<#end#><#end#>",
+			TemplateLanguage.Lua);
+
+		static void AssertNestedControlFlowSections(string content, TemplateLanguage expectedLanguage)
+		{
+			var testId = Guid.NewGuid().ToString();
+			var directory = Path.Combine(".", testId);
+			var path = Path.Combine(directory, "NestedLanguageTemplate.txt");
+
+			Directory.CreateDirectory(directory);
+			File.WriteAllText(path, content);
+
+			try
+			{
+				var template = TemplatesReader.ReadTemplates(directory).Single();
+				var rootSections = template.Sections.Where(section => section.Handler != TemplateHandler.Text || !string.IsNullOrEmpty(section.Content)).ToList();
+				var nestedSections = rootSections[0].Sections.Where(section => section.Handler != TemplateHandler.Text || !string.IsNullOrEmpty(section.Content)).ToList();
+
+				Assert.Single(rootSections);
+				Assert.Equal(TemplateHandler.For, rootSections[0].Handler);
+				Assert.Equal(expectedLanguage, rootSections[0].Language);
+				Assert.Single(nestedSections);
+				Assert.Equal(TemplateHandler.If, nestedSections[0].Handler);
+				Assert.Equal(expectedLanguage, nestedSections[0].Language);
+				Assert.Single(nestedSections[0].ElseSections);
+				Assert.Equal(TemplateHandler.ElseIf, nestedSections[0].ElseSections[0].Handler);
+				Assert.Equal(expectedLanguage, nestedSections[0].ElseSections[0].Language);
+			}
+			finally
+			{
+				Directory.Delete(directory, true);
+			}
 		}
 	}
 

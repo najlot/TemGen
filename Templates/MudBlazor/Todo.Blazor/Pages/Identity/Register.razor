@@ -1,0 +1,107 @@
+@page "/Register"
+
+@using System.ComponentModel.DataAnnotations;
+@using <# Project.Namespace#>.Blazor.Identity;
+@using <# Project.Namespace#>.Blazor.Services;
+@using <# Project.Namespace#>.Client.Data.Identity;
+@using <# Project.Namespace#>.Client.Localisation;
+
+@inject IAuthenticationService AuthenticationService
+@inject ITokenService TokenService
+@inject IRegistrationService RegistrationService
+@inject NavigationManager NavigationManager
+@inject ILogger<Register> Logger
+
+<PageTitle>@UserLoc.Register</PageTitle>
+
+<EditForm Model="@Input" OnValidSubmit="@TryRegister">
+	<MudPaper Class="pa-6" Elevation="0" Style="max-width: 32rem; margin: 0 auto;">
+		<MudStack Spacing="3">
+			<MudText Typo="Typo.h4">@UserLoc.Register</MudText>
+			<DataAnnotationsValidator />
+			<ValidationSummary />
+			<MudTextField T="string"
+					   Label="@UserLoc.Username"
+					   Value="@Input.Username"
+					   ValueChanged="@((string value) => Input.Username = value)"
+					   Variant="Variant.Outlined" />
+			<MudTextField T="string"
+					   Label="@UserLoc.EmailAddress"
+					   Value="@Input.EMail"
+					   ValueChanged="@((string value) => Input.EMail = value)"
+					   InputType="InputType.Email"
+					   Variant="Variant.Outlined" />
+			<MudTextField T="string"
+					   Label="@UserLoc.Password"
+					   Value="@Input.Password"
+					   ValueChanged="@((string value) => Input.Password = value)"
+					   InputType="InputType.Password"
+					   Variant="Variant.Outlined" />
+			<MudButton ButtonType="MudBlazor.ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">@UserLoc.Register</MudButton>
+		</MudStack>
+	</MudPaper>
+</EditForm>
+
+@code {
+	private class InputModel
+	{
+		[Required]
+		[StringLength(30, MinimumLength = 3)]
+		public string Username { get; set; } = string.Empty;
+
+		[Required]
+		[EmailAddress]
+		public string EMail { get; set; } = string.Empty;
+
+		[Required]
+		[DataType(DataType.Password)]
+		[StringLength(30, MinimumLength = 8)]
+		public string Password { get; set; } = string.Empty;
+	}
+
+	private InputModel Input = new();
+
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		ErrorService?.HideError();
+		await AuthenticationService.LogoutAsync();
+		await base.OnInitializedAsync();
+	}
+
+	private async Task TryRegister()
+	{
+		string? token = null;
+		var result = await RegistrationService.Register(Guid.NewGuid(), Input.Username, Input.EMail, Input.Password);
+
+		if (!result.IsSuccess)
+		{
+			Input.Password = "";
+			ErrorService?.ShowError(UserLoc.Register, result.ErrorMessage);
+			return;
+		}
+
+		try
+		{
+			token = await TokenService.CreateToken(Input.Username, Input.Password);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error creating token.");
+		}
+
+		if (string.IsNullOrWhiteSpace(token))
+		{
+			ErrorService?.ShowError(UserLoc.Login, ErrorLoc.ErrorCouldNotLogin);
+			await AuthenticationService.LogoutAsync();
+		}
+		else
+		{
+			await AuthenticationService.LoginAsync(Input.Username, token);
+			ErrorService?.HideError();
+			NavigationManager.NavigateTo("/");
+		}
+	}
+}<#cs SetOutputPathAndSkipOtherDefinitions()#>

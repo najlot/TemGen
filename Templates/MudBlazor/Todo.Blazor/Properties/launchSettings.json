@@ -1,0 +1,16 @@
+{
+	"$schema": "https://json.schemastore.org/launchsettings.json",
+    "profiles": {
+        "<# Project.Namespace#>.Blazor": {
+            "commandName": "Project",
+            "dotnetRunMessages": true,
+            "launchBrowser": true,
+            "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "applicationUrl": "http://localhost:80"
+        }
+    }
+}
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

@@ -1,0 +1,226 @@
+@page "/global-search"
+@using System.Net
+@using Microsoft.AspNetCore.Components
+@using <# Project.Namespace#>.Blazor.Services;
+@using <# Project.Namespace#>.Client.Data.GlobalSearch;
+@using <# Project.Namespace#>.Client.Localisation;
+@using <# Project.Namespace#>.Contracts.Trash;
+@using <# Project.Namespace#>.Contracts.Shared
+@inject ILogger<GlobalSearch> Log
+@inject IGlobalSearchService GlobalSearchService
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize]
+
+<PageTitle>@GlobalSearchLoc.GlobalSearch</PageTitle>
+
+<section>
+	<MudStack Spacing="3">
+		<MudText Typo="Typo.h3">@GlobalSearchLoc.GlobalSearch</MudText>
+
+		<MudPaper Class="pa-4" Elevation="0">
+			<MudGrid Spacing="2" Style="align-items: center;">
+				<MudItem xs="10" sm="11">
+					<MudTextField T="string"
+							   Value="@queryText"
+							   ValueChanged="@((string value) => queryText = value)"
+							   Label="@GlobalSearchLoc.SearchPlaceholder"
+							   Variant="Variant.Outlined"
+							   Margin="Margin.Dense"
+							   FullWidth="true"
+							   Immediate="true"
+							   OnKeyDown="HandleSearchKeyDown" />
+				</MudItem>
+				<MudItem xs="2" sm="1" Style="display: flex; justify-content: flex-end;">
+					<MudIconButton Icon="@Icons.Material.Filled.Search"
+								   Variant="Variant.Filled"
+								   Color="Color.Primary"
+								   title="@GlobalSearchLoc.Search"
+								   aria-label="@GlobalSearchLoc.Search"
+								   OnClick="@(_ => SearchAsync())" />
+				</MudItem>
+			</MudGrid>
+		</MudPaper>
+
+		@if (isLoading)
+		{
+			<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+				<MudProgressCircular Size="Size.Medium" Color="Color.Primary" Indeterminate="true" />
+				<MudText Typo="Typo.body1">@CommonLoc.Loading...</MudText>
+			</MudStack>
+		}
+		else if (string.IsNullOrWhiteSpace(activeQuery))
+		{
+			<MudPaper Class="pa-4" Elevation="0">
+				<MudText Typo="Typo.body1">@GlobalSearchLoc.SearchPrompt</MudText>
+			</MudPaper>
+		}
+		else if (items.Count == 0)
+		{
+			<MudPaper Class="pa-4" Elevation="0">
+				<MudText Typo="Typo.body1">@GlobalSearchLoc.NoResults</MudText>
+			</MudPaper>
+		}
+		else
+		{
+			<MudStack Spacing="2">
+				@foreach (var item in items)
+				{
+					<a href="@GetResultHref(item)" style="text-decoration: none; color: inherit;">
+						<MudPaper Class="pa-4" Elevation="1">
+							<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Spacing="2">
+								<div style="flex: 1 1 auto; min-width: 0;">
+									<div style="font-weight: 600; word-break: break-word;">@Highlight(Display(item.Title, CommonLoc.Untitled))</div>
+									@if (!string.IsNullOrWhiteSpace(item.Content))
+									{
+										<div style="margin-top: 0.35rem; opacity: 0.82; word-break: break-word;">@Highlight(item.Content)</div>
+									}
+								</div>
+								<MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined">@item.Type</MudChip>
+							</MudStack>
+						</MudPaper>
+					</a>
+				}
+			</MudStack>
+		}
+	</MudStack>
+</section>
+
+@code {
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	[Parameter, SupplyParameterFromQuery(Name = "q")]
+	public string? Query { get; set; }
+
+	private readonly List<GlobalSearchItemModel> items = [];
+	private string queryText = string.Empty;
+	private string activeQuery = string.Empty;
+	private string loadedQuery = string.Empty;
+	private bool queryInitialized;
+	private bool isLoading;
+
+	protected override async Task OnParametersSetAsync()
+	{
+		var searchText = Query?.Trim() ?? string.Empty;
+		if (queryInitialized && string.Equals(searchText, loadedQuery, StringComparison.Ordinal))
+		{
+			return;
+		}
+
+		queryInitialized = true;
+		loadedQuery = searchText;
+		queryText = searchText;
+		await ExecuteSearchAsync(searchText);
+	}
+
+	private async Task HandleSearchKeyDown(KeyboardEventArgs args)
+	{
+		if (args.Key == "Enter")
+		{
+			await SearchAsync();
+		}
+	}
+
+	private async Task SearchAsync()
+	{
+		var searchText = queryText.Trim();
+		queryInitialized = true;
+		loadedQuery = searchText;
+		var uri = NavigationManager.GetUriWithQueryParameter("q", string.IsNullOrEmpty(searchText) ? null : searchText);
+		NavigationManager.NavigateTo(uri, replace: true);
+		await ExecuteSearchAsync(searchText);
+	}
+
+	private async Task ExecuteSearchAsync(string searchText)
+	{
+		activeQuery = searchText;
+		items.Clear();
+
+		if (string.IsNullOrWhiteSpace(searchText))
+		{
+			await InvokeAsync(StateHasChanged);
+			return;
+		}
+
+		try
+		{
+			isLoading = true;
+			items.AddRange(await GlobalSearchService.SearchAsync(searchText).ConfigureAwait(false));
+		}
+		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigationManager.NavigateTo(url);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error searching globally.");
+			ErrorService?.ShowError(GlobalSearchLoc.GlobalSearch, ex.Message);
+		}
+		finally
+		{
+			isLoading = false;
+		}
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private MarkupString Highlight(string? value)
+	{
+		if (string.IsNullOrEmpty(value))
+		{
+			return new MarkupString(string.Empty);
+		}
+
+		if (string.IsNullOrWhiteSpace(activeQuery))
+		{
+			return new MarkupString(WebUtility.HtmlEncode(value));
+		}
+
+		var result = new System.Text.StringBuilder();
+		var remaining = value;
+
+		while (remaining.Length > 0)
+		{
+			var index = remaining.IndexOf(activeQuery, StringComparison.OrdinalIgnoreCase);
+			if (index < 0)
+			{
+				result.Append(WebUtility.HtmlEncode(remaining));
+				break;
+			}
+
+			if (index > 0)
+			{
+				result.Append(WebUtility.HtmlEncode(remaining[..index]));
+			}
+
+			result.Append("<mark>");
+			result.Append(WebUtility.HtmlEncode(remaining.Substring(index, activeQuery.Length)));
+			result.Append("</mark>");
+			remaining = remaining[(index + activeQuery.Length)..];
+		}
+
+		return new MarkupString(result.ToString());
+	}
+
+	private static string Display(string? value, string fallback)
+	{
+		return string.IsNullOrWhiteSpace(value) ? fallback : value;
+	}
+
+	private string GetResultHref(GlobalSearchItemModel item)
+	{
+		var target = item.Type switch
+		{
+<#for definition in Definitions.Where(d => !(d.IsEnumeration
+	|| d.IsArray
+	|| d.IsOwnedType
+	|| d.NameLow == "user")).OrderBy(d => d.Name)
+#>			ItemType.<# definition.Name#> => "/<#cs Write(definition.Name.ToLower())#>/" + item.Id,
+<#end#>			_ => "/",
+		};
+
+		return NavigationManager.BuildReturnUrl(target);
+	}
+}<#cs SetOutputPathAndSkipOtherDefinitions()#>

@@ -1,5 +1,7 @@
 ﻿using System.Threading.Tasks;
 using TemGen.Handler;
+using TemGen.Models;
+using TemGen.Services;
 using Xunit;
 
 namespace TemGen.Tests.Handler;
@@ -24,7 +26,8 @@ public class FunctionForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.CSharp,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.CSharp,
 				Content = "SetVariable(\"WriteHello\", () => WriteHello());"
 			});
 
@@ -33,7 +36,8 @@ public class FunctionForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.JavaScript,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.JavaScript,
 				Content = "getVariable(\"WriteHello\")();"
 			});
 
@@ -50,7 +54,8 @@ public class FunctionForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.CSharp,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.CSharp,
 				Content = "SetVariable(\"WriteHello\", () => WriteHello());"
 			});
 
@@ -59,7 +64,8 @@ public class FunctionForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Python,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Python,
 				Content = "get_variable(\"WriteHello\")()"
 			});
 
@@ -76,7 +82,8 @@ public class FunctionForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.CSharp,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.CSharp,
 				Content = "SetVariable(\"WriteHello\", () => WriteHello());"
 			});
 
@@ -85,7 +92,8 @@ public class FunctionForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Lua,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Lua,
 				Content = "get_variable(\"WriteHello\")()"
 			});
 
@@ -102,7 +110,8 @@ public class FunctionForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Lua,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Lua,
 				Content = "set_variable(\"WriteHello\", function() write(\"Hello\") end)"
 			});
 
@@ -111,7 +120,8 @@ public class FunctionForwardingTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Python,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Python,
 				Content = "get_variable(\"WriteHello\")()"
 			});
 

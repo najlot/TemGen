@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using TemGen.Handler;
+using TemGen.Services;
 using Xunit;
 
 namespace TemGen.Tests;
@@ -175,6 +176,84 @@ public class TemplateProcessorTests
 			var result = await processor.Handle(template, definition, null);
 
 			Assert.Equal("ABCDE", result.Content.Replace("\r\n", "\n"));
+		}
+		finally
+		{
+			Directory.Delete(testId, true);
+		}
+	}
+
+	[Fact]
+	public async Task Handle_must_support_javascript_control_flow_blocks()
+	{
+		var testId = Path.Combine(".", System.Guid.NewGuid().ToString());
+		var templatePath = Path.Combine(testId, "JavaScriptControlFlowTemplate.txt");
+		var content = "<#jsfor value in [1, 2, 3]\n#><#jsif value === 1#><#js write('A' + value);#><#jselseif value === 2#><#js write('B' + value);#><#else#><#js write('C' + value);#><#end#><#end#>";
+
+		Directory.CreateDirectory(testId);
+		File.WriteAllText(templatePath, content);
+
+		try
+		{
+			var template = TemplatesReader.ReadTemplates(testId).Single();
+			var definition = CreateEmptyDefinition();
+			var processor = CreateProcessorWithAllScriptHandlers(definition);
+
+			var result = await processor.Handle(template, definition, null);
+
+			Assert.Equal("A1B2C3", result.Content.Replace("\r\n", "\n"));
+		}
+		finally
+		{
+			Directory.Delete(testId, true);
+		}
+	}
+
+	[Fact]
+	public async Task Handle_must_support_python_control_flow_blocks()
+	{
+		var testId = Path.Combine(".", System.Guid.NewGuid().ToString());
+		var templatePath = Path.Combine(testId, "PythonControlFlowTemplate.txt");
+		var content = "<#pyfor value in [1, 2, 3]\n#><#pyif value == 1#><#py write('A' + str(value))#><#pyelseif value == 2#><#py write('B' + str(value))#><#else#><#py write('C' + str(value))#><#end#><#end#>";
+
+		Directory.CreateDirectory(testId);
+		File.WriteAllText(templatePath, content);
+
+		try
+		{
+			var template = TemplatesReader.ReadTemplates(testId).Single();
+			var definition = CreateEmptyDefinition();
+			var processor = CreateProcessorWithAllScriptHandlers(definition);
+
+			var result = await processor.Handle(template, definition, null);
+
+			Assert.Equal("A1B2C3", result.Content.Replace("\r\n", "\n"));
+		}
+		finally
+		{
+			Directory.Delete(testId, true);
+		}
+	}
+
+	[Fact]
+	public async Task Handle_must_support_lua_control_flow_blocks()
+	{
+		var testId = Path.Combine(".", System.Guid.NewGuid().ToString());
+		var templatePath = Path.Combine(testId, "LuaControlFlowTemplate.txt");
+		var content = "<#luafor value in {1, 2, 3}\n#><#luaif value == 1#><#lua write('A' .. value)#><#luaelseif value == 2#><#lua write('B' .. value)#><#else#><#lua write('C' .. value)#><#end#><#end#>";
+
+		Directory.CreateDirectory(testId);
+		File.WriteAllText(templatePath, content);
+
+		try
+		{
+			var template = TemplatesReader.ReadTemplates(testId).Single();
+			var definition = CreateEmptyDefinition();
+			var processor = CreateProcessorWithAllScriptHandlers(definition);
+
+			var result = await processor.Handle(template, definition, null);
+
+			Assert.Equal("A1B2C3", result.Content.Replace("\r\n", "\n"));
 		}
 		finally
 		{
@@ -382,5 +461,33 @@ public class TemplateProcessorTests
 		{
 			Directory.Delete(testId, true);
 		}
+	}
+
+	private static Definition CreateEmptyDefinition()
+	{
+		return new Definition
+		{
+			Name = "TodoItem",
+			NameLow = "todoItem",
+			Entries = []
+		};
+	}
+
+	private static TemplateProcessor CreateProcessorWithAllScriptHandlers(Definition definition)
+	{
+		return new TemplateProcessor(
+		[
+			new TextSectionHandler(),
+			new CsSectionHandler([]),
+			new ReflectionSectionHandler(),
+			new PySectionHandler([]),
+			new JintSectionHandler([]),
+			new LuaSectionHandler([])
+		],
+		new Project
+		{
+			Namespace = "Todo"
+		},
+		[definition]);
 	}
 }

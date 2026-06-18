@@ -1,13 +1,38 @@
 ﻿using MoonSharp.Interpreter;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TemGen.Models;
+using TemGen.Services;
 
 namespace TemGen.Handler;
 
-public sealed class LuaSectionHandler(string[] initialScripts) : AbstractSectionHandler(TemplateHandler.Lua)
+public sealed class LuaSectionHandler(string[] initialScripts) : AbstractSectionHandler(TemplateHandler.Script, TemplateLanguage.Lua)
 {
+	public Task<object> EvaluateExpression(Globals globals, string expression)
+	{
+		var script = CreateScript(globals);
+		var result = script.DoString($"return {expression}");
+		return Task.FromResult(ConvertDynValueToHostObject(result));
+	}
+
 	protected override Task Handle(Globals globals, string content)
+	{
+		var script = CreateScript(globals);
+
+		script.DoString(content);
+
+		globals.RelativePath = script.Globals["relative_path"].ToString();
+		globals.SkipOtherDefinitions = (bool)script.Globals["skip_other_definitions"];
+		globals.RepeatForEachDefinitionEntry = (bool)script.Globals["repeat_for_each_definition_entry"];
+		globals.AllowOverwrite = (bool)script.Globals["allow_overwrite"];
+
+		return Task.CompletedTask;
+	}
+
+	private Script CreateScript(Globals globals)
 	{
 		var script = new Script();
 
@@ -94,18 +119,111 @@ public sealed class LuaSectionHandler(string[] initialScripts) : AbstractSection
 		script.Globals["set_variable"] = (Action<string, object>)((name, value) => globals.SetVariable(name, value));
 		script.Globals["get_variable"] = (Func<string, object>)(name => globals.GetVariable(name));
 
+		foreach (var variableName in globals.GetVisibleVariableNames())
+		{
+			script.Globals[variableName] = ToDynValue(script, globals.GetVariable(variableName));
+		}
+
 		foreach (var subScript in initialScripts)
 		{
 			script.DoString(subScript);
 		}
 
-		script.DoString(content);
+		return script;
+	}
 
-		globals.RelativePath = script.Globals["relative_path"].ToString();
-		globals.SkipOtherDefinitions = (bool)script.Globals["skip_other_definitions"];
-		globals.RepeatForEachDefinitionEntry = (bool)script.Globals["repeat_for_each_definition_entry"];
-		globals.AllowOverwrite = (bool)script.Globals["allow_overwrite"];
+	private static object ConvertDynValueToHostObject(DynValue value)
+	{
+		return value.Type switch
+		{
+			DataType.Void or DataType.Nil => null,
+			DataType.Boolean => value.Boolean,
+			DataType.Number => value.Number,
+			DataType.String => value.String,
+			DataType.Table => ConvertTableToHostObject(value.Table),
+			_ => value.ToObject()
+		};
+	}
 
-		return Task.CompletedTask;
+	private static object ConvertTableToHostObject(Table table)
+	{
+		if (table.Length > 0)
+		{
+			var values = new object[(int)table.Length];
+
+			for (int index = 1; index <= table.Length; index++)
+			{
+				values[index - 1] = ConvertDynValueToHostObject(table.Get(index));
+			}
+
+			return values;
+		}
+
+		var valuesByKey = new Dictionary<string, object>(StringComparer.Ordinal);
+
+		foreach (var pair in table.Pairs)
+		{
+			var key = ConvertDynValueToHostObject(pair.Key)?.ToString();
+
+			if (!string.IsNullOrEmpty(key))
+			{
+				valuesByKey[key] = ConvertDynValueToHostObject(pair.Value);
+			}
+		}
+
+		return valuesByKey;
+	}
+
+	private static DynValue ToDynValue(Script script, object value)
+	{
+		return value switch
+		{
+			null => DynValue.Nil,
+			DynValue dynValue => ToDynValue(script, ConvertDynValueToHostObject(dynValue)),
+			IDictionary dictionary => ToTable(script, dictionary),
+			IEnumerable<KeyValuePair<string, object>> pairs => ToTable(script, pairs),
+			IEnumerable enumerable when value is not string => ToArrayTable(script, enumerable),
+			_ => DynValue.FromObject(script, value)
+		};
+	}
+
+	private static DynValue ToTable(Script script, IDictionary values)
+	{
+		var table = new Table(script);
+
+		foreach (DictionaryEntry entry in values)
+		{
+			if (entry.Key is not null)
+			{
+				table[entry.Key.ToString()] = ToDynValue(script, entry.Value);
+			}
+		}
+
+		return DynValue.NewTable(table);
+	}
+
+	private static DynValue ToTable(Script script, IEnumerable<KeyValuePair<string, object>> pairs)
+	{
+		var table = new Table(script);
+
+		foreach (var pair in pairs)
+		{
+			table[pair.Key] = ToDynValue(script, pair.Value);
+		}
+
+		return DynValue.NewTable(table);
+	}
+
+	private static DynValue ToArrayTable(Script script, IEnumerable values)
+	{
+		var table = new Table(script);
+		var index = 1;
+
+		foreach (var value in values)
+		{
+			table[index++] = ToDynValue(script, value);
+		}
+
+		return DynValue.NewTable(table);
 	}
 }

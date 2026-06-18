@@ -1,0 +1,4 @@
+<#cs Write(AddSolutionProjects(
+	PreviousContent,
+	$"\t<Project Path=\"{Project.Namespace}.Blazor/{Project.Namespace}.Blazor.csproj\" />"));
+SetOutputPathAndSkipOtherDefinitions(); return SkipRemaining();#>

@@ -7,6 +7,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using TemGen.Models;
+using TemGen.Services;
 
 namespace TemGen.Handler;
 
@@ -69,7 +71,7 @@ public sealed class CsSectionHandler : AbstractSectionHandler
 	private readonly Script<object> _initialScript;
 	private readonly string _initialScriptsKey;
 
-	public CsSectionHandler(string[] initialScripts) : base(TemplateHandler.CSharp)
+	public CsSectionHandler(string[] initialScripts) : base(TemplateHandler.Script, TemplateLanguage.CSharp)
 	{
 		_initialScript = _emptyScript;
 

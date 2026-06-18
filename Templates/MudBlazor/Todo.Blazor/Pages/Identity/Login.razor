@@ -1,0 +1,98 @@
+@page "/Login"
+@using System.ComponentModel.DataAnnotations;
+@using <# Project.Namespace#>.Blazor.Identity;
+@using <# Project.Namespace#>.Blazor.Services;
+@using <# Project.Namespace#>.Client.Data.Identity;
+@using <# Project.Namespace#>.Client.Localisation;
+
+@inject IAuthenticationService AuthenticationService
+@inject ITokenService TokenService
+@inject ILogger<Login> Logger
+@inject NavigationManager NavigationManager
+
+<PageTitle>@UserLoc.Login</PageTitle>
+
+<EditForm Model="@Input" OnValidSubmit="@TryLogin">
+	<MudPaper Class="pa-6" Elevation="0" Style="max-width: 32rem; margin: 0 auto;">
+		<MudStack Spacing="3">
+			<MudText Typo="Typo.h4">@UserLoc.Login</MudText>
+			<DataAnnotationsValidator />
+			<ValidationSummary />
+			<MudTextField T="string"
+					   Label="@UserLoc.Username"
+					   Value="@Input.Username"
+					   ValueChanged="@((string value) => Input.Username = value)"
+					   Variant="Variant.Outlined" />
+			<MudTextField T="string"
+					   Label="@UserLoc.Password"
+					   Value="@Input.Password"
+					   ValueChanged="@((string value) => Input.Password = value)"
+					   InputType="InputType.Password"
+					   Variant="Variant.Outlined" />
+			<MudButton ButtonType="MudBlazor.ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">@UserLoc.Login</MudButton>
+			<MudButton Variant="Variant.Text" Color="Color.Primary" Href="/ForgotPassword">@UserLoc.ForgotPassword</MudButton>
+		</MudStack>
+	</MudPaper>
+</EditForm>
+
+@code {
+	private class InputModel
+	{
+		[Required]
+		[StringLength(30, MinimumLength = 3)]
+		public string Username { get; set; } = string.Empty;
+
+		[Required]
+		[DataType(DataType.Password)]
+		[StringLength(30, MinimumLength = 8)]
+		public string Password { get; set; } = string.Empty;
+	}
+
+	private InputModel Input = new();
+
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		ErrorService?.HideError();
+		await AuthenticationService.LogoutAsync();
+		await base.OnInitializedAsync();
+	}
+
+	private async Task TryLogin()
+	{
+		string? token;
+
+		try
+		{
+			token = await TokenService.CreateToken(Input.Username, Input.Password);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error creating token.");
+			ErrorService?.ShowError(UserLoc.Login, ErrorLoc.ErrorCouldNotLogin);
+			return;
+		}
+
+		if (string.IsNullOrWhiteSpace(token))
+		{
+			ErrorService?.ShowError(UserLoc.Login, ErrorLoc.ErrorInvalidUsernamePassword);
+			Input.Password = "";
+		}
+		else
+		{
+			await AuthenticationService.LoginAsync(Input.Username, token);
+			ErrorService?.HideError();
+
+			if (NavigationManager.TryGetReturnUrl(out var returnUrl) && !string.IsNullOrWhiteSpace(returnUrl))
+			{
+				NavigationManager.NavigateTo("/" + returnUrl.TrimStart('/'));
+			}
+			else
+			{
+				NavigationManager.NavigateTo("/");
+			}
+		}
+	}
+}<#cs SetOutputPathAndSkipOtherDefinitions()#>

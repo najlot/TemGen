@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using TemGen.Handler;
+using TemGen.Services;
 using Xunit;
 
 namespace TemGen.Tests.Handler;
@@ -49,7 +50,8 @@ public class JintHandlerTests
 		await handler.TryHandle(globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.JavaScript,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.JavaScript,
 				Content = "w(project.GetSetting('UserSecretsId') + '|'); \n" +
 						"w(definition.name + ':'); \n" +
 							"for(i in entries) write(entries[i].field + ','); \n" +
@@ -69,7 +71,8 @@ public class JintHandlerTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.JavaScript,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.JavaScript,
 				Content = "skipOtherDefinitions = true"
 			});
 
@@ -79,7 +82,8 @@ public class JintHandlerTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.JavaScript,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.JavaScript,
 				Content = "skipRemaining();"
 			});
 

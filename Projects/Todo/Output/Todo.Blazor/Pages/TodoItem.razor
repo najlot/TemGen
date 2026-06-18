@@ -384,7 +384,7 @@ else
 			}
 
 			_changeTracker.Clear();
-			NavigateWithoutSaveConfirmation("/TodoItems");
+			NavigateWithoutSaveConfirmation(GetReturnToListUrl());
 		}
 		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
@@ -409,6 +409,16 @@ else
 		_changeTracker.Clear();
 
 		await InvokeAsync(StateHasChanged);
+	}
+
+	private string GetReturnToListUrl()
+	{
+		if (NavigationManager.TryGetReturnUrl(out var returnUrl) && !string.IsNullOrWhiteSpace(returnUrl))
+		{
+			return "/" + returnUrl.TrimStart('/');
+		}
+
+		return "/TodoItems";
 	}
 
 	private void AddChecklistEntry()

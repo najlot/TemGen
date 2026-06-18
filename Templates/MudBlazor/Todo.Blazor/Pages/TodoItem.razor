@@ -1,0 +1,581 @@
+@page "/<#cs Write(Definition.Name)#>/{id:guid}"
+@using Microsoft.AspNetCore.Components;
+@using Microsoft.AspNetCore.Components.Routing;
+@using Microsoft.Extensions.Localization;
+@using <# Project.Namespace#>.Blazor.Identity;
+@using <# Project.Namespace#>.Blazor.Services;
+@using <# Project.Namespace#>.Client.Data;
+@using <# Project.Namespace#>.Client.Data.Favorites;
+@using <# Project.Namespace#>.Client.Data.<# Definition.Name#>s;
+<#for entry in Entries
+	.Where(e => e.IsReference)
+	.Concat(Entries
+		.Where(e => e.IsArray)
+		.SelectMany(arrayEntry => Definitions.First(definition => definition.Name == arrayEntry.EntryType).Entries)
+		.Where(childEntry => childEntry.IsReference))
+	.DistinctBy(e => e.ReferenceType)
+#>@using <# Project.Namespace#>.Client.Data.<# entry.ReferenceType#>s;
+<#end#>@using <# Project.Namespace#>.Client.Localisation;
+@using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
+@using <# Project.Namespace#>.Contracts.Shared;
+
+@inject ILogger<<# Definition.Name#>> Log
+@inject Najlot.Map.IMap Map;
+@inject I<# Definition.Name#>Service <# Definition.Name#>Service
+<#for entry in Entries
+	.Where(e => e.IsReference)
+	.Concat(Entries
+		.Where(e => e.IsArray)
+		.SelectMany(arrayEntry => Definitions.First(definition => definition.Name == arrayEntry.EntryType).Entries)
+		.Where(childEntry => childEntry.IsReference))
+	.DistinctBy(e => e.ReferenceType)
+#>@inject I<# entry.ReferenceType#>Service <# entry.ReferenceType#>Service
+<#end#>@inject NavigationManager NavigationManager
+<#for entry in Entries.Where(e => e.IsEnumeration).DistinctBy(e => e.EntryType)
+#>@inject IStringLocalizer<<# entry.EntryType#>Loc> <# entry.EntryType#>Localizer
+<#end#>
+
+@attribute [Authorize]
+@implements IDisposable
+
+@if (isNew)
+{
+	<PageTitle>@<# Definition.Name#>Loc.Create<# Definition.Name#></PageTitle>
+}
+else
+{
+	<PageTitle>@<# Definition.Name#>Loc.Edit<# Definition.Name#></PageTitle>
+}
+
+@if (Model == null)
+{
+	<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+		<MudProgressCircular Size="Size.Medium" Color="Color.Primary" Indeterminate="true" />
+		<MudText Typo="Typo.body1">@CommonLoc.Loading...</MudText>
+	</MudStack>
+}
+else
+{
+	<section>
+		<MudStack Spacing="4">
+			<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2" Style="flex-wrap: wrap;">
+				<div>
+					@if (isNew)
+					{
+						<MudText Typo="Typo.h3">@<# Definition.Name#>Loc.Create<# Definition.Name#></MudText>
+					}
+					else
+					{
+						<MudText Typo="Typo.h3">@<# Definition.Name#>Loc.Edit<# Definition.Name#></MudText>
+					}
+				</div>
+				<MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Style="flex-wrap: wrap;">
+					<MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+						<IconButton Icon="Undo"
+								ButtonClass="btn btn-outline-secondary"
+								CanExecute="() => _changeTracker.CanUndo"
+								Execute="_changeTracker.Undo" />
+						<IconButton Icon="Redo"
+								ButtonClass="btn btn-outline-secondary"
+								CanExecute="() => _changeTracker.CanRedo"
+								Execute="_changeTracker.Redo" />
+					</MudStack>
+					@if (!isNew)
+					{
+						<MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+							<ToggleFavoriteButton TargetType="ItemType.<# Definition.Name#>"
+										  ItemId="@Model.Id"
+										  CanToggle="@(!isNew)" />
+
+							<IconButton Icon="history"
+									ButtonClass="btn btn-outline-secondary"
+									Execute="NavigateToHistory"
+									Title="@CommonLoc.History" />
+						</MudStack>
+					}
+					<MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+						<IconButton Icon="Save"
+								ButtonClass="btn btn-primary"
+								Execute="Save"
+								Title="@CommonLoc.Save" />
+						<IconButton Icon="Delete"
+								ButtonClass="btn btn-danger"
+								CanExecute="() => !isDeleteRequested"
+								Execute="() => isDeleteRequested = true"
+								Title="@CommonLoc.Delete" />
+					</MudStack>
+				</MudStack>
+			</MudStack>
+
+			<EditForm Model="@Model" OnValidSubmit="@Save">
+				<MudStack Spacing="3">
+					<MudPaper Class="pa-4" Elevation="1">
+						<MudStack Spacing="3">
+							<DataAnnotationsValidator />
+							<ValidationSummary />
+							<MudGrid>
+<#for entry in Entries.Where(e => !e.IsArray)
+#>								<MudItem xs="12" md="6">
+<#if entry.EntryType.ToLower() == "string"
+#>									<MudTextField T="string"
+											   Label="@<# Definition.Name#>Loc.<# entry.Field#>"
+											   Value="@Model.<# entry.Field#>"
+											   ValueChanged="@((string value) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, value))"
+											   Variant="Variant.Outlined" />
+<#elseif entry.EntryType.ToLower() == "datetime"
+#>									<MudDatePicker Label="@<# Definition.Name#>Loc.<# entry.Field#>"
+									   Date="@Model.<# entry.Field#>"
+									   Editable="true"
+											   DateChanged="@((DateTime? value) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, value ?? Model.<# entry.Field#>))"
+											   Variant="Variant.Outlined" />
+<#elseif entry.EntryType.ToLower() == "bool"
+#>									<MudSwitch T="bool"
+										  Label="@<# Definition.Name#>Loc.<# entry.Field#>"
+										  Value="@Model.<# entry.Field#>"
+										  ValueChanged="@((bool value) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, value))"
+										  Color="Color.Primary" />
+<#elseif entry.EntryType.ToLower() == "int" || entry.EntryType.ToLower() == "long" || entry.EntryType.ToLower() == "double"
+#>									<MudNumericField T="<# entry.EntryType#>"
+											   Label="@<# Definition.Name#>Loc.<# entry.Field#>"
+											   Value="@Model.<# entry.Field#>"
+											   ValueChanged="@((<# entry.EntryType#> value) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, value))"
+											   Variant="Variant.Outlined" />
+<#elseif entry.IsOwnedType
+#>									<MudPaper Class="pa-4" Elevation="1">
+										<MudText Typo="Typo.h6" Style="margin-bottom: 0.75rem;">@<# Definition.Name#>Loc.<# entry.Field#></MudText>
+										@if (Model.<# entry.Field#> is not null)
+										{
+											<<# entry.EntryType#>Editor Model="@Model.<# entry.Field#>" ChangeTracker="_changeTracker" />
+										}
+									</MudPaper>
+<#elseif entry.IsEnumeration
+#>									<MudSelect T="<# entry.EntryType#>"
+										   Label="@<# Definition.Name#>Loc.<# entry.Field#>"
+										   Value="@Model.<# entry.Field#>"
+										   ValueChanged="@((<# entry.EntryType#> value) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, value))"
+										   Variant="Variant.Outlined">
+										@foreach (var value in Enum.GetValues<<# entry.EntryType#>>())
+										{
+											<MudSelectItem T="<# entry.EntryType#>" Value="@value">@<# entry.EntryType#>Localizer[$"{value}"]</MudSelectItem>
+										}
+									</MudSelect>
+<#elseif entry.IsReference
+#>									<MudSelect T="Guid"
+										   Label="@<# Definition.Name#>Loc.<# entry.Field#>"
+										   Value="@Model.<# entry.Field#>Id"
+										   ValueChanged="@((Guid value) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>Id), Model.<# entry.Field#>Id, value))"
+										   Variant="Variant.Outlined">
+										@foreach (var value in _<# entry.ReferenceTypeLow#>s)
+										{
+											<MudSelectItem T="Guid" Value="@value.Id">@value.DisplayText</MudSelectItem>
+										}
+									</MudSelect>
+<#else
+#>									<<# entry.EntryType#> ???
+<#end#>								</MudItem>
+<#end#>
+							</MudGrid>
+						</MudStack>
+					</MudPaper>
+<#for entry in Entries.Where(e => e.IsArray)
+#>					<MudPaper Class="pa-4" Elevation="1">
+						<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2" Style="margin-bottom: 1rem;">
+							<MudText Typo="Typo.h6">@<# Definition.Name#>Loc.<# entry.Field#></MudText>
+							<IconButton Icon="Add"
+									ButtonClass="btn btn-primary"
+									Execute="Add<# entry.Field#>Entry"
+									Title="@CommonLoc.New" />
+						</MudStack>
+						<MudStack Spacing="2">
+							@foreach (var entry in Model.<# entry.Field#>)
+							{
+								<MudPaper Class="pa-3" Elevation="1">
+									<MudGrid Spacing="2">
+<#for e in Definitions.First(definition => definition.Name == entry.EntryType).Entries
+#><#if e.EntryType.ToLower() == "bool"
+#>										<MudItem xs="12" sm="6" md="4">
+											<MudText Typo="Typo.caption">@<# entry.EntryType#>Loc.<# e.Field#></MudText>
+									<MudCheckBox T="bool"
+										Value="@entry.<# e.Field#>"
+										ValueChanged="@((bool value) => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, value))" />
+										</MudItem>
+<#elseif e.EntryType.ToLower() == "string"
+#>										<MudItem xs="12" sm="6" md="4">
+									<MudTextField T="string"
+										  Label="@<# entry.EntryType#>Loc.<# e.Field#>"
+										  Value="@entry.<# e.Field#>"
+										  ValueChanged="@((string value) => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, value))"
+										  Variant="Variant.Outlined"
+										  Margin="Margin.Dense" />
+										</MudItem>
+<#elseif e.EntryType.ToLower() == "int" || e.EntryType.ToLower() == "long" || e.EntryType.ToLower() == "double"
+#>										<MudItem xs="12" sm="6" md="4">
+									<MudNumericField T="<# e.EntryType#>"
+										   Label="@<# entry.EntryType#>Loc.<# e.Field#>"
+										   Value="@entry.<# e.Field#>"
+										   ValueChanged="@((<# e.EntryType#> value) => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, value))"
+										   Variant="Variant.Outlined"
+										   Margin="Margin.Dense" />
+										</MudItem>
+<#elseif e.EntryType.ToLower() == "datetime"
+#>										<MudItem xs="12" sm="6" md="4">
+									<MudDatePicker Label="@<# entry.EntryType#>Loc.<# e.Field#>" Date="@entry.<# e.Field#>"
+										   DateChanged="@((DateTime? value) => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, value ?? entry.<# e.Field#>))"
+										   Editable="true"
+										   Variant="Variant.Outlined"
+										   Margin="Margin.Dense" />
+										</MudItem>
+<#elseif e.IsEnumeration
+#>										<MudItem xs="12" sm="6" md="4">
+									<MudSelect T="<# e.EntryType#>"
+										   Label="@<# entry.EntryType#>Loc.<# e.Field#>"
+										   Value="@entry.<# e.Field#>"
+										   ValueChanged="@((<# e.EntryType#> value) => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, value))"
+										   Variant="Variant.Outlined"
+										   Margin="Margin.Dense">
+										@foreach (var item in Enum.GetValues<<# e.EntryType#>>())
+										{
+											<MudSelectItem T="<# e.EntryType#>" Value="@item">@(item == <# e.EntryType#>.None ? CommonLoc.NothingSelected : item.ToString())</MudSelectItem>
+										}
+									</MudSelect>
+										</MudItem>
+<#elseif e.IsReference
+#>										<MudItem xs="12" sm="6" md="4">
+									<MudSelect T="Guid"
+										   Label="@<# entry.EntryType#>Loc.<# e.Field#>"
+										   Value="@entry.<# e.Field#>Id"
+										   ValueChanged="@((Guid value) => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>Id), entry.<# e.Field#>Id, value))"
+										   Variant="Variant.Outlined"
+										   Margin="Margin.Dense">
+										@foreach (var item in _<# e.ReferenceTypeLow#>s)
+										{
+											<MudSelectItem T="Guid" Value="@item.Id">@item.DisplayText</MudSelectItem>
+										}
+									</MudSelect>
+										</MudItem>
+<#else
+#>										<MudItem xs="12" sm="6" md="4">
+									<MudTextField T="string"
+										  Label="@<# entry.EntryType#>Loc.<# e.Field#>"
+										  Value="@($"{entry.<# e.Field#>}")"
+										  ValueChanged="@((string value) => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, value))"
+										  Variant="Variant.Outlined"
+										  Margin="Margin.Dense" />
+										</MudItem>
+<#end#><#end#>										<MudItem xs="12">
+											<MudStack Row="true" Justify="Justify.FlexEnd">
+												<IconButton Icon="Delete"
+														ButtonClass="btn btn-danger"
+														Execute="() => Remove<# entry.Field#>Entry(entry.Id)"
+														Title="@CommonLoc.Delete" />
+											</MudStack>
+										</MudItem>
+									</MudGrid>
+								</MudPaper>
+							}
+						</MudStack>
+					</MudPaper>
+<#end#>				</MudStack>
+			</EditForm>
+		</MudStack>
+	</section>
+
+	<SaveConfirmationDialog @ref="_saveConfirmationDialog" />
+	<DeleteConfirmationDialog @bind-IsVisible="isDeleteRequested" Remove="Remove" />
+}
+
+@code {
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	[Parameter]
+	public Guid Id { get; set; }
+
+	private bool isNew = false;
+	private bool isDeleteRequested = false;
+	private <# Definition.Name#>Model? Model;
+	private readonly ChangeTracker _changeTracker = new();
+	private SaveConfirmationDialog? _saveConfirmationDialog;
+	private IDisposable? _locationChangingRegistration;
+	private bool _ignoreLocationChanging;
+	private bool _isSaveConfirmationVisible;
+
+<#for entry in Entries
+	.Where(e => e.IsReference)
+	.Concat(Entries
+		.Where(e => e.IsArray)
+		.SelectMany(arrayEntry => Definitions.First(definition => definition.Name == arrayEntry.EntryType).Entries)
+		.Where(childEntry => childEntry.IsReference))
+	.DistinctBy(e => e.ReferenceType)
+#>	private IEnumerable<<# entry.ReferenceType#>ListItemModel> _<# entry.ReferenceTypeLow#>s = [];
+<#end#>
+	private void NavigateToHistory()
+	{
+		if (Model is null || isNew)
+		{
+			return;
+		}
+
+		NavigationManager.NavigateTo($"/history/{Model.Id}?entityName=<# Definition.Name#>");
+	}
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+		{
+			_locationChangingRegistration = NavigationManager.RegisterLocationChangingHandler(HandleLocationChangingAsync);
+		}
+	}
+
+	private async ValueTask HandleLocationChangingAsync(LocationChangingContext context)
+	{
+		if (_ignoreLocationChanging)
+		{
+			_ignoreLocationChanging = false;
+			return;
+		}
+
+		if (!await CanNavigateAsync())
+		{
+			context.PreventNavigation();
+		}
+	}
+
+	private async Task<bool> CanNavigateAsync()
+	{
+		if (_isSaveConfirmationVisible || isDeleteRequested)
+		{
+			return false;
+		}
+
+		if (!_changeTracker.HasChanges || _saveConfirmationDialog is null)
+		{
+			return true;
+		}
+
+		_isSaveConfirmationVisible = true;
+
+		try
+		{
+			var saveDialogResult = await _saveConfirmationDialog.ShouldSave();
+
+			switch (saveDialogResult)
+			{
+				case SaveConfirmationDialog.SaveDialogResult.Save:
+					return await TrySaveAsync(navigateAfterCreate: false);
+				case SaveConfirmationDialog.SaveDialogResult.Discard:
+					return true;
+				default:
+					return false;
+			}
+		}
+		finally
+		{
+			_isSaveConfirmationVisible = false;
+		}
+	}
+
+	private void NavigateWithoutSaveConfirmation(string url, bool forceLoad = false, bool replace = false)
+	{
+		_ignoreLocationChanging = true;
+		NavigationManager.NavigateTo(url, forceLoad, replace);
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		try
+		{
+			if (Id == Guid.Empty)
+			{
+				Model = <# Definition.Name#>Service.Create<# Definition.Name#>();
+				isNew = true;
+			}
+			else
+			{
+				Model = await <# Definition.Name#>Service.GetItemAsync(Id);
+			}
+
+<#for entry in Entries
+	.Where(e => e.IsReference)
+	.Concat(Entries
+		.Where(e => e.IsArray)
+		.SelectMany(arrayEntry => Definitions.First(definition => definition.Name == arrayEntry.EntryType).Entries)
+		.Where(childEntry => childEntry.IsReference))
+	.DistinctBy(e => e.ReferenceType)
+#>			var available<# entry.ReferenceType#>s = await <# entry.ReferenceType#>Service.GetItemsAsync();
+			_<# entry.ReferenceTypeLow#>s = [new <# entry.ReferenceType#>ListItemModel { Id = Guid.Empty }, .. available<# entry.ReferenceType#>s];
+<#end#>			<# Definition.Name#>Service.ItemUpdated += Handle;
+			_changeTracker.StateChanged += () => InvokeAsync(StateHasChanged);
+
+			await <# Definition.Name#>Service.StartEventListener();
+		}
+		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigateWithoutSaveConfirmation(url);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error loading <# Definition.Name#>.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotLoad);
+		}
+	}
+
+	private Task Save() => TrySaveAsync();
+
+	private async Task<bool> TrySaveAsync(bool navigateAfterCreate = true)
+	{
+		if (Model is null)
+		{
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorModelIsNullReload);
+			return false;
+		}
+
+		try
+		{
+			if (isNew)
+			{
+				await <# Definition.Name#>Service.AddItemAsync(Model);
+				Id = Model.Id;
+				isNew = false;
+				_changeTracker.Clear();
+
+				if (navigateAfterCreate)
+				{
+					NavigateWithoutSaveConfirmation($"/<# Definition.Name#>/{Model.Id}", false, true);
+				}
+			}
+			else
+			{
+				await <# Definition.Name#>Service.UpdateItemAsync(Model);
+				_changeTracker.Clear();
+			}
+
+			ErrorService?.HideError();
+			ErrorService?.ShowSuccess(CommonLoc.Save, CommonLoc.ChangesRecorded);
+
+			return true;
+		}
+		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigateWithoutSaveConfirmation(url);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error saving <# Definition.Name#>.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotSave);
+		}
+
+		return false;
+	}
+
+	private async Task Remove()
+	{
+		if (Model is null)
+		{
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorModelIsNullReload);
+			return;
+		}
+
+		try
+		{
+			if (!isNew)
+			{
+				await <# Definition.Name#>Service.DeleteItemAsync(Model.Id);
+			}
+
+			_changeTracker.Clear();
+			NavigateWithoutSaveConfirmation(GetReturnToListUrl());
+		}
+		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigateWithoutSaveConfirmation(url);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error deleting <# Definition.Name#>.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorDeleting);
+		}
+	}
+
+	private async Task Handle(object? sender, <# Definition.Name#>Updated message)
+	{
+		if (Model is null || Model.Id != message.Id)
+		{
+			return;
+		}
+
+		Map.From(message).To(Model);
+		_changeTracker.Clear();
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private string GetReturnToListUrl()
+	{
+		if (NavigationManager.TryGetReturnUrl(out var returnUrl) && !string.IsNullOrWhiteSpace(returnUrl))
+		{
+			return "/" + returnUrl.TrimStart('/');
+		}
+
+		return "/<# Definition.Name#>s";
+	}
+<#for entry in Entries.Where(e => e.IsArray)
+#>
+	private void Add<# entry.Field#>Entry()
+	{
+		if (Model is null)
+		{
+			return;
+		}
+
+		var max = 0;
+
+		if (Model.<# entry.Field#>.Count > 0)
+		{
+			max = Model.<# entry.Field#>.Max(e => e.Id) + 1;
+		}
+
+		var model = new <# entry.EntryType#>Model() { Id = max };
+
+		Model.<# entry.Field#>.Add(model);
+
+		_changeTracker.Track(
+			nameof(Model.<# entry.Field#>),
+			() => Model.<# entry.Field#>.Remove(model),
+			() => Model.<# entry.Field#>.Add(model));
+	}
+
+	private void Remove<# entry.Field#>Entry(int id)
+	{
+		if (Model is null)
+		{
+			return;
+		}
+
+		var oldItem = Model.<# entry.Field#>.FirstOrDefault(i => i.Id == id);
+
+		if (oldItem != null)
+		{
+			var index = Model.<# entry.Field#>.IndexOf(oldItem);
+
+			if (index != -1)
+			{
+				Model.<# entry.Field#>.RemoveAt(index);
+
+				_changeTracker.Track(
+					nameof(Model.<# entry.Field#>),
+					() => Model.<# entry.Field#>.Insert(index, oldItem),
+					() => Model.<# entry.Field#>.Remove(oldItem));
+			}
+		}
+	}
+<#end#>
+	public void Dispose()
+	{
+		<# Definition.Name#>Service.ItemUpdated -= Handle;
+		_locationChangingRegistration?.Dispose();
+	}
+}<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

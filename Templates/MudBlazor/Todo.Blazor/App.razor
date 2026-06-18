@@ -1,0 +1,26 @@
+@using <# Project.Namespace#>.Client.Localisation;
+
+<CascadingAuthenticationState>
+	<Router AppAssembly="@typeof(App).Assembly">
+		<Found Context="routeData">
+			<AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" >
+				<NotAuthorized>
+					<RedirectToLogin />
+				</NotAuthorized>
+			</AuthorizeRouteView>
+			<FocusOnNavigate RouteData="@routeData" Selector="h1" />
+		</Found>
+		<NotFound>
+			<PageTitle>@CommonLoc.NotFound</PageTitle>
+			<LayoutView Layout="@typeof(MainLayout)">
+				<MudPaper Class="pa-6" Elevation="0" Style="max-width: 36rem; margin: 0 auto;">
+					<MudStack Spacing="2">
+						<MudText Typo="Typo.h4">@CommonLoc.NotFound</MudText>
+						<MudText Typo="Typo.body1">@CommonLoc.NotFoundMessage</MudText>
+					</MudStack>
+				</MudPaper>
+			</LayoutView>
+		</NotFound>
+	</Router>
+</CascadingAuthenticationState>
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

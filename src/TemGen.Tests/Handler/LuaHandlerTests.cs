@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using TemGen.Handler;
+using TemGen.Services;
 using Xunit;
 
 namespace TemGen.Tests.Handler;
@@ -50,7 +51,8 @@ public class LuaHandlerTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Lua,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Lua,
 				Content = "w(project.settings['UserSecretsId'] .. '|'); \n" +
 						"w(definition.name .. \":\"); \n" +
 							"for key, value in ipairs(entries) do write(value.field .. ',') end \n" +
@@ -68,7 +70,8 @@ public class LuaHandlerTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Lua,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Lua,
 				Content = "skip_other_definitions = true"
 			});
 
@@ -78,7 +81,8 @@ public class LuaHandlerTests
 			globals,
 			new TemplateSection()
 			{
-				Handler = TemplateHandler.Lua,
+				Handler = TemplateHandler.Script,
+				Language = TemplateLanguage.Lua,
 				Content = "skip_remaining()"
 			});
 
