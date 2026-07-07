@@ -16,7 +16,7 @@
 <section class="d-grid gap-3">
 	<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
 		<h1 class="mb-0">@TrashLoc.Trash</h1>
-		<button class="btn btn-outline-danger" @onclick="RequestDeleteAll">@TrashLoc.DeleteAll</button>
+		<button class="btn btn-danger" @onclick="RequestDeleteAll">@TrashLoc.DeleteAll</button>
 	</div>
 
 @if (items == null)
@@ -33,7 +33,7 @@ else
 		@foreach (var item in items)
 		{
 			<div class="col-12">
-				<div class="card shadow-sm border-0 h-100">
+				<div class="card h-100">
 					<div class="card-body">
 						<div class="d-flex justify-content-between align-items-start gap-3">
 							<div class="flex-grow-1">
@@ -43,9 +43,9 @@ else
 									<div class="text-muted text-break mt-1">@item.Content</div>
 								}
 								<div class="d-flex flex-wrap gap-2 mt-3">
-									<a href="@GetItemHref(item)" class="btn btn-sm btn-outline-primary">@CommonLoc.Edit</a>
-									<button class="btn btn-sm btn-outline-success" @onclick="() => RestoreAsync(item)">@TrashLoc.Restore</button>
-									<button class="btn btn-sm btn-outline-danger" @onclick="() => RequestDelete(item)">@CommonLoc.Delete</button>
+									<a href="@GetItemHref(item)" class="btn btn-sm btn-primary">@CommonLoc.Edit</a>
+									<button class="btn btn-sm btn-success" @onclick="() => RestoreAsync(item)">@TrashLoc.Restore</button>
+									<button class="btn btn-sm btn-danger" @onclick="() => RequestDelete(item)">@CommonLoc.Delete</button>
 								</div>
 							</div>
 							<div class="text-end text-nowrap small text-secondary">
@@ -106,11 +106,6 @@ else
 		try
 		{
 			await TrashService.RestoreItemAsync(item.Type, item.Id).ConfigureAwait(false);
-			await InvokeAsync(() =>
-			{
-				RemoveItem(item.Type, item.Id);
-				StateHasChanged();
-			});
 		}
 		catch (Exception ex)
 		{

@@ -1,0 +1,1 @@
+dotnet run --project src/TemGen/TemGen.csproj -- --path ./Projects/Todo

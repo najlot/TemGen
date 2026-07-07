@@ -1,8 +1,8 @@
 <#cs Write(AddPackageVersions(
 	PreviousContent,
 	"Material.Icons.WPF|3.0.2",
-	"Microsoft.Extensions.Configuration|10.0.7",
-	"Microsoft.Extensions.Configuration.Binder|10.0.7",
-	"Microsoft.Extensions.Configuration.Json|10.0.7",
+	"Microsoft.Extensions.Configuration|10.0.9",
+	"Microsoft.Extensions.Configuration.Binder|10.0.9",
+	"Microsoft.Extensions.Configuration.Json|10.0.9",
 	"Microsoft.Xaml.Behaviors.Wpf|1.1.142"));
 SetOutputPathAndSkipOtherDefinitions(); return SkipRemaining();#>

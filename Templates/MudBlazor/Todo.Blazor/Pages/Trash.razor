@@ -109,11 +109,6 @@
 		try
 		{
 			await TrashService.RestoreItemAsync(item.Type, item.Id).ConfigureAwait(false);
-			await InvokeAsync(() =>
-			{
-				RemoveItem(item.Type, item.Id);
-				StateHasChanged();
-			});
 		}
 		catch (Exception ex)
 		{

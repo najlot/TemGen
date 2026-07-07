@@ -22,7 +22,7 @@
 
 <PageTitle>@NoteLoc.Notes</PageTitle>
 
-<section class="d-grid gap-3">
+<section class="d-grid gap-1">
 	<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
 		<h1 class="mb-0">@NoteLoc.Notes</h1>
 		<a href="@GetEditorHref(Guid.Empty)" class="btn btn-success material-symbols-sharp">add</a>
@@ -40,7 +40,7 @@
 	}
 	else
 	{
-		<div class="card shadow-sm border-0">
+		<div>
 			<div class="table-responsive">
 				<table class="table table-hover align-middle mb-0">
 					<thead class="bg-body-tertiary">
@@ -65,7 +65,7 @@
 								</td>
 								<td class="text-break">@note.Title.Truncate(75)</td>
 								<td class="text-break">@note.Content.Truncate(75)</td>
-								<td class="text-end"><a href="@GetEditorHref(note.Id)" class="btn btn-outline-primary btn-sm">@CommonLoc.Edit</a></td>
+								<td class="text-end"><a href="@GetEditorHref(note.Id)" class="btn btn-primary btn-sm">@CommonLoc.Edit</a></td>
 							</tr>
 						}
 					</tbody>

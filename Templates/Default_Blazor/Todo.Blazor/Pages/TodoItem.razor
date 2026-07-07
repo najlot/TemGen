@@ -67,8 +67,8 @@ else
 }
 else
 {
-	<section class="d-grid gap-4">
-		<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
+	<section class="d-grid">
+		<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-1">
 			<div>
 				@if (isNew)
 				{
@@ -81,11 +81,11 @@ else
 			</div>
 			<div class="d-flex flex-wrap gap-2">
 				<IconButton Icon="Undo"
-							ButtonClass="btn btn-outline-secondary"
+							ButtonClass="btn btn-secondary"
 							CanExecute="() => _changeTracker.CanUndo"
 							Execute="_changeTracker.Undo" />
 				<IconButton Icon="Redo"
-							ButtonClass="btn btn-outline-secondary"
+							ButtonClass="btn btn-secondary"
 							CanExecute="() => _changeTracker.CanRedo"
 							Execute="_changeTracker.Redo" />
 				@if (!isNew)
@@ -95,7 +95,7 @@ else
 									  CanToggle="@(!isNew)" />
 
 					<IconButton Icon="history"
-								ButtonClass="btn btn-outline-secondary"
+								ButtonClass="btn btn-secondary"
 								Execute="NavigateToHistory"
 								Title="@CommonLoc.History" />
 				}
@@ -112,8 +112,8 @@ else
 		</div>
 
 		<EditForm Model="@Model" OnValidSubmit="@Save">
-			<div class="card shadow-sm border-0">
-				<div class="card-body">
+			<div>
+				<div>
 					<DataAnnotationsValidator />
 					<ValidationSummary class="alert alert-danger mb-4" />
 					<div class="row g-3">
@@ -189,8 +189,8 @@ else
 				</div>
 			</div>
 <#for entry in Entries.Where(e => e.IsArray)
-#>			<div class="card shadow-sm border-0">
-				<div class="card-header bg-body-tertiary d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+#>			<div class="card mt-2">
+				<div class="card-header p-2 bg-body-tertiary d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
 					<h2 class="h5 mb-0">@<# Definition.Name#>Loc.<# entry.Field#></h2>
 					<IconButton Icon="Add"
 								ButtonClass="btn btn-success"

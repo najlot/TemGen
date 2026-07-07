@@ -2,10 +2,10 @@
 @inject NavigationManager NavigationManager
 
 @code {
-    protected override void OnInitialized()
-    {
-        var url = NavigationManager.BuildReturnUrl("/Login");
-        NavigationManager.NavigateTo(url, forceLoad: false);
-    }
+	protected override void OnInitialized()
+	{
+		var url = NavigationManager.BuildReturnUrl("/Login");
+		NavigationManager.NavigateTo(url, forceLoad: false);
+	}
 }
 <#cs SetOutputPathAndSkipOtherDefinitions()#>

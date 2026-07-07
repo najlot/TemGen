@@ -43,7 +43,11 @@ public class NoteTrashSource(
 		await noteRepository.Update(item).ConfigureAwait(false);
 		await historyService.WriteChangesAsync(item.Id, snapshot).ConfigureAwait(false);
 
-		await publisher.PublishAsync(new TrashItemDeleted(item.Id, ItemType.Note)).ConfigureAwait(false);
+		await publisher.PublishAsync(new TrashItemDeleted
+		{
+			Id = item.Id,
+			Type = ItemType.Note,
+		}).ConfigureAwait(false);
 		await publisher.PublishAsync(map.From(item).To<NoteCreated>()).ConfigureAwait(false);
 		return Result.Success();
 	}
@@ -59,7 +63,11 @@ public class NoteTrashSource(
 
 		await historyService.DeleteHistoryEntriesAsync(item.Id).ConfigureAwait(false);
 		await noteRepository.Delete(id).ConfigureAwait(false);
-		await publisher.PublishAsync(new TrashItemDeleted(item.Id, ItemType.Note)).ConfigureAwait(false);
+		await publisher.PublishAsync(new TrashItemDeleted
+		{
+			Id = item.Id,
+			Type = ItemType.Note,
+		}).ConfigureAwait(false);
 		return Result.Success();
 	}
 
@@ -74,7 +82,12 @@ public class NoteTrashSource(
 		{
 			await historyService.DeleteHistoryEntriesAsync(item.Id).ConfigureAwait(false);
 			await noteRepository.Delete(item.Id).ConfigureAwait(false);
-			await publisher.PublishAsync(new TrashItemDeleted(item.Id, ItemType.Note)).ConfigureAwait(false);
+			await publisher.PublishAsync(new TrashItemDeleted
+			{
+				Id = item.Id,
+				Type = ItemType.Note,
+			}).ConfigureAwait(false);
 		}
 	}
 }
+

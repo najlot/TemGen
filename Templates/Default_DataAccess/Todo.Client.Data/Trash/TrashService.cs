@@ -43,7 +43,7 @@ public sealed class TrashService(
 
 			_subscriptions.Add(connection.On<string>(typeof(TrashItemCreated).Name, async param =>
 			{
-				if (ItemCreated is { } handler && JsonSerializer.Deserialize<TrashItemCreated>(param) is { } message)
+				if (ItemCreated is { } handler && JsonSerializer.Deserialize<TrashItemCreated>(param, ClientDataJsonSerializer.Options) is { } message)
 				{
 					foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<TrashItemCreated>>())
 					{
@@ -54,7 +54,7 @@ public sealed class TrashService(
 
 			_subscriptions.Add(connection.On<string>(typeof(TrashItemUpdated).Name, async param =>
 			{
-				if (ItemUpdated is { } handler && JsonSerializer.Deserialize<TrashItemUpdated>(param) is { } message)
+				if (ItemUpdated is { } handler && JsonSerializer.Deserialize<TrashItemUpdated>(param, ClientDataJsonSerializer.Options) is { } message)
 				{
 					foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<TrashItemUpdated>>())
 					{
@@ -65,7 +65,7 @@ public sealed class TrashService(
 
 			_subscriptions.Add(connection.On<string>(typeof(TrashItemDeleted).Name, async param =>
 			{
-				if (ItemDeleted is { } handler && JsonSerializer.Deserialize<TrashItemDeleted>(param) is { } message)
+				if (ItemDeleted is { } handler && JsonSerializer.Deserialize<TrashItemDeleted>(param, ClientDataJsonSerializer.Options) is { } message)
 				{
 					foreach (var invocation in handler.GetInvocationList().Cast<AsyncEventHandler<TrashItemDeleted>>())
 					{

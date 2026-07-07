@@ -115,7 +115,11 @@ public class NoteService(
 			await historyService.DeleteHistoryEntriesAsync(item.Id).ConfigureAwait(false);
 			await favoriteService.DeleteItemsAsync(ItemType.Note, item.Id).ConfigureAwait(false);
 			await noteRepository.Delete(id).ConfigureAwait(false);
-			var trashItemDeleted = new TrashItemDeleted(item.Id, ItemType.Note);
+			var trashItemDeleted = new TrashItemDeleted
+			{
+				Id = item.Id,
+				Type = ItemType.Note,
+			};
 			await publisher.PublishAsync(trashItemDeleted).ConfigureAwait(false);
 		}
 

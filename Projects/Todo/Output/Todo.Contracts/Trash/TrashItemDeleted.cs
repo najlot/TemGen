@@ -4,8 +4,8 @@ using Todo.Contracts.Shared;
 
 namespace Todo.Contracts.Trash;
 
-public class TrashItemDeleted(Guid id, ItemType type)
+public class TrashItemDeleted
 {
-	public Guid Id { get; } = id;
-	public ItemType Type { get; } = type;
+	public Guid Id { get; set; }
+	public ItemType Type { get; set; }
 }

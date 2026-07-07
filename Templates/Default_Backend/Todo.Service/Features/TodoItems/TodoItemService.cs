@@ -115,7 +115,11 @@ if (favoriteFields.Count > 1) WriteLine($"\t\t\titem.{favoriteFields[1].Field}).
 			await historyService.DeleteHistoryEntriesAsync(item.Id).ConfigureAwait(false);
 			await favoriteService.DeleteItemsAsync(ItemType.<# Definition.Name#>, item.Id).ConfigureAwait(false);
 			await <# Definition.NameLow#>Repository.Delete(id).ConfigureAwait(false);
-			var trashItemDeleted = new TrashItemDeleted(item.Id, ItemType.<# Definition.Name#>);
+			var trashItemDeleted = new TrashItemDeleted
+			{
+				Id = item.Id,
+				Type = ItemType.<# Definition.Name#>,
+			};
 			await publisher.PublishAsync(trashItemDeleted).ConfigureAwait(false);
 		}
 
@@ -173,4 +177,5 @@ if (favoriteFields.Count > 1) WriteLine($"\t\t\titem.{favoriteFields[1].Field}).
 
 		return map.From(query).To<<# Definition.Name#>ListItem>().ToAsyncEnumerable();
 	}
-}<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>
+}
+<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

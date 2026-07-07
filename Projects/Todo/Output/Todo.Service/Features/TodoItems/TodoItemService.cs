@@ -118,7 +118,11 @@ public class TodoItemService(
 			await historyService.DeleteHistoryEntriesAsync(item.Id).ConfigureAwait(false);
 			await favoriteService.DeleteItemsAsync(ItemType.TodoItem, item.Id).ConfigureAwait(false);
 			await todoItemRepository.Delete(id).ConfigureAwait(false);
-			var trashItemDeleted = new TrashItemDeleted(item.Id, ItemType.TodoItem);
+			var trashItemDeleted = new TrashItemDeleted
+			{
+				Id = item.Id,
+				Type = ItemType.TodoItem,
+			};
 			await publisher.PublishAsync(trashItemDeleted).ConfigureAwait(false);
 		}
 

@@ -1,8 +1,8 @@
 <#cs Write(AddPackageVersions(
 	PreviousContent,
-	"Microsoft.AspNetCore.SignalR.Client|10.0.7",
-	"Microsoft.Extensions.Http|10.0.7",
+	"Microsoft.AspNetCore.SignalR.Client|10.0.9",
+	"Microsoft.Extensions.Http|10.0.9",
 	"Najlot.Map|0.2.1",
 	"Najlot.Map.SourceGenerator|0.2.1",
-	"System.IdentityModel.Tokens.Jwt|8.17.0"));
+	"System.IdentityModel.Tokens.Jwt|8.19.1"));
 SetOutputPathAndSkipOtherDefinitions(); return SkipRemaining();#>

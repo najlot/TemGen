@@ -12,8 +12,8 @@
 
 <PageTitle>@CommonLoc.History</PageTitle>
 
-<section class="d-grid gap-4">
-	<div class="card shadow-sm border-0">
+<section class="d-grid gap-2">
+	<div class="card border-0">
 		<div class="card-body">
 			@if (isHistoryLoading)
 			{
@@ -28,43 +28,36 @@
 				<div class="d-grid gap-3">
 					@foreach (var historyEntry in historyEntries)
 					{
-						var isExpanded = expandedHistoryEntryId == historyEntry.Id;
-
-						<section class="border-bottom pb-3">
-							<button type="button" class="btn btn-link w-100 px-0 text-start text-decoration-none" @onclick="() => ToggleHistoryEntry(historyEntry.Id)">
-								<div class="d-flex flex-column flex-md-row justify-content-between gap-2">
-									<div>
-										<div class="fw-semibold text-body">@FormatUsername(historyEntry.Username)</div>
-										<div class="small text-body-secondary">@FormatHistoryTimestamp(historyEntry.TimeStamp)</div>
-									</div>
-									<div class="small text-body-secondary text-md-end">@historyEntry.Changes.Length @CommonLoc.ChangesRecorded</div>
+						<section class="pb-3">
+							<div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+								<div>
+									<div class="fw-semibold text-body">@FormatUsername(historyEntry.Username)</div>
+									<div class="small text-body-secondary">@FormatHistoryTimestamp(historyEntry.TimeStamp)</div>
 								</div>
-							</button>
+								<div class="small text-body-secondary text-md-end">@historyEntry.Changes.Length @CommonLoc.ChangesRecorded</div>
+							</div>
 
-							@if (isExpanded)
-							{
-								<div class="table-responsive mt-2">
-									<table class="table table-sm align-middle mb-0">
-										<thead class="bg-body-tertiary">
+							<div class="table-responsive mt-2">
+								<table class="table table-sm align-middle mb-0">
+									<thead class="bg-body-tertiary">
+										<tr>
+											<th>@CommonLoc.Field</th>
+											<th>@CommonLoc.Before</th>
+											<th>@CommonLoc.After</th>
+										</tr>
+									</thead>
+									<tbody>
+										@foreach (var change in historyEntry.Changes)
+										{
 											<tr>
-												<th>@CommonLoc.Field</th>
-												<th>@CommonLoc.Before</th>
-												<th>@CommonLoc.After</th>
+												<td class="fw-semibold text-break">@change.Path</td>
+												<td class="text-break"><pre class="mb-0 text-wrap small">@change.OldValue</pre></td>
+												<td class="text-break"><pre class="mb-0 text-wrap small">@change.NewValue</pre></td>
 											</tr>
-										</thead>
-										<tbody>
-											@foreach (var change in historyEntry.Changes)
-											{
-												<tr>
-													<td class="fw-semibold text-break">@change.Path</td>
-													<td class="text-break"><pre class="mb-0 text-wrap small">@change.OldValue</pre></td>
-													<td class="text-break"><pre class="mb-0 text-wrap small">@change.NewValue</pre></td>
-												</tr>
-											}
-										</tbody>
-									</table>
-								</div>
-							}
+										}
+									</tbody>
+								</table>
+							</div>
 						</section>
 					}
 				</div>
@@ -86,7 +79,6 @@
 	private Guid _lastEntityId;
 	private string? _lastEntityName;
 	private bool isHistoryLoading;
-	private Guid? expandedHistoryEntryId;
 	private HistoryEntry[] historyEntries = [];
 
 	protected override async Task OnParametersSetAsync()
@@ -99,7 +91,6 @@
 		_lastEntityId = Id;
 		_lastEntityName = EntityName;
 		isHistoryLoading = false;
-		expandedHistoryEntryId = null;
 		historyEntries = [];
 
 		await LoadHistoryIfNeededAsync();
@@ -116,7 +107,6 @@
 		{
 			isHistoryLoading = true;
 			historyEntries = await HistoryService.GetItemsAsync(Id, EntityName ?? string.Empty);
-			expandedHistoryEntryId = historyEntries.FirstOrDefault()?.Id;
 		}
 		catch (Todo.Client.Data.Identity.SessionUnavailableException)
 		{
@@ -133,11 +123,6 @@
 		{
 			isHistoryLoading = false;
 		}
-	}
-
-	private void ToggleHistoryEntry(Guid historyEntryId)
-	{
-		expandedHistoryEntryId = expandedHistoryEntryId == historyEntryId ? null : historyEntryId;
 	}
 
 	private static string FormatHistoryTimestamp(DateTime timeStamp)

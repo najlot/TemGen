@@ -43,7 +43,11 @@ public class TodoItemTrashSource(
 		await todoItemRepository.Update(item).ConfigureAwait(false);
 		await historyService.WriteChangesAsync(item.Id, snapshot).ConfigureAwait(false);
 
-		await publisher.PublishAsync(new TrashItemDeleted(item.Id, ItemType.TodoItem)).ConfigureAwait(false);
+		await publisher.PublishAsync(new TrashItemDeleted
+		{
+			Id = item.Id,
+			Type = ItemType.TodoItem,
+		}).ConfigureAwait(false);
 		await publisher.PublishAsync(map.From(item).To<TodoItemCreated>()).ConfigureAwait(false);
 		return Result.Success();
 	}
@@ -59,7 +63,11 @@ public class TodoItemTrashSource(
 
 		await historyService.DeleteHistoryEntriesAsync(item.Id).ConfigureAwait(false);
 		await todoItemRepository.Delete(id).ConfigureAwait(false);
-		await publisher.PublishAsync(new TrashItemDeleted(item.Id, ItemType.TodoItem)).ConfigureAwait(false);
+		await publisher.PublishAsync(new TrashItemDeleted
+		{
+			Id = item.Id,
+			Type = ItemType.TodoItem,
+		}).ConfigureAwait(false);
 		return Result.Success();
 	}
 
@@ -74,7 +82,12 @@ public class TodoItemTrashSource(
 		{
 			await historyService.DeleteHistoryEntriesAsync(item.Id).ConfigureAwait(false);
 			await todoItemRepository.Delete(item.Id).ConfigureAwait(false);
-			await publisher.PublishAsync(new TrashItemDeleted(item.Id, ItemType.TodoItem)).ConfigureAwait(false);
+			await publisher.PublishAsync(new TrashItemDeleted
+			{
+				Id = item.Id,
+				Type = ItemType.TodoItem,
+			}).ConfigureAwait(false);
 		}
 	}
 }
+

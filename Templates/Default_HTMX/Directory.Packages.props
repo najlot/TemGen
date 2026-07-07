@@ -1,6 +1,6 @@
 <#cs Write(AddPackageVersions(
 	PreviousContent,
-	"Microsoft.AspNetCore.SignalR.Client|10.0.7",
+	"Microsoft.AspNetCore.SignalR.Client|10.0.9",
 	"Najlot.Log.Configuration.FileSource|4.0.4",
 	"Najlot.Log.Extensions.Logging|4.0.4"));
 SetOutputPathAndSkipOtherDefinitions(); return SkipRemaining();#>

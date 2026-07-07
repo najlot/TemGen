@@ -43,7 +43,11 @@ public class <# Definition.Name#>TrashSource(
 		await <# Definition.NameLow#>Repository.Update(item).ConfigureAwait(false);
 		await historyService.WriteChangesAsync(item.Id, snapshot).ConfigureAwait(false);
 
-		await publisher.PublishAsync(new TrashItemDeleted(item.Id, ItemType.<# Definition.Name#>)).ConfigureAwait(false);
+		await publisher.PublishAsync(new TrashItemDeleted
+		{
+			Id = item.Id,
+			Type = ItemType.<# Definition.Name#>,
+		}).ConfigureAwait(false);
 		await publisher.PublishAsync(map.From(item).To<<# Definition.Name#>Created>()).ConfigureAwait(false);
 		return Result.Success();
 	}
@@ -59,7 +63,11 @@ public class <# Definition.Name#>TrashSource(
 
 		await historyService.DeleteHistoryEntriesAsync(item.Id).ConfigureAwait(false);
 		await <# Definition.NameLow#>Repository.Delete(id).ConfigureAwait(false);
-		await publisher.PublishAsync(new TrashItemDeleted(item.Id, ItemType.<# Definition.Name#>)).ConfigureAwait(false);
+		await publisher.PublishAsync(new TrashItemDeleted
+		{
+			Id = item.Id,
+			Type = ItemType.<# Definition.Name#>,
+		}).ConfigureAwait(false);
 		return Result.Success();
 	}
 
@@ -74,7 +82,11 @@ public class <# Definition.Name#>TrashSource(
 		{
 			await historyService.DeleteHistoryEntriesAsync(item.Id).ConfigureAwait(false);
 			await <# Definition.NameLow#>Repository.Delete(item.Id).ConfigureAwait(false);
-			await publisher.PublishAsync(new TrashItemDeleted(item.Id, ItemType.<# Definition.Name#>)).ConfigureAwait(false);
+			await publisher.PublishAsync(new TrashItemDeleted
+			{
+				Id = item.Id,
+				Type = ItemType.<# Definition.Name#>,
+			}).ConfigureAwait(false);
 		}
 	}
 }
