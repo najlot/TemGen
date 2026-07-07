@@ -1,4 +1,6 @@
 using Najlot.Map;
+using System.Collections.Generic;
+using System.Threading;
 using Todo.Contracts.GlobalSearch;
 using Todo.Service.Features.Auth;
 using Todo.Service.Features.Notes;
@@ -10,7 +12,7 @@ public class NoteGlobalSearchSource(
 	IMap map,
 	IPermissionService permissionService) : IGlobalSearchSource
 {
-	public IAsyncEnumerable<GlobalSearchItem> SearchAsync(string text)
+	public IAsyncEnumerable<GlobalSearchItem> SearchAsync(string text, CancellationToken cancellationToken = default)
 	{
 		var normalizedText = text.ToLower();
 		var query = permissionService
@@ -20,6 +22,7 @@ public class NoteGlobalSearchSource(
 				item.Title.ToLower().Contains(normalizedText) ||
 				item.Content.ToLower().Contains(normalizedText));
 
+		cancellationToken.ThrowIfCancellationRequested();
 		return map.From(query).To<GlobalSearchItem>().ToAsyncEnumerable();
 	}
 }

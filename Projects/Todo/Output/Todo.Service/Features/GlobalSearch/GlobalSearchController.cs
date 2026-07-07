@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 using Todo.Contracts.GlobalSearch;
 
 namespace Todo.Service.Features.GlobalSearch;
@@ -10,9 +13,9 @@ namespace Todo.Service.Features.GlobalSearch;
 public class GlobalSearchController(GlobalSearchService globalSearchService) : ControllerBase
 {
 	[HttpGet]
-	public async Task<ActionResult<List<GlobalSearchItem>>> Search([FromQuery] string text)
+	public async Task<ActionResult<List<GlobalSearchItem>>> Search([FromQuery] string text, CancellationToken cancellationToken)
 	{
-		var items = await globalSearchService.SearchAsync(text).ConfigureAwait(false);
+		var items = await globalSearchService.SearchAsync(text, cancellationToken).ConfigureAwait(false);
 		return Ok(items);
 	}
 }

@@ -1,10 +1,14 @@
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
 using Todo.Contracts.GlobalSearch;
 
 namespace Todo.Service.Features.GlobalSearch;
 
 public class GlobalSearchService(IEnumerable<IGlobalSearchSource> sources)
 {
-	public async Task<GlobalSearchItem[]> SearchAsync(string text)
+	public async Task<GlobalSearchItem[]> SearchAsync(string text, CancellationToken cancellationToken = default)
 	{
 		if (string.IsNullOrWhiteSpace(text))
 		{
@@ -16,7 +20,7 @@ public class GlobalSearchService(IEnumerable<IGlobalSearchSource> sources)
 
 		foreach (var source in sources)
 		{
-			var sourceItems = await source.SearchAsync(trimmedText).ToListAsync().ConfigureAwait(false);
+			var sourceItems = await source.SearchAsync(trimmedText, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
 			items.AddRange(sourceItems);
 		}
 
