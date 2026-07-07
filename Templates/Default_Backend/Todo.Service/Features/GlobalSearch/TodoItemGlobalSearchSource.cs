@@ -1,4 +1,6 @@
 using Najlot.Map;
+using System.Collections.Generic;
+using System.Threading;
 using <# Project.Namespace#>.Contracts.GlobalSearch;
 using <# Project.Namespace#>.Service.Features.Auth;
 using <# Project.Namespace#>.Service.Features.<# Definition.Name#>s;
@@ -10,7 +12,7 @@ public class <# Definition.Name#>GlobalSearchSource(
 	IMap map,
 	IPermissionService permissionService) : IGlobalSearchSource
 {
-	public IAsyncEnumerable<GlobalSearchItem> SearchAsync(string text)
+	public IAsyncEnumerable<GlobalSearchItem> SearchAsync(string text, CancellationToken cancellationToken = default)
 	{
 		var normalizedText = text.ToLower();
 		var query = permissionService
@@ -32,6 +34,7 @@ else
 	}
 }
 #>
+		cancellationToken.ThrowIfCancellationRequested();
 		return map.From(query).To<GlobalSearchItem>().ToAsyncEnumerable();
 	}
 }<#cs SetOutputPath(Definition.IsOwnedType

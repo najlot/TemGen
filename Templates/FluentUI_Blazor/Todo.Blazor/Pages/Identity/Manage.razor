@@ -1,0 +1,102 @@
+@page "/Manage"
+
+@using System.ComponentModel.DataAnnotations;
+@using <# Project.Namespace#>.Client.Data;
+@using <# Project.Namespace#>.Blazor.Services;
+@using <# Project.Namespace#>.Client.Data.Identity;
+@using <# Project.Namespace#>.Client.Data.Users;
+@using <# Project.Namespace#>.Client.Localisation;
+
+@inject ITokenProvider TokenProvider
+@inject IUserService UserService
+@inject ILogger<Manage> Logger
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize]
+
+<PageTitle>@UserLoc.UserManagement</PageTitle>
+
+<EditForm Model="@Input" OnValidSubmit="@SavePassword">
+	<section class="auth-page">
+		<div class="auth-card">
+			<h1>@UserLoc.UserManagement</h1>
+			<DataAnnotationsValidator />
+			<ValidationSummary class="validation-summary" />
+
+			<!-- New password input -->
+			<div class="fluent-field">
+				<label class="fluent-label" for="PasswordInput">@UserLoc.NewPassword</label>
+				<InputText type="password" id="PasswordInput" class="fluent-control" @bind-Value="Input.Password" />
+			</div>
+
+			<!-- New password confirm input -->
+			<div class="fluent-field">
+				<label class="fluent-label" for="PasswordConfirm">@UserLoc.ConfirmNewPassword</label>
+				<InputText type="password" id="PasswordConfirm" class="fluent-control" @bind-Value="Input.PasswordConfirm" />
+			</div>
+
+			<button type="submit" class="fluent-button fluent-button--accent fluent-button--full">@UserLoc.ChangePassword</button>
+		</div>
+	</section>
+</EditForm>
+
+@code {
+	private class InputModel
+	{
+		[Required]
+		[DataType(DataType.Password)]
+		[StringLength(30, MinimumLength = 8)]
+		public string Password { get; set; } = string.Empty;
+
+		[Required]
+		[DataType(DataType.Password)]
+		[StringLength(30, MinimumLength = 8)]
+		public string PasswordConfirm { get; set; } = string.Empty;
+	}
+
+	private InputModel Input = new();
+
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		ErrorService?.HideError();
+		await base.OnInitializedAsync();
+	}
+
+	private async Task SavePassword()
+	{
+		if (Input.Password != Input.PasswordConfirm)
+		{
+			ErrorService?.ShowError(UserLoc.UserManagement, ErrorLoc.ErrorPasswordsDoNotMatch);
+			Input.PasswordConfirm = "";
+			return;
+		}
+
+		try
+		{
+			var token = await TokenProvider.GetToken();
+			if (token is null)
+			{
+				var url = NavigationManager.BuildReturnUrl("/login");
+				NavigationManager.NavigateTo(url);
+				return;
+			}
+
+			var user = await UserService.GetCurrentUserAsync();
+			user.Password = Input.Password;
+			await UserService.UpdateItemAsync(user);
+
+			Input.Password = "";
+			Input.PasswordConfirm = "";
+
+			ErrorService?.HideError();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error updating user.");
+			ErrorService?.ShowError(UserLoc.UserManagement, ErrorLoc.ErrorCouldNotUpdateUserData);
+		}
+	}
+}<#cs SetOutputPathAndSkipOtherDefinitions()#>

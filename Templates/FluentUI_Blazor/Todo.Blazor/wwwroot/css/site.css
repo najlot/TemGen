@@ -1,0 +1,723 @@
+:root {
+	color-scheme: light dark;
+	--app-primary: <#cs Write(Project.GetSetting("PrimaryColor"))#>;
+	--app-primary-dark: <#cs Write(Project.GetSetting("PrimaryDarkColor"))#>;
+	--app-accent: <#cs Write(Project.GetSetting("AccentColor"))#>;
+	--app-foreground: <#cs Write(Project.GetSetting("ForegroundColor"))#>;
+	--fluent-bg: var(--neutral-layer-2, #f5f5f5);
+	--fluent-surface: var(--neutral-layer-1, #ffffff);
+	--fluent-surface-alt: var(--neutral-layer-3, #fafafa);
+	--fluent-control-bg: var(--neutral-fill-input-rest, var(--neutral-layer-1, #ffffff));
+	--fluent-text: var(--neutral-foreground-rest, #242424);
+	--fluent-muted: var(--neutral-foreground-hint, #616161);
+	--fluent-border: var(--neutral-stroke-rest, #d1d1d1);
+	--fluent-border-strong: var(--neutral-stroke-strong-rest, #b3b3b3);
+	--fluent-accent: var(--accent-fill-rest, #0f6cbd);
+	--fluent-accent-hover: var(--accent-fill-hover, #115ea3);
+	--fluent-danger: #c50f1f;
+	--fluent-danger-hover: #a80000;
+	--fluent-success: #107c10;
+	--fluent-success-hover: #0b6a0b;
+	--fluent-warning: #fde300;
+	--fluent-warning-hover: #f9c80e;
+	--fluent-shadow: var(--elevation-shadow-card-rest, 0 8px 24px rgba(0, 0, 0, 0.12));
+}
+
+html, body {
+	background: var(--fluent-bg);
+	color: var(--fluent-text);
+	font-family: "Segoe UI", "Segoe UI Variable", system-ui, sans-serif;
+	margin: 0;
+	min-height: 100%;
+	--app-sidebar-bg: var(--app-primary);
+	--app-sidebar-border: color-mix(in srgb, var(--app-primary) 72%, black);
+	--app-sidebar-foreground: var(--app-foreground);
+	--app-sidebar-foreground-muted: color-mix(in srgb, var(--app-foreground) 84%, transparent);
+	--app-sidebar-stroke: color-mix(in srgb, var(--app-foreground) 18%, transparent);
+	--app-sidebar-hover: color-mix(in srgb, var(--app-foreground) 11%, transparent);
+	--app-sidebar-active: color-mix(in srgb, var(--app-foreground) 16%, transparent);
+	--app-sidebar-active-hover: color-mix(in srgb, var(--app-foreground) 22%, transparent);
+}
+
+body[data-theme="dark"] {
+	--app-sidebar-bg: var(--app-primary-dark);
+	--app-sidebar-border: color-mix(in srgb, var(--app-primary-dark) 72%, black);
+}
+
+fluent-design-system-provider {
+	background: var(--fluent-bg);
+	color: var(--fluent-text);
+	display: block;
+	min-height: 100vh;
+}
+
+h1, h2, h3, p {
+	margin-top: 0;
+}
+
+h1 {
+	font-size: 2rem;
+	font-weight: 600;
+	line-height: 1.2;
+	margin-bottom: 0;
+}
+
+a {
+	color: var(--fluent-accent);
+}
+
+h1:focus {
+	outline: none;
+}
+
+.content {
+	margin-inline: auto;
+	max-width: 1180px;
+	padding: 1.25rem;
+	width: 100%;
+}
+
+.app-stack {
+	display: grid;
+	gap: 1rem;
+}
+
+.auth-page {
+	display: flex;
+	justify-content: center;
+	padding: 2rem 1rem;
+	width: 100%;
+}
+
+.auth-card {
+	background: var(--fluent-surface);
+	border: 1px solid var(--fluent-border);
+	border-radius: 8px;
+	box-shadow: var(--fluent-shadow);
+	display: grid;
+	gap: 1rem;
+	max-width: 420px;
+	padding: 1.5rem;
+	width: 100%;
+}
+
+.entity-header,
+.entity-header--start {
+	align-items: center;
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+}
+
+.entity-header--start {
+	align-items: flex-start;
+}
+
+.entity-actions,
+.button-row,
+.app-user-actions {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.entity-actions--spaced {
+	margin-top: 1rem;
+}
+
+.search-form {
+	display: grid;
+	flex: 1;
+	gap: 0.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	max-width: 720px;
+}
+
+.card-list,
+.history-list,
+.condition-list {
+	display: grid;
+	gap: 0.75rem;
+}
+
+.fluent-card--subtle {
+	background: var(--fluent-surface-alt);
+	box-shadow: none;
+}
+
+.fluent-card--section {
+	display: grid;
+	gap: 0.75rem;
+}
+
+.card-link {
+	color: inherit;
+	display: block;
+	text-decoration: none;
+}
+
+.card-link:hover {
+	color: inherit;
+}
+
+.split-row {
+	align-items: center;
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+}
+
+.split-row--start {
+	align-items: flex-start;
+}
+
+.text-grow {
+	flex: 1;
+	min-width: 0;
+}
+
+.text-strong {
+	font-weight: 600;
+}
+
+.text-muted {
+	color: var(--fluent-muted);
+}
+
+.text-meta {
+	color: var(--fluent-muted);
+	font-size: 0.875rem;
+	white-space: nowrap;
+}
+
+.text-break {
+	overflow-wrap: anywhere;
+}
+
+.text-end {
+	text-align: end;
+}
+
+.text-space-top {
+	margin-top: 0.35rem;
+}
+
+.text-warning {
+	color: #f7c600;
+}
+
+.section-header {
+	align-items: center;
+	border-bottom: 1px solid var(--fluent-border);
+	display: flex;
+	gap: 0.75rem;
+	justify-content: space-between;
+	padding-bottom: 0.75rem;
+}
+
+.section-title {
+	font-size: 1.1rem;
+	font-weight: 600;
+	margin: 0;
+}
+
+.form-grid {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.form-grid__full {
+	grid-column: 1 / -1;
+}
+
+.fluent-field {
+	display: grid;
+	gap: 0.35rem;
+}
+
+.fluent-label {
+	font-size: 0.875rem;
+	font-weight: 600;
+}
+
+.fluent-control,
+.fluent-select {
+	background: var(--fluent-control-bg);
+	border: 1px solid var(--fluent-border);
+	border-radius: 4px;
+	color: var(--fluent-text);
+	font: inherit;
+	min-height: 32px;
+	padding: 0.35rem 0.55rem;
+	width: 100%;
+}
+
+.fluent-control--small {
+	font-size: 0.875rem;
+	min-height: 28px;
+	padding-block: 0.25rem;
+}
+
+.fluent-control:focus,
+.fluent-select:focus {
+	border-color: var(--fluent-accent);
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--fluent-accent) 25%, transparent);
+	outline: none;
+}
+
+.fluent-control:disabled {
+	background: var(--fluent-surface-alt);
+	color: var(--fluent-muted);
+}
+
+.fluent-checkbox {
+	accent-color: var(--fluent-accent);
+	height: 1rem;
+	width: 1rem;
+}
+
+.fluent-check-field {
+	align-items: center;
+	display: flex;
+	gap: 0.5rem;
+	min-height: 32px;
+	padding-top: 1.55rem;
+}
+
+.fluent-button,
+.fluent-link-button {
+	align-items: center;
+	appearance: none;
+	border: 1px solid transparent;
+	border-radius: 4px;
+	cursor: pointer;
+	display: inline-flex;
+	font: inherit;
+	font-weight: 600;
+	gap: 0.35rem;
+	justify-content: center;
+	min-height: 32px;
+	padding: 0.35rem 0.75rem;
+	text-decoration: none;
+	transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.fluent-button--accent {
+	background: var(--app-primary);
+	color: var(--app-foreground);
+}
+
+.fluent-button--accent:hover {
+	background: var(--app-primary-dark);
+}
+
+.fluent-button--neutral {
+	background: var(--fluent-surface);
+	border-color: var(--fluent-border-strong);
+	color: var(--fluent-text);
+}
+
+.fluent-button--neutral:hover {
+	background: var(--fluent-surface-alt);
+}
+
+.fluent-button--success {
+	background: var(--fluent-success);
+	color: #ffffff;
+}
+
+.fluent-button--success:hover {
+	background: var(--fluent-success-hover);
+}
+
+.fluent-button--danger {
+	background: var(--fluent-danger);
+	color: #ffffff;
+}
+
+.fluent-button--danger:hover {
+	background: var(--fluent-danger-hover);
+}
+
+.fluent-button--warning {
+	background: var(--fluent-warning);
+	color: #1f1f1f;
+}
+
+.fluent-button--warning:hover {
+	background: var(--fluent-warning-hover);
+}
+
+.fluent-button--subtle {
+	background: transparent;
+	border-color: transparent;
+	color: var(--fluent-text);
+}
+
+.fluent-button--danger-text {
+	color: var(--fluent-danger);
+}
+
+.fluent-button--small {
+	font-size: 0.875rem;
+	min-height: 28px;
+	padding: 0.25rem 0.55rem;
+}
+
+.fluent-button--icon {
+	flex: 0 0 auto;
+	height: 32px;
+	min-width: 32px;
+	padding: 0.25rem;
+	width: 32px;
+}
+
+.fluent-button--small.fluent-button--icon {
+	height: 28px;
+	min-width: 28px;
+	width: 28px;
+}
+
+.app-icon {
+	align-items: center;
+	color: currentColor;
+	display: inline-flex;
+	flex: 0 0 auto;
+	height: 1.25rem;
+	justify-content: center;
+	line-height: 1;
+	width: 1.25rem;
+}
+
+.app-icon svg {
+	display: block;
+}
+
+.fluent-button--wide {
+	min-width: 7rem;
+}
+
+.fluent-button--full,
+.fluent-link-button {
+	width: 100%;
+}
+
+.fluent-link-button {
+	background: transparent;
+	color: var(--fluent-accent);
+}
+
+.fluent-button:disabled,
+.fluent-button[disabled] {
+	cursor: not-allowed;
+	opacity: 0.45;
+}
+
+.app-nav-link {
+	align-items: center;
+	background: transparent;
+	border: 0;
+	border-radius: 4px;
+	color: var(--fluent-text);
+	cursor: pointer;
+	display: inline-flex;
+	font: inherit;
+	gap: 0.35rem;
+	min-height: 32px;
+	padding: 0.25rem 0.5rem;
+	text-decoration: none;
+}
+
+.app-nav-link:hover {
+	background: color-mix(in srgb, var(--fluent-accent) 12%, transparent);
+}
+
+.app-nav-link--icon {
+	aspect-ratio: 1;
+	justify-content: center;
+}
+
+.app-nav-link--button {
+	color: var(--fluent-text);
+}
+
+.table-shell {
+	background: var(--fluent-surface);
+	border: 1px solid var(--fluent-border);
+	border-radius: 8px;
+	overflow-x: auto;
+}
+
+.table-shell--spaced {
+	margin-top: 0.75rem;
+}
+
+.data-table {
+	border-collapse: collapse;
+	min-width: 100%;
+	width: 100%;
+}
+
+.data-table th,
+.data-table td {
+	border-bottom: 1px solid var(--fluent-border);
+	padding: 0.75rem;
+	text-align: start;
+	vertical-align: middle;
+}
+
+.data-table th {
+	background: var(--fluent-surface-alt);
+	font-weight: 600;
+}
+
+.data-table tbody tr:last-child td {
+	border-bottom: 0;
+}
+
+.data-table--compact th,
+.data-table--compact td {
+	padding: 0.5rem;
+}
+
+.data-table--hover tbody tr:hover,
+.data-table--striped tbody tr:nth-child(even) {
+	background: color-mix(in srgb, var(--fluent-accent) 7%, transparent);
+}
+
+.table-cell-icon {
+	text-align: center;
+	white-space: nowrap;
+	width: 1%;
+}
+
+.table-cell-actions {
+	text-align: end;
+	white-space: nowrap;
+}
+
+.inline-pre {
+	font: inherit;
+	font-size: 0.875rem;
+	margin: 0;
+	white-space: pre-wrap;
+}
+
+.history-entry {
+	border-bottom: 1px solid var(--fluent-border);
+	padding-bottom: 1rem;
+}
+
+.history-entry:last-child {
+	border-bottom: 0;
+	padding-bottom: 0;
+}
+
+.filter-summary {
+	align-items: center;
+	cursor: pointer;
+	display: inline-flex;
+	font-weight: 600;
+	gap: 0.35rem;
+	user-select: none;
+}
+
+.filter-panel {
+	margin-top: 0.75rem;
+}
+
+.filter-grid {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin-bottom: 1rem;
+}
+
+.filter-section,
+.inline-form {
+	display: grid;
+	gap: 0.5rem;
+}
+
+.inline-form {
+	grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.filter-heading,
+.filter-actions {
+	align-items: center;
+	display: flex;
+	gap: 0.75rem;
+	justify-content: space-between;
+}
+
+.filter-actions {
+	border-top: 1px solid var(--fluent-border);
+	margin-top: 1rem;
+	padding-top: 1rem;
+}
+
+.condition-card {
+	background: var(--fluent-surface-alt);
+	border: 1px solid var(--fluent-border);
+	border-radius: 6px;
+	padding: 0.5rem;
+}
+
+.condition-row {
+	align-items: center;
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: auto auto minmax(12rem, 1fr) auto;
+}
+
+.condition-cell--grow {
+	min-width: 0;
+}
+
+.condition-cell--action {
+	text-align: end;
+}
+
+.validation-summary {
+	background: color-mix(in srgb, var(--fluent-danger) 12%, var(--fluent-surface));
+	border: 1px solid color-mix(in srgb, var(--fluent-danger) 45%, var(--fluent-border));
+	border-radius: 6px;
+	color: var(--fluent-danger);
+	margin: 0 0 1rem;
+	padding: 0.75rem 1rem;
+}
+
+.valid.modified:not([type=checkbox]) {
+	outline: 1px solid var(--fluent-success);
+}
+
+.invalid {
+	outline: 1px solid var(--fluent-danger);
+}
+
+.validation-message {
+	color: var(--fluent-danger);
+}
+
+.fluent-close-button {
+	align-items: center;
+	background: transparent;
+	border: 0;
+	border-radius: 4px;
+	color: inherit;
+	cursor: pointer;
+	display: inline-flex;
+	font: inherit;
+	justify-content: center;
+	min-height: 28px;
+	min-width: 28px;
+}
+
+.fluent-close-button:hover {
+	background: rgba(0, 0, 0, 0.08);
+}
+
+.fluent-close-button--inverted {
+	color: #ffffff;
+}
+
+.toast-region {
+	bottom: 1rem;
+	position: fixed;
+	right: 1rem;
+	z-index: 1000;
+}
+
+.toast-panel {
+	align-items: center;
+	background: var(--fluent-success);
+	border-radius: 6px;
+	box-shadow: var(--fluent-shadow);
+	color: #ffffff;
+	display: flex;
+	gap: 0.75rem;
+	justify-content: space-between;
+	min-width: 280px;
+	padding: 0.85rem 1rem;
+}
+
+.toast-title {
+	font-weight: 600;
+}
+
+.spin {
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+#blazor-error-ui {
+	background: #fff4ce;
+	border-top: 1px solid #f2c811;
+	bottom: 0;
+	box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+	display: none;
+	left: 0;
+	padding: 0.7rem 3rem 0.7rem 1.25rem;
+	position: fixed;
+	width: 100%;
+	z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+	cursor: pointer;
+	position: absolute;
+	right: 0.75rem;
+	top: 0.5rem;
+}
+
+.blazor-error-boundary {
+	background: #b32121;
+	color: #ffffff;
+	padding: 1rem;
+}
+
+.blazor-error-boundary::after {
+	content: "An error has occurred.";
+}
+
+@media (max-width: 760px) {
+	.content {
+		padding: 1rem;
+	}
+
+	.entity-header,
+	.entity-header--start,
+	.split-row,
+	.filter-heading,
+	.filter-actions {
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.search-form,
+	.form-grid,
+	.filter-grid,
+	.inline-form,
+	.condition-row {
+		grid-template-columns: 1fr;
+	}
+
+	.text-meta,
+	.table-cell-actions {
+		text-align: start;
+	}
+
+	.fluent-check-field {
+		padding-top: 0;
+	}
+}
+
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

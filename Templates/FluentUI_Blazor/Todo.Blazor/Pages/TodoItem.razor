@@ -1,0 +1,561 @@
+@page "/<#cs Write(Definition.Name)#>/{id:guid}"
+@using Microsoft.AspNetCore.Components.Routing;
+@using Microsoft.Extensions.Localization;
+@using <# Project.Namespace#>.Blazor.Identity;
+@using <# Project.Namespace#>.Blazor.Services;
+@using <# Project.Namespace#>.Client.Data;
+@using <# Project.Namespace#>.Client.Data.Favorites;
+@using <# Project.Namespace#>.Client.Data.<# Definition.Name#>s;<#if Entries
+	.Where(e => e.IsReference)
+	.Concat(Entries
+		.Where(e => e.IsArray)
+		.SelectMany(arrayEntry => Definitions.First(definition => definition.Name == arrayEntry.EntryType).Entries)
+		.Where(childEntry => childEntry.IsReference))
+	.DistinctBy(e => e.ReferenceType)
+	.Any()
+#>
+<#for entry in Entries
+	.Where(e => e.IsReference)
+	.Concat(Entries
+		.Where(e => e.IsArray)
+		.SelectMany(arrayEntry => Definitions.First(definition => definition.Name == arrayEntry.EntryType).Entries)
+		.Where(childEntry => childEntry.IsReference))
+	.DistinctBy(e => e.ReferenceType)
+#>@using <# Project.Namespace#>.Client.Data.<# entry.ReferenceType#>s;
+<#end#><#end#>@using <# Project.Namespace#>.Client.Localisation;
+@using <# Project.Namespace#>.Contracts.<# Definition.Name#>s;
+@using <# Project.Namespace#>.Contracts.Shared;
+@inject ILogger<<# Definition.Name#>> Log
+@inject Najlot.Map.IMap Map;
+@inject I<# Definition.Name#>Service <# Definition.Name#>Service<#if Entries
+	.Where(e => e.IsReference)
+	.Concat(Entries
+		.Where(e => e.IsArray)
+		.SelectMany(arrayEntry => Definitions.First(definition => definition.Name == arrayEntry.EntryType).Entries)
+		.Where(childEntry => childEntry.IsReference))
+	.DistinctBy(e => e.ReferenceType)
+	.Any()
+#>
+<#for entry in Entries
+	.Where(e => e.IsReference)
+	.Concat(Entries
+		.Where(e => e.IsArray)
+		.SelectMany(arrayEntry => Definitions.First(definition => definition.Name == arrayEntry.EntryType).Entries)
+		.Where(childEntry => childEntry.IsReference))
+	.DistinctBy(e => e.ReferenceType)
+#>@inject I<# entry.ReferenceType#>Service <# entry.ReferenceType#>Service
+<#end#><#else#>
+<#end#>@inject NavigationManager NavigationManager
+<#for entry in Entries.Where(e => e.IsEnumeration)
+#>@inject IStringLocalizer<<# entry.EntryType#>Loc> <# entry.EntryType#>Localizer
+<#end#>
+@attribute [Authorize]
+@implements IDisposable
+
+@if (isNew)
+{
+	<PageTitle>@<# Definition.Name#>Loc.Create<# Definition.Name#></PageTitle>
+}
+else
+{
+	<PageTitle>@<# Definition.Name#>Loc.Edit<# Definition.Name#></PageTitle>
+}
+
+@if (Model == null)
+{
+	<p><em>@CommonLoc.Loading...</em></p>
+}
+else
+{
+	<section class="app-stack">
+		<div class="entity-header entity-header--start">
+			<div>
+				@if (isNew)
+				{
+					<h1>@<# Definition.Name#>Loc.Create<# Definition.Name#></h1>
+				}
+				else
+				{
+					<h1>@<# Definition.Name#>Loc.Edit<# Definition.Name#></h1>
+				}
+			</div>
+			<div class="entity-actions">
+				<IconButton Icon="Icons.Regular.Size20.ArrowUndo"
+							ButtonClass="fluent-button fluent-button--neutral fluent-button--icon"
+							CanExecute="() => _changeTracker.CanUndo"
+							Execute="_changeTracker.Undo" />
+				<IconButton Icon="Icons.Regular.Size20.ArrowRedo"
+							ButtonClass="fluent-button fluent-button--neutral fluent-button--icon"
+							CanExecute="() => _changeTracker.CanRedo"
+							Execute="_changeTracker.Redo" />
+				@if (!isNew)
+				{
+					<ToggleFavoriteButton TargetType="ItemType.<# Definition.Name#>"
+									  ItemId="@Model.Id"
+									  CanToggle="@(!isNew)" />
+
+					<IconButton Icon="Icons.Regular.Size20.History"
+								ButtonClass="fluent-button fluent-button--neutral fluent-button--icon"
+								Execute="NavigateToHistory"
+								Title="@CommonLoc.History" />
+				}
+				<IconButton Icon="Icons.Regular.Size20.Save"
+							ButtonClass="fluent-button fluent-button--success fluent-button--icon"
+							Execute="Save"
+							Title="@CommonLoc.Save" />
+				<IconButton Icon="Icons.Regular.Size20.Delete"
+							ButtonClass="fluent-button fluent-button--danger fluent-button--icon"
+							CanExecute="() => !isDeleteRequested"
+							Execute="() => isDeleteRequested = true"
+							Title="@CommonLoc.Delete" />
+			</div>
+		</div>
+
+		<EditForm Model="@Model" OnValidSubmit="@Save">
+			<FluentStack Orientation="Orientation.Vertical"
+						 HorizontalAlignment="HorizontalAlignment.Stretch"
+						 VerticalGap="8"
+						 Width="100%">
+			<div>
+				<div>
+					<DataAnnotationsValidator />
+					<ValidationSummary class="validation-summary" />
+					<div class="form-grid">
+<#for entry in Entries.Where(e => !e.IsArray)#>
+						<!-- <# entry.Field#> input -->
+						<div class="fluent-field<#if entry.IsOwnedType#> form-grid__full<#end#>">
+<#if entry.EntryType.ToLower() == "string"
+#>							<label class="fluent-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
+							<InputText type="text" id="<# entry.Field#>Input" class="fluent-control"
+							   Value="@Model.<# entry.Field#>"
+							   ValueChanged="@((string v) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
+							   ValueExpression="@(() => Model.<# entry.Field#>)" />
+<#elseif entry.EntryType.ToLower() == "datetime"
+#>							<label class="fluent-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
+							<InputDate id="<# entry.Field#>Input" class="fluent-control"
+							   Value="@Model.<# entry.Field#>"
+							   ValueChanged="@((<#if entry.IsNullable#>DateTime?<#else#>DateTime<#end#> v) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
+							   ValueExpression="@(() => Model.<# entry.Field#>)" ParsingErrorMessage="@ErrorLoc.ParsingErrorMustBeDate" />
+<#elseif entry.EntryType.ToLower() == "bool"
+#>							<div class="fluent-check-field">
+								<InputCheckbox id="<# entry.Field#>Input" class="fluent-checkbox"
+								   Value="@Model.<# entry.Field#>"
+								   ValueChanged="@((bool v) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
+								   ValueExpression="@(() => Model.<# entry.Field#>)" />
+								<label class="fluent-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
+							</div>
+<#elseif entry.EntryType.ToLower() == "int" || entry.EntryType.ToLower() == "long" || entry.EntryType.ToLower() == "double"
+#>							<label class="fluent-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
+							<InputNumber id="<# entry.Field#>Input" class="fluent-control"
+							 Value="@Model.<# entry.Field#>"
+							 ValueChanged="@((<# entry.EntryType#> v) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
+							 ValueExpression="@(() => Model.<# entry.Field#>)" ParsingErrorMessage="@ErrorLoc.ParsingErrorMustBeNumber" />
+<#elseif entry.IsOwnedType
+#>							<FluentCard Class="fluent-card--subtle" Width="100%">
+									<h2 class="section-title">@<# Definition.Name#>Loc.<# entry.Field#></h2>
+									@if (Model.<# entry.Field#> is not null)
+									{
+										<<# entry.EntryType#>Editor Model="@Model.<# entry.Field#>" ChangeTracker="_changeTracker" />
+									}
+							</FluentCard>
+<#elseif entry.IsEnumeration
+#>							<label class="fluent-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
+							<InputSelect id="<# entry.Field#>Input" class="fluent-select"
+								 Value="@Model.<# entry.Field#>"
+								 ValueChanged="@((<# entry.EntryType#> v) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>), Model.<# entry.Field#>, v))"
+								 ValueExpression="@(() => Model.<# entry.Field#>)" >
+						@foreach (var value in Enum.GetValues(typeof(<# entry.EntryType#>)))
+						{
+							<option value="@value">@<# entry.EntryType#>Localizer[$"{@value}"]</option>
+						}
+						</InputSelect>
+<#elseif entry.IsReference
+#>							<label class="fluent-label" for="<# entry.Field#>Input">@<# Definition.Name#>Loc.<# entry.Field#></label>
+							<InputSelect id="<# entry.Field#>Input" class="fluent-select"
+								 Value="@Model.<# entry.Field#>Id"
+								 ValueChanged="@((Guid v) => _changeTracker.TrackChange(Model, nameof(Model.<# entry.Field#>Id), Model.<# entry.Field#>Id, v))"
+								 ValueExpression="@(() => Model.<# entry.Field#>Id)">
+						@foreach (var value in _<# entry.ReferenceTypeLow#>s)
+						{
+							<option value="@value.Id">@value.DisplayText</option>
+						}
+						</InputSelect>
+<#else
+#><# entry.EntryType#> ???<#end
+#>						</div>
+<#end
+#>					</div>
+				</div>
+			</div>
+<#for entry in Entries.Where(e => e.IsArray)
+#>			<FluentCard Class="fluent-card--section" Width="100%">
+				<div class="section-header">
+					<h2 class="section-title">@<# Definition.Name#>Loc.<# entry.Field#></h2>
+					<IconButton Icon="Icons.Regular.Size20.Add"
+								ButtonClass="fluent-button fluent-button--success fluent-button--icon"
+								Execute="Add<# entry.Field#>Entry"
+								Title="@CommonLoc.New" />
+				</div>
+				<div class="table-shell">
+					<table class="data-table data-table--striped">
+						<thead>
+							<tr>
+<#for e in Definitions.First(definition => definition.Name == entry.EntryType).Entries
+#>								<th>@<# entry.EntryType#>Loc.<# e.Field#></th>
+<#end#>								<th class="table-cell-actions">@CommonLoc.Delete</th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var entry in Model.<# entry.Field#>)
+							{
+								<tr scope="row">
+<#for e in Definitions.First(definition => definition.Name == entry.EntryType).Entries
+#><#if e.EntryType.ToLower() == "bool"
+#>									<td><input type="checkbox" class="fluent-checkbox" checked="@entry.<# e.Field#>" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, (bool)(ev.Value ?? false)))" /></td>
+<#elseif e.EntryType.ToLower() == "string"
+#>									<td><input type="text" class="fluent-control" value="@entry.<# e.Field#>" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, ev.Value?.ToString() ?? string.Empty))" /></td>
+<#elseif e.EntryType.ToLower() == "int"
+#>									<td><input type="number" class="fluent-control" value="@entry.<# e.Field#>" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, int.TryParse(ev.Value?.ToString(), out var parsedValue) ? parsedValue : entry.<# e.Field#>))" /></td>
+<#elseif e.EntryType.ToLower() == "long"
+#>									<td><input type="number" class="fluent-control" value="@entry.<# e.Field#>" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, long.TryParse(ev.Value?.ToString(), out var parsedValue) ? parsedValue : entry.<# e.Field#>))" /></td>
+<#elseif e.EntryType.ToLower() == "double"
+#>									<td><input type="number" step="any" class="fluent-control" value="@entry.<# e.Field#>" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, double.TryParse(ev.Value?.ToString(), out var parsedValue) ? parsedValue : entry.<# e.Field#>))" /></td>
+<#elseif e.EntryType.ToLower() == "datetime"
+#>									<td><input type="date" class="fluent-control" value="@entry.<# e.Field#>.ToString(\"yyyy-MM-dd\")" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, DateTime.TryParse(ev.Value?.ToString(), out var parsedValue) ? parsedValue : entry.<# e.Field#>))" /></td>
+<#elseif e.IsEnumeration
+#>									<td>
+										<select class="fluent-select" value="@entry.<# e.Field#>" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, Enum.TryParse<<# e.EntryType#>>(ev.Value?.ToString(), out var parsedValue) ? parsedValue : entry.<# e.Field#>))">
+											@foreach (var item in Enum.GetValues(typeof(<# e.EntryType#>)))
+											{
+												<option value="@item">@(((<# e.EntryType#>)item) == <# e.EntryType#>.None ? CommonLoc.NothingSelected : item.ToString())</option>
+											}
+										</select>
+									</td>
+<#elseif e.IsReference
+#>									<td>
+										<select class="fluent-select" value="@entry.<# e.Field#>Id" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>Id), entry.<# e.Field#>Id, Guid.TryParse(ev.Value?.ToString(), out var parsedValue) ? parsedValue : entry.<# e.Field#>Id))">
+											@foreach (var item in _<# e.ReferenceTypeLow#>s)
+											{
+												<option value="@item.Id">@item.DisplayText</option>
+											}
+										</select>
+									</td>
+<#else
+#>									<td><input type="text" class="fluent-control" value="@entry.<# e.Field#>" @onchange="@(ev => _changeTracker.TrackChange(entry, nameof(entry.<# e.Field#>), entry.<# e.Field#>, ev.Value?.ToString() ?? string.Empty))" /></td>
+<#end#><#end#>									<td class="table-cell-actions">
+										<IconButton Icon="Icons.Regular.Size20.Delete"
+													ButtonClass="fluent-button fluent-button--danger fluent-button--icon"
+													Execute="() => Remove<# entry.Field#>Entry(entry.Id)"
+													Title="@CommonLoc.Delete" />
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</FluentCard>
+			<#end#>
+			</FluentStack>
+		</EditForm>
+	</section>
+
+	<SaveConfirmationDialog @ref="_saveConfirmationDialog" />
+	<DeleteConfirmationDialog @bind-IsVisible="isDeleteRequested" Remove="Remove" />
+}
+
+@code {
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	[Parameter]
+	public Guid Id { get; set; }
+
+	private bool isNew = false;
+	private bool isDeleteRequested = false;
+	private <# Definition.Name#>Model? Model;
+	private readonly ChangeTracker _changeTracker = new();
+	private SaveConfirmationDialog? _saveConfirmationDialog;
+	private IDisposable? _locationChangingRegistration;
+	private bool _ignoreLocationChanging;
+	private bool _isSaveConfirmationVisible;
+
+<#for entry in Entries
+	.Where(e => e.IsReference)
+	.Concat(Entries
+		.Where(e => e.IsArray)
+		.SelectMany(arrayEntry => Definitions.First(definition => definition.Name == arrayEntry.EntryType).Entries)
+		.Where(childEntry => childEntry.IsReference))
+	.DistinctBy(e => e.ReferenceType)
+#>	private IEnumerable<<# entry.ReferenceType#>ListItemModel> _<# entry.ReferenceTypeLow#>s = [];
+<#end#>
+	private void NavigateToHistory()
+	{
+		if (Model is null || isNew)
+		{
+			return;
+		}
+
+		NavigationManager.NavigateTo($"/history/{Model.Id}?entityName=<# Definition.Name#>");
+	}
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+		{
+			_locationChangingRegistration = NavigationManager.RegisterLocationChangingHandler(HandleLocationChangingAsync);
+		}
+	}
+
+	private async ValueTask HandleLocationChangingAsync(LocationChangingContext context)
+	{
+		if (_ignoreLocationChanging)
+		{
+			_ignoreLocationChanging = false;
+			return;
+		}
+
+		if (!await CanNavigateAsync())
+		{
+			context.PreventNavigation();
+		}
+	}
+
+	private async Task<bool> CanNavigateAsync()
+	{
+		if (_isSaveConfirmationVisible || isDeleteRequested)
+		{
+			return false;
+		}
+
+		if (!_changeTracker.HasChanges || _saveConfirmationDialog is null)
+		{
+			return true;
+		}
+
+		_isSaveConfirmationVisible = true;
+
+		try
+		{
+			var saveDialogResult = await _saveConfirmationDialog.ShouldSave();
+
+			switch (saveDialogResult)
+			{
+				case SaveConfirmationDialog.SaveDialogResult.Save:
+					return await TrySaveAsync(navigateAfterCreate: false);
+				case SaveConfirmationDialog.SaveDialogResult.Discard:
+					return true;
+				default:
+					return false;
+			}
+		}
+		finally
+		{
+			_isSaveConfirmationVisible = false;
+		}
+	}
+
+	private void NavigateWithoutSaveConfirmation(string url, bool forceLoad = false, bool replace = false)
+	{
+		_ignoreLocationChanging = true;
+		NavigationManager.NavigateTo(url, forceLoad, replace);
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		try
+		{
+			if (Id == Guid.Empty)
+			{
+				Model = <# Definition.Name#>Service.Create<# Definition.Name#>();
+				isNew = true;
+			}
+			else
+			{
+				Model = await <# Definition.Name#>Service.GetItemAsync(Id);
+			}
+
+<#for entry in Entries
+	.Where(e => e.IsReference)
+	.Concat(Entries
+		.Where(e => e.IsArray)
+		.SelectMany(arrayEntry => Definitions.First(definition => definition.Name == arrayEntry.EntryType).Entries)
+		.Where(childEntry => childEntry.IsReference))
+	.DistinctBy(e => e.ReferenceType)
+#>			var available<# entry.ReferenceType#>s = await <# entry.ReferenceType#>Service.GetItemsAsync();
+			_<# entry.ReferenceTypeLow#>s = [new <# entry.ReferenceType#>ListItemModel { Id = Guid.Empty }, .. available<# entry.ReferenceType#>s];
+<#end#>
+			<# Definition.Name#>Service.ItemUpdated += Handle;
+			_changeTracker.StateChanged += () => InvokeAsync(StateHasChanged);
+
+			await <# Definition.Name#>Service.StartEventListener();
+		}
+		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigateWithoutSaveConfirmation(url);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error loading <# Definition.Name#>.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotLoad);
+		}
+	}
+
+	private Task Save() => TrySaveAsync();
+
+	private async Task<bool> TrySaveAsync(bool navigateAfterCreate = true)
+	{
+		if (Model is null)
+		{
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorModelIsNullReload);
+			return false;
+		}
+
+		try
+		{
+			if (isNew)
+			{
+				await <# Definition.Name#>Service.AddItemAsync(Model);
+				Id = Model.Id;
+				isNew = false;
+				_changeTracker.Clear();
+
+				if (navigateAfterCreate)
+				{
+					NavigateWithoutSaveConfirmation($"/<# Definition.Name#>/{Model.Id}", false, true);
+				}
+			}
+			else
+			{
+				await <# Definition.Name#>Service.UpdateItemAsync(Model);
+				_changeTracker.Clear();
+			}
+
+			ErrorService?.HideError();
+			ErrorService?.ShowSuccess(CommonLoc.Save, CommonLoc.ChangesRecorded);
+
+			return true;
+		}
+		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigateWithoutSaveConfirmation(url);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error saving <# Definition.Name#>.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotSave);
+		}
+
+		return false;
+	}
+
+	private async Task Remove()
+	{
+		if (Model is null)
+		{
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorModelIsNullReload);
+			return;
+		}
+
+		try
+		{
+			if (!isNew)
+			{
+				await <# Definition.Name#>Service.DeleteItemAsync(Model.Id);
+			}
+
+			_changeTracker.Clear();
+			NavigateWithoutSaveConfirmation(GetReturnToListUrl());
+		}
+		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigateWithoutSaveConfirmation(url);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error deleting <# Definition.Name#>.");
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorDeleting);
+		}
+	}
+
+	private async Task Handle(object? sender, <# Definition.Name#>Updated message)
+	{
+		if (Model is null || Model.Id != message.Id)
+		{
+			return;
+		}
+
+		Map.From(message).To(Model);
+		_changeTracker.Clear();
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private string GetReturnToListUrl()
+	{
+		if (NavigationManager.TryGetReturnUrl(out var returnUrl) && !string.IsNullOrWhiteSpace(returnUrl))
+		{
+			return "/" + returnUrl.TrimStart('/');
+		}
+
+		return "/<# Definition.Name#>s";
+	}
+<#for entry in Entries.Where(e => e.IsArray)
+#>
+	private void Add<# entry.Field#>Entry()
+	{
+		if (Model is null)
+		{
+			return;
+		}
+
+		var max = 0;
+
+		if (Model.<# entry.Field#>.Count > 0)
+		{
+			max = Model.<# entry.Field#>.Max(e => e.Id) + 1;
+		}
+
+		var model = new <# entry.EntryType#>Model() { Id = max };
+
+		Model.<# entry.Field#>.Add(model);
+
+		_changeTracker.Track(
+			nameof(Model.<# entry.Field#>),
+			() => Model.<# entry.Field#>.Remove(model),
+			() => Model.<# entry.Field#>.Add(model));
+	}
+
+	private void Remove<# entry.Field#>Entry(int id)
+	{
+		if (Model is null)
+		{
+			return;
+		}
+
+		var oldItem = Model.<# entry.Field#>.FirstOrDefault(i => i.Id == id);
+
+		if (oldItem != null)
+		{
+			var index = Model.<# entry.Field#>.IndexOf(oldItem);
+
+			if (index != -1)
+			{
+				Model.<# entry.Field#>.RemoveAt(index);
+
+				_changeTracker.Track(
+					nameof(Model.<# entry.Field#>),
+					() => Model.<# entry.Field#>.Insert(index, oldItem),
+					() => Model.<# entry.Field#>.Remove(oldItem));
+			}
+		}
+	}
+<#end#>
+	public void Dispose()
+	{
+		<# Definition.Name#>Service.ItemUpdated -= Handle;
+		_locationChangingRegistration?.Dispose();
+	}
+}<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

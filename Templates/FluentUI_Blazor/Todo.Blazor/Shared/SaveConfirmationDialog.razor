@@ -1,0 +1,88 @@
+@using <# Project.Namespace#>.Client.Localisation;
+
+@implements IDisposable
+
+<FluentDialog Hidden="@(!_isVisible)"
+			  HiddenChanged="HandleHiddenChanged"
+			  Modal="true"
+			  PreventScroll="true"
+			  TrapFocus="true">
+	<FluentDialogHeader ShowDismiss="true">@Title</FluentDialogHeader>
+	<FluentDialogBody>
+		<p>@Description</p>
+	</FluentDialogBody>
+	<FluentDialogFooter>
+		<FluentButton Appearance="Appearance.Accent"
+					  Disabled="@(!CanSave)"
+					  OnClick="Save">@CommonLoc.Save</FluentButton>
+		<FluentButton Appearance="Appearance.Outline" OnClick="Discard">@CommonLoc.Discard</FluentButton>
+		<FluentButton Appearance="Appearance.Neutral" OnClick="Cancel">@CommonLoc.Cancel</FluentButton>
+	</FluentDialogFooter>
+</FluentDialog>
+
+@code {
+	public enum SaveDialogResult
+	{
+		Save,
+		Discard,
+		Cancel
+	}
+
+	[Parameter] public string Title { get; set; } = @CommonLoc.SaveConfirmationTitle;
+	[Parameter] public string Description { get; set; } = @CommonLoc.SaveConfirmationDescription;
+
+	[Parameter] public bool CanSave { get; set; } = true;
+
+	private bool _isVisible;
+	private TaskCompletionSource<SaveDialogResult>? _saveDialogCompletion;
+
+	public async Task<SaveDialogResult> ShouldSave()
+	{
+		_saveDialogCompletion = new TaskCompletionSource<SaveDialogResult>();
+		_isVisible = true;
+		StateHasChanged();
+
+		try
+		{
+			return await _saveDialogCompletion.Task;
+		}
+		catch (TaskCanceledException)
+		{
+			return SaveDialogResult.Cancel;
+		}
+		finally
+		{
+			_isVisible = false;
+			StateHasChanged();
+		}
+	}
+
+	private void Save()
+	{
+		_saveDialogCompletion?.TrySetResult(SaveDialogResult.Save);
+	}
+
+	private void Discard()
+	{
+		_saveDialogCompletion?.TrySetResult(SaveDialogResult.Discard);
+	}
+
+	private void Cancel()
+	{
+		_saveDialogCompletion?.TrySetResult(SaveDialogResult.Cancel);
+	}
+
+	private void HandleHiddenChanged(bool hidden)
+	{
+		if (hidden && _isVisible)
+		{
+			Cancel();
+		}
+	}
+
+	public void Dispose()
+	{
+		_saveDialogCompletion?.TrySetCanceled();
+	}
+}
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

@@ -1,0 +1,71 @@
+.page {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+}
+
+main {
+	flex: 1;
+}
+
+.sidebar {
+	background-color: var(--app-sidebar-bg, var(--app-primary));
+	border-bottom: 1px solid var(--app-sidebar-border, var(--app-primary-dark));
+}
+
+.top-row {
+	background-color: var(--fluent-surface);
+	border-bottom: 1px solid var(--fluent-border);
+	justify-content: flex-end;
+	height: 3.5rem;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0 1rem;
+}
+
+	.top-row ::deep a, .top-row ::deep button {
+		white-space: nowrap;
+	}
+
+	.top-row ::deep .theme-toggle {
+		margin-inline-end: auto;
+	}
+
+	.top-row a:first-child {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+@media (max-width: 640.98px) {
+	.top-row {
+		justify-content: space-between;
+	}
+
+	.top-row ::deep .theme-toggle {
+		margin-inline-end: 0;
+	}
+}
+
+@media (min-width: 641px) {
+	.page {
+		flex-direction: row;
+	}
+
+	.sidebar {
+		width: 250px;
+		height: 100vh;
+		position: sticky;
+		top: 0;
+		border-bottom: 0;
+		border-right: 1px solid var(--app-sidebar-border, var(--app-primary-dark));
+	}
+
+	.top-row {
+		position: sticky;
+		top: 0;
+		z-index: 1;
+	}
+
+}
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

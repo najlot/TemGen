@@ -1,0 +1,48 @@
+@page "/"
+@using <# Project.Namespace#>.Blazor.Services
+@using <# Project.Namespace#>.Client.Localisation
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@attribute [Authorize]
+
+<PageTitle>@CommonLoc.Home</PageTitle>
+
+<section class="auth-page">
+	<div class="auth-card">
+	<AuthorizeView>
+		<Authorized>
+			<h1>@CommonLoc.Welcome, @name!</h1>
+		</Authorized>
+		<NotAuthorized>
+			<h1>@CommonLoc.Welcome!</h1>
+			<p>@CommonLoc.RegisterOrLogin</p>
+			<a href="/login" class="fluent-button fluent-button--accent fluent-button--full">@UserLoc.Login</a>
+			<a href="/register" class="fluent-button fluent-button--accent fluent-button--full">@UserLoc.Register</a>
+		</NotAuthorized>
+	</AuthorizeView>
+	</div>
+</section>
+
+@code {
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	private string? name;
+
+	protected override async Task OnInitializedAsync()
+	{
+		name = "";
+		ErrorService?.HideError();
+
+		var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+		var user = authState.User;
+
+		if (user.Identity is not null && user.Identity.IsAuthenticated)
+		{
+			name = user.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.Name)?.Value;
+		}
+
+		await base.OnInitializedAsync();
+	}
+}<#cs SetOutputPathAndSkipOtherDefinitions()#>

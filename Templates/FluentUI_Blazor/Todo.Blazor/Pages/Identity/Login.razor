@@ -1,0 +1,104 @@
+@page "/Login"
+@using System.ComponentModel.DataAnnotations;
+@using <# Project.Namespace#>.Blazor.Identity;
+@using <# Project.Namespace#>.Blazor.Services;
+@using <# Project.Namespace#>.Client.Data.Identity;
+@using <# Project.Namespace#>.Client.Localisation;
+
+@inject IAuthenticationService AuthenticationService
+@inject ITokenService TokenService
+@inject ILogger<Login> Logger
+@inject NavigationManager NavigationManager
+
+<PageTitle>@UserLoc.Login</PageTitle>
+
+<EditForm Model="@Input" OnValidSubmit="@TryLogin">
+	<section class="auth-page">
+		<div class="auth-card">
+			<h1>@UserLoc.Login</h1>
+			<DataAnnotationsValidator />
+			<ValidationSummary class="validation-summary" />
+
+			<!-- Username input -->
+			<div class="fluent-field">
+				<label class="fluent-label" for="UsernameInput">@UserLoc.Username</label>
+				<InputText type="text" id="UsernameInput" class="fluent-control" @bind-Value="Input.Username" />
+			</div>
+
+			<!-- Password input -->
+			<div class="fluent-field">
+				<label class="fluent-label" for="PasswordInput">@UserLoc.Password</label>
+				<InputText type="password" id="PasswordInput" class="fluent-control" @bind-Value="Input.Password" />
+			</div>
+
+			<button type="submit" class="fluent-button fluent-button--accent fluent-button--full">@UserLoc.Login</button>
+
+			<a href="/ForgotPassword" class="fluent-link-button">@UserLoc.ForgotPassword</a>
+		</div>
+	</section>
+</EditForm>
+
+@code {
+	private class InputModel
+	{
+		[Required]
+		[StringLength(30, MinimumLength = 3)]
+		public string Username { get; set; } = string.Empty;
+
+		[Required]
+		[DataType(DataType.Password)]
+		[StringLength(30, MinimumLength = 8)]
+		public string Password { get; set; } = string.Empty;
+	}
+
+	private InputModel Input = new();
+
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		ErrorService?.HideError();
+		await AuthenticationService.LogoutAsync();
+		await base.OnInitializedAsync();
+	}
+
+	private async Task TryLogin()
+	{
+		string? token;
+
+		try
+		{
+			token = await TokenService.CreateToken(Input.Username, Input.Password);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error creating token.");
+			ErrorService?.ShowError(UserLoc.Login, ErrorLoc.ErrorCouldNotLogin);
+			return;
+		}
+
+		if (string.IsNullOrWhiteSpace(token))
+		{
+			ErrorService?.ShowError(UserLoc.Login, ErrorLoc.ErrorInvalidUsernamePassword);
+			Input.Password = "";
+		}
+		else
+		{
+			await AuthenticationService.LoginAsync(Input.Username, token);
+			ErrorService?.HideError();
+
+			var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+			var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+
+			if (query.TryGetValue("returnurl", out var returnUrl) && returnUrl.Any())
+			{
+				NavigationManager.NavigateTo("/" + returnUrl.First());
+			}
+			else
+			{
+				NavigationManager.NavigateTo("/");
+			}
+		}
+	}
+}<#cs SetOutputPathAndSkipOtherDefinitions()#>

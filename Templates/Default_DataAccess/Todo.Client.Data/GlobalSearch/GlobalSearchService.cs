@@ -1,12 +1,13 @@
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace <# Project.Namespace#>.Client.Data.GlobalSearch;
 
 public sealed class GlobalSearchService(IGlobalSearchRepository repository) : IGlobalSearchService
 {
-	public async Task<GlobalSearchItemModel[]> SearchAsync(string text)
+	public async Task<GlobalSearchItemModel[]> SearchAsync(string text, CancellationToken cancellationToken = default)
 	{
-		return await repository.SearchAsync(text).ConfigureAwait(false);
+		return await repository.SearchAsync(text, cancellationToken).ConfigureAwait(false);
 	}
 }
 <#cs SetOutputPathAndSkipOtherDefinitions()#>

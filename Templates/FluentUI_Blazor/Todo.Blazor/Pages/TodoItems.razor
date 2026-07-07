@@ -1,0 +1,303 @@
+@page "/<# Definition.Name#>s"
+@using Humanizer
+@using Microsoft.AspNetCore.Components
+@using <# Project.Namespace#>.Blazor.Services
+@using <# Project.Namespace#>.Client.Data
+@using <# Project.Namespace#>.Client.Data.Filters
+@using <# Project.Namespace#>.Client.Data.Favorites
+@using <# Project.Namespace#>.Client.Data.<# Definition.Name#>s
+<#for definition in Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n))
+#>@using <# Project.Namespace#>.Client.Data.<# definition.Name#>s
+<#end#>@using <# Project.Namespace#>.Client.Localisation
+@using <# Project.Namespace#>.Contracts.Filters
+@using <# Project.Namespace#>.Contracts.Shared
+@using <# Project.Namespace#>.Contracts.<# Definition.Name#>s
+
+@inject ILogger<<# Definition.Name#>s> Log
+@inject Najlot.Map.IMap Map
+@inject I<# Definition.Name#>Service <# Definition.Name#>Service
+@inject IFavoriteService FavoriteService
+<#for definition in Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n))
+#>@inject I<# definition.Name#>Service <# definition.Name#>Service
+<#end#>@inject NavigationManager NavigationManager
+
+@attribute [Authorize]
+@implements IDisposable
+
+<PageTitle>@<# Definition.Name#>Loc.<# Definition.Name#>s</PageTitle>
+
+<section class="app-stack">
+	<div class="entity-header">
+		<h1>@<# Definition.Name#>Loc.<# Definition.Name#>s</h1>
+		<a href="@GetEditorHref(Guid.Empty)"
+		   class="fluent-button fluent-button--success fluent-button--icon"
+		   title="@CommonLoc.New"
+		   aria-label="@CommonLoc.New"
+		   style="position: fixed; bottom: 1rem; right: 1rem; z-index: 1000">
+			<span class="app-icon">
+				<FluentIcon Value="@(new Icons.Regular.Size24.Add())" Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom" CustomColor="white" />
+			</span>
+		</a>
+	</div>
+
+	<EntityFilterEditor @ref="filterEditor"
+						AvailableFields="availableFilterFields"
+						TargetType="ItemType.<# Definition.Name#>"
+						IsBusy="isLoading"
+						ApplyFilter="HandleFilterAppliedAsync" />
+
+	@if (<# Definition.NameLow#>s is null)
+	{
+		<p><em>@CommonLoc.Loading...</em></p>
+	}
+	else
+	{
+		<div class="table-shell">
+				<table class="data-table data-table--hover">
+					<thead>
+						<tr>
+							<th class="table-cell-icon">
+								<span class="app-icon text-warning" title="Favorite" aria-label="Favorite">
+									<FluentIcon Value="@(new Icons.Filled.Size20.Star())" />
+								</span>
+							</th>
+<#for entry in Definition.Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2)
+#>							<th>@<# Definition.Name#>Loc.<# entry.Field#></th>
+<#end
+#>							<th class="table-cell-actions">@CommonLoc.Edit</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var <# Definition.NameLow#> in <# Definition.NameLow#>s)
+						{
+							<tr scope="row">
+								<td class="table-cell-icon">
+									@if (IsFavorite(<# Definition.NameLow#>.Id))
+									{
+										<span class="app-icon text-warning" title="Favorite" aria-label="Favorite">
+											<FluentIcon Value="@(new Icons.Filled.Size20.Star())" />
+										</span>
+									}
+								</td>
+<#for entry in Definition.Entries.Where(e => !(e.IsKey || e.IsArray || e.IsReference || e.IsOwnedType)).Take(2)
+#><#if entry.EntryType.ToLower() == "string"
+#>								<td class="text-break">@<# Definition.NameLow#>.<# entry.Field#>.Truncate(75)</td>
+<#else
+#>								<td class="text-break">@<# Definition.NameLow#>.<# entry.Field#></td>
+<#end#><#end
+#>								<td class="table-cell-actions"><a href="@GetEditorHref(<# Definition.NameLow#>.Id)" class="fluent-button fluent-button--small fluent-button--accent">@CommonLoc.Edit</a></td>
+							</tr>
+						}
+					</tbody>
+				</table>
+		</div>
+	}
+</section>
+
+@code {
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	private EntityFilterEditor? filterEditor;
+	private List<<# Definition.Name#>ListItemModel>? <# Definition.NameLow#>s;
+	private HashSet<Guid> _favoriteIds = [];
+	private IReadOnlyList<FilterFieldOption> availableFilterFields = [];
+	private bool isLoading;
+	private EntityFilter? _lastFilter;
+
+	protected override async Task OnInitializedAsync()
+	{
+		try
+		{
+<#for definition in Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n))
+#>			var <# definition.NameLow#>s = await <# definition.Name#>Service.GetItemsAsync();
+<#end#>			availableFilterFields = BuildFilterFieldOptions(<#for definition in Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n))#><# definition.NameLow#>s<#if definition != Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n)).Last()#>, <#end#><#end#>);
+
+			<# Definition.Name#>Service.ItemCreated += Handle;
+			<# Definition.Name#>Service.ItemUpdated += Handle;
+			<# Definition.Name#>Service.ItemDeleted += Handle;
+			FavoriteService.ItemCreated += HandleFavoriteCreated;
+			FavoriteService.ItemDeleted += HandleFavoriteDeleted;
+
+			await Task.WhenAll(
+				<# Definition.Name#>Service.StartEventListener(),
+				FavoriteService.StartEventListener());
+		}
+		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigationManager.NavigateTo(url);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error loading <# Definition.Name#>s.");
+			<# Definition.NameLow#>s = [];
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotLoad);
+		}
+	}
+
+	private Task HandleFilterAppliedAsync(EntityFilter filter)
+		=> LoadItemsAsync(filter);
+
+	private async Task RefreshAppliedFilterAsync()
+	{
+		if (filterEditor is null || isLoading)
+		{
+			return;
+		}
+
+		await filterEditor.RefreshAppliedFilterAsync();
+	}
+
+	private async Task LoadItemsAsync(EntityFilter filter)
+	{
+		try
+		{
+			isLoading = true;
+			_lastFilter = filter;
+
+			var itemsTask = filter.Conditions.Count == 0
+				? <# Definition.Name#>Service.GetItemsAsync()
+				: <# Definition.Name#>Service.GetItemsAsync(filter);
+			var favoritesTask = FavoriteService.GetItemsAsync(ItemType.<# Definition.Name#>);
+
+			var items = await itemsTask.ConfigureAwait(false);
+			var favorites = await favoritesTask.ConfigureAwait(false);
+
+			<# Definition.NameLow#>s = [.. items];
+			_favoriteIds = [.. favorites.Select(item => item.ItemId)];
+		}
+		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigationManager.NavigateTo(url);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error loading filtered <# Definition.Name#>s.");
+			ErrorService?.ShowError(ErrorLoc.Error, ex.Message);
+		}
+		finally
+		{
+			isLoading = false;
+		}
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private bool IsFavorite(Guid itemId)
+		=> _favoriteIds.Contains(itemId);
+
+	private string GetEditorHref(Guid id)
+		=> NavigationManager.BuildReturnUrl($"/<# Definition.Name#>/{id}");
+
+	private IReadOnlyList<FilterFieldOption> BuildFilterFieldOptions(<#for definition in Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n))#><# definition.Name#>ListItemModel[] <# definition.NameLow#>s<#if definition != Entries.Where(e => e.IsReference).Select(e => e.ReferenceType).Distinct().Select(n => Definitions.First(d => d.Name == n)).Last()#>, <#end#><#end#>)
+	{
+		return
+		[
+<#for entry in Entries.Where(e => !(e.IsKey || e.IsArray || e.IsOwnedType))
+#>			new FilterFieldOption
+			{
+				Key = "<#cs Write(GetFieldPropertyName(entry.Field, entry.IsReference))#>",
+				Label = <# Definition.Name#>Loc.<# entry.Field#>,
+				Kind = FilterFieldKind.<#cs Write(GetFilterFieldKind(entry.EntryType, entry.IsReference, entry.IsEnumeration))#>,
+				Operators = <#if entry.EntryType == "string"#>FilterOperatorCatalog.CreateTextOptions()<#elseif IsComparableType(entry.EntryType)#>FilterOperatorCatalog.CreateComparableOptions(<#cs Write(AllowsEmptyFilter(entry.IsNullable, entry.EntryType) ? "true" : "false")#>)<#else#>FilterOperatorCatalog.CreateEqualityOptions(<#cs Write(AllowsEmptyFilter(entry.IsNullable, entry.EntryType) ? "true" : "false")#>)<#end#>,
+				Values = <#if entry.IsReference
+#>[.. <# entry.ReferenceTypeLow#>s.Select(item => new FilterValueOption
+				{
+					Value = item.Id.ToString(),
+					Label = item.DisplayText,
+				})]<#elseif entry.IsEnumeration
+#>[.. Enum.GetValues<<# entry.EntryType#>>().Select(value => new FilterValueOption
+				{
+					Value = value.ToString(),
+					Label = value == <# entry.EntryType#>.None ? CommonLoc.NothingSelected : value.ToString(),
+				})]<#elseif entry.EntryType == "bool"
+#>[new FilterValueOption { Value = bool.TrueString, Label = bool.TrueString }, new FilterValueOption { Value = bool.FalseString, Label = bool.FalseString }]<#else#>[]<#end#>,
+			},
+<#end#>		];
+	}
+
+	private async Task Handle(object? sender, <# Definition.Name#>Created message)
+	{
+		if (<# Definition.NameLow#>s is null || _lastFilter is { Conditions.Count: > 0 })
+		{
+			return;
+		}
+
+		var item = Map.From(message).To<<# Definition.Name#>ListItemModel>();
+
+		<# Definition.NameLow#>s.Insert(0, item);
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private async Task Handle(object? sender, <# Definition.Name#>Updated message)
+	{
+		if (<# Definition.NameLow#>s is null)
+		{
+			return;
+		}
+
+		var entry = <# Definition.NameLow#>s.FirstOrDefault(t => t.Id == message.Id);
+
+		if (entry is not null)
+		{
+			Map.From(message).To(entry);
+		}
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private async Task Handle(object? sender, <# Definition.Name#>Deleted message)
+	{
+		if (<# Definition.NameLow#>s is null)
+		{
+			return;
+		}
+
+		var entry = <# Definition.NameLow#>s.FirstOrDefault(t => t.Id == message.Id);
+
+		if (entry is null)
+		{
+			return;
+		}
+
+		<# Definition.NameLow#>s.Remove(entry);
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private async Task HandleFavoriteCreated(object? sender, <# Project.Namespace#>.Contracts.Favorites.FavoriteCreated message)
+	{
+		if (message.TargetType != ItemType.<# Definition.Name#>)
+		{
+			return;
+		}
+
+		_favoriteIds.Add(message.ItemId);
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private async Task HandleFavoriteDeleted(object? sender, <# Project.Namespace#>.Contracts.Favorites.FavoriteDeleted message)
+	{
+		if (message.TargetType != ItemType.<# Definition.Name#>)
+		{
+			return;
+		}
+
+		_favoriteIds.Remove(message.ItemId);
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	public void Dispose()
+	{
+		<# Definition.Name#>Service.ItemCreated -= Handle;
+		<# Definition.Name#>Service.ItemUpdated -= Handle;
+		<# Definition.Name#>Service.ItemDeleted -= Handle;
+		FavoriteService.ItemCreated -= HandleFavoriteCreated;
+		FavoriteService.ItemDeleted -= HandleFavoriteDeleted;
+	}
+}<#cs SetOutputPath(Definition.IsOwnedType || Definition.IsEnumeration || Definition.IsArray)#>

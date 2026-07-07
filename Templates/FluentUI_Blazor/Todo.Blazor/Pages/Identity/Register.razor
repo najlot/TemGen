@@ -1,0 +1,109 @@
+@page "/Register"
+
+@using System.ComponentModel.DataAnnotations;
+@using <# Project.Namespace#>.Blazor.Identity;
+@using <# Project.Namespace#>.Blazor.Services;
+@using <# Project.Namespace#>.Client.Data.Identity;
+@using <# Project.Namespace#>.Client.Localisation;
+
+@inject IAuthenticationService AuthenticationService
+@inject ITokenService TokenService
+@inject IRegistrationService RegistrationService
+@inject NavigationManager NavigationManager
+@inject ILogger<Register> Logger
+
+<PageTitle>@UserLoc.Register</PageTitle>
+
+<EditForm Model="@Input" OnValidSubmit="@TryRegister">
+	<section class="auth-page">
+		<div class="auth-card">
+			<h1>@UserLoc.Register</h1>
+			<DataAnnotationsValidator />
+			<ValidationSummary class="validation-summary" />
+
+			<!-- Username input -->
+			<div class="fluent-field">
+				<label class="fluent-label" for="UsernameInput">@UserLoc.Username</label>
+				<InputText type="text" id="UsernameInput" class="fluent-control" @bind-Value="Input.Username" />
+			</div>
+
+			<!-- Email input -->
+			<div class="fluent-field">
+				<label class="fluent-label" for="EmailInput">@UserLoc.EmailAddress</label>
+				<InputText type="email" id="EmailInput" class="fluent-control" @bind-Value="Input.EMail" />
+			</div>
+
+			<!-- Password input -->
+			<div class="fluent-field">
+				<label class="fluent-label" for="PasswordInput">@UserLoc.Password</label>
+				<InputText type="password" id="PasswordInput" class="fluent-control" @bind-Value="Input.Password" />
+			</div>
+
+			<button type="submit" class="fluent-button fluent-button--accent fluent-button--full">@UserLoc.Register</button>
+		</div>
+	</section>
+</EditForm>
+
+@code {
+	private class InputModel
+	{
+		[Required]
+		[StringLength(30, MinimumLength = 3)]
+		public string Username { get; set; } = string.Empty;
+
+		[Required]
+		[EmailAddress]
+		public string EMail { get; set; } = string.Empty;
+
+		[Required]
+		[DataType(DataType.Password)]
+		[StringLength(30, MinimumLength = 8)]
+		public string Password { get; set; } = string.Empty;
+	}
+
+	private InputModel Input = new();
+
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		ErrorService?.HideError();
+		await AuthenticationService.LogoutAsync();
+		await base.OnInitializedAsync();
+	}
+
+	private async Task TryRegister()
+	{
+		string? token = null;
+		var result = await RegistrationService.Register(Guid.NewGuid(), Input.Username, Input.EMail, Input.Password);
+
+		if (!result.IsSuccess)
+		{
+			Input.Password = "";
+			ErrorService?.ShowError(UserLoc.Register, result.ErrorMessage);
+			return;
+		}
+
+		try
+		{
+			token = await TokenService.CreateToken(Input.Username, Input.Password);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error creating token.");
+		}
+
+		if (string.IsNullOrWhiteSpace(token))
+		{
+			ErrorService?.ShowError(UserLoc.Login, ErrorLoc.ErrorCouldNotLogin);
+			await AuthenticationService.LogoutAsync();
+		}
+		else
+		{
+			await AuthenticationService.LoginAsync(Input.Username, token);
+			ErrorService?.HideError();
+			NavigationManager.NavigateTo("/");
+		}
+	}
+}<#cs SetOutputPathAndSkipOtherDefinitions()#>

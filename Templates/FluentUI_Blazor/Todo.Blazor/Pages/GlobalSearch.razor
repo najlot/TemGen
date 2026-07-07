@@ -1,0 +1,146 @@
+@page "/global-search"
+@using Microsoft.AspNetCore.Components
+@using <# Project.Namespace#>.Blazor.Services;
+@using <# Project.Namespace#>.Client.Data.GlobalSearch;
+@using <# Project.Namespace#>.Client.Localisation;
+@using <# Project.Namespace#>.Contracts.Trash;
+@using <# Project.Namespace#>.Contracts.Shared
+@inject ILogger<GlobalSearch> Log
+@inject IGlobalSearchService GlobalSearchService
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize]
+
+<PageTitle>@GlobalSearchLoc.GlobalSearch</PageTitle>
+
+<section class="app-stack">
+	<div class="entity-header">
+		<h1>@GlobalSearchLoc.GlobalSearch</h1>
+		<div class="search-form">
+			<FluentSearch @bind-Value="queryText"
+						  @bind-Value:after="SearchAsync"
+						  Immediate="true"
+						  ImmediateDelay="800"
+						  Placeholder="@GlobalSearchLoc.SearchPlaceholder" />
+		</div>
+	</div>
+
+@if (isLoading)
+{
+	<p><em>@CommonLoc.Loading...</em></p>
+}
+else if (string.IsNullOrWhiteSpace(activeQuery))
+{
+	<FluentMessageBar Intent="MessageIntent.Info" AllowDismiss="false">@GlobalSearchLoc.SearchPrompt</FluentMessageBar>
+}
+else if (items.Count == 0)
+{
+	<FluentMessageBar Intent="MessageIntent.Info" AllowDismiss="false">@GlobalSearchLoc.NoResults</FluentMessageBar>
+}
+else
+{
+	<div class="card-list">
+		@foreach (var item in items)
+		{
+			<a class="card-link" href="@GetResultHref(item)">
+				<FluentCard Width="100%">
+					<div class="split-row split-row--start">
+						<div class="text-grow">
+							<div class="text-strong text-break">
+								<FluentHighlighter Text="@Display(item.Title, CommonLoc.Untitled)" HighlightedText="@activeQuery" CaseSensitive="false" />
+							</div>
+							@if (!string.IsNullOrWhiteSpace(item.Content))
+							{
+								<div class="text-muted text-break text-space-top">
+									<FluentHighlighter Text="@item.Content" HighlightedText="@activeQuery" CaseSensitive="false" />
+								</div>
+							}
+						</div>
+						<div class="text-meta text-end">@item.Type</div>
+					</div>
+				</FluentCard>
+			</a>
+		}
+	</div>
+}
+</section>
+
+@code {
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	private readonly List<GlobalSearchItemModel> items = [];
+	private string queryText = string.Empty;
+	private string activeQuery = string.Empty;
+	private bool isLoading;
+	private CancellationTokenSource? _cancellationTokenSource;
+
+	private async Task SearchAsync()
+	{
+		var searchText = queryText.Trim();
+		activeQuery = searchText;
+		items.Clear();
+		_cancellationTokenSource?.Cancel();
+
+		if (string.IsNullOrWhiteSpace(searchText) || searchText.Length < 3)
+		{
+			await InvokeAsync(StateHasChanged);
+			return;
+		}
+
+		_cancellationTokenSource = new CancellationTokenSource();
+		var token = _cancellationTokenSource.Token;
+
+		try
+		{
+			isLoading = true;
+			var results = await GlobalSearchService.SearchAsync(searchText, token).ConfigureAwait(false);
+			if (!token.IsCancellationRequested)
+			{
+				items.AddRange(results);
+			}
+		}
+		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigationManager.NavigateTo(url);
+		}
+		catch (OperationCanceledException)
+		{
+			// Ignore cancelled requests
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error searching globally.");
+			ErrorService?.ShowError(GlobalSearchLoc.GlobalSearch, ex.Message);
+		}
+		finally
+		{
+			if (!token.IsCancellationRequested)
+			{
+				isLoading = false;
+			}
+		}
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private static string Display(string? value, string fallback)
+	{
+		return string.IsNullOrWhiteSpace(value) ? fallback : value;
+	}
+
+	private static string GetResultHref(GlobalSearchItemModel item)
+	{
+		return item.Type switch
+		{
+<#for definition in Definitions.Where(d => !(d.IsEnumeration
+	|| d.IsArray
+	|| d.IsOwnedType
+	|| d.NameLow == "user")).OrderBy(d => d.Name)
+#>			ItemType.<# definition.Name#> => "/<#cs Write(definition.Name.ToLower())#>/" + item.Id,
+<#end#>			_ => "/",
+		};
+	}
+}
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

@@ -1,0 +1,52 @@
+@using <# Project.Namespace#>.Client.Localisation;
+
+<div class="nav-header">
+	<a class="nav-brand" href=""><# Project.Namespace#>.Blazor</a>
+	<button title="@CommonLoc.Navigation" class="nav-toggle" @onclick="ToggleNavMenu">
+		<span class="app-icon">
+			<FluentIcon Value="@(new Icons.Regular.Size20.LineHorizontal3())" Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom" CustomColor="white" />
+		</span>
+	</button>
+</div>
+
+<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+	<nav class="nav-list">
+		<div class="nav-item">
+			<NavLink class="app-nav-link" href="" Match="NavLinkMatch.All">
+				<span class="app-icon">
+					<FluentIcon Value="@(new Icons.Regular.Size20.Home())" Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom" CustomColor="white" />
+				</span> @CommonLoc.Home
+			</NavLink>
+		</div>
+<#for definition in Definitions.Where(d => !(d.IsArray
+	|| d.IsEnumeration 
+	|| d.IsOwnedType
+	|| d.Name == "User"))
+#>		<div class="nav-item">
+			<NavLink class="app-nav-link" href="<# definition.Name#>s">
+				<span class="app-icon">
+					<FluentIcon Value="@(new Icons.Regular.Size20.Note())" Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom" CustomColor="white" />
+				</span> @<# definition.Name#>Loc.<#cs Write(definition.Name)#>s
+			</NavLink>
+		</div>
+<#end#>		<div class="nav-item nav-item--spaced">
+			<NavLink class="app-nav-link" href="trash">
+				<span class="app-icon">
+					<FluentIcon Value="@(new Icons.Regular.Size20.Delete())" Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom" CustomColor="white" />
+				</span> @TrashLoc.Trash
+			</NavLink>
+		</div>
+	</nav>
+</div>
+
+@code {
+	private bool collapseNavMenu = true;
+
+	private string? NavMenuCssClass => collapseNavMenu ? "is-collapsed" : null;
+
+	private void ToggleNavMenu()
+	{
+		collapseNavMenu = !collapseNavMenu;
+	}
+}
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

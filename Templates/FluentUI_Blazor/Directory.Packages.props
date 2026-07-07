@@ -1,0 +1,11 @@
+<#cs Write(AddPackageVersions(
+	PreviousContent,
+	"Microsoft.AspNetCore.Identity.UI|10.0.9",
+	"Microsoft.FluentUI.AspNetCore.Components|4.14.3",
+	"Microsoft.FluentUI.AspNetCore.Components.Icons|4.14.3",
+	"Microsoft.VisualStudio.Web.CodeGeneration.Design|10.0.2",
+	"Najlot.Log.Configuration.FileSource|4.0.4",
+	"Najlot.Log.Extensions.Logging|4.0.4",
+	"NuGet.Packaging|7.6.0",
+	"NuGet.Protocol|7.6.0"));
+SetOutputPathAndSkipOtherDefinitions(); return SkipRemaining();#>

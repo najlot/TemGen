@@ -1,0 +1,40 @@
+@using <# Project.Namespace#>.Client.Localisation;
+
+<button class="theme-toggle app-nav-link app-nav-link--button"
+		type="button"
+		@onclick="ToggleThemeAsync"
+		title="@ButtonLabel"
+		aria-label="@ButtonLabel">
+	@if (IsDark)
+	{
+		<span class="app-icon">
+			<FluentIcon Value="@(new Icons.Regular.Size20.WeatherSunny())" />
+		</span>
+	}
+	else
+	{
+		<span class="app-icon">
+			<FluentIcon Value="@(new Icons.Regular.Size20.WeatherMoon())" />
+		</span>
+	}
+</button>
+
+@code {
+	[Parameter]
+	public DesignThemeModes Mode { get; set; } = DesignThemeModes.Dark;
+
+	[Parameter]
+	public EventCallback<DesignThemeModes> ModeChanged { get; set; }
+
+	private bool IsDark => Mode == DesignThemeModes.Dark;
+
+	private string ButtonLabel => IsDark ? CommonLoc.LightMode : CommonLoc.DarkMode;
+
+	private async Task ToggleThemeAsync()
+	{
+		var nextMode = IsDark ? DesignThemeModes.Light : DesignThemeModes.Dark;
+		Mode = nextMode;
+		await ModeChanged.InvokeAsync(nextMode);
+	}
+}
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

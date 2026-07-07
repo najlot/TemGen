@@ -1,0 +1,32 @@
+@using <# Project.Namespace#>.Blazor.Identity;
+@using <# Project.Namespace#>.Client.Localisation;
+@inject IAuthenticationService AuthenticationService
+@inject NavigationManager NavigationManager
+
+<AuthorizeView>
+	<Authorized>
+		<div class="app-user-actions">
+			<a class="app-nav-link app-nav-link--icon" href="global-search" title="@GlobalSearchLoc.GlobalSearch" aria-label="@GlobalSearchLoc.GlobalSearch">
+				<span class="app-icon">
+					<FluentIcon Value="@(new Icons.Regular.Size20.Search())" />
+				</span>
+			</a>
+			<a class="app-nav-link" href="Manage">@CommonLoc.Hello, @context.User.Identity?.Name!</a>
+			<button class="app-nav-link app-nav-link--button" type="button" @onclick="Logout">@UserLoc.Logout</button>
+		</div>
+	</Authorized>
+	<NotAuthorized>
+		<div class="app-user-actions">
+			<a class="app-nav-link" href="Register">@UserLoc.Register</a>
+			<a class="app-nav-link" href="Login">@UserLoc.Login</a>
+		</div>
+	</NotAuthorized>
+</AuthorizeView>
+
+@code {
+	private async Task Logout()
+	{
+		await AuthenticationService.LogoutAsync();
+		NavigationManager.NavigateTo("/");
+	}
+}<#cs SetOutputPathAndSkipOtherDefinitions()#>

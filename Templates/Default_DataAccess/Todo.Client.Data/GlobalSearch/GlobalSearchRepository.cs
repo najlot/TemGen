@@ -2,6 +2,7 @@ using Najlot.Map;
 using System;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using <# Project.Namespace#>.Client.Data.Identity;
 using <# Project.Namespace#>.Client.Data;
@@ -12,11 +13,11 @@ namespace <# Project.Namespace#>.Client.Data.GlobalSearch;
 public sealed class GlobalSearchRepository(IHttpClientFactory httpClientFactory, ITokenProvider tokenProvider, IMap map)
 	: HttpClientRepository(httpClientFactory, tokenProvider), IGlobalSearchRepository
 {
-	public async Task<GlobalSearchItemModel[]> SearchAsync(string text)
+	public async Task<GlobalSearchItemModel[]> SearchAsync(string text, CancellationToken cancellationToken = default)
 	{
 		using var client = await GetAuthorizedHttpClient().ConfigureAwait(false);
 		var encodedText = Uri.EscapeDataString(text);
-		var items = await client.GetFromJsonAsync<GlobalSearchItem[]>($"api/GlobalSearch?text={encodedText}", ClientDataJsonSerializer.Options).ConfigureAwait(false) ?? [];
+		var items = await client.GetFromJsonAsync<GlobalSearchItem[]>($"api/GlobalSearch?text={encodedText}", ClientDataJsonSerializer.Options, cancellationToken).ConfigureAwait(false) ?? [];
 		return map.From<GlobalSearchItem>(items).ToArray<GlobalSearchItemModel>();
 	}
 }

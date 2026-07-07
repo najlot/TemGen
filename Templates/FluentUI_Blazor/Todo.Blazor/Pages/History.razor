@@ -1,0 +1,132 @@
+@page "/history/{id:guid}"
+@using System.Linq
+@using <# Project.Namespace#>.Blazor.Pages;
+@using <# Project.Namespace#>.Blazor.Services;
+@using <# Project.Namespace#>.Client.Data.History;
+@using <# Project.Namespace#>.Client.Localisation;
+@using <# Project.Namespace#>.Contracts.History
+@inject ILogger<History> Log
+@inject IHistoryService HistoryService
+@inject NavigationManager NavigationManager
+@attribute [Authorize]
+
+<PageTitle>@CommonLoc.History</PageTitle>
+
+<section class="app-stack">
+	<FluentCard Width="100%">
+			@if (isHistoryLoading)
+			{
+				<div class="text-muted">@CommonLoc.Loading...</div>
+			}
+			else if (historyEntries.Length == 0)
+			{
+				<p class="text-muted">@CommonLoc.NoHistoryEntries</p>
+			}
+			else
+			{
+				<div class="history-list">
+					@foreach (var historyEntry in historyEntries)
+					{
+						<section class="history-entry">
+							<div class="split-row">
+								<div>
+									<div class="text-strong">@FormatUsername(historyEntry.Username)</div>
+									<div class="text-meta">@FormatHistoryTimestamp(historyEntry.TimeStamp)</div>
+								</div>
+								<div class="text-meta text-end">@historyEntry.Changes.Length @CommonLoc.ChangesRecorded</div>
+							</div>
+
+							<div class="table-shell table-shell--spaced">
+								<table class="data-table data-table--compact">
+									<thead>
+										<tr>
+											<th>@CommonLoc.Field</th>
+											<th>@CommonLoc.Before</th>
+											<th>@CommonLoc.After</th>
+										</tr>
+									</thead>
+									<tbody>
+										@foreach (var change in historyEntry.Changes)
+										{
+											<tr>
+												<td class="text-strong text-break">@change.Path</td>
+												<td class="text-break"><pre class="inline-pre">@change.OldValue</pre></td>
+												<td class="text-break"><pre class="inline-pre">@change.NewValue</pre></td>
+											</tr>
+										}
+									</tbody>
+								</table>
+							</div>
+						</section>
+					}
+				</div>
+			}
+	</FluentCard>
+</section>
+
+@code {
+	[CascadingParameter(Name = "ErrorService")]
+	protected IErrorService? ErrorService { get; set; }
+
+	[Parameter]
+	public Guid Id { get; set; }
+
+	[SupplyParameterFromQuery(Name = "entityName")]
+	public string? EntityName { get; set; }
+
+	private Guid _lastEntityId;
+	private string? _lastEntityName;
+	private bool isHistoryLoading;
+	private HistoryEntry[] historyEntries = [];
+
+	protected override async Task OnParametersSetAsync()
+	{
+		if (_lastEntityId == Id && _lastEntityName == EntityName)
+		{
+			return;
+		}
+
+		_lastEntityId = Id;
+		_lastEntityName = EntityName;
+		isHistoryLoading = false;
+		historyEntries = [];
+
+		await LoadHistoryIfNeededAsync();
+	}
+
+	private async Task LoadHistoryIfNeededAsync()
+	{
+		if (Id == Guid.Empty || isHistoryLoading)
+		{
+			return;
+		}
+
+		try
+		{
+			isHistoryLoading = true;
+			historyEntries = await HistoryService.GetItemsAsync(Id, EntityName ?? string.Empty);
+		}
+		catch (<# Project.Namespace#>.Client.Data.Identity.SessionUnavailableException)
+		{
+			var url = NavigationManager.BuildReturnUrl("/login");
+			NavigationManager.NavigateTo(url);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Error loading history for entity {EntityId}.", Id);
+			ErrorService?.ShowError(ErrorLoc.Error, ErrorLoc.ErrorCouldNotLoad);
+			historyEntries = [];
+		}
+		finally
+		{
+			isHistoryLoading = false;
+		}
+	}
+
+	private static string FormatHistoryTimestamp(DateTime timeStamp)
+		=> timeStamp.ToLocalTime().ToString("g");
+
+	private static string FormatUsername(string? username)
+		=> string.IsNullOrWhiteSpace(username) ? "-" : username;
+}
+<#cs SetOutputPathAndSkipOtherDefinitions()#>

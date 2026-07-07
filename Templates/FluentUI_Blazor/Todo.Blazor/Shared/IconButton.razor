@@ -1,0 +1,57 @@
+@typeparam Icon where Icon : Microsoft.FluentUI.AspNetCore.Components.Icon, new()
+
+<button class="@ButtonClass"
+		type="@ButtonType"
+		disabled="@(!CanHandleClick())"
+		@onclick="HandleClick"
+		title="@Title"
+		aria-label="@Title">
+	@if (IsExecuting)
+	{
+		<span class="app-icon spin">
+			<FluentIcon Value="@(new Icons.Regular.Size20.ArrowClockwise())" Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom" CustomColor="currentColor" />
+		</span>
+	}
+	else
+	{
+		<span class="app-icon">
+			<FluentIcon Value="@(new Icon())" Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom" CustomColor="currentColor" />
+		</span>
+	}
+</button>
+
+@code {
+	[Parameter] public string Title { get; set; } = string.Empty;
+	[Parameter] public string ButtonType { get; set; } = "button";
+	[Parameter] public string ButtonClass { get; set; } = "fluent-button fluent-button--neutral fluent-button--icon";
+
+	[Parameter] public EventCallback Execute { get; set; }
+	[Parameter] public Func<bool> CanExecute { get; set; } = () => true;
+
+	public bool IsExecuting { get; set; } = false;
+
+	private bool CanHandleClick() => !IsExecuting && CanExecute();
+
+	private async Task HandleClick()
+	{
+		if (!Execute.HasDelegate)
+		{
+			return;
+		}
+		else if (CanHandleClick())
+		{
+			IsExecuting = true;
+			await InvokeAsync(StateHasChanged);
+
+			try
+			{
+				await Execute.InvokeAsync();
+			}
+			finally
+			{
+				IsExecuting = false;
+				await InvokeAsync(StateHasChanged);
+			}
+		}
+	}
+}<#cs SetOutputPathAndSkipOtherDefinitions()#>
